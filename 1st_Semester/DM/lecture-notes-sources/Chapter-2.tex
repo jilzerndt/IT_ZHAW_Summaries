@@ -1,0 +1,784 @@
+
+\chapter{Syntax und Semantik am Beispiel der formalen Aussagenlogik}
+
+\section*{Prolog}
+Wir betrachten Wörter, die aus den Zeichen $z,\p,\g$ gebildet werden können, also zum Beispiel $zzz\p\p\g\p\g\p$, $zzz$ oder $zz\p zzz\g zzzzz$. Da uns aber nicht alle diese Wörter interessieren, schränken wir uns auf ``zulässige'' Wörter ein, die wir folgendermassen definieren: Ein Wort ist zulässig, wenn
+\begin{itemize}
+\item genau ein $\g$ und ein $\p$ darin vorkommen und das $\p$ vor dem $\g$ vorkommt.
+\end{itemize}
+Zulässige Wörter (wir nennen diese jetzt auch $\z\p\g$-Wörter) sind also von der Form
+\[
+\dots \p\dots \g\dots
+\]
+wobei ``$\dots$'' für jeweils eine beliebige (nicht notwendigerweise von null verschiedener) Anzahl
+ $z$ steht. Beispiele von zulässigen Wörtern sind $zzz\p zz\g zzzzz$, $\p z\g$ oder $\p z\g z$. Die Regeln,
+ die wir eingeführt haben, um zulässige von unzulässigen Wörtern zu unterscheiden, sind Teil der
+ \textit{Syntax} unserer $\z\p\g$-Sprache. Obwohl wir jetzt eine primitive ``Grammatik'' für unsere
+ Sprache haben, bleibt völlig unklar was wir mit dieser Sprache aussagen wollen -- was die
+ Bedeutung oder \textit{Semantik} von $\z\p\g$-Wörtern ist. Wie können wir also zulässige
+ Wörter interpretieren? Haben Sie eine Idee? Schauen wir was passiert, wenn wir $\z\p\g$-Wörter wie
+ Aussagen als Wahrheitswerte ``wahr'' oder ``falsch'' interpretieren. Wir betrachten die (partielle)
+ Zuordnung
+\begin{center}
+\begin{tabular}{ l c r }
+\textbf{$\z\p\g$-Wort}& &\textbf{Wahrheitswert}\\
+  $zzz\p z\g zzz$ & $\,\longleftrightarrow\,$ & falsch \\
+  $\p\g$ &  $\,\longleftrightarrow\,$ & wahr\\
+  $z\p z\g zz$ &  $\,\longleftrightarrow\,$ & wahr\\
+  $\p zz\g z$ & $\,\longleftrightarrow\,$ & falsch
+\end{tabular}
+\end{center}
+Haben Sie eine Idee, wie wir diese Zuordnung von $\z\p\g$-Wörtern zu Wahrheitswerten
+vervollständigen können? Nehmen Sie sich einen Moment Zeit darüber nachzudenken, bevor Sie
+weiter lesen. Wenn wir an elementare Arithmetik denken, so könnten\footnote{Das heisst nicht,
+dass es keine anderen ``sinnvollen'' Interpretationen von $\z\p\g$-Wörtern gibt, wir haben uns hier
+willkürlich festgelegt.} wir in einem $\z\p\g$-Wort zum Beispiel die Symbole $\p,\g$ als  $+$ und
+$=$
+und Blöcke von der Form $z\dots z$ als unär-codierte natürliche Zahlen interpretieren. Unter dieser
+Interpretation ergibt sich das folgende Bild:
+\begin{center}
+\begin{tabular}{ l c r }
+\textbf{$\z\p\g$-Wort}& &\textbf{Wahrheitswert}\\
+  $zzz\p z \g zzz$ & $\,\longleftrightarrow\,$ &$3+1=3$ (falsch) \\
+  $\p\g$ &  $\,\longleftrightarrow\,$ &$0+0=0$ (wahr)\\
+  $z\p z\g zz$ &  $\,\longleftrightarrow\,$ & $1+1=2$ (wahr)\\
+  $\p zz\g z$ & $\,\longleftrightarrow\,$ & $0+2=1$ (falsch)
+\end{tabular}
+\end{center}
+Nun erweitern wir unsere $\z\p\g$-Sprache (die Menge aller $\z\p\g$-Wörter) zu einem
+``formalen System'', indem wir rein syntaktische Regeln angeben ``die $\z\p\g$-Reduktion'', um
+aus $\z\p\g$-Wörtern neue $\z\p\g$-Wörter zu generieren.
+\begin{itemize}
+\item Ist das zu reduzierende Wort von der Form $z\dots\p z\dots\g zz\dots$, dann reduzieren wir nach $\dots\p
+\dots\g \dots$.
+\item Ist das zu reduzierende Wort von der Form $\p z\dots\g z\dots$, dann reduzieren wir nach $\p \dots\g
+\dots$.
+\item Ist das zu reduzierende Wort von der Form $z\dots\p\g z\dots$, dann reduzieren wir nach $\dots\p\g \dots$.
+\item Trifft keiner der oben genannten Fälle zu, dann ist das Wort vollständig reduziert.
+\end{itemize}
+Was passiert, wenn wir ein ``wahres'' $\z\p\g$-Wort reduzieren? Was passiert, wenn wir ein
+$\z\p\g$-Wort reduzieren, das nicht ``wahr'' ist?
+\begin{quote}
+Die wahren $\z\p\g$-Wörter sind genau diejenigen,
+deren vollständig reduzierte Form das Wort $\p\g$ ist.
+\end{quote}
+Wir können also sagen, dass eine Reduktion
+eines $\z\p\g$-Wortes nach $\p\g$ einem formalen ``Beweis'' im $\z\p\g$-System vom
+ursprünglichen Wort entspricht. Eine vollständige Reduktion, die in einem Wort endet, welches von
+$\p\g$ verschieden ist, ist in diesem Sinne eine ``formale Verwerfung'' vom Ursprungswort. Insbesondere haben wir einen
+syntaktischen Kalkül (Reduktion terminiert immer), der von einem $\z\p\g$-Wort entscheidet, ob dieses wahr ist. Man sagt in
+diesem Fall, dass das System \textit{entscheidbar} und vollständig (bzgl. der gegebenen Semantik) ist. Dies ist eine starke
+Eigenschaft, die für kompliziertere Systeme im Allgemeinen nicht gilt.
+
+Noch ein paar Beispiele für die syntaktische und die semantische Ebene:
+\begin{center}
+\begin{tabular}{ l c r }
+\textbf{Syntax}& &\textbf{Semantik}\\
+  Partitur & $\,\longleftrightarrow\,$ & Musik (Schallwellen) \\
+  Java Code &  $\,\longleftrightarrow\,$ & Verhalten eines Computers \\
+  Terme einer math. Theorie &  $\,\longleftrightarrow\,$ & Math. Objekte\\
+  Aussagenlogische Formeln &$\,\longleftrightarrow\,$ & Boolesche Funktionen\\
+ Peano-Axiome & $\,\longleftrightarrow\,$ &  Die Struktur $(\N,+,\cdot)$\\
+Feynman-Diagramm& $\,\longleftrightarrow\,$ & Wechselwirkungen
+\end{tabular}
+\end{center}
+
+\section*{Beispiele für Anwendungen in der Informatik}
+\begin{itemize}
+\item Künstliche Intelligenz, Wissensrepräsentation und Expertensysteme
+\item Theoretische Informatik ($\mathsf{P}=\mathsf{NP}$-Frage, $\mathsf{SAT},\dots$)
+\item Regeltechnik und Simulation
+\end{itemize}
+
+
+
+\section*{Lernziele}
+Sie kennen die
+\begin{itemize}
+\item Syntax der Aussagenlogik.
+\item Semantik der Aussagenlogik.
+\end{itemize}
+Sie verstehen
+\begin{itemize}
+\item Wie die Begriffe Syntax und Semantik zusammenhängen.
+\item Was der Wahrheitswert einer aussagenlogischen Formel ist.
+\end{itemize}
+Sie sind in der Lage
+\begin{itemize}
+\item von aussagenlogischen Formeln zu entscheiden, ob diese allgemeingültig, erfüllbar oder unerfüllbar sind.
+\item Wahrheitstabellen auch für kompliziertere Formeln aufzustellen und daraus Schlüsse über den Wahrheitswert der Formel zu ziehen.
+\item Aussagenlogische Formeln in verschiedene Normalformen zu überführen.
+\end{itemize}
+
+
+\section*{Literatur und Links}
+Wie im ersten Kapitel.
+
+\section{Syntax der Aussagenlogik}
+
+
+\begin{df}
+Das \textit{Alphabet der Aussagenlogik} (auch Zeichenvorrat genannt) besteht aus:
+\begin{itemize}
+\item Konstanten $\top$ und $\bot$.
+\item Variablen $p,q,r,s,\dots,p_0,p_1,p_2,\dots$
+\item Klammern $(,)$
+\item Junktoren $\neg,\land,\lor,\to$
+\end{itemize}
+Die Menge der Variablen bezeichnen wir mit $\mathbb{V}$.
+\end{df}
+
+Nachdem wir nun die Zeichen festgelegt haben, aus welchen die ``Wörter der
+Aussagenlogik'' zusammengesetzt sind, werden
+wir in der nächsten Definition, die für uns interessanten Wörter festlegen. Wir
+definieren, also im Sinn vom einführenden Beispiel, die
+``zulässigen Wörter'' (genannt Formeln) der Aussagenlogik.
+
+\begin{df}
+Jede Variable und jede Konstante ist eine \textit{atomare Formel}. Wir bezeichnen die
+Menge aller atomaren Formeln mit $\mathbb{A}:=\{\bot,\top,p,q,r,s,\dots,p_0,p_1,p_2,\dots
+\}$.
+Die \textit{Formeln} der Aussagenlogik sind dann wie folgt gegeben:
+\begin{itemize}
+\item Alle atomaren Formeln sind Formeln.
+\item Sind $P$ und $Q$ schon Formeln, dann auch: $(P\land Q)$, $(P\lor Q)$, $(P\to Q)$ und $\neg P$.
+\end{itemize}
+Wir schreiben $\mathbb{F}$ für die Menge aller aussagenlogischen Formeln.
+\end{df}
+
+\begin{rk} Ist eine Formel von einem Klammernpaar umgeben, dann lassen wir die äussersten
+    Klammern
+zugunsten einer besseren Lesbarkeit weg; wir schreiben beispielsweise $(p_0\lor p_1)\land
+p_3$ anstelle von $((p_0\lor p_1)\land p_3)$. Des Weiteren setzen wir folgende Operatorrangfolge fest: Die Negation bindet stärker als die Konjunktion und die Disjunktion, die wiederum stärker binden als die Implikation.
+\end{rk}
+
+\begin{bsp}
+Einige aussagenlogische Formeln:
+\begin{align*}
+&p\lor(p\to \neg(q\land p))&&p\land\neg p&&p\to(q\to p)& &\neg(p\lor\neg q)&
+\end{align*}
+Einige Zeichenreihen, die \textit{keine} aussagenlogische Formeln sind:
+\begin{align*}
+&\neg\to p& &\forall x\,p(x)& &\text{``es regnet''}&
+\end{align*}
+\end{bsp}
+
+\section{Semantik der Aussagenlogik}
+
+Wir wollen jeder aussagenlogischen Formel nun eine Bedeutung zuordnen. Am bequemsten wäre es, wenn wir jeder Formel
+direkt einen der Wahrheitswert \textit{wahr} oder \textit{falsch} zuordnen könnten. Bei
+einigen Formeln gelingt dies tatsächlich ohne
+Probleme; $\neg p\lor p$ beispielsweise ist immer wahr, egal ob $p$ selbst wahr oder falsch ist. Für andere Formeln ist das aber
+weniger klar; der Wahrheitswert der Formel $p_1\lor p_4$ hängt von den Wahrheitswerten der Formeln $p_1$ und $p_4$ ab. Wir haben also folgendes Problem:
+\begin{itemize}
+\item Bevor wir die Wahrheitswerte von komplizierten Formeln bestimmen/definieren können, müssen wir die Wahrheitswerte der atomaren Formeln schon bestimmt haben.
+\item Die Zuordnung von Wahrheitswerten zu atomaren Formeln ist völlig willkürlich; es gibt keinen Grund, dass beispielsweise die Formel $p_1$ ``weniger wahr'' als die Formel $p_4$ sein soll.
+\end{itemize}
+Wir stellen also fest, dass wir einer aussagenlogischen Formel nur einen Wahrheitswert
+\textit{bezüglich} einer Belegung der atomaren Formeln mit Wahrheitswerten geben können.
+Zum Beispiel, wenn wir die Variablen $p_1$ und $p_4$ beide mit dem Wahrheitswert $\false$
+belegen, dann hat die Formel $p_1\lor p_4$ \textit{unter dieser Belegung} ebenfalls den
+Wahrheitswert $\false$.
+
+\begin{df}
+Eine \textit{Belegung} ist eine Zuordnung von Variablen zu Wahrheitswerten, d.h.
+eine  Funktion $B:\mathbb{V}\to \{\true,\false\}$.
+\end{df}
+
+Nun werden wir sehen, wie man ausgehend von einer Belegung jeder aussagenlogischen Formel einen Wahrheitswert zuordnen
+kann. Bevor wir uns der formalen Definition widmen, skizzieren wir unser Vorgehen exemplarisch an der Formel $(p\lor q)\land
+\neg p$. Nehmen wir an, dass $B$ eine Belegung mit $B(p)=\true$ und $B(q)=\false$ sei.
+Wir wollen
+nun den Wahrheitswert von $(p\lor q)\land \neg p$ sinnvoll definieren. Wegen $B(p)=\true$
+sollte die Formel $\neg p$ den Wahrheitswert $\false$ haben, und die Formel $p\lor q$ den
+Wert
+$\true$ erhalten. Zusammenfassend sehen wir, dass die Formel $\underbrace{(p\lor
+q)}_{X}\land \underbrace{\neg p}_{Y}$ von der Form $X\land Y$ ist wobei $X$ den
+Wahrheitswert $\true$ und $Y$ den Wahrheitswert $\false$ hat. Es ist daher sinnvoll den
+Wahrheitswert von $(p\lor q)\land \neg p$ auf $\false$ zu setzen.
+
+Nun zur formalen Definition
+\begin{df}
+Es sei eine Belegung $B$ gegeben. Die Funktion $\widehat{B}$ ist die Funktion, die jeder
+aussagenlogischen Formel ihren Wahrheitswert bezüglich der Belegung $B$ zuordnet, d.h.
+die Funktion $\widehat{B}:\mathbb{F}\to\{\false,\true\}$ ist gegeben durch:
+\begin{itemize}
+\item $\widehat{B}(\bot) =\false$ und $\widehat{B}(\top)=\true$.
+\item Für beliebige Variablen $v$ gilt $\widehat{B}(v)=B(v)$.
+\item Für beliebige Formeln $F$ und $G$ gilt\[
+\widehat{B}(F\land G)=\begin{cases}
+\true &\text{falls }\widehat{B}(F)=\true\text{ und }\widehat{B}(G)=\true\\
+\false&\text{sonst.}
+\end{cases}
+\]
+\item Für beliebige Formeln $F$ und $G$ gilt
+\[
+\widehat{B}(F\lor G)=\begin{cases}
+\true&\text{falls }\widehat{B}(F)=\true\text{ oder }\widehat{B}(G)=\true\\
+\false&\text{sonst.}
+\end{cases}
+\]
+\item Für beliebige Formeln $F$  gilt\[
+\widehat{B}(\neg F)=\begin{cases}
+\true&\text{falls }\widehat{B}(F)=\false \\
+\false&\text{sonst.}
+\end{cases}
+\]
+\item Für beliebige Formeln $F$ und $G$ gilt $\widehat{B}(F\to G)=\widehat{B}(\neg F\lor G)$.
+\end{itemize}
+\end{df}
+
+\begin{rk}
+    Die Junktoren können wir auch als boolesche Funktionen (Funktionen, die
+    Wahrheitswerte verarbeiten) anschauen:
+\begin{align*}
+\for(x,y) &= \begin{cases}
+\true&\text{falls }x=\true\text{ oder }y=\true\\
+\false&\text{sonst}
+\end{cases}\\
+\fand(x,y) &= \begin{cases}
+\true&\text{falls }x=\true\text{ und }y=\true\\
+\false&\text{sonst}
+\end{cases}\\
+\fnot(x) &=\begin{cases}
+\true&\text{falls }x=\false\\
+\false&\text{sonst}
+\end{cases}
+\end{align*}
+Durch diese Interpretation können wir die obige Definition etwas knapper formulieren:
+\begin{itemize}
+\item $\widehat{B}(F\land G)=\fand(\widehat{B}(F),\widehat{B}(G))$
+\item $\widehat{B}(F\lor G)=\for(\widehat{B}(F),\widehat{B}(G))$
+\item $\widehat{B}(\neg F)=\fnot(\widehat{B}(F))$
+\end{itemize}
+Mithilfe dieser Darstellung können wir, wenn eine Belegung $B$ gegeben ist, den Wahrheitswert einer beliebigen aussagenlogischen Formel unter der Belegung $B$ ``berechnen''.
+\end{rk}
+
+
+\begin{bsp}
+Es sei eine Belegung $B$ gegeben, die $B(p_n)=\true$ genau dann erfüllt, wenn $n$ eine
+gerade Zahl ist. Wir berechnen den Wahrheitswert von $(p_4\to(p_5\to p_6))\lor p_{13}.$
+\begin{align*}
+\widehat{B}((p_4\to(p_5\to p_6))\lor p_{13})&=\for(\widehat{B}(p_4\to(p_5\to p_6)),
+\underbrace{\widehat{B}(p_{13})}_{\false}\}\\
+&=\widehat{B}(p_4\to(p_5\to p_6))\\
+&=\widehat{B}(\neg p_4\,\lor\,(p_5\to p_6))\\
+&=\for(\widehat{B}(\neg p_4),\widehat{B}(p_5\to p_6))\\
+&=\for( \fnot(\underbrace{\widehat{B}( p_4)}_{\true}),\widehat{B}(\neg p_5\,\lor\,
+p_6))\\
+&=\for( \false,\widehat{B}(\neg p_5\,\lor\,
+p_6))\\
+&=\widehat{B}(\neg p_5\,\lor\, p_6)\\
+&=\for(\widehat{B}(\neg p_5),\underbrace{\widehat{B}(p_6)}_{\true})\\
+&=\true
+\end{align*}
+\end{bsp}
+
+\begin{ueb}
+Von einer Belegung $B:\mathbb{V}\to \{\false,\true\}$ seien folgende Werte bekannt:
+\begin{align*}
+B(p) &= B(q) = B(r) = B(s) =\true\\
+B(u) &= B(v) = \false
+\end{align*}
+Bestimmen Sie $\hat B$ von folgenden Formeln:
+\begin{enumerate}
+\item $p\to s$
+\item $(u\to r)\land s$
+\item $v\lor((r\to s)\land u)$
+\end{enumerate}
+\end{ueb}
+\begin{lsg}
+\ifthenelse{\boolean{ml}}{
+\begin{enumerate}
+\item
+\[
+\hat B(p\to s)=\hat B(\neg p\lor s)=\for(\hat B(\neg p),\underbrace{\hat
+B(s)}_{\true})=\true
+\]
+\item
+\begin{align*}
+\hat B((u\to r)\land s)&=\fand (\hat B((u\to r)), \underbrace{\hat
+B(s)}_{\true})=\hat B(u\to r)\\
+&=\hat B(\neg u\lor r)=\for(\hat B(\neg u),\underbrace{\hat B(r)}_{\true})=\true
+\end{align*}
+\item
+\begin{align*}
+\hat B(v\lor((r\to s)\land u))
+&=\for(\underbrace{\hat B(v)}_{\false},\hat B((r\to s)\land u))\\
+&=\hat B((r\to s)\land u)\\
+&=\fand(\hat B(r\to s),\underbrace{\hat B(u)}_{\false})=\false
+\end{align*}
+\end{enumerate}
+}{~
+\answerspace{5cm}}
+\end{lsg}
+
+\subsection*{Wahrheitstabellen}
+
+Um den Wahrheitswert einer Formel $F$ bezüglich einer Belegung $B$ zu bestimmen, gen\"ugt es die Werte $B(x)$ für alle Variablen $x$, die in $F$ vorkommen zu kennen. Da eine Formel immer nur eine endliche Anzahl an Variablen enthält, erlaubt uns dieser Umstand für jede Formel eine Tabelle aufstellen, die den Wahrheitsgehalt dieser Formel bezüglich jeder möglichen Belegung darstellt. Wir brauchen dazu den Begriff einer Teilformel.
+
+\begin{df}
+    Der Begriff einer \textit{Teilformel} einer Formel $F$ ist wie folgt gegeben:
+    \begin{itemize}
+        \item Wenn $F$ eine atomare Formel ist, dann ist besitzt $F$ nur die Teilformel $F$ (also ``sich selbst'').
+        \item Wenn $F$ von der Form $A\lor B$, $A\land B$ oder $A\to B$ ist, dann besitzt $F$ als Teilformeln, neben $F$ selbst, alle Teilformeln von $A$ und $B$.
+        \item Wenn $F$ von der Form $\neg A$ ist, dann besitzt $F$ als Teilformeln, neben $F$ selbst, alle Teilformeln von $A$.
+    \end{itemize}
+    Eine \textit{echte} Teilformel einer Formel $F$ ist eine von $F$ verschiedene Teilformel von $F$.
+\end{df}
+\begin{bsp}
+    Die Teilformeln der Formel $r\to (s\land p)$ sind $r,s,p,s\land p$ sowie $r\to (s\land p)$.
+\end{bsp}
+\begin{df}
+    In einer \textit{Wahrheitstabelle einer Formel} $F$ entspricht jede Spalte einer Teilformel von $F$ und jede Zeile einer Belegung der in $F$ vorkommenden Variablen. Es gelten folgende Bedingungen:
+    \begin{itemize}
+        \item In der Spalte einer Formel steht in jeder der folgenden Zeilen der Wahrheitswert dieser Formel unter der der Zeile entsprechenden Belegung.
+        \item Steht in einer Spalte eine Formel, dann kommen alle echten Teilformeln dieser Formel in Spalten weiter links vor.
+        \item Der letzte Eintrag der ersten Zeile ist die Formel $F$.
+    \end{itemize}
+\end{df}
+
+\begin{rk}
+    Wahrheitstabellen sind bis auf die Reihenfolge der Zeilen sowie der Reihenfolge von Teilformeln eindeutig.
+\end{rk}
+
+\begin{rk}
+    Für eine bessere Übersicht werden in Wahrheitstabellen anstelle der Wahrheitswerte $\true$ und $\false$ oft Abkürzungen $1$ und $0$ verwendet.
+\end{rk}
+
+\begin{bsp}
+    Die Teilformeln von der Formel $p_0\to (q\lor p_1)$ sind: $p_0,p_1,q,(q\lor p_1)$ und $p_0\to (q\lor p_1)$. Eine vollständige Wahrheitstabelle von $p_0\to (q\lor p_1)$ ist:
+    \begin{center}
+        \begin{tabular} {| c | c | c || c | c |}
+            \hline
+            $p_0$ & $q$ & $p_1$ & $q\lor p_1$ & $p_0\to (q\lor p_1)$ \\ \hline
+            0 & 0 & 0 & 0 & 1 \\
+            0 & 0 & 1 & 1 & 1\\
+            0 & 1 & 0 & 1 & 1\\
+            0 & 1 & 1 & 1& 1\\
+            1 & 0 & 0 & 0 & 0\\
+            1 & 0 & 1 & 1 & 1\\
+            1 & 1 & 0 & 1 & 1\\
+            1 & 1 & 1 & 1 & 1\\ \hline
+        \end{tabular}
+        %
+    \end{center}
+    \smallskip
+\end{bsp}
+
+\begin{rk}
+    Man kann Wahrheitstabellen auch zur Darstellung von logischen Operatoren\footnote{Funktionen, die aus aussagenlogischen Formeln neue aussagenlogische Formeln generieren.} benützen. Beispielhaft geben wir die Wahrheitstabellen für die Operatoren (Junktoren) $\lor,\,\land,\,\to,\neg$ an.
+    \begin{center}
+        \begin{tabular}{c c c c}
+            %
+            \begin{tabular} {|c|c||c|}
+                \hline
+                $F$ & $G$ & $F\land G$ \\
+                \hline
+                0 & 0 &  0 \\
+                0 & 1 & 0 \\
+                1 & 0 & 0 \\
+                1 & 1 & 1 \\
+                \hline
+            \end{tabular}
+            %
+            &
+            %
+            \begin{tabular} {| c | c || c |}
+                \hline
+                $F$ & $G$ & $F\lor G$ \\ \hline
+                0 & 0 & 0 \\
+                0 & 1 & 1 \\
+                1 & 0 & 1 \\
+                1 & 1 & 1 \\ \hline
+            \end{tabular}
+            %
+            &
+            %
+            \begin{tabular} {| c | c || c |}
+                \hline
+                $F$ & $G$ & $F\to G$ \\ \hline
+                0 & 0 & 1 \\
+                0 & 1 & 1 \\
+                1 & 0 & 0 \\
+                1 & 1 & 1 \\ \hline
+            \end{tabular}
+            %
+            &
+            \begin{tabular} {| c || c |}
+                \hline
+                $F$ & $\neg F$ \\ \hline
+                0 & 1\\
+                1 & 0 \\ \hline
+            \end{tabular}
+            %
+        \end{tabular}
+        %
+    \end{center}
+    \smallskip
+\end{rk}
+
+
+\subsection*{Semantische Eigenschaften}
+
+\begin{df}
+    Eine aussagenlogische Formel $A$ heisst
+    \begin{itemize}
+        \item \textit{Gültig} oder \textit{wahr} unter einer Belegung $B$, falls $\widehat{B}(A)=\true$.
+        \item \textit{Allgemeingültig}, wenn sie unter jeder Belegung gültig ist.
+        \item \textit{Widerlegbar}, wenn es mindestens eine Belegung gibt, unter der $A$ nicht gültig ist.
+        \item \textit{Erfüllbar}, wenn es mindestens eine Belegung gibt, unter der $A$ gültig ist.
+        \item \textit{Unerfüllbar}, wenn $A$ nicht erfüllbar ist.
+    \end{itemize}
+\end{df}
+
+\begin{rk}
+    Die eingeführten Begriffe können auch anhand von Wahrheitstabellen verstanden werden. Eine aussagenlogische Formel $A$ ist
+    \begin{itemize}
+        \item Allgemeingültig, wenn in einer Wahrheitstabelle von $A$ in der letzten Spalte alle Einträge $\true$ sind.
+        \item Erfüllbar, wenn in einer Wahrheitstabelle von $A$ in der letzten Spalte mindestens einer der Einträge $\true$ ist.
+        \item Unerfüllbar, wenn in einer Wahrheitstabelle von $A$ in der letzten Spalte alle Einträge $\false$ sind.
+        \item Widerlegbar, wenn in einer Wahrheitstabelle von $A$ in der letzten Spalte mindestens einer der Einträge $\false$ ist.
+    \end{itemize}
+\end{rk}
+
+\begin{bsp}
+    Einige allgemeingültige Formeln:
+    \begin{align*}
+    &p\lor\neg p& &p\to (q\to p)& &F\to F&.
+    \end{align*}
+    Einige erfüllbare  nicht allgemeingültige Formeln:
+    \begin{align*}
+    &p_1\lor (p_2\lor p_3)& &p_3& &p\to q&
+    \end{align*}
+    Einige unerfüllbare Formeln:
+    \begin{align*}
+    &(p_1\to\neg p_1)\land(\neg p_1\to p_1)& &\neg p_3\land p_3& &\neg (F\to F)&
+    \end{align*}
+    Welche der Formeln
+    \begin{align*}
+    &(p_1\to (p_2\lor p_1))\lor(\neg p_1\lor (p_2\land p_1))& &\neg p_3\land p_3& &\neg (F\to \neg F)&
+    \end{align*}
+    sind allgemeingültig, welche erfüllbar und welche unerfüllbar?
+\end{bsp}
+
+
+
+\begin{rk}
+    Eines der grössten ungelösten Probleme der (theoretischen) Informatik ist die Frage,
+    ob es einen ``effizienten'' Algorithmus gibt, der von jeder aussagenlogischen Formel
+    entscheidet, ob sie erfüllbar ist oder nicht. Diese Problemstellung wird mit $\mathsf{SAT}$ (von
+    engl. \textbf{sat}isfiability) bezeichnet. Die Relevanz dieser Frage kommt daher, dass sich das
+    $\mathsf{P}\stackrel{?}{=}\mathsf{NP}$ Problem (die Frage, ob zwei der wichtigsten Komplexitätsklassen übereinstimmen) darauf reduzieren lässt.
+\end{rk}
+
+\begin{ueb}
+    Zeigen Sie: Eine aussagenlogische Formel $F$ ist genau dann allgemeingültig, wenn $\neg F$ unerfüllbar ist.
+\end{ueb}
+\begin{lsg}
+    \ifthenelse{\boolean{ml}}{
+        Es sei $F$ eine beliebige aussagenlogische Formel. Wir müssen folgende Behauptungen beweisen:
+        \begin{itemize}
+            \item Ist $F$ allgemeingültig, dann ist $\neg F$ nicht erfüllbar.
+            \item Ist $\neg F$ nicht erfüllbar, dann ist $F$ allgemeingültig.
+        \end{itemize}
+        Für die erste Behauptung nehmen wir an, dass $F$ allgemeingültig sei. Aus der Allgemeingültigkeit von $F$ folgt $\hat B(F)=\true$ für jede Belegung $B$. Somit gilt $\hat B(\neg F)=\false$ für jede Belegung $B$, also ist die Formel $\neg F$ unerfüllbar.
+
+        Für die zweite Behauptung nehmen wir nun an, dass die Formel $\neg F$ nicht erfüllbar sei. Es gilt somit $\hat B(\neg F)=\false$ für jede Belegung $B$. Daraus folgt $\hat B(F)=\true$ für jede Belegung $B$ und somit, dass $F$ allgemeingültig ist.
+    }{~
+        \answerspace{10cm}}
+\end{lsg}
+
+\begin{ueb}
+    Ist die Behauptung korrekt, dass jede Formel genau dann erfüllbar ist, wenn ihre Negation nicht erfüllbar ist? Begründen Sie Ihre Antwort.
+\end{ueb}
+\begin{lsg}~
+    \ifthenelse{\boolean{ml}}{
+        Die Behauptung ist falsch. Ein Gegenbeispiel zu der Aussage ist die (atomare) Formel $p$, sie ist erfüllbar und die Negation $\neg p$ ist ebenfalls erfüllbar.}{~
+        \answerspace{6cm}}
+\end{lsg}
+
+\begin{ueb}
+    Geben Sie zwei erfüllbare Formeln $F$ und $G$ an, so dass die Formel $F\land G$ nicht erfüllbar ist.
+\end{ueb}
+\begin{lsg}
+    \ifthenelse{\boolean{ml}}{
+        Die Formeln $F:=p$ und $G:=\neg p$ sind beide erfüllbar, die Formel $p\land \neg p$ ist jedoch unerfüllbar.}{~
+        \answerspace{3cm}}
+\end{lsg}
+
+\begin{df}
+    Es seien $F$ und $G$ beliebige aussagenlogische Formeln. Wir sagen
+    \begin{itemize}
+        \item $F$ \textit{ist eine Konsequenz von }$G$, falls $F$ unter jeder Belegung wahr ist unter der $G$ wahr ist.
+        \item $F$ und $G$ sind \textit{logisch äquivalent}, wenn $G$ und $F$ unter jeder Belegung denselben Wahrheitswert annehmen.
+    \end{itemize}
+    Sind $F$ und $G$ äquivalente Formeln, dann schreiben wir $F\equiv G$.
+\end{df}
+
+\begin{rk}
+    Zwei aussagenlogische Formeln sind genau dann äquivalent, wenn beide Formeln von der jeweils anderen eine Konsequenz sind.
+\end{rk}
+
+
+Wir können nun, ähnlich wie wir dies im ersten Kapitel informell für die Prädikatenlogik getan haben (als Konsequenz davon!), einige grundlegende logische Äquivalenzen nachweisen.
+
+\begin{rk}
+    Mit einem \textit{Satz} bezeichnet man in der Mathematik eine zur Theoriebildung wichtige oder in der Anwendung nützliche Erkenntnis, die durch einen Beweis belegt wird.
+\end{rk}
+
+\begin{satz}
+    Sind $F,G$ und $H$ beliebige aussagenlogische Formeln, dann gelten folgende Äquivalenzen:
+    \begin{itemize}
+        \item Gesetz der doppelten Negation: $\neg\neg F\,\equiv\, F$
+        \item Absorption: $F\land F\,\equiv\, F$ und $F\lor F\,\equiv\, F$
+        \item Kommutativität: $F\land G\,\equiv\,G\land F$ und $F\lor G\,\equiv\, G\lor F$
+        \item Assoziativität: $F\land(G\land H)\,\equiv\,(F\land G)\land H$
+        \item Assoziativität: $F\lor(G\lor H)\,\equiv\,(F\lor G)\lor H$
+        \item Distributivität: $F\land(G\lor H)\,\equiv\,(F\land G)\lor (F\land H)$
+        \item Distributivität: $F\lor(G\land H)\,\equiv\,(F\lor G)\land (F\lor H)$
+        \item De Morgan: $\neg (F\land G)\,\equiv\,\neg F\lor\neg G$
+        \item De Morgan: $\neg (F\lor G)\,\equiv\,\neg F\land \neg G$
+        \item Kontraposition: $F\to G\,\equiv\neg G\to\neg F$
+    \end{itemize}
+\end{satz}
+\begin{proof}
+    Wir müssen für jede der behaupteten Äquivalenzen nachweisen, dass die genannten Formeln unter jeder Belegung denselben Wahrheitswert haben. Wenn wir also von einer beliebigen Belegung $B$ ausgehen, dann müssen wir, um eine Äquivalenz von der Form $X\equiv Y$ nachzuweisen, bloss zeigen, dass $\widehat{B}(X)=\widehat{B}(Y)$ gilt.
+    \begin{itemize}
+        \item Doppelte Negation folgt aus $\fnot(\fnot(x))=x$:
+        \begin{align*}
+        \widehat{B}(\neg\neg F)=\fnot(\widehat{B}(\neg F))=\fnot(\fnot(\widehat{B}(F))=\widehat{B}(F).
+        \end{align*}
+        \item Absorbtion folgt sofort aus $\fand(x,x)=\for(x,x) =x$.
+        \item Kommutativität folgt sofort aus $\for(x,y)=\for(y,x)$ und $\fand(x,y)=\fand(y,x)$.
+        \item Für Assoziativität, Distributivität und DeMorgan siehe Fallunterscheidung an der Tafel.
+    \end{itemize}
+\end{proof}
+
+\begin{rk}
+    Mit \textit{Theorem} bezeichnet man in der Mathematik besonders wichtige Sätze.
+\end{rk}
+
+Das nächste Theorem schlägt eine wichtige Brücke zwischen Syntax und Semantik der Aussagenlogik, indem es die logische Konsequenz (Semantik) in Beziehung zur Implikation
+(Syntax) setzt. Man kann das Theorem dahingehend interpretieren, dass die Implikation~$\to$ eine adäquate Formalisierung des Folgerungsbegriffes $\Rightarrow$ vom ersten Kapitel darstellt.
+
+\begin{thrm}[Folgerungstheorem]\label{thrm:deduktionstheorem}
+    Sind $F$ und $G$ aussagenlogische Formeln, dann gelten:
+    \begin{enumerate}
+        \item[i)] $G$ ist genau dann eine Konsequenz von $F$, wenn die Formel $F\to G$ allgemeingültig ist.
+        \item[ii)] $F$ und $G$ sind genau dann logisch äquivalent, wenn die Formel $F\to G\land G\to F$ allgemeingültig ist.
+    \end{enumerate}
+\end{thrm}
+\begin{proof}
+    Wir behandeln zuerst die Behauptung $i)$.
+    \begin{align*}
+    F\to G\text{ allgemeingültig } &\Leftrightarrow \forall B(\widehat{B}(F\to G) =\true)\\
+    &\Leftrightarrow \forall B(\widehat{B}(\neg F\lor G) =\true)\\
+    &\Leftrightarrow \forall B(\neg \widehat{B}(F)=\true\underbrace{\lor}_{\text{``oder'' der Prädikatenlogik}} \widehat{B}(G) =\true)\\
+    &\Leftrightarrow \forall B(\widehat{B}(F)=\true\Rightarrow \widehat{B}(G)=\true)\\
+    &\Leftrightarrow G\text{ ist Konsequenz von }F
+    \end{align*}
+    Die Behauptung $ii)$ folgt direkt aus dem ersten Teil.\qedhere
+\end{proof}
+
+
+\begin{ueb}
+    Zeigen Sie mit der Methode der Wahrheitstabellen, dass die Formeln $p\to q$ und $q\to p$ nicht äquivalent sind.
+\end{ueb}
+\begin{lsg}
+    \ifthenelse{\boolean{ml}}{~
+
+        \begin{center}
+            %
+            \begin{tabular} {|c|c||c|c|}
+                \hline
+                $p$ & $q$ & $p\to q$ & $q \to p$ \\
+                \hline
+                0 & 0 & 1 & 1\\
+                0 & 1 & \colorbox{red}{1} & \colorbox{red}{0}\\
+                1 & 0 & \colorbox{red}{0} & \colorbox{red}{1}\\
+                1 & 1 & 1 & 1\\
+                \hline
+            \end{tabular}
+        \end{center}
+    }{~
+        \answerspace{5cm}}
+\end{lsg}
+
+
+\subsection*{Normalformen}
+
+\begin{rk}
+Ausdrücke von der Form $F_1\lor\dots\lor F_n$ oder $F_1\land\dots\land F_n$ stehen stellvertretend für alle möglichen Formeln die durch Klammersetzung aus ihnen gebildet werden können. Für den Wahrheitswert der Formeln ist die genaue Klammerung, wegen der Assoziativität unwichtig.
+\end{rk}
+
+\begin{df}
+\textit{Literale} sind atomare Formeln oder negierte atomare Formeln.
+\end{df}
+
+\begin{bsp}
+Beispiele für Literale: $p$, $\neg q$, $\neg p_{34}$.
+\end{bsp}
+
+\begin{df}
+Eine aussagenlogische Formel ist:
+\begin{itemize}
+\item In \textit{Negationsnormalform}(NNF), wenn alle Negationen in Literalen vorkommen und wenn keine Implikationen ($\to$) vorkommen.
+\item In \textit{disjunktiver Normalform}(DNF), wenn sie von der Form
+\[
+(L_{1,1}\land L_{1,2}\land\dots)\lor(L_{2,1}\land L_{2,2}\land\dots)\lor(L_{3,1}\land L_{3,2}\land\dots)\dots
+\]
+mit Literalen $L_{i,j}$ ist.
+\item In \textit{konjunktiver Normalform}(KNF), wenn sie von der Form
+\[
+(L_{1,1}\lor L_{1,2}\lor\dots)\land(L_{2,1}\lor L_{2,2}\lor\dots)\land(L_{3,1}\lor L_{3,2}\lor\dots)\dots
+\]
+mit Literalen $L_{i,j}$ ist.
+\end{itemize}
+\end{df}
+
+\begin{bsp}
+Die Formel
+\[
+\neg(p\lor q)
+\]
+ist in keiner der oben eingeführten Normalformen. Die Formel
+\[
+(\neg p\lor q)\land ((p\land p_1)\lor(p_2\land p_3))
+\]
+ist in $NNF$ aber weder in $DNF$ noch in $KNF$. Die Formel
+\[
+p\lor q
+\]
+ist in $NNF$, $KNF$ und $DNF$.
+\end{bsp}
+
+\begin{satz}
+Für jede aussagenlogische Formel gibt es äquivalente Formeln in $NNF$, $KNF$ und $DNF$.
+\end{satz}
+\begin{proof}~
+\begin{itemize}
+\item $NNF$: Wir gehen folgendermassen vor, um aus einer Formel eine äquivalente Formel in $NNF$ zu konstruieren.
+\begin{enumerate}
+\item[1.] Implikationen eliminieren durch Anwenden der Regel $F\to G\,\equiv\,\neg F\lor G$.
+\item[2.] Negationen, die nicht zu einem Literal gehören, werden sukzessive durch Anwenden der De Morganschen Regeln und der Regel über doppelte Negation eliminiert.
+\end{enumerate}
+\item $KNF/DNF$: Jede Formel in $NNF$ kann durch sukzessives Anwenden der Distributivgesetze wahlweise in $KNF$ oder $DNF$ gebracht werden. Da wir bereits wissen, dass jede Formel in $NNF$ gebracht werden kann, ist die Behauptung somit bewiesen.  \qedhere
+\end{itemize}
+\end{proof}
+
+\begin{bsp}
+Wir bringen die Formel
+\[
+(\neg p\to q)\to ((p\land p_1)\lor(p_2\land p_3))
+\]
+in $DNF$. Wir eliminieren zuerst alle Implikationen und doppelten Negationen:
+\begin{align*}
+(\neg p\to q)\textcolor{red}{\to} ((p\land p_1)\lor(p_2\land p_3))\,&\equiv\, \neg(\neg p\textcolor{red}{\to} q)\lor ((p\land p_1)\lor(p_2\land p_3))\\
+&\equiv\, \neg(\textcolor{red}{\neg\neg} p \lor q)\lor ((p\land p_1)\lor(p_2\land p_3))\\
+&\equiv \neg(p \lor q)\lor ((p\land p_1)\lor(p_2\land p_3)).
+\end{align*}
+Als Nächstes eliminieren wir alle Negationen, die nicht in Literalen vorkommen:
+\begin{align*}
+\textcolor{red}{\neg(p \lor q)}\lor ((p\land p_1)\lor(p_2\land p_3))\,&\equiv\,(\neg p\land\neg q)\lor ((p\land p_1)\lor(p_2\land p_3)).
+\end{align*}
+Die Formel, die wir erhalten haben, ist sowohl in $NNF$ als auch in $DNF$. Wir konstruieren nun noch eine zur Formel
+\[
+(p\land p_1)\lor(p_2\land p_3)
+\]
+äquivalente Formel in $KNF$. Wir wenden sukzessive die Distributivgesetze an:
+\begin{align*}
+(p\land p_1)\textcolor{red}{\lor}(p_2\land p_3)&\,\equiv\,\big( (p\land p_1)\lor p_2)\land (\textcolor{red}{(p\land p_1)\lor p_3})\\
+&\equiv\, (\textcolor{red}{(p\land p_1)\lor p_2})\land ((p\lor p_3)\land(p_1\lor p_3))\\
+&\equiv\, ((p\lor p_2)\land(p_1\lor p_2))\land ((p\lor p_3)\land(p_1\lor p_3)).
+\end{align*}
+\end{bsp}
+
+\begin{ueb}
+Bringen Sie die Formel
+\[
+(p_1\to p_3)\lor(p_1\land p_2)
+\]
+in $KNF$ und in $DNF$.
+\end{ueb}
+\begin{lsg}
+\ifthenelse{\boolean{ml}}{
+\begin{align*}
+(p_1\to p_3)\lor(p_1\land p_2)&\equiv \underbrace{(\neg p_1\lor p_3)\lor (p_1\land p_2)}_{DNF}\\
+&\equiv \underbrace{((\neg p_1\lor p_3)\lor p_1)\land ((\neg p_1\lor p_3)\lor p_2)}_{KNF}
+\end{align*}
+}{~
+\answerspace{7cm}}
+\end{lsg}
+
+\begin{rk}
+    Es ist auch möglich direkt aus einer Wahrheitstabelle einer gegebenen Formel $F$ eine äquivalente Formel in $KNF$ oder $DNF$ abzulesen. Für die $DNF$ geht man wie folgt vor: Für jede Zeile, die als Resultat $\true$ liefert, wird eine Konjunktion gebildet, die alle atomaren Teilformeln dieser Zeile verknüpft, dabei werden die Teilformeln, die in dieser Zeile (Belegung) falsch sind negiert. Schliesslich werden die so gewonnenen Konjunktionen als Disjunktion zusammengenommen. Eine zu $F$ äquivalente Formel in $KNF$ lässt sich dadurch konstruieren, dass man vorerst eine zu $\neg F$ äquivalente Formel in $DNF$ findet (wie oben beschrieben), diese Formel negiert und mit den Regeln von DeMorgan die Negationen in den Term schiebt.
+\end{rk}
+
+\begin{bsp}
+    Beispielhaft für dieses Vorgehens, bringen wir die Formel
+    \begin{align*}
+        p_0\to (q\land p_1)
+    \end{align*}
+    in $DNF$ und $KNF$. Zuerst erstellen wir eine Wahrheitstabelle von $p_0\to (q\land p_1)$ und markieren zu jeder relevanten Zeile das gewonnene Disjunktionsglied.
+    \begin{center}
+        \begin{tabular} {| c | c | c || c | c | c |}
+            \hline
+            $p_0$ & $q$ & $p_1$ & $q\land p_1$ & $p_0\to (q\land p_1)$ & \\
+            \hline
+            0 & 0 & 0 & 0 & 1 & \textcolor{red}{$\neg p_0 \land \neg q\land \neg p_1$}\\
+            0 & 0 & 1 & 0 & 1 & \textcolor{red}{$\neg p_0 \land \neg q\land      p_1$}\\
+            0 & 1 & 0 & 0 & 1 & \textcolor{red}{$\neg p_0 \land      q\land \neg p_1$}\\
+            0 & 1 & 1 & 1 & 1 & \textcolor{red}{$\neg p_0 \land      q\land      p_1$}\\
+            1 & 0 & 0 & 0 & 0 & \textcolor{red}{$-$}\\
+            1 & 0 & 1 & 0 & 0 & \textcolor{red}{$-$}\\
+            1 & 1 & 0 & 0 & 0 & \textcolor{red}{$-$}\\
+            1 & 1 & 1 & 1 & 1 & \textcolor{red}{$     p_0 \land      q\land      p_1$}\\
+            \hline
+        \end{tabular}
+        %
+    \end{center}
+    \smallskip
+    Zusammengefasst ergibt sich die folgende Formel in $DNF$:
+    \begin{align*}
+       (\neg p_0 \land \neg q\land \neg p_1)
+       \lor (\neg p_0 \land \neg q\land      p_1)
+       &\lor (\neg p_0 \land      q\land \neg p_1)
+       \lor (\neg p_0 \land      q\land      p_1)\\
+       &\lor      (p_0 \land      q\land      p_1).
+    \end{align*}
+    Zum Erstellen einer Formel in KNF, betrachten wir die Wahrheitstabelle der negierten Formel:
+    \begin{center}
+        \begin{tabular} {| c | c | c || c | c | c | c |}
+            \hline
+            $p_0$ & $q$ & $p_1$ & $q\land p_1$ & $p_0\to (q\land p_1)$ & $\neg(p_0\to (q\land p_1))$ & \\
+            \hline
+            0 & 0 & 0 & 0 & 1 & 0 & \textcolor{red}{$-$}\\
+            0 & 0 & 1 & 0 & 1 & 0 & \textcolor{red}{$-$}\\
+            0 & 1 & 0 & 0 & 1 & 0 & \textcolor{red}{$-$}\\
+            0 & 1 & 1 & 1 & 1 & 0 & \textcolor{red}{$-$}\\
+            1 & 0 & 0 & 0 & 0 & 1 & \textcolor{red}{$p_0 \land \neg q\land \neg p_1$}\\
+            1 & 0 & 1 & 0 & 0 & 1 & \textcolor{red}{$p_0 \land \neg q\land      p_1$}\\
+            1 & 1 & 0 & 0 & 0 & 1 & \textcolor{red}{$p_0 \land q\land \neg p_1$}\\
+            1 & 1 & 1 & 1 & 1 & 0 & \textcolor{red}{$-$}\\
+            \hline
+        \end{tabular}
+        %
+    \end{center}
+    \smallskip
+    Durch Anwendung der DeMorgan Regeln erhalten wir daraus eine passende Formel in $KNF$:
+    \begin{align*}
+        \neg&((p_0 \land \neg q\land \neg p_1)\lor
+              (p_0 \land \neg q\land p_1)\lor
+              (p_0 \land q\land \neg p_1)
+            )\\
+            &\equiv
+              \neg(p_0 \land \neg q\land \neg p_1)\land
+              \neg(p_0 \land \neg q\land p_1)\land
+              \neg(p_0 \land q\land \neg p_1)\\
+            &\equiv
+              (\neg p_0 \lor q\lor p_1)\land
+              (\neg p_0 \lor q\lor \neg p_1)\land
+              (\neg p_0 \lor \neg q\lor p_1)
+    \end{align*}
+\end{bsp}

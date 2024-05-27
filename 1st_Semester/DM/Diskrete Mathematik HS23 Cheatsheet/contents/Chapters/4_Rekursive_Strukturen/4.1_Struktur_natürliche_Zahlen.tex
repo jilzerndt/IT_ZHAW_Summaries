@@ -1,0 +1,176 @@
+
+
+\subsection{Die grundlegende Struktur der natürlichen Zahlen}
+
+\begin{concept}{Peano-Axiome}
+    Von dieser Anschauung geleitet, listen wir nun einige Grundtatsachen über die Struktur $\N$ auf. Diese Grundannahmen entsprechen den sogenannten \textit{Peano-Axiomen}.
+
+\begin{itemize}
+ \item Die Zahl $0$ ist eine natürliche Zahl. Jede natürliche Zahl $k$ hat genau einen Nachfolger $k+1$. Der Nachfolger jeder natürlichen Zahl ist wiederum eine natürliche Zahl.
+ \item Die Zahl $0$ ist die einzige natürliche Zahl, die kein Nachfolger ist:
+ \[
+ \forall n\in\N\,(\underbrace{\forall k\in\N\,(n\neq k+1)}_{n\text{ ist kein Nachfolger}}\Leftrightarrow n=0 ).
+ \]
+ \item Jede natürliche Zahl ist Nachfolger von höchstens einer natürlichen Zahl:
+ \[
+ \forall n,m\in\N\,(n+1=m+1\Rightarrow n=m).
+ \]
+\item \textit{Das Prinzip der (vollständigen) Induktion}: Es sei $A(n)$ eine Eigenschaft (ein Prädikat) von natürlichen Zahlen. Aus den beiden Voraussetzungen
+\begin{itemize}
+\item[] \textbf{Induktionsverankerung (I.V.):} $A(0)$
+\item[] \textbf{Induktionsschritt (I.S.):} $\forall n\in \N\,(A(n)\Rightarrow A(n+1))$,
+\end{itemize}
+folgt die Gültigkeit von $\forall n\in\N\,(A(n))$.
+\end{itemize}
+\end{concept}
+ 
+
+\begin{lemma}{Induktionsschritt}
+Der Induktionsschritt ist stets von der Form
+\[
+\forall n\in\N\,\big( \underbrace{A(n)}_{\text{Induktionsannahme}}\,\Rightarrow A(n+1)\,\big)
+\]
+für ein Prädikat $A$. Der Teil $A(n)$ wird dabei \textit{Induktionsannahme} genannt, weil er beim Nachweis von $A(n+1)$ als Annahme verwendet werden darf.
+\end{lemma}
+
+\begin{howto}{Vollständige Induktion}
+Das Prinzip der vollständigen Induktion ist ein mächtiges Mittel um viele verschiedene Behauptungen über natürliche Zahlen beweisen zu können. Will man eine Aussage von der Form
+\[
+\text{Jede natürliche Zahl }n\text{ erfüllt }E(n)
+\]
+für ein Prädikat $E$ beweisen, dann muss man, wenn man die Eigenschaft $E$ nicht für alle natürlichen Zahlen \textit{simultan} beweisen kann, im Prinzip unendlich viele Schritte bewältigen:
+\begin{enumerate}
+\item[1.] Schritt: Zeige $E(0)$.
+\item[2.] Schritt: Zeige $E(1)$.
+\item[3.] Schritt: Zeige $E(2)$.
+\item[$\vdots$]
+\end{enumerate}
+Die Stärke des Induktionsargumentes liegt nun  darin, all diese unendlich vielen Schritte auf zwei Schritte zu reduzieren:
+\begin{enumerate}
+\item[1.] Schritt (I.V.): Zeige $E(0)$.
+\item[2.] Schritt (I.S.): Zeige, dass die Eigenschaft $E$ unter Nachfolgern erhalten bleibt. Intuitiv könnte man sagen, dass die Eigenschaft $E$ von jeder natürlichen Zahl auf die nächste ``vererbt'' wird.
+\end{enumerate}
+\end{howto}
+
+
+\begin{example}
+Wir benützen ein Induktionsargument um zu beweisen, dass alle natürlichen Zahlen $n>1$ für beliebige reelle Zahlen $r>-1, r\neq 0$ die folgende Eigenschaft haben:
+\[
+ (1+r)^n>1+nr.
+\]
+\tcblower
+\begin{itemize}
+\item \textbf{Verankerung $(n=2)$:} Die Verankerung gilt, wegen
+\[
+(1+r)^2=1+2r+r^2>1+2r.
+\]
+\item \textbf{Schritt $(n\to n+1)$:} Wir nehmen nun an, dass die Aussage für $n$ gilt (I.A.) und zeigen sie für $n+1$:
+\begin{align*}
+(1+r)^{n+1}&=(1+r)^n(1+r)\\
+&\stackrel{I.A.}{>}(1+nr)(1+r)\\
+&=1+nr+r+\underbrace{nr^2}_{\text{positiv}}\\
+&>1+(n+1)r.\qedhere
+\end{align*}
+\end{itemize}
+\end{example}
+
+\begin{example}
+Für jede endliche Menge $X$ gilt
+\[
+|\mathcal{P}(X)|=2^{|X|}.
+\]
+\tcblower
+Wir führen den Beweis durch Induktion nach der Anzahl Elemente der Menge $X$.
+\begin{itemize}
+\item \textbf{Verankerung ($|X|=0$):} Die einzige Menge mit $0$ Elementen ist die leere Menge, es gilt also wie gewünscht
+\[
+|\mathcal{P}(X)|=|\mathcal{P}(\varnothing)|=|\{\varnothing\}|=1=2^0=2^{|X|}.
+\]
+\item \textbf{Schritt:} Es sei nun $X$ eine $n+1$ elementige Menge. Aufgrund der Induktionsannahme können wir davon ausgehen, dass für alle Mengen $Y$ mit $n$ Elementen die Gleichung
+\[
+|\mathcal{P}(Y)|=2^{|Y|}
+\]
+ erfüllt ist. Da $X\neq\varnothing$ gilt, können wir ein $x\in X$ auswählen. Wir unterteilen die Potenzmenge von $X$ in zwei disjunkte, gleich grosse Teile $A$ und $B$:
+ \begin{align*}
+ A=\{Y\subseteq X\mid x\notin Y \}\\
+ B=\{Y\subseteq X\mid x\in Y \}.
+ \end{align*}
+Es gilt:
+\begin{align*}
+|\mathcal{P}(X)|&=|A\cup B|=|A|+|B|\\
+&=|A|+|A|=2|A|=2|\mathcal{P}(X\setminus\{x\})|\\&\stackrel{I.A.}{=}2\cdot2^n=2^{n+1}.\qedhere
+\end{align*}
+\end{itemize}
+\end{example}
+
+\begin{lemma}{Vollständige Induktion mit Mengen}
+Für jede Menge $X$ von natürlichen Zahlen gilt: Wenn $X$ die Bedingungen
+\begin{itemize}
+\item Induktionsverankerung: $0\in X$
+\item Induktionsschritt: $\forall n\,(n\in X\Rightarrow n+1\in X)$
+\end{itemize}
+erfüllt, dann ist bereits $X=\N$.
+\end{lemma}
+\begin{proof}{Induktion Prädikate}
+Ist $E(n)$ das Prädikat $n\in X$, dann folgt mit vollständiger Induktion sofort $\forall n\, (E(n))$ und somit $\N=X$.
+\end{proof}
+
+\begin{definition}{Grösser/Kleiner als Ordnung}
+Die Ordnung $\leq$ auf den natürlichen Zahlen ist durch
+\[
+x\leq y:\Leftrightarrow \exists k\in\N\,(x+k=y)
+\]
+gegeben. Wir schreiben weiter
+\[
+x<y:\Leftrightarrow x\leq y\land x\neq y.
+\]
+\end{definition}
+
+
+\begin{lemma}{Minimumprinzip}
+Jede nichtleere Menge von natürlichen Zahlen hat ein minimales Element.
+\end{lemma}
+\begin{proof}{Minimumprinzip}
+Wir zeigen, dass jede Menge von natürlichen Zahlen, die kein minimales Element enthält, leer ist. Dazu wählen wir eine beliebige Menge $X\subseteq\N$ ohne minimales Element. Um zu zeigen, dass die Menge $X$ leer ist, genügt es zu zeigen, dass die Menge
+\[
+Y=\{n\in\N\mid \forall x\in X\,(n<x) \}
+\]
+aller natürlichen Zahlen, die ``unterhalb'' von $X$ liegen, bereits alle natürlichen Zahlen enthält. Wir zeigen $Y=\N$ mithilfe von Satz~\ref{satz:mengeninduktion}.
+\begin{itemize}
+\item \textbf{Verankerung:} Es gilt $0\in Y$, weil sonst $0$ das minimale Element von $X$ wäre, was unserer Wahl von $X$ widerspricht.
+\item \textbf{Induktionsschritt:} Ist $n\in Y$, dann gilt für alle Elemente $x$ von $X$ die Ungleichung $n<x$. Es gilt daher $n+1\leq x$ für alle Elemente $x$ von $X$. Da $n+1$ kein minimales Element von $X$ sein kann, gilt daher $n+1\in Y$.
+\end{itemize}
+Aus dem Satz der Mengeninduktion folgt nun, dass $Y=\N$ und somit wie gewünscht $X=\varnothing$ ist.
+\end{proof}
+
+\begin{lemma}{Descending Chains}
+Es gibt keine unendlich absteigende Folge
+\[
+a_0>a_1>\dots >a_n>a_{n+1}>\dots
+\]
+von natürlichen Zahlen.
+\end{lemma}
+
+\begin{howto}{Der kleinste Verbrecher}
+Die Beweismethode des ``kleinsten Verbrechers'' geht wie folgt: Will man zeigen, dass alle natürlichen Zahlen eine Eigenschaft $E$ haben, dann geht man davon aus, dass wenn dies nicht der Fall wäre, es eine kleinste natürliche Zahl $n_0$ (den kleinsten Verbrecher) gäbe, die \textit{nicht} die Eigenschaft $E$ hat. Führt man diese Annahme zu einem Widerspruch, so hat man die ursprüngliche Behauptung bewiesen. Obwohl die Methode des ``kleinsten Verbrechers'' also nichts anderes als die Kombination eines Widerspruchsargumentes mit Satz~\ref{satz:minimumprinzip} ist, handelt es sich doch um eine sehr ``anwenderfreundliche'' und einprägsame Beschreibung dieser Argumentationsfolge.
+\end{howto}
+
+\begin{example}
+	Beweisen Sie mit der Methode des ``kleinsten Verbrechers''.
+	Jede natürliche Zahl von der Form ($n^2+n$) ist gerade.
+ \tcblower
+ Wir nehmen an, dass es ungerade natürliche Zahlen von der Form $n^2+n$ gibt. Die Zahl $n^2+n$ sei die kleinste solche Zahl (der kleinste Verbrecher). Weil $n$ nicht Null sein kann (sonst wäre $n^2+n$ gerade), muss es ein $k\in \N $ mit $n=k+1$ geben. Weil $k<n$ gilt, muss $k^2+k$ aber gerade sein. Daraus folgt
+		\begin{align*}
+			n^2+n &= (k+1)^2+(k+1)= k^2 + 2k + 1 + k + 1\\
+			&= \underbrace{k^2+k}_{gerade}+\underbrace{2k+2}_{gerade}
+		\end{align*}
+		und somit, dass $n^2+n$ gerade ist (im Widerspruch zur Annahme).
+\end{example}
+
+\begin{lemma}{Rechenregeln für Partialsummen}
+ Sind $(a_i)_{i\in\N}$ und $(a_i)_{i\in\N}$ beliebige Folgen und ist $c\in\N$, dann gilt für jedes $n\in\N$:
+\[
+ \sum_{i=1}^n(ca_i+cb_i)=c\big(\sum_{i=1}^na_i+\sum_{i=1}^nb_i\big)
+\]
+\end{lemma}
+

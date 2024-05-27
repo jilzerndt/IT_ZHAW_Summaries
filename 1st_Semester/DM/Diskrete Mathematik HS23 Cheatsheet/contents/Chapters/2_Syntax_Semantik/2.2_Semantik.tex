@@ -1,0 +1,257 @@
+
+
+\subsection{Semantik}
+\begin{comment}
+Wir wollen jeder aussagenlogischen Formel nun eine Bedeutung zuordnen. Am bequemsten wäre es, wenn wir jeder Formel
+direkt einen der Wahrheitswert \textit{wahr} oder \textit{falsch} zuordnen könnten. Bei
+einigen Formeln gelingt dies tatsächlich ohne
+Probleme; $\neg p\lor p$ beispielsweise ist immer wahr, egal ob $p$ selbst wahr oder falsch ist. Für andere Formeln ist das aber
+weniger klar; der Wahrheitswert der Formel $p_1\lor p_4$ hängt von den Wahrheitswerten der Formeln $p_1$ und $p_4$ ab. Wir haben also folgendes Problem:
+\begin{itemize}
+\item Bevor wir die Wahrheitswerte von komplizierten Formeln bestimmen/definieren können, müssen wir die Wahrheitswerte der atomaren Formeln schon bestimmt haben.
+\item Die Zuordnung von Wahrheitswerten zu atomaren Formeln ist völlig willkürlich; es gibt keinen Grund, dass beispielsweise die Formel $p_1$ ``weniger wahr'' als die Formel $p_4$ sein soll.
+\end{itemize}
+
+
+Wir können einer aussagenlogischen Formel nur einen Wahrheitswert
+\textit{bezüglich} einer Belegung der atomaren Formeln mit Wahrheitswerten geben.
+Zum Beispiel, wenn wir die Variablen $p_1$ und $p_4$ beide mit dem Wahrheitswert $\false$
+belegen, dann hat die Formel $p_1\lor p_4$ \textit{unter dieser Belegung} ebenfalls den
+Wahrheitswert $\false$.
+\end{comment}
+
+\begin{definition}{Belegung}
+Eine \textit{Belegung} ist eine Zuordnung von Variablen zu Wahrheitswerten, d.h.
+eine  Funktion $B:\mathbb{V}\to \{\true,\false\}$.
+\end{definition}
+\begin{comment}
+Nun werden wir sehen, wie man ausgehend von einer Belegung jeder aussagenlogischen Formel einen Wahrheitswert zuordnen
+kann. Bevor wir uns der formalen Definition widmen, skizzieren wir unser Vorgehen exemplarisch an der Formel $(p\lor q)\land
+\neg p$. Nehmen wir an, dass $B$ eine Belegung mit $B(p)=\true$ und $B(q)=\false$ sei.
+Wir wollen
+nun den Wahrheitswert von $(p\lor q)\land \neg p$ sinnvoll definieren. Wegen $B(p)=\true$
+sollte die Formel $\neg p$ den Wahrheitswert $\false$ haben, und die Formel $p\lor q$ den
+Wert
+$\true$ erhalten. Zusammenfassend sehen wir, dass die Formel $\underbrace{(p\lor
+q)}_{X}\land \underbrace{\neg p}_{Y}$ von der Form $X\land Y$ ist wobei $X$ den
+Wahrheitswert $\true$ und $Y$ den Wahrheitswert $\false$ hat. Es ist daher sinnvoll den
+Wahrheitswert von $(p\lor q)\land \neg p$ auf $\false$ zu setzen.
+Nun zur formalen Definition
+\end{comment}
+
+\begin{definition}{Formale Definition Belegung}
+Es sei eine Belegung $B$ gegeben. Die Funktion $\widehat{B}$ ist die Funktion, die jeder
+aussagenlogischen Formel ihren Wahrheitswert bezüglich der Belegung $B$ zuordnet, d.h.
+die Funktion $\widehat{B}:\mathbb{F}\to\{\false,\true\}$ ist gegeben durch:
+\begin{itemize}
+\item $\widehat{B}(\bot) =\false$ und $\widehat{B}(\top)=\true$.
+\item Für beliebige Variablen $v$ gilt $\widehat{B}(v)=B(v)$.
+\item Für beliebige Formeln $F$ und $G$ gilt:
+\begin{align}
+\widehat{B}(F\land G)&=\begin{cases}
+\true &\text{falls }\widehat{B}(F)=\true\text{ und }\widehat{B}(G)=\true\\
+\false&\text{sonst.}
+\end{cases}\\
+\widehat{B}(F\lor G)&=\begin{cases}
+\true&\text{falls }\widehat{B}(F)=\true\text{ oder }\widehat{B}(G)=\true\\
+\false&\text{sonst.}
+\end{cases}\\
+\widehat{B}(\neg F)&=\begin{cases}
+\true&\text{falls }\widehat{B}(F)=\false \\
+\false&\text{sonst.}
+\end{cases}\\
+\widehat{B}(F\to G)&=\widehat{B}(\neg F\lor G).
+\end{align}
+\end{itemize}
+\end{definition}
+
+\subsubsection*{Wahrheitstabellen}
+\begin{comment}
+Um den Wahrheitswert einer Formel $F$ bezüglich einer Belegung $B$ zu bestimmen, gen\"ugt es die Werte $B(x)$ für alle Variablen $x$, die in $F$ vorkommen zu kennen. Da eine Formel immer nur eine endliche Anzahl an Variablen enthält, erlaubt uns dieser Umstand für jede Formel eine Tabelle aufstellen, die den Wahrheitsgehalt dieser Formel bezüglich jeder möglichen Belegung darstellt. Wir brauchen dazu den Begriff einer Teilformel.
+\end{comment}
+
+\begin{definition}{Teilformel}
+    Der Begriff einer \textit{Teilformel} einer Formel $F$ ist wie folgt gegeben:
+    \begin{itemize}
+        \item Wenn $F$ eine atomare Formel ist, dann ist besitzt $F$ nur die Teilformel $F$ (also ``sich selbst'').
+        \item Wenn $F$ von der Form $A\lor B$, $A\land B$ oder $A\to B$ ist, dann besitzt $F$ als Teilformeln, neben $F$ selbst, alle Teilformeln von $A$ und $B$.
+        \item Wenn $F$ von der Form $\neg A$ ist, dann besitzt $F$ als Teilformeln, neben $F$ selbst, alle Teilformeln von $A$.
+    \end{itemize}
+    Eine \textit{echte} Teilformel einer Formel $F$ ist eine von $F$ verschiedene Teilformel von $F$.
+\end{definition}
+
+\begin{example}
+    Die Teilformeln der Formel $r\to (s\land p)$ sind $r,s,p,s\land p$ sowie $r\to (s\land p)$.
+\end{example}
+
+\begin{definition}{Wahrheitstabelle}
+    In einer \textit{Wahrheitstabelle einer Formel} $F$ entspricht jede Spalte einer Teilformel von $F$ und jede Zeile einer Belegung der in $F$ vorkommenden Variablen. Es gelten folgende Bedingungen:
+    \begin{itemize}
+        \item In der Spalte einer Formel steht in jeder der folgenden Zeilen der Wahrheitswert dieser Formel unter der der Zeile entsprechenden Belegung.
+        \item Steht in einer Spalte eine Formel, dann kommen alle echten Teilformeln dieser Formel in Spalten weiter links vor.
+        \item Der letzte Eintrag der ersten Zeile ist die Formel $F$.
+    \end{itemize}
+\end{definition}
+
+
+
+\subsubsection*{Semantische Eigenschaften}
+
+\begin{definition}{Wahrheitswert aussagenlogischer Formeln}
+    Eine aussagenlogische Formel $A$ heisst
+    \begin{itemize}
+        \item \textit{Gültig} oder \textit{wahr} unter einer Belegung $B$, falls $\widehat{B}(A)=\true$.
+        \item \textit{Allgemeingültig}, wenn sie unter jeder Belegung gültig ist.
+        \item \textit{Widerlegbar}, wenn es mindestens eine Belegung gibt, unter der $A$ nicht gültig ist.
+        \item \textit{Erfüllbar}, wenn es mindestens eine Belegung gibt, unter der $A$ gültig ist.
+        \item \textit{Unerfüllbar}, wenn $A$ nicht erfüllbar ist.
+    \end{itemize}
+\end{definition}
+
+
+\begin{comment}
+\begin{remark}
+    Eines der grössten ungelösten Probleme der (theoretischen) Informatik ist die Frage,
+    ob es einen ``effizienten'' Algorithmus gibt, der von jeder aussagenlogischen Formel
+    entscheidet, ob sie erfüllbar ist oder nicht. Diese Problemstellung wird mit $\mathsf{SAT}$ (von
+    engl. \textbf{sat}isfiability) bezeichnet. Die Relevanz dieser Frage kommt daher, dass sich das
+    $\mathsf{P}\stackrel{?}{=}\mathsf{NP}$ Problem (die Frage, ob zwei der wichtigsten Komplexitätsklassen übereinstimmen) darauf reduzieren lässt.
+\end{remark}
+\end{comment}
+
+
+
+\begin{definition}{Konsequenz und Äquivalenz}
+    Es seien $F$ und $G$ beliebige aussagenlogische Formeln. Wir sagen
+    \begin{itemize}
+        \item $F$ \textit{ist eine Konsequenz von }$G$, falls $F$ unter jeder Belegung wahr ist unter der $G$ wahr ist.
+        \item $F$ und $G$ sind \textit{logisch äquivalent}, wenn $G$ und $F$ unter jeder Belegung denselben Wahrheitswert annehmen.
+    \end{itemize}
+    Sind $F$ und $G$ äquivalente Formeln, dann schreiben wir $F\equiv G$.
+\end{definition}
+
+\begin{remark}
+    Zwei aussagenlogische Formeln sind genau dann äquivalent, wenn beide Formeln von der jeweils anderen eine Konsequenz sind.
+\end{remark}
+
+\begin{comment}
+Wir können nun, ähnlich wie wir dies im ersten Kapitel informell für die Prädikatenlogik getan haben (als Konsequenz davon!), einige grundlegende logische Äquivalenzen nachweisen.
+\end{comment}
+
+
+
+\begin{lemma}{Regeln der Aussagenlogik}
+    Sind $F,G$ und $H$ beliebige aussagenlogische Formeln, dann gelten folgende Äquivalenzen:
+    \begin{itemize}
+        \item Gesetz der doppelten Negation: $\neg\neg F\,\equiv\, F$
+        \item Absorption: $F\land F\,\equiv\, F$ und $F\lor F\,\equiv\, F$
+        \item Kommutativität: $F\land G\,\equiv\,G\land F$ und $F\lor G\,\equiv\, G\lor F$
+        \item Assoziativität: $F\land(G\land H)\,\equiv\,(F\land G)\land H$
+        \item Assoziativität: $F\lor(G\lor H)\,\equiv\,(F\lor G)\lor H$
+        \item Distributivität: $F\land(G\lor H)\,\equiv\,(F\land G)\lor (F\land H)$
+        \item Distributivität: $F\lor(G\land H)\,\equiv\,(F\lor G)\land (F\lor H)$
+        \item De Morgan: $\neg (F\land G)\,\equiv\,\neg F\lor\neg G$
+        \item De Morgan: $\neg (F\lor G)\,\equiv\,\neg F\land \neg G$
+        \item Kontraposition: $F\to G\,\equiv\neg G\to\neg F$
+    \end{itemize}
+\end{lemma}
+
+\begin{howto}{Äquivalenz zeigen}
+    Wir müssen für jede der behaupteten Äquivalenzen nachweisen, dass die genannten Formeln unter jeder Belegung denselben Wahrheitswert haben. Wenn wir also von einer beliebigen Belegung $B$ ausgehen, dann müssen wir, um eine Äquivalenz von der Form $X\equiv Y$ nachzuweisen, bloss zeigen, dass $\widehat{B}(X)=\widehat{B}(Y)$ gilt.
+    \begin{itemize}
+        \item Doppelte Negation folgt aus $\fnot(\fnot(x))=x$:
+        \begin{align*}
+        \widehat{B}(\neg\neg F)=\fnot(\widehat{B}(\neg F))=\fnot(\fnot(\widehat{B}(F))=\widehat{B}(F).
+        \end{align*}
+        \item Absorbtion folgt sofort aus $\fand(x,x)=\for(x,x) =x$.
+        \item Kommutativität folgt sofort aus $\for(x,y)=\for(y,x)$ und $\fand(x,y)=\fand(y,x)$.
+        \item Für Assoziativität, Distributivität und DeMorgan siehe Fallunterscheidung an der Tafel.
+    \end{itemize}
+\end{howto}
+
+\begin{comment}
+Das nächste Theorem schlägt eine wichtige Brücke zwischen Syntax und Semantik der Aussagenlogik, indem es die logische Konsequenz (Semantik) in Beziehung zur Implikation
+(Syntax) setzt. Man kann das Theorem dahingehend interpretieren, dass die Implikation~$\to$ eine adäquate Formalisierung des Folgerungsbegriffes $\Rightarrow$ vom ersten Kapitel darstellt.
+\end{comment}
+
+\begin{theorem}{Folgerungstheorem}
+    Sind $F$ und $G$ aussagenlogische Formeln, dann gelten:
+    \begin{enumerate}
+        \item[i)] $G$ ist genau dann eine Konsequenz von $F$, wenn die Formel $F\to G$ allgemeingültig ist.
+        \item[ii)] $F$ und $G$ sind genau dann logisch äquivalent, wenn die Formel $F\to G\land G\to F$ allgemeingültig ist.
+    \end{enumerate}
+\end{theorem}
+
+\begin{howto}{Allgemeingültigkeit zeigen}\\
+    Wir behandeln zuerst die Behauptung $i)$ des Folgerungstheorems.
+    \begin{align*}
+    F\to G\text{ allgemeingültig } &\Leftrightarrow \forall B(\widehat{B}(F\to G) =\true)\\
+    &\Leftrightarrow \forall B(\widehat{B}(\neg F\lor G) =\true)\\
+    &\Leftrightarrow \forall B((\neg \widehat{B}(F)=\true) \lor (\widehat{B}(G) =\true))\\
+    &\Leftrightarrow \forall B(\widehat{B}(F)=\true\Rightarrow \widehat{B}(G)=\true)\\
+    &\Leftrightarrow G\text{ ist Konsequenz von }F
+    \end{align*}
+    Die Behauptung $ii)$ folgt direkt aus dem ersten Teil.
+\end{howto}
+
+%&\Leftrightarrow \forall B(\neg \widehat{B}(F)=\true\underbrace{\lor}_{\text{``oder'' der Prädikatenlogik}} \widehat{B}(G) =\true)\\
+
+
+
+\subsubsection*{Normalformen}
+\begin{comment}
+\begin{remark}
+Ausdrücke von der Form $F_1\lor\dots\lor F_n$ oder $F_1\land\dots\land F_n$ stehen stellvertretend für alle möglichen Formeln die durch Klammersetzung aus ihnen gebildet werden können. Für den Wahrheitswert der Formeln ist die genaue Klammerung, wegen der Assoziativität unwichtig.
+\end{remark}
+\end{comment}
+
+\begin{definition}{Literale}
+\textit{Literale} sind atomare Formeln oder negierte atomare Formeln.
+\end{definition}
+
+\begin{concept}{Normalformen}
+Eine aussagenlogische Formel ist:
+\begin{itemize}
+\item In \textit{Negationsnormalform}(NNF), wenn alle Negationen in Literalen vorkommen und wenn keine Implikationen ($\to$) vorkommen.
+\item In \textit{disjunktiver Normalform}(DNF), wenn sie von der Form
+\[
+(L_{1,1}\land L_{1,2}\land\dots)\lor(L_{2,1}\land L_{2,2}\land\dots)\lor(L_{3,1}\land L_{3,2}\land\dots)\dots
+\]
+mit Literalen $L_{i,j}$ ist.
+\item In \textit{konjunktiver Normalform}(KNF), wenn sie von der Form
+\[
+(L_{1,1}\lor L_{1,2}\lor\dots)\land(L_{2,1}\lor L_{2,2}\lor\dots)\land(L_{3,1}\lor L_{3,2}\lor\dots)\dots
+\]
+mit Literalen $L_{i,j}$ ist.
+\end{itemize}
+\end{concept}
+
+\begin{lemma}{Äquivalente Normalformen}
+Für jede aussagenlogische Formel gibt es äquivalente Formeln in $NNF$, $KNF$ und $DNF$.
+\end{lemma}
+\begin{howto}{Normalformen konstruieren}
+\begin{itemize}
+\item $NNF$: Wir gehen folgendermassen vor, um aus einer Formel eine äquivalente Formel in $NNF$ zu konstruieren.
+\begin{enumerate}
+\item[1.] Implikationen eliminieren durch Anwenden der Regel $F\to G\,\equiv\,\neg F\lor G$.
+\item[2.] Negationen, die nicht zu einem Literal gehören, werden sukzessive durch Anwenden der De Morganschen Regeln und der Regel über doppelte Negation eliminiert.
+\end{enumerate}
+\item $KNF/DNF$: Jede Formel in $NNF$ kann durch sukzessives Anwenden der Distributivgesetze wahlweise in $KNF$ oder $DNF$ gebracht werden. Da wir bereits wissen, dass jede Formel in $NNF$ gebracht werden kann, ist die Behauptung somit bewiesen.  
+\end{itemize}
+\end{howto}
+
+\begin{howto}{Normalformen aus Wahrheitstabellen}\\
+    Es ist auch möglich direkt aus einer Wahrheitstabelle einer gegebenen Formel $F$ eine äquivalente Formel in $KNF$ oder $DNF$ abzulesen. 
+    \begin{itemize}
+        \item $DNF$:  Für jede Zeile, die als Resultat $\true$ liefert, wird eine Konjunktion gebildet, die alle atomaren Teilformeln dieser Zeile verknüpft, dabei werden die Teilformeln, die in dieser Zeile (Belegung) falsch sind negiert. Schliesslich werden die so gewonnenen Konjunktionen als Disjunktion zusammengenommen.
+        \item $KNF$: lässt sich dadurch konstruieren, dass man vorerst eine zu $\neg F$ äquivalente Formel in $DNF$ findet (wie oben beschrieben), diese Formel negiert und mit den Regeln von DeMorgan die Negationen in den Term schiebt.
+    \end{itemize}
+\end{howto}
+
+
+
+
+
+
+
+

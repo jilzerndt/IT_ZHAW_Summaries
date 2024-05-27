@@ -1,0 +1,225 @@
+\section{Rekursive Definitionen}
+
+%\begin{definition}
+%Eine Menge $X\subseteq \N$ bezeichnen wir als initiales Segment von $\N$ falls mit jeder Nachfolgerzahl\footnote{Eine Nachfolgerzahl ist eine natürliche Zahl die ungleich Null ist} $N(n)=n+1$ welche in $X$ liegt auch deren Vorgänger $n$ ein Element von $X$ ist. Etwas formaler aufgeschrieben ist also $X\subseteq \N$ eine initiale Teilmenge von $\N$ falls die Eigenschaft
+%\[
+% \forall n\in\N\,\big( n+1\in X\Rightarrow n\in X \big)
+%\]
+%auf $X$ zutrifft.
+%\end{definition}
+
+%\begin{example}
+%Alle Mengen von der Form $\N_{<k}$ mit einer natürlichen Zahl $k$ sind initiale Teilmengen von $\N$. Die %Menge $\N$ selbst ist ebenfalls eine initiale Teilmenge von $\N$.
+%\end{example}
+
+%\begin{remark}
+% Jede nichtleere initiale Teilmenge von $\N$ enthält das Element $0$.
+%\end{remark}
+%\begin{proof}
+ %Sei $M$ folgende Teilmenge von $\N$:
+ %\[
+ % M:=\{n\in\N\mid \text{es gibt ein initiales Segment }S\text{ mit }0\notin S\text{ und } n\in S\}
+% \]
+%Wir wollen zeigen, dass $M$ keine Elemente besitzt wir tun dies in dem wir zeigen, dass die Menge $X:=\N\backslash M$ alle natürlichen Zahlen enthält. Wir benützen das Prinzip der vollständigen Induktion. Wäre $0$ nicht in $X$, so wäre $0$ in $M$ dann gäbe es aber ein initiales Segment $S$ mit gleichzeitig $0\in S$ und $0\notin S$, ein Widerspruch. Also ist $0\in X$. sei weiter $n\in X$ dann ist $n\notin M$, es gibt also kein initiales Segment $S$ mit $n\in S$ und $0\notin S$. Gäbe es nun ein initiales Segment $S$ mit $0\notin S$ und $n+1\in S$, dann müsste (da $S$ initial ist) auch $n\in S$ sein woraus aber wieder $n\in M$ folgen würde. Also kann solch ein $S$ nicht existieren und folglich ist $n+1\in X$. Insgesamt habe wir also $X=\N$. Somit kann ein Initiales Segment welches die Null nicht enthält überhaupt keine Elemente enthalten.
+%\end{proof}
+
+Rekursive Definitionen bezeichnen die mathematisch einwandfreie Art, ein Objekt durch Bezugnahme (Selbstreferenz) auf das zu definierende Objekt selbst zu definieren.
+
+\begin{example}
+Ein Palindrom ist ein Wort, das rückwärts und vorwärts gelesen gleich lautet. Beispiele von Palindromen sind $yxy,acaca,arbbra,b,a,\dots$. Obwohl es uns anschaulich klar ist, welche Wörter Palindrome sind und welche nicht, ist unsere Beschreibung keine mathematisch präzise Definition. Dies wird insbesondere dann offensichtlich, wenn wir ein Programm schreiben müssen (ohne ``String-umkehrende'' Operatoren benützen zu dürfen), das von einem gegebenen Wort (String) entscheidet ob dieses ein Palindrom ist oder nicht. Wie können wir also Palindrome definieren (eindeutig beschreiben), ohne auf unsere Vorstellung von rückwärts und vorwärts lesen angewiesen zu sein? Durch Rekursion:\\
+Ein Wort $w$ ist ein Palindrom, wenn mindestens eine der beiden folgenden Bedingungen erfüllt ist:
+\begin{itemize}
+\item Das Wort $w$ besteht aus einem oder gar keinem Buchstaben (Länge von $w$ $<2$).
+\item Es gibt einen Buchstaben (Zeichen, Char) $x$ und ein $\underbrace{Palindrom}_{Selbstreferenz}$ $u$ so, dass $w=xux$ gilt.
+\end{itemize}
+Obwohl diese Definition, durch die in ihr vorhandenen Selbstreferenz, ein wenig ``obskur'' erscheinen mag, können wir sie direkt in ein Computerprogramm übersetzen.\\
+In Java:
+
+\lstset{language=Java}
+\begin{framed}
+\begin{lstlisting}
+ boolean palindrome(String w){
+     if (w.length() < 2) return true;
+     int last = w.length()-1;
+     char a = w.charAt(0);
+     char b = w.charAt(last);
+     if (a == b) return palindrome(w.substring(1, last-1));
+     return false;
+ }
+\end{lstlisting}
+\end{framed}
+\end{example}
+
+\begin{theorem}[Rekursive Definitionen]\label{thrm:rekursive definitionen}
+ Ist $M$ eine Menge und $G:M\times\N\rightarrow M$ sowie $c\in M$, dann gibt es eine eindeutig bestimmte Funktion $F:\N\rightarrow M$, welche die Gleichungen (Rekursionsgleichungen)
+\begin{align*}
+ F(0)&=c\\
+F(k+1)&=G(\underbrace{F(k)}_{Selbstbezug},k)
+\end{align*}
+erfüllt.
+\end{theorem}
+\begin{proof}[Beweisidee]
+Die Behauptung besteht aus einer Eindeutigkeitsaussage und einer Existenzaussage:
+\begin{itemize}
+\item Die Funktion $F:\N\to M$ ist durch die Rekursionsgleichungen eindeutig bestimmt. Das heisst, dass es keine andere  Funktion gibt, die den Rekursionsgleichungen von $F$ genügt.
+\item Es gibt überhaupt eine Funktion, die den Rekursionsgleichungen genügt.
+\end{itemize}
+Wir beweisen zuerst die Eindeutigkeitsbedingung. Wir nehmen an, dass $F$ und $H$ zwei Funktionen sind, die beide die oben genannten Rekursionsgleichungen erfüllen und zeigen, dass daraus $F=H$ folgt. Es genügt mit Induktion zu zeigen, dass für jede natürliche Zahl $n\in \N$ die Gleichung $F(n)=H(n)$ gilt (weil dann $H=F$ gilt).
+\begin{itemize}
+\item Verankerung ($n=0$): Aufgrund von
+\[
+F(0)=c=H(0)
+\]
+ist die Induktionsverankerung erfüllt.
+\item Schritt ($n\to n+1$): Wir nehmen an, dass $F(n)=H(n)$ gilt und müssen $F(n+1)=H(n+1)$ beweisen. Dies folgt sofort aus
+\[
+F(n+1)=G(F(n),n)\stackrel{IA}{=}G(H(n),n)=H(n+1).
+\]
+\end{itemize}
+Nun kommen wir zur Existenzaussage. Anstelle eines formalen Beweises, wollen wir uns an dieser Stelle bloss anschaulich davon überzeugen, dass eine Funktion $F$ immer existiert. Wir geben einen iterativen Algorithmus (in Pseudocode) an, der die gesuchte Funktion realisiert.
+\begin{framed}
+\begin{lstlisting}[language=Java]
+input(n)
+lst=[c] // Eine Liste mit einzigem Eintrag c
+for i = 0..(n-1) do
+    x = G(lst[i],i)
+    lst.add(x) // Den aktuellen Funktionswert zur Liste
+               // (aller Funktionswerte) hinzufuegen.
+return lst[n]
+\end{lstlisting}
+\end{framed}\qedhere
+\end{proof}
+% \begin{remark}
+%  Der folgende Beweis ist ziemlich abstrakt, seine Darlegung richtet sich deshalb vor allem an (sehr) interessierte Student(inn)en.
+% \end{remark}
+% \begin{proof}[Beweis]
+%Wir müssen einerseits beweisen, dass bei gegebenem $g:\N\rightarrow M$ und $c\in M$ überhaupt eine Funktion $f:\N\rightarrow M$ existiert welche die Rekursionsgleichungen erfüllt und dann noch zeigen, dass diese eindeutig ist. Wir Beweisen zuerst die \textbf{Eindeutigkeit}. Angenommen, dass es zwei Funktionen $h,f:\N\rightarrow M$ gibt die beide die Rekursionsgleichungen erfüllen, müssen wir zeigen, dass für alle $n\in\N$ die Gleichung $f(n)=h(n)$ gilt. Wir machen einen Induktionsbeweis nach $n$.
+%\begin{enumerate}
+%\item \textit{Induktionsverankerung:} Es gilt sowohl $f(0)=c$ als auch $h(0)=c$ und somit also $f(0)=h(0)$.
+%\item \textit{Induktionsschritt:} Wir können $f(n)=h(n)$ (I.A.) annehmen und müssen $f(n+1)=h(n+1)$ beweisen. Wir betrachten dazu folgende Gleichungen:
+%\[
+%f(n+1)=g(f(n))\stackrel{I.A.}{=}g(h(n))=h(n+1).
+%\]
+%\end{enumerate}
+%Nun zur \textbf{Existenz} der geforderten Funktion $f$. Seien $g:\N\rightarrow M$ und $c\in M$ gegeben. Für diesen Beweis wollen wir eine Funktion $ h:X\rightarrow M$ als ``gut'' bezeichnen falls $X$ ein initiales Segment von $\N$ ist und für jedes Element $k$ von $X$ die Gleichungen
+% \begin{align}\label{glg}
+%  h(k)=\begin{cases}
+% g(h(n))&\text{ falls }k= n+1 \text{ ein Nachfolger ist}\\
+%   c &\text{ falls }k=0.
+%  \end{cases}
+% \end{align}
+% Als nächstes wollen wir mit Induktion zeigen, dass jede natürliche Zahl im Definitionsbereich einer ``guten'' Funktion liegt. Dazu sei $G$ die Menge aller solchen natürlichen Zahlen. Die Zahl $0$ ist in $G$ da die Funktion $h:\{0\}\rightarrow M$ mit $h(0)=c$ eine ``gute'' Funktion ist. Wir nehmen nun an $k$ sei in $G$ und müssen zeigen, dass dann auch $ k+1 \in G$ ist. Da $k$ ein Element von $G$ ist, gibt es also ein initiales Segment $X$ von $\N$ mit $k\in X$ und eine ``gute'' Funktion $h:X\rightarrow M$. Wir erweitern nun folgendermassen $h$ zu einer neuen Funktion $\tilde{h}:X\cup\{ k+1 \}\rightarrow M$:
+% \begin{align*}
+%  \tilde{h}(n)=\begin{cases}
+%                h(n)&\text{ falls }n\in X\\
+% 	       g(h(k))&\text{ falls }n= k+1 .
+%               \end{cases}
+% \end{align*}
+% Sei nun $n\in X$ beliebig, dann gilt
+% \begin{enumerate}
+% \item \textit{Fall} $n\neq 0$: Dann ist $n=m+1$ für ein $m\in X$ und somit $\tilde{h}(n)=h(n)=g(h(m))=g(\tilde{h}(m))$.
+%  \item \textit{Fall} $n=0$: Dann ist $ \tilde{h}(n)=\tilde{h}(0)=h(0)=c$.
+% \end{enumerate}
+% Also erfüllt $\tilde{h}$ die Gleichungen (\ref{glg}) für alle Elemente von $X$. Für die natürliche Zahl $ k+1 $ werden die Gleichungen per Definition erfüllt und da $X\cup\{ k+1 \}$ ein initiales Segment von $\N$ ist folgt, dass $ k+1 \in G$  ist. Also ist mit jedem $k$ auch $ k+1 $ im Definitionsbereich einer ``guten'' Funktion. Mit dem Prinzip der vollständigen Induktion können wir also schliessen, dass alle natürlichen Zahlen diese Eigenschaft haben.
+%
+%Unser nächster Schritt besteht darin, zu zeigen, dass je zwei ``gute'' Funktionen immer kompatibel\footnote{ Zwei Funktionen $f_1,f_2$ heissen kompatibel, falls für alle $x\in dom(f_1)\cap dom(f_2)$ die Gleichung $f_1(x)=f_2(x)$ erfüllt ist. Dies ist genau dann der Fall wenn $f_1\cup f_2$ eine Funktion ist.} sind. Seien also $f_1,f_2$ gute Funktionen mit $f_1:X_1\rightarrow M$ und $f_2:X_2\rightarrow M$. Wir wollen zeigen, dass für jedes $n\in\N$ gilt, dass entweder $n\notin X_1\cap X_2$ oder $f_1(n)=f_2(n)$ gilt. Wir wenden dafür noch einmal das Prinzip der vollständigen Induktion auf $n$ an.
+%\begin{enumerate}
+%\item \textit{Induktionsverankerung:} Falls $0\in X_1\cap X_2$ gilt, dann folgt aus der Tatsache, dass $f_1,f_2$ gut sind, die Gleichung $f_1(0)=c=f_2(0)$.
+%\item \textit{Induktionsschritt:} Es sei $n+1\in X_1\cap X_2$ (sonst gibt es nichts zu zeigen). Weil $X_1$ und $X_2$ initiale Teilmengen von $\N$ sind gilt $n\in X_1\cap X_2$. Aus der Induktionsannahme folgt also $f_1(n)=f_2(n)$, und somit
+%\[
+%f_1(n+1)=g(f_1(n))\stackrel{I.A.}{=}g(f_2(n))=f_2(n+1)
+%\]
+%\end{enumerate}
+%Nun definieren wir
+%\[
+%f:=\bigcup_{h\text{ ist gut}}h
+%\]
+%Weil gute Funktionen paarweise kompatibel sind erhalten wir, dass $f$ eine Funktion ist und weil jede natürliche Zahl im Definitionsbereich einer guten Funktion liegt, dass
+%\[
+%f:\N\rightarrow M
+%\]
+%gilt. Wir müssen noch zeigen, dass $f$ den Rekursionsgleichungen genügt. Es sei $h:X\rightarrow M$ eine guten Funktion mit $0\in X$ (eine solche gibt es da jedes $n\in\N$ im Definitionsbereich einer guten Funktion liegt). Es gilt $f(0)=h(0)=c$. Sei nun $n\in\N$ beliebig und $h:X\rightarrow M$ eine gute Funktion mit $n+1\in X$. Weil $X$ eine initiale Teilmenge von $\N$ ist gilt, dass $n$ in $X$ liegt und somit
+%\[
+%f(n+1)=h(n+1)=g(h(n))=g(f(n)).
+%\]
+%\end{proof}
+
+\begin{example}\label{bsp:rekursive operationen}
+Die üblichen arithmetischen Grundoperationen können alle relativ kompakt als rekursive Definitionen geschrieben werden:
+\begin{itemize}
+\item Die Addition von natürlichen Zahlen:
+\begin{align*}
+x+0&=x\\
+x+(n+1)&=(x+n)+1
+\end{align*}
+\item Die Multiplikation von natürlichen Zahlen:
+\begin{align*}
+x\cdot 0 &= 0\\
+x\cdot(n+1)&=(x\cdot n)+x
+\end{align*}
+\item Die Exponentiation von natürlichen Zahlen:
+\begin{align*}
+x^0&=1\\
+x^{n+1}&=x\cdot x^{n}
+\end{align*}
+\item Die Fakultätsfunktion:
+\begin{align*}
+0!&=1\\
+(n+1)!&=n!\cdot(n+1)
+\end{align*}
+\item Endliche Summen:
+\begin{align*}
+\sum_{i=1}^{0}a_i&=0\\
+\sum_{i=1}^{n+1}a_{i}&=(\sum_{i=0}^na_i)+a_{n+1}
+\end{align*}
+\item Endliche Produkte:
+\begin{align*}
+\prod_{i=1}^{0}a_i&=1\\
+\prod_{i=1}^{n+1}a_i&= (\prod_{i=1}^na_i)\cdot a_{n+1}
+\end{align*}
+\end{itemize}
+\end{example}
+Die üblichen Rechenregeln für natürliche Zahlen lassen sich aufgrund dieser rekursiven Definitionen mit Induktion (und genügend Geduld) beweisen. Wir beschränken uns beispielhaft auf den Beweis von Satz~\ref{satz:partialsummen}.
+
+\begin{example}
+	Implementieren Sie alle Funktionen von Beispiel \ref{bsp:rekursive operationen} in der Programmiersprache Ihrer Wahl (natürlich ohne Verwendung der vorimplementierten Grundoperationen). Halten Sie sich so präzise wie möglich an die mathematische Definition.
+\end{example}
+\begin{example}
+	\ifthenelse{\boolean{ml}}{
+		Vgl. OLAT ``rekursive Operationen''}{
+		Elektronisch zu lösen.}
+\end{example}
+
+\begin{lemma}\label{satz:additionsregeln}
+Für alle natürlichen Zahlen $n,m,k$ gelten folgende Rechenregeln für deren Addition:
+\begin{enumerate}
+\item Neutrales Element: $0+n=n$
+\item Kommutativität: $n+m=m+n$
+\item Assoziativität: $(n+m)+k=n+(m+k)$
+\item Kürzbarkeit: $n+k=m+k\Rightarrow n=m$
+\end{enumerate}
+\end{lemma}
+
+
+\begin{remark}
+Wegen der Assoziativität der Addition, können wir Klammern in endlichen Summen von natürlichen Zahlen weglassen.
+\end{remark}
+
+
+
+
+\begin{lemma}[Rechenregeln für die Multiplikation]\label{satz:multiplikationsregeln}
+Für alle $n,m,k\in\N$ gelten folgende Identitäten\footnote{Wir vereinbaren hier, dass die Multiplikation ``stärker bindet'' als die Addition. Ein Ausdruck von der Form $nm+k$ wird also als $(nm)+k$ interpretiert.}:
+\begin{enumerate}
+\item \textit{Absorbtion:} $0\cdot n=0$
+\item \textit{Neutrales Element:} $1\cdot n=n$
+\item \textit{Kommutativität:} $n\cdot m=m\cdot n$
+ \item \textit{Assoziativität:} $n\cdot(m\cdot k)=(n\cdot m)\cdot k$
+\item \textit{Distributivität:} $n\cdot(m+k)=nm+nk$
+\end{enumerate}
+\end{lemma}
+\begin{example}
+	Nachdem wir die Addition und die Multiplikation rekursiv definiert haben, lassen sich dies in den Sätzen \ref{satz:additionsregeln} und \ref{satz:multiplikationsregeln} geäusserten Tatsachen durch Induktion beweisen. Die einzelnen Beweise sind nicht sonderlich spannend aber eine gute Übung.
+\end{example}
+
+
