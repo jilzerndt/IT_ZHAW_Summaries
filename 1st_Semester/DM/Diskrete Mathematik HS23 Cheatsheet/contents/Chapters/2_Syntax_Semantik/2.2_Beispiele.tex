@@ -1,0 +1,305 @@
+\subsubsection{Semantik}
+
+\begin{remark}
+    Die Junktoren können wir auch als boolesche Funktionen (Funktionen, die
+    Wahrheitswerte verarbeiten) anschauen:
+\begin{align*}
+\for(x,y) &= \begin{cases}
+\true&\text{falls }x=\true\text{ oder }y=\true\\
+\false&\text{sonst}
+\end{cases}\\
+\fand(x,y) &= \begin{cases}
+\true&\text{falls }x=\true\text{ und }y=\true\\
+\false&\text{sonst}
+\end{cases}\\
+\fnot(x) &=\begin{cases}
+\true&\text{falls }x=\false\\
+\false&\text{sonst}
+\end{cases}
+\end{align*}
+Durch diese Interpretation können wir die obige Definition etwas knapper formulieren:
+\begin{itemize}
+\item $\widehat{B}(F\land G)=\fand(\widehat{B}(F),\widehat{B}(G))$
+\item $\widehat{B}(F\lor G)=\for(\widehat{B}(F),\widehat{B}(G))$
+\item $\widehat{B}(\neg F)=\fnot(\widehat{B}(F))$
+\end{itemize}
+Mithilfe dieser Darstellung können wir, wenn eine Belegung $B$ gegeben ist, den Wahrheitswert einer beliebigen aussagenlogischen Formel unter der Belegung $B$ ``berechnen''.
+\end{remark}
+
+\begin{example}
+Es sei eine Belegung $B$ gegeben, die $B(p_n)=\true$ genau dann erfüllt, wenn $n$ eine
+gerade Zahl ist. Wir berechnen den Wahrheitswert von $(p_4\to(p_5\to p_6))\lor p_{13}.$
+\tcblower
+\begin{align*}
+\widehat{B}((p_4\to(p_5\to p_6))\lor p_{13})&=\for(\widehat{B}(p_4\to(p_5\to p_6)),
+\underbrace{\widehat{B}(p_{13})}_{\false}\}\\
+&=\widehat{B}(p_4\to(p_5\to p_6))\\
+&=\widehat{B}(\neg p_4\,\lor\,(p_5\to p_6))\\
+&=\for(\widehat{B}(\neg p_4),\widehat{B}(p_5\to p_6))\\
+&=\for( \fnot(\underbrace{\widehat{B}( p_4)}_{\true}),\widehat{B}(\neg p_5\,\lor\,
+p_6))\\
+&=\for( \false,\widehat{B}(\neg p_5\,\lor\,
+p_6))\\
+&=\widehat{B}(\neg p_5\,\lor\, p_6)\\
+&=\for(\widehat{B}(\neg p_5),\underbrace{\widehat{B}(p_6)}_{\true})\\
+&=\true
+\end{align*}
+\end{example}
+
+\begin{example}
+Von einer Belegung $B:\mathbb{V}\to \{\false,\true\}$ seien folgende Werte bekannt:
+\begin{align*}
+B(p) &= B(q) = B(r) = B(s) =\true\\
+B(u) &= B(v) = \false
+\end{align*}
+Bestimmen Sie $\hat B$ von folgenden Formeln:
+\begin{enumerate}
+\item $p\to s$
+\item $(u\to r)\land s$
+\item $v\lor((r\to s)\land u)$
+\end{enumerate}
+\tcblower
+\begin{enumerate}
+\item
+\[
+\hat B(p\to s)=\hat B(\neg p\lor s)=\for(\hat B(\neg p),\underbrace{\hat
+B(s)}_{\true})=\true
+\]
+\item
+\begin{align*}
+\hat B((u\to r)\land s)&=\fand (\hat B((u\to r)), \underbrace{\hat
+B(s)}_{\true})=\hat B(u\to r)\\
+&=\hat B(\neg u\lor r)=\for(\hat B(\neg u),\underbrace{\hat B(r)}_{\true})=\true
+\end{align*}
+\item
+\begin{align*}
+\hat B(v\lor((r\to s)\land u))
+&=\for(\underbrace{\hat B(v)}_{\false},\hat B((r\to s)\land u))\\
+&=\hat B((r\to s)\land u)\\
+&=\fand(\hat B(r\to s),\underbrace{\hat B(u)}_{\false})=\false
+\end{align*}
+\end{enumerate}
+\end{example}
+
+\subsubsection{Wahrheitstabellen}
+
+\begin{example}
+    Die Teilformeln von der Formel $p_0\to (q\lor p_1)$ sind: $p_0,p_1,q,(q\lor p_1)$ und $p_0\to (q\lor p_1)$. Eine vollständige Wahrheitstabelle von $p_0\to (q\lor p_1)$ ist:
+    \begin{center}
+        \begin{tabular} {| c | c | c || c | c |}
+            \hline
+            $p_0$ & $q$ & $p_1$ & $q\lor p_1$ & $p_0\to (q\lor p_1)$ \\ \hline
+            0 & 0 & 0 & 0 & 1 \\
+            0 & 0 & 1 & 1 & 1\\
+            0 & 1 & 0 & 1 & 1\\
+            0 & 1 & 1 & 1& 1\\
+            1 & 0 & 0 & 0 & 0\\
+            1 & 0 & 1 & 1 & 1\\
+            1 & 1 & 0 & 1 & 1\\
+            1 & 1 & 1 & 1 & 1\\ \hline
+        \end{tabular}
+        %
+    \end{center}
+    \smallskip
+\end{example}
+
+\subsubsection{Semantische Eigenschaften}
+
+\begin{example}
+    Einige allgemeingültige Formeln:
+    \begin{align*}
+    &p\lor\neg p& &p\to (q\to p)& &F\to F&.
+    \end{align*}
+    Einige erfüllbare  nicht allgemeingültige Formeln:
+    \begin{align*}
+    &p_1\lor (p_2\lor p_3)& &p_3& &p\to q&
+    \end{align*}
+    Einige unerfüllbare Formeln:
+    \begin{align*}
+    &(p_1\to\neg p_1)\land(\neg p_1\to p_1)& &\neg p_3\land p_3& &\neg (F\to F)&
+    \end{align*}
+    Welche der Formeln
+    \begin{align*}
+    &(p_1\to (p_2\lor p_1))\lor(\neg p_1\lor (p_2\land p_1))& &\neg p_3\land p_3& &\neg (F\to \neg F)&
+    \end{align*}
+    sind allgemeingültig, welche erfüllbar und welche unerfüllbar?
+\end{example}
+
+\begin{example}
+    Zeigen Sie: Eine aussagenlogische Formel $F$ ist genau dann allgemeingültig, wenn $\neg F$ unerfüllbar ist.
+    \tcblower
+    Es sei $F$ eine beliebige aussagenlogische Formel. Wir müssen folgende Behauptungen beweisen:
+        \begin{itemize}
+            \item Ist $F$ allgemeingültig, dann ist $\neg F$ nicht erfüllbar.
+            \item Ist $\neg F$ nicht erfüllbar, dann ist $F$ allgemeingültig.
+        \end{itemize}
+        Für die erste Behauptung nehmen wir an, dass $F$ allgemeingültig sei. Aus der Allgemeingültigkeit von $F$ folgt $\hat B(F)=\true$ für jede Belegung $B$. Somit gilt $\hat B(\neg F)=\false$ für jede Belegung $B$, also ist die Formel $\neg F$ unerfüllbar.
+
+        Für die zweite Behauptung nehmen wir nun an, dass die Formel $\neg F$ nicht erfüllbar sei. Es gilt somit $\hat B(\neg F)=\false$ für jede Belegung $B$. Daraus folgt $\hat B(F)=\true$ für jede Belegung $B$ und somit, dass $F$ allgemeingültig ist.
+\end{example}
+
+
+\begin{example}
+    Ist die Behauptung korrekt, dass jede Formel genau dann erfüllbar ist, wenn ihre Negation nicht erfüllbar ist? Begründen Sie Ihre Antwort.
+    \tcblower
+    Die Behauptung ist falsch. Ein Gegenbeispiel zu der Aussage ist die (atomare) Formel $p$, sie ist erfüllbar und die Negation $\neg p$ ist ebenfalls erfüllbar.
+\end{example}
+
+
+\begin{example}
+    Geben Sie zwei erfüllbare Formeln $F$ und $G$ an, so dass die Formel $F\land G$ nicht erfüllbar ist.
+    \tcblower
+    Die Formeln $F:=p$ und $G:=\neg p$ sind beide erfüllbar, die Formel $p\land \neg p$ ist jedoch unerfüllbar.
+\end{example}
+
+\begin{example}
+    Zeigen Sie mit der Methode der Wahrheitstabellen, dass die Formeln $p\to q$ und $q\to p$ nicht äquivalent sind.
+    \tcblower
+    \begin{center}
+            %
+            \begin{tabular} {|c|c||c|c|}
+                \hline
+                $p$ & $q$ & $p\to q$ & $q \to p$ \\
+                \hline
+                0 & 0 & 1 & 1\\
+                0 & 1 & \colorbox{red}{1} & \colorbox{red}{0}\\
+                1 & 0 & \colorbox{red}{0} & \colorbox{red}{1}\\
+                1 & 1 & 1 & 1\\
+                \hline
+            \end{tabular}
+        \end{center}
+\end{example}
+
+\subsubsection{Normalformen}
+
+\begin{example}
+Beispiele für Literale: $p$, $\neg q$, $\neg p_{34}$.
+\end{example}
+
+\begin{example}
+Die Formel
+\[
+\neg(p\lor q)
+\]
+ist in keiner der oben eingeführten Normalformen. Die Formel
+\[
+(\neg p\lor q)\land ((p\land p_1)\lor(p_2\land p_3))
+\]
+ist in $NNF$ aber weder in $DNF$ noch in $KNF$. Die Formel
+\[
+p\lor q
+\]
+ist in $NNF$, $KNF$ und $DNF$.
+\end{example}
+
+\begin{example}
+Wir bringen die Formel
+\[
+(\neg p\to q)\to ((p\land p_1)\lor(p_2\land p_3))
+\]
+in $DNF$. 
+\tcblower
+Wir eliminieren zuerst alle Implikationen und doppelten Negationen:
+\begin{align*}
+(\neg p\to q)\textcolor{red}{\to} ((p\land p_1)\lor(p_2\land p_3))\,&\equiv\, \neg(\neg p\textcolor{red}{\to} q)\lor ((p\land p_1)\lor(p_2\land p_3))\\
+&\equiv\, \neg(\textcolor{red}{\neg\neg} p \lor q)\lor ((p\land p_1)\lor(p_2\land p_3))\\
+&\equiv \neg(p \lor q)\lor ((p\land p_1)\lor(p_2\land p_3)).
+\end{align*}
+Als Nächstes eliminieren wir alle Negationen, die nicht in Literalen vorkommen:
+\begin{align*}
+\textcolor{red}{\neg(p \lor q)}\lor ((p\land p_1)\lor(p_2\land p_3))\,&\equiv\,(\neg p\land\neg q)\lor ((p\land p_1)\lor(p_2\land p_3)).
+\end{align*}
+Die Formel, die wir erhalten haben, ist sowohl in $NNF$ als auch in $DNF$. Wir konstruieren nun noch eine zur Formel
+\[
+(p\land p_1)\lor(p_2\land p_3)
+\]
+äquivalente Formel in $KNF$. Wir wenden sukzessive die Distributivgesetze an:
+\begin{align*}
+(p\land p_1)\textcolor{red}{\lor}(p_2\land p_3)&\,\equiv\,\big( (p\land p_1)\lor p_2)\land (\textcolor{red}{(p\land p_1)\lor p_3})\\
+&\equiv\, (\textcolor{red}{(p\land p_1)\lor p_2})\land ((p\lor p_3)\land(p_1\lor p_3))\\
+&\equiv\, ((p\lor p_2)\land(p_1\lor p_2))\land ((p\lor p_3)\land(p_1\lor p_3)).
+\end{align*}
+\end{example}
+
+\begin{example}
+Bringen Sie die Formel
+\[
+(p_1\to p_3)\lor(p_1\land p_2)
+\]
+in $KNF$ und in $DNF$.
+\tcblower
+\begin{align*}
+(p_1\to p_3)\lor(p_1\land p_2)&\equiv \underbrace{(\neg p_1\lor p_3)\lor (p_1\land p_2)}_{DNF}\\
+&\equiv \underbrace{((\neg p_1\lor p_3)\lor p_1)\land ((\neg p_1\lor p_3)\lor p_2)}_{KNF}
+\end{align*}
+\end{example}
+
+\begin{example}
+    Beispielhaft für dieses Vorgehens, bringen wir die Formel
+    \begin{align*}
+        p_0\to (q\land p_1)
+    \end{align*}
+    in $DNF$ und $KNF$. 
+    \tcblower
+    Zuerst erstellen wir eine Wahrheitstabelle von $p_0\to (q\land p_1)$ und markieren zu jeder relevanten Zeile das gewonnene Disjunktionsglied.
+    \begin{center}
+        \begin{tabular} {| c | c | c || c | c | c |}
+            \hline
+            $p_0$ & $q$ & $p_1$ & $q\land p_1$ & $p_0\to (q\land p_1)$ & \\
+            \hline
+            0 & 0 & 0 & 0 & 1 & \textcolor{red}{$\neg p_0 \land \neg q\land \neg p_1$}\\
+            0 & 0 & 1 & 0 & 1 & \textcolor{red}{$\neg p_0 \land \neg q\land      p_1$}\\
+            0 & 1 & 0 & 0 & 1 & \textcolor{red}{$\neg p_0 \land      q\land \neg p_1$}\\
+            0 & 1 & 1 & 1 & 1 & \textcolor{red}{$\neg p_0 \land      q\land      p_1$}\\
+            1 & 0 & 0 & 0 & 0 & \textcolor{red}{$-$}\\
+            1 & 0 & 1 & 0 & 0 & \textcolor{red}{$-$}\\
+            1 & 1 & 0 & 0 & 0 & \textcolor{red}{$-$}\\
+            1 & 1 & 1 & 1 & 1 & \textcolor{red}{$     p_0 \land      q\land      p_1$}\\
+            \hline
+        \end{tabular}
+        %
+    \end{center}
+    \smallskip
+    Zusammengefasst ergibt sich die folgende Formel in $DNF$:
+    \begin{align*}
+       (\neg p_0 \land \neg q\land \neg p_1)
+       \lor (\neg p_0 \land \neg q\land      p_1)
+       &\lor (\neg p_0 \land      q\land \neg p_1)
+       \lor (\neg p_0 \land      q\land      p_1)\\
+       &\lor      (p_0 \land      q\land      p_1).
+    \end{align*}
+    Zum Erstellen einer Formel in KNF, betrachten wir die Wahrheitstabelle der negierten Formel:
+    \begin{center}
+        \begin{tabular} {| c | c | c || c | c | c | c |}
+            \hline
+            $p_0$ & $q$ & $p_1$ & $q\land p_1$ & $p_0\to (q\land p_1)$ & $\neg(p_0\to (q\land p_1))$ & \\
+            \hline
+            0 & 0 & 0 & 0 & 1 & 0 & \textcolor{red}{$-$}\\
+            0 & 0 & 1 & 0 & 1 & 0 & \textcolor{red}{$-$}\\
+            0 & 1 & 0 & 0 & 1 & 0 & \textcolor{red}{$-$}\\
+            0 & 1 & 1 & 1 & 1 & 0 & \textcolor{red}{$-$}\\
+            1 & 0 & 0 & 0 & 0 & 1 & \textcolor{red}{$p_0 \land \neg q\land \neg p_1$}\\
+            1 & 0 & 1 & 0 & 0 & 1 & \textcolor{red}{$p_0 \land \neg q\land      p_1$}\\
+            1 & 1 & 0 & 0 & 0 & 1 & \textcolor{red}{$p_0 \land q\land \neg p_1$}\\
+            1 & 1 & 1 & 1 & 1 & 0 & \textcolor{red}{$-$}\\
+            \hline
+        \end{tabular}
+        %
+    \end{center}
+    \smallskip
+    Durch Anwendung der DeMorgan Regeln erhalten wir daraus eine passende Formel in $KNF$:
+    \begin{align*}
+        \neg&((p_0 \land \neg q\land \neg p_1)\lor
+              (p_0 \land \neg q\land p_1)\lor
+              (p_0 \land q\land \neg p_1)
+            )\\
+            &\equiv
+              \neg(p_0 \land \neg q\land \neg p_1)\land
+              \neg(p_0 \land \neg q\land p_1)\land
+              \neg(p_0 \land q\land \neg p_1)\\
+            &\equiv
+              (\neg p_0 \lor q\lor p_1)\land
+              (\neg p_0 \lor q\lor \neg p_1)\land
+              (\neg p_0 \lor \neg q\lor p_1)
+    \end{align*}
+\end{example}
