@@ -1,32 +1,20 @@
 \section{Data Link Layer}
 \paragraph{Schicht 2: Sicherungsschicht}
-\includegraphics[width=0.7\linewidth]{images/data_link_layer.png}
+\includegraphics[width=0.5\linewidth]{images/data_link_layer.png}
 \begin{definition}{Aufgaben}
     \begin{itemize}
-        \item Realisieren einer zuverlässigen (fehlerfreien) Verbindung zwischen direkt miteinander verbundenen Systemen
-        \item Framing (Rahmenbildung/-erkennung)
-        \begin{itemize}
-            \item Senderichtung: Einpacken der zu sendenen Nutzdaten in Datenrahmen (Frames)
-            \item Empfangsrichtung: Erkennung und Auspacken der Datenblöcke aus empfangenen Frames
-        \end{itemize}
-        \item Fluss-Steuerung (Flow Control)
-        \begin{itemize}
-            \item «langsamer» Empfänger kann «schnellen» Sender bremsen
-        \end{itemize}
-        \item Zusätzlich bei mehreren Teilnehmern:
-        \begin{itemize}
-            \item Adressierung der Teilnehmer
-            \item Medium Zugriff (Media Access)
-            \item Welche Station darf wann senden
-        \end{itemize}
+        \item Realisieren einer zuverlässigen Verbindung zwischen Systemen
+        \item Framing und Flow Control
+        \item bei >2 Teilnehmern: Adressierung, Media Access, Timing
     \end{itemize}
 \end{definition}
 
-\subsection{Framing}
-
-\begin{definition}{Frame}
-    besteht meist aus einem Header mit der Anzahl der Elemente im Datenblock, dem Datenblock und einem Code für die Fehlererkennung\\
+\begin{definition}{Framing (Rahmenbildung-/erkennung)}\\
     \includegraphics[width=0.6\linewidth]{images/frame_def.png}
+    \begin{itemize}
+        \item Senderichtung: Einpacken der zu sendenen Nutzdaten in Datenrahmen (Frames)
+        \item Empfangsrichtung: Erkennung und Auspacken der Datenblöcke aus empfangenen Frames
+    \end{itemize}
 \end{definition}
 
 \begin{concept}{Asynchron}\\
@@ -107,7 +95,24 @@
     $$N = F_R \cdot P \cdot 8$$
     N = Nutzbitrate, P = Payload
 \end{formula}
-\textbf{Example or KR for actual exercises!!}
+%\textbf{Example or KR for actual exercises!!}
+\begin{example}
+    Gegeben: Bitrate 100 Mbit/s, Frame-Länge 1000 Byte, IFG 96 Bit, Payload 800 Byte. Berechnen Sie die Nutzdatenrate.\\
+    \textbf{Lösung:}\\
+    $$F_R = \frac{100 \cdot 10^6}{8 \cdot (1000 + 96)} = 1.19 \cdot 10^6 \text{ Frames/s}$$
+    $$N = 1.19 \cdot 10^6 \cdot 800 \cdot 8 = 7.6 \cdot 10^9 \text{ Bit/s} = 7.6 \text{ Gbit/s}$$
+\end{example}
+
+\begin{KR}{Key Takes Fehlererkennung/Fehlerkorrektur}\\
+    Zu Fehlererkennung wird den Daten Redundanz beigefügt (in Form von zusätzlich übertragener Information).
+    \begin{itemize}
+        \item Diese erhöht die Hamming Distanz (= Mindestanzahl unterschiedlicher Bits zwischen gültigen Codewörtern).
+        \item Die betrachteten Verfahren gehören zur Familie der Block Codes.
+    \end{itemize}
+    Fehlerkorrektur kann rückwärtsgerichtet (Erneutes Übertragen der Daten) oder vorwärtsgerichtet (Rekonstruktion von verfälschten Bits beim Empfänger, Forward Error Correction FEC) erfolgen.
+\end{KR}
+
+\columnbreak
 
 \subsubsection{Verfahren zur Fehlererkennung}
 
@@ -150,16 +155,9 @@ Even und Odd Parity sind gleichwertig
     \end{itemize}
 \end{concept}
 
-\begin{KR}{Key Takes Fehlererkennung/Fehlerkorrektur}\\
-    Zu Fehlererkennung wird den Daten Redundanz beigefügt (in Form von zusätzlich übertragener Information).
-    \begin{itemize}
-        \item Diese erhöht die Hamming Distanz (= Mindestanzahl unterschiedlicher Bits zwischen gültigen Codewörtern).
-        \item Die betrachteten Verfahren gehören zur Familie der Block Codes.
-    \end{itemize}
-    Fehlerkorrektur kann rückwärtsgerichtet (Erneutes Übertragen der Daten) oder vorwärtsgerichtet (Rekonstruktion von verfälschten Bits beim Empfänger, Forward Error Correction FEC) erfolgen.
-\end{KR}
 
-\subsubsection{Zugriffsmechanismen}
+
+\subsubsection{Zugriffsmechanismen (Media Access)}
 
 \paragraph{Gesteuerter Medium Zugriff}
 

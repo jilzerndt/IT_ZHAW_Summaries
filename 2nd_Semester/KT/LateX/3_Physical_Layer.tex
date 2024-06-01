@@ -36,6 +36,8 @@
     \end{itemize}
 \end{concept}
 
+\columnbreak
+
 \subsection{Übertragungsverfahren: Parallel und Seriell}
 
 \begin{definition}{Parallel vs Seriell}
@@ -70,7 +72,7 @@
     \end{itemize}
 \end{example}
 
-\begin{example2}{Clock Drift}\\
+\begin{KR}{Clock Drift}\\
     Ethernet hat eine maximale Framegrösse von 1’500 Bytes.
     \begin{itemize}
         \item Gemäss Standard müssen die Oszillatoren eine Genauigkeit von ±50 ppm haben.
@@ -85,7 +87,9 @@
         \item Die Abweichung ist somit 1.2 * 104 Bit * 10-4 TBit / Bit = 1.2 Tbit
         \item Eine fehlerfreie Abtastung ist nicht mehr möglich (ohne weitere Massnahmen)
     \end{itemize}
-\end{example2}
+\end{KR}
+
+\columnbreak
 
 \begin{definition}{Serielle synchron Übertragung}\\
     Bei der synchronen Übertragung arbeitet der Empfänger mit dem gleichen Takt wie der Sender
@@ -104,8 +108,8 @@
 \end{example}
 
 \begin{concept}{Synchrone Übertragung ohne separate Taktleitung}\\
-    Geeignete Codierverfahren erlauben den Takt zusammen mit dem Datensignal zu übertragen\\
-    \includegraphics[width=0.8\linewidth]{images/synchrone_übertragung_ohne_seperate_Taktleitung.png}\\
+    Geeignete Codierverfahren erlauben den Takt zusammen mit dem Datensignal zu übertragen (Leitungscode)\\
+    \includegraphics[width=0.9\linewidth]{images/synchrone_übertragung_ohne_seperate_Taktleitung.png}\\
     Unter Codierung versteht man hier die Umsetzung der Einsen und Nullen auf eine physikalische Grösse
     \begin{itemize}
         \item Vorteil: Es wird nur eine Leitung benötigt
@@ -117,18 +121,14 @@
 \subsection{Leitungscodes}
 
 \begin{definition}{Leitungscodes und Taktrückgewinnung}\\
-    Mittels Leitungscode ist es dem Empfänger möglich den Takt heraus zu extrahieren (sonst bräuchte er eine 2te Leitung für den Takt).
-\begin{itemize}
-    \item Siehe Manchester Code.
-    \item Regelmässige Zustandsänderungen auf
-    \item der Übertragungsstrecke.
-\end{itemize}
-
+    Mittels Leitungscode ist es dem Empfänger möglich den Takt heraus zu extrahieren (keine 2. Leitung nötig)\\
+    \includegraphics[width=1\linewidth]{images/taktrückgewinnung_prinzip.png}
 \end{definition}
-\begin{theorem}{Anforderungen}
+
+\begin{theorem}{Anforderungen Leitungscodes}
 \begin{itemize}
     \item die physikalisch vorhandene Bandbreite effizient nutzen
-    \item Taktrückgewinnung erlauben, um eine separate Taktleitung einzusparen
+    \item Taktrückgewinnung erlauben (keine separate Taktleitung nötig)
     \item möglichst gleichspannungsfrei sein, um Sender und Empfänger mit Übertragern (Signaltransformatoren, Magnetics) galvanisch trennen zu können.
 \end{itemize} 
 \end{theorem}
@@ -140,28 +140,27 @@
     \end{itemize}
 \end{example}
 
-\begin{KR}{Gleichspannungsfreiheit}\\
-    Beispiel: 3-wertiger AMI-Code (Alternate Mark Inversion)\\
-    \includegraphics[width=0.9\linewidth]{images/gleichspannungsfreiheit.png}\\
+\begin{concept}{AMI Leitungscode}\\
+    3-wertiger AMI-Code (Alternate Mark Inversion)\\
+    \includegraphics[width=0.8\linewidth]{images/gleichspannungsfreiheit.png}\\
     Nachteile dieses Leitungscodes:
     \begin{itemize}
         \item Auf der Übertragungsstrecke drei Zustände benötigt → rein binäre Medien genügen nicht
-    \end{itemize}
-    Eignet sich dieser Code gut für die Taktrückgewinnung im Empfänger?
-    \begin{itemize}
         \item Bei einer längeren Folge von 0 in den Daten ist keine Taktrückgewinnung mehr möglich
     \end{itemize}
-\end{KR}
+\end{concept}
 
-\begin{definition}{Taktrückgewinnung}\\
-    \includegraphics[width=1\linewidth]{images/taktrückgewinnung_prinzip.png}
-\end{definition}
+\begin{concept}{Manchester Leitungscode}\\
+    wird z.B. bei 10BASE-T Ethernet verwendet, erlaubt einfache Taktrückgewinnung
+    \begin{itemize}
+        \item 1 positive Flanke, 0 negative Flanke
+        \item Bei jedem Bit gibt es einen Signalwechsel
+        \item Bandbreite von 10 MHz benötigt (2 $\times$ theoretisches Minimum)
+    \end{itemize}
+    \includegraphics[width=0.6\linewidth]{images/leitungscode.png}
+\end{concept}
 
 \subsubsection{Datenrate, Bandbreite, Bandrate}
-
-\begin{definition}{Leitungssymbol}
-    Zu einem gewissen Zeitpunkt übertragenes physikalisches Signal, das mit einer bestimmten Rate (Symbolrate) seinen Wert (Eigenschaften, z.B. Amplitude, Frequenz, Phasenlage) verändert.
-\end{definition}
 
 \begin{KR}{Wichtige Kenngrössen}
     \begin{itemize}
@@ -194,6 +193,10 @@
     \end{itemize}
 \end{remark}
 
+\begin{remark}
+    ld = log2, lg = log10, ln = natürlicher Logarithmus
+\end{remark}
+
 \begin{formula}{Datenübertragungsrate}\\
     Die maximale Symbolrate $f_s$ (Baud) ist gleich der doppelten Bandbreite B (Hz) des
     Übertragungskanals. $$f_s = 2B$$
@@ -214,7 +217,7 @@
     \includegraphics[width=1\linewidth]{images/max_bitrate_actual.png}
 
 \begin{formula}{Kanalkapazität}
-    $$C_s = B \cdot Id(1 + \frac{S}{N})$$
+    $$C_s = B \cdot log_2(1 + \frac{S}{N})$$
     S: Signalleistung\\
     N: Rauschleistung
 \end{formula}
