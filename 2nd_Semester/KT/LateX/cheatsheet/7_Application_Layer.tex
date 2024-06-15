@@ -1,6 +1,6 @@
-\section{Application Layer}
 
-\subsubsection{Netzwerk-Applikationen und Protokolle}
+
+\subsubsection*{Netzwerk-Applikationen und Protokolle}
 
 \begin{KR}{Übersicht Applikationsprotokolle}
     \begin{itemize}
@@ -16,111 +16,81 @@
     \end{itemize}
 \end{KR}
 
-\subsubsection{DNS - Domain Name System}
+\section{Application Layer}
 
-\begin{definition}{DNS - Domain Name Space}
+\paragraph{DNS - Domain Name Space}
+
+\begin{definition}{DNS} Name Resolution (IP Adr. leserlich machen)
     \begin{itemize}
-        \item Leserliche Darstellung von IP-Adressen (Name Resolution)
-        \item Hauptdomäne = Root
-        \item Der Fully Qualified Domain Name (FQDN) muss eindeutig sein, Beispiel: sw.eng.
+        \item Fully Qualified Domain Name (FQDN) muss eindeutig sein
         \item Geschwisterknoten dürfen nicht den gleichen Namen haben
     \end{itemize}
-    \includegraphics[width=1\linewidth]{images/dns_explained.png}
+    \includegraphics[width=0.8\linewidth]{images/dns_explained.png}
 \end{definition}
 
-\begin{concept}{Verwaltung von Domains}
+\begin{concept}{Verwaltung von Domains} NS = Name Server
     \begin{itemize}
-        \item Das DNS wird verteilt betrieben (verteilt, nicht repliziert)
-        \item Ein Name Server ist meist für eine Zone verantwortlich
+        \item DNS wird verteilt betrieben (verteilt, nicht repliziert)
+        \item NS: für 1 Zone (separat administrierter Subtree) verantwortlich
         \begin{itemize}
-            \item Zone: separat administrierter Subtree des DNS
-            \item Ein Name Server kennt
-            \begin{itemize}
-                \item die IP-Adressen zu den Hostnamen in seiner Zone
-                \item die IP-Adressen der Name Server seiner Subdomänen, falls diese nicht in seiner Zone liegen
-                \item die IP-Adressen von Root und TLD Name Server, um beliebige Abfragen zu erlauben
-            \end{itemize}
+            \item NS kennt IP-Adressen zu Hostnamen in seiner Zone, NS seiner Subdomänen und Root/TLD NS
         \end{itemize}
-        \item Aus Redundanzgründen min. zwei Name Server für eine Zone
-        \begin{itemize}
-            \item Primary (Master) und Secondary (Slave) 
-        \end{itemize}
-        \item Ein NS kann eine Unterzone seiner Zone weiter delegieren
+        \item min. zwei NS pro Zone: Primary (Master) / Secondary (Slave) 
+        \item NS kann eine Unterzone seiner Zone weiter delegieren
     \end{itemize}
 \end{concept}
 
-\begin{definition}{DNS Record Types}\\
-    Der "Record Type" enthält Information, welche Daten angefragt beziehungsweise in einer
-    Antwort vom Name Server mitgeteilt werden\\
-    \includegraphics[width=1\linewidth]{images/dns_record_types.png}
+\begin{definition}{DNS Record Types}
+    \begin{itemize}
+        \item A: IPv4 Adresse des gesuchten Hosts (32 Bit)
+        \item AAAA: IPv6 Adresse des gesuchten Hosts (128 Bit)
+        \item MX: Mail Exchange Record, Mail Server für die Domain 
+        \item NS: Name Server Record, Name Server Name für eine Zone
+        \item CNAME: Canonical Name (primärer Name), für Alias zum Host
+        \item TXT: Text Record, für beliebige Informationen
+    \end{itemize}
 \end{definition}
 
 \begin{definition}{Reverse DNS Lookup}\\
     Authentisierung: Ein Server identifiziert/authentifiziert einen Client anhand des Namens, nicht anhand der IP-Adresse
 \end{definition}
 
-\begin{example2}{DNS-Abfragen auswerten}
+\begin{example2}{DNS-Abfragen auswerten} DNS verwendet Port 53 (UDP)
     \begin{itemize}
-        \item DNS verwendet Port 53 (UDP)
-        \item Resolver: lokale Software, die mit dem Name Server kommuniziert
+        \item Resolver: lokale Software, kommuniziert mit Name Server 
     \end{itemize}
-    Beispiel: Anwendung benötigt die IP-Adresse von bob.sw.eng.
-    \begin{itemize}
-        \item FQDN: bob.sw.eng. 
-        \item Root: .
-        \item Top Level Domain: eng
-        \item Second Level Domain: sw
-    \end{itemize}
-        \includegraphics[width=1\linewidth]{images/example_dns.png}        
+    Beispiel: Anwendung benötigt die IP-Adresse von bob.sw.eng.\\
+    \resizebox{\linewidth}{!}{
+    FQDN = bob.sw.eng., Root = ., TLD = eng, Second Level Domain = sw}
+
+        \includegraphics[width=0.9\linewidth]{images/example_dns.png}        
 \end{example2}
 
 \columnbreak
 
-\subsubsection{NAT - Network Address Translation}
 
-\begin{definition}{NAT (Port Mapping)}\\
-    Alle Hosts im privaten Netz 192.168.0.0/8 verwenden 192.168.0.1 als Default-Gateway.\\
-    Port-basierte NAT (NAPT) hat folgende Funktionen:
-    \begin{itemize}
-        \item Ersetzt private IP Adresse im IP Header durch eine öffentliche IP des Gateways / Routers
-        \item Ersetzt die private Port-Nr. des Hosts durch eine freie zulässigen Port-Nr. des Gateways / Routers
-        \item Erstellt ein Mapping von privater IP Adresse und Port-Nr. zur öffentlichen Port-Nr.
-        \item Man kann für das Mapping auch statische Werte definieren, hier wird aber nur die Port-Nummer übernommen
-    \end{itemize}
-    Problem mit NAT:\\
-    NAT verletzt das Konzept der OSI-Layer. Um einen Port im TCP Header zu ändern muss man eigentlich die
-    Daten im IP-Frame ändern. Bedeutet eine Netzwerk-Funktion greift auf den Transport Header zu.
-    IP-Adresse und Portnummer werden dabei verändert. \\
-        \includegraphics[width=1\linewidth]{images/NAT.png}
-\end{definition}
 
-\columnbreak
+\subsubsection{DHCP - Dynamic Host Configuration Protocol}
 
-\subsection{DHCP - Dynamic Host Configuration Protocol}
-
-\begin{definition}{Bezug IP-Adresse}\\
-    Wie erhält ein Knoten seine IP-Adresse?
-    \begin{itemize}
-        \item Lokal konfiguriert (static IP)
-        \item Bezug der IP-Adresse über das Netzwerk
+\begin{definition}{Bezug IP-Adresse} Lokal konfiguriert (static IP)\\
+    Bezug der IP-Adresse über das Netzwerk mit DHCP
         \begin{itemize}
-            \item DHCP – erlaubt dynamische Zuteilung aus dem lokalen Adressbereich
+            \item erlaubt dynamische Zuteilung aus dem lokalen Adressbereich
         \end{itemize}
-    \end{itemize}
 \end{definition}
 
 \begin{concept}{Dynamische Zuweisung von IP-Adressen}
     \begin{itemize}
         \item Client verlangt eine IP-Adresse (DHCP Request)
         \item DHCP-Server erteilt eine freie Adresse für definierte Lease Time, oft 10 Minuten (DHCP-Response)
-        \item Vor Ablauf der Lease Time muss der Lease (vom Client) erneuert werden
-        \item Client, der das Netz verlässt, wird Lease nicht erneuern → Adresse wieder frei
+        \item Vor Ablauf der Lease Time: Client erneuert Lease
+        \item Client, der Netz verlässt, erneuert Lease nicht: Adresse wieder frei
     \end{itemize}
 \end{concept}
 
 
 
-\begin{KR}{Ablauf DHCP}
+\begin{KR}{Ablauf DHCP} Reserviert nur IP’s von aktiven Geräten
     \begin{enumerate}
         \item Client sucht DHCP Server mittels Broadcast
         \item DHCP Server antwortet (DHCP offer)
@@ -130,23 +100,74 @@
     \end{enumerate}
 \end{KR}
 
-\columnbreak
-
-\begin{definition}{DHCP - Dynamic Host Configuration Protocol}
-    \begin{itemize}
-        \item Dynamische Zuweisung von IP-Adressen
-        \item Reserviert nur IP’s von aktiven Geräte
-    \end{itemize}
-    \includegraphics[width=1\linewidth]{images/bootp.png}
-\end{definition}
-
 \begin{definition}{DHCP Paketformat}\\
-    \includegraphics[width=1\linewidth]{images/dhcp_format1.png}\\
+    \includegraphics[width=1\linewidth]{images/dhcp_format1.png}
+
+    \vspace{2mm}
+
     \includegraphics[width=1\linewidth]{images/dhcp_format2.png}
 \end{definition}
 
+\subsubsection*{Von A bis Z: Aufruf einer Webseite}
+
+\includegraphics[width=1\linewidth]{images/atoz1.png}\\
+\includegraphics[width=1\linewidth]{images/atoz2.png}
 
 
+
+\begin{example2}{Ports{,} Adressen und Routingtabellen} für A-Z Beispiel!\\
+    \textcolor{pink}{PC:} UDP-Port = 67, IP = ?, MAC = 01:01:01:01:01:01\\
+    Routingtabelle:\\
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Netzadresse + Maske & Port & Gateway\\
+        \hline
+        192.168.1.0/24 & eth0 & direkt\\
+        \hline
+        default & eth0 & 192.168.1.1\\
+        \hline
+    \end{tabular}
+
+    \vspace{2mm}
+
+    \textcolor{pink}{Access Router:} DNS Port = 53, UDP-Port = 67
+    \begin{itemize}
+        \item Interne IP = 192.168.1.1
+        \item Externe IP = 195.1.2.1
+        \item MAC = 00:02:02:02:02:02
+    \end{itemize}
+    Routingtabelle:\\
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Netzadresse + Maske & Port & Gateway\\
+        \hline
+        192.168.1.0/24 & eth1 & direkt\\
+        \hline
+        default & eth0 & 195.1.2.1\\
+        \hline
+    \end{tabular}
+
+\end{example2}
+\subsubsection{NAT - Network Address Translation}
+
+\begin{definition}{NAT (Port Mapping)} Port-basierte NAT (NAPT) {\tiny (Boomer Paranoia)}    
+    \begin{itemize}
+        \item Ersetzt private IP-Adr. durch public IP des Gateways/Routers
+        \item Ersetzt private Port-Nr. des Hosts durch freie zulässige Port-Nr. des Gateways/Routers
+        \item Mapping privater IP-Adr. und Port-Nr. zur öffentlichen Port-Nr.
+                \\auch statisch möglich, aber nur Port-Nr wird übernommen
+    \end{itemize}
+    Problem mit NAT: Verletzung des OSI-Layer-Konzepts\\
+    Um Port im TCP Header zu ändern müssen Daten im IP-Frame verändert werden 
+    $\rightarrow$ Netzwerk-Funktion greift auf den Transport Header zu,
+    IP-Adresse/Portnummer werden dabei verändert\\
+        \includegraphics[width=1\linewidth]{images/NAT.png}
+\end{definition}
+\begin{remark}
+    $\forall$ Hosts im privaten Netz 192.168.0.0/8: Default-Gateway 192.168.0.1
+\end{remark}
+
+\includegraphics[width=1\linewidth]{images/atoz3.png}
 
 
 
