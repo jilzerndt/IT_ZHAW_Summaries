@@ -82,7 +82,6 @@ int someFunction(int input) //implement the function declared in the header file
 //The errno.h library provides a variable that is set by system calls and some library functions in the event of an 
 //error to indicate what went wrong
 #include <errno.h> 
-
 //The float.h library provides functions to check the limits of float and double types
 #include <float.h>
 
