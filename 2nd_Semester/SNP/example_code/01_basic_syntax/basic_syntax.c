@@ -114,6 +114,8 @@ int bitwiseOperators(int a, int b)
 * clear: clear the terminal
 * exit: exit the terminal
 * sudo: super user do -> sudo apt-get install example install the package example
+* ps: process status -> ps show the processes
+* kill: kill a process -> kill 1234 kill the process with the id 1234
  */
 
 
