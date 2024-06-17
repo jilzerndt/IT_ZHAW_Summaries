@@ -1,10 +1,8 @@
 #include <CUnit/CUnit.h>
-#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <unistd.h>
 #include <CUnit/Basic.h> //Include the Cunit framework
 /*
 * ------------------------------------------------------------------------------
@@ -38,6 +36,9 @@ int insert(person_t person, node_t *list);
 * ------------------------------------------------------------------------------
  */
 
+#include <assert.h>
+#include <unistd.h>
+//Test util function to check if a file exists
 int file_exists(const char file_path[]);
 
 int file_exists(const char file_path[])
@@ -56,6 +57,7 @@ int file_exists(const char file_path[])
 	}
 	return 0; // did not exist
 }
+//Test util function to remove a file if it exists
 void remove_file_if_exists(const char file_path[]);
 
 void remove_file_if_exists(const char file_path[])
@@ -66,6 +68,7 @@ void remove_file_if_exists(const char file_path[])
 	}
 }
 
+//Typedef for the retunr type of the test functions
 typedef void (*test_function_t)(void);
 
 #define TestMainBasic(suite, setup, cleanup, ...)						\
