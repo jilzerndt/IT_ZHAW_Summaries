@@ -1,14 +1,5 @@
 \section{Data Link Layer}
 \paragraph{Schicht 2: Sicherungsschicht}
-\vspace{-1mm}
-\includegraphics[width=0.5\linewidth]{images/data_link_layer.png}
-\begin{definition}{Aufgaben}
-    \begin{itemize}
-        \item Realisieren einer zuverlässigen Verbindung zwischen Systemen
-        \item Framing und Flow Control
-        \item bei >2 Teilnehmern: Adressierung, Media Access, Timing
-    \end{itemize}
-\end{definition}
 
 \begin{definition}{Framing (Rahmenbildung-/erkennung)}
     \begin{itemize}
@@ -17,59 +8,58 @@
     \end{itemize}
 \end{definition}
 
-\begin{concept}{Asynchron}\\
-    Keine Daten → Nichts wird gesendet (Pause zwischen Frames)
+\begin{concept}{Asynchron}
+    {\small Keine Daten → Nichts gesendet (Pause zwischen Frames)}
     \begin{itemize}
         \item Zu Beginn eines Frames wird ein Start-Bit gesendet
         \item Prüfbits am Ende eines Frames!
         \item Frame-Grenze gibt auch Byte-Grenze
     \end{itemize}
-    \includegraphics[width=0.8\linewidth]{images/asynchrone_übertragung_dll.png}
 \end{concept}
 
-\begin{concept}{Synchron}\\
-    Frames werden ohne Unterbruch gesendet \\
-    $\rightarrow$ kontinuierlicher Bitstrom auf Physical Layer
+\begin{concept}{Synchron}
+    {\small ohne Unterbruch $\rightarrow$ kontinuierlicher Bitstrom auf Phy. Layer}
     \begin{itemize}
-        \item Stehen keine Daten an, werden Flags gesendet
+        \item Stehen keine Daten an, werden Flags gesendet (anstatt Pause)
+        \item Frames werden durch ein Start-Flag und ein End-Flag begrenzt:
     \end{itemize}
-    \includegraphics[width=1\linewidth]{images/synchron_übertragung_dll.png}\\
-    Frames werden durch ein Start-Flag und ein End-Flag begrenzt:\\
-    \includegraphics[width=0.7\linewidth]{images/flags_frames.png}\\
-    Maskierung von Sonderzeichen (Flags) nötig!
+    \begin{minipage}{0.6\linewidth}
+        \includegraphics[width=1\linewidth]{images/flags_frames.png}
+    \end{minipage}
+    \begin{minipage}{0.39\linewidth}
+        Maskierung von\\ Sonderzeichen (Flags)\\ nötig!
+    \end{minipage}
 \end{concept}
 
-\begin{concept}{Bitstopfen}\\
-    Wird verwendet um ein Bit-Muster zu garantieren.
+\begin{concept}{Bitstopfen} $\rightarrow$ um Bit-Muster zu garantieren 
     \begin{itemize}
         \item Sender fügt im Datenstrom nach 5 Einsen immer eine Null ein
         \item Empfänger wirft nach 5 Einsen immer ein Bit weg
-        \item Somit gibt es (ausser bei Flags) die Bitfolge 01111110
+        \item Somit gibt es (ausser bei Flags) nie die Bitfolge 01111110
     \end{itemize}
-        \includegraphics[width=0.8\linewidth]{images/bit_stuffing.png}
 \end{concept}
 
-\subsection{Framelänge und Fehlerwahrscheinlichkeit}
+\subsubsection{Framelänge und Fehlerwahrscheinlichkeit}
 
 \begin{definition}{Fehlerwahrscheinlichkeit}
-    BER (Bit Error Ratio):
     \begin{itemize}
-        \item BER = 0.5 $\rightarrow$ jedes 2. Bit falsch
-    \end{itemize}
-    Weitere Definitionen:
-    \begin{itemize}
+        \item BER (Bit Error Ratio) = 0.5 $\rightarrow$ jedes 2. Bit falsch
         \item FER (Frame Error Ratio): Fehlerhaft empfangene Frames
         \item RER (Residual Error Ratio): Unentdeckte fehlerhafte Frames
     \end{itemize}
 \end{definition}
 
-\begin{KR}{Frame-Fehlerwahrscheinlichkeit}\\
-    Wahrscheinlichkeit dass Frame der Länge N min. 1 Bitfehler enthält:\\
-    BER = $p_e << 1 \longrightarrow (1 - p_e)^N \approx (1 - N \cdot p_e)$
+\begin{KR}{Frame-Fehlerwahrscheinlichkeit}
+
+    Wahrscheinlichkeit dass Frame der Länge N min. 1 Bitfehler enthält:
+
+    \vspace{0.5mm}
+
+    $BER = p_e << 1 \longrightarrow (1 - p_e)^N \approx (1 - N \cdot p_e)$
     $$ \Rightarrow P_{Fehler, Frame} \approx N \cdot p_e (=FER)$$
 \end{KR}
 
-\begin{theorem}{Wahl der Framelänge} Kompromiss zwischen Overhead und geringer Fehlerwahrscheinlichkeit
+\begin{theorem}{Wahl der Framelänge} Overhead vs geringe Fehlerwahrscheinlichkeit
     \begin{itemize}
     \item Lange Frames:
     \begin{itemize}
@@ -87,36 +77,30 @@
     Nettobitrate = Bruttobitrate $\cdot \frac{Nutzdaten}{Nutzdaten + Header}$
 \end{formula}
 
-\begin{formula}{Datenraten}\\
-    \begin{minipage}{0.5\linewidth}
-        $$F_R = \frac{B}{8\cdot(F_L + IFG)}$$
-    \end{minipage}
-    \begin{minipage}{0.5\linewidth}
-        $$N = F_R \cdot P \cdot 8$$
-    \end{minipage}    
+\begin{formula}{Datenraten}  $F_R = \frac{B}{8\cdot(F_L + IFG)} \quad \quad \quad N = F_R \cdot P \cdot 8$ 
 \end{formula}
 
 \begin{remark}
     $F_R$ = Framerate, B = Bitrate, $F_L$ = Framelength, \\ IFG = Interframe Gap, N = Nutzbitrate, P = Payload
 \end{remark}
 
-\subsubsection{Fehlererkennung und -korrektur}
+\paragraph{Fehlererkennung und -korrektur}
 
-\begin{concept}{Fehlererkennung}\\
-    Prinzip: Daten Redundanz hinzufügen $\rightarrow$ erhöht Hammingdistanz\\
-    Zuverlässigkeit: abhängig von Framelänge und Verfahren\\
-    Standards IEEE 802 (LAN-Standards, zb Ethernet):
-    \begin{itemize}
-        \item max. $5 \cdot 10^{-14}$ unentdeckte Fehler pro Frame-Byte
-        \item BER $p_e \leq 10^{-8}$
-        \item CRC32 für Ethernet, mit Generatorpolynom
-    \end{itemize}
+\begin{concept}{Fehlererkennung} Redundanz $\rightarrow$ erhöht Hammingdistanz\\
+    Zuverlässigkeit: abhängig von Framelänge/Verfahren
 \end{concept}
+
+\begin{remark}
+    Standards IEEE 802 (LAN-Standards, zb Ethernet): 
+    max. $5 \cdot 10^{-14}$ unentdeckte Fehler pro Frame-Byte,
+    BER $p_e \leq 10^{-8}$ (1 Bitfehler pro 100 Mio. Bit)
+    $\rightarrow$ CRC32 für Ethernet, mit Generatorpolynom (erkennt Fehler nur, korrigiert nicht)
+\end{remark}
 
 \begin{concept}{Fehlerkorrektur - Error Correction (EC)}
     \begin{itemize}
         \item Backward (BEC): erneutes Übertragen der Daten
-        \item Forward (FEC): Rekonstruktion von verfälschten Bits beim Empfänger
+        \item Forward (FEC): Rekonstruktion verfälschter Bits bei Empfänger
     \end{itemize}
 \end{concept}
 
@@ -127,21 +111,17 @@
     \end{itemize}
 \end{formula}
 
-\begin{formula}{Einfache Parity}\\
+\begin{formula}{Einfache Parity}
     Prüfbit sichert ein Datenwort (typisch 1 Byte)\\
-        \includegraphics[width=0.9\linewidth]{images/einfache_parity.png}\\
-    Even Parity: \# 1er inkl. Parity-Bit ist gerade (Odd analog)
+    Even Parity: Anzahl 1en inkl. Parity-Bit ist gerade (Odd analog)
 \end{formula}
 
 \begin{formula}{Längs- und Quer-Parity}\\
-    \begin{minipage}{0.7\linewidth}
-        \includegraphics[width=0.9\linewidth]{images/längs-quer-parity.png}
-    \end{minipage}
-    \begin{minipage}{0.25\linewidth}
-        Korrigieren: \\ 1 Bit-Fehler
-        \vspace*{1mm}\\
-        Erkennen: \\ 2 Bit-Fehler
-    \end{minipage}
+    3 Paritätsbits: 1 für jedes Byte, 1 für jedes Bit (Längs- und Quer-Parity), Gesamtparity
+
+    \vspace{1mm}
+
+    Korrigieren: 1 Bit-Fehler, Erkennen: 2 Bit-Fehler
 \end{formula}
 
 
@@ -149,49 +129,41 @@
 
 \paragraph{Gesteuerter Medium Zugriff}
 
-\begin{definition}{Master-Slave Verfahren}\\
-    Verwenden mehrere Systeme das gleiche physikalische Medium, so muss der Zugriff auf das Medium koordiniert werden
+\begin{definition}{Master-Slave Verfahren} Koordinierter Zugriff auf Medium
     \begin{itemize}
         \item Vorteil: Keine Konflikte, Master koordiniert Zugriff
         \item Nachteil: Ausfall des Masters (Single Point of Failure)
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Token Verfahren}\\
-    Die Sendeberechtigung wird in einer festgelegten Reihenfolge weitergereicht: Knoten senden nur, wenn sie ein Token halten
+\begin{definition}{Token Verfahren} Sendeberechtigung in fixer Reihenfolge\\
+    Knoten senden nur, wenn sie ein Token halten
     \begin{itemize}
         \item Vorteil:  Deterministisch (man weiss, wann man dran kommt)
         \item Nachteil: Aufwändig (Startup, Token Verlust, etc.)
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Zeitsteuerung}\\
-    Zeitgesteuerter Zugriff (wie Taktfahrplan im Bahnnetz)
+\begin{definition}{Zeitgesteuerter Zugriff} wie Taktfahrplan im Bahnnetz
     \begin{itemize}
         \item Vorteil: Optimierung möglich (nach Auslastung, Durchsatz, etc.)
-        \item Nachteile:
-        \begin{itemize}
-            \item Planung und genaue Zeit in allen Knotepunkten erforderlich
-            \item Konflikte mit unplanbarem Verkehr (SBB Cargo)
-        \end{itemize}
-        \item Anwendungen: PROFINET IRT, Time Sensitive Networks
+        \item Nachteile: Planung und genaue Zeit in allen Knotepunkten erforderlich, Konflikte mit unplanbarem Verkehr
     \end{itemize}
 \end{definition}
 
 \paragraph{Random Medium Zugriff}
 
-\begin{definition}{Carrier Sense Multiple Access}
+\begin{definition}{Carrier Sense Multiple Access} Vor Senden geteiltes Übertragungsmedium abhören ob frei (Carrier Sense), sonst bis Pause warten
     \begin{itemize}
-        \item Vor dem Senden geteiltes Übertragungsmedium abhören ob frei (Carrier Sense), sonst bis zu Pause warten
-        \item Vorteil: Alle Stationen gleichberechtigt (kein Master) $rightarrow$ jederzeit Zugriff auf Übertragungsmedium
+        \item Vorteil: Alle Stationen gleichberechtigt (kein Master) \\ $\rightarrow$ jederzeit Zugriff auf Übertragungsmedium
         \item Nachteil: Kollisionen möglich (Collision Detection)
     \end{itemize}
 \end{definition}
 
 \begin{concept}{Kollisionsbehandlung - CSMA}
     \begin{itemize}
-        \item CD (Collision Detection): Kollision $rightarrow$ abbrechen, später nochmals (ALT)
-        \item CR (Collision Resolution): Hardware-unterstützte Arbitrierung (aktiv/passiv)
+        \item CD (Collision Detection): Kollision: abbrechen, später nochmals
+        \item CR (Collision Resolution): Hardware-unterstützte Arbitrierung
         \begin{itemize}
             \item Kollisionen werden erkannt und kontrolliert aufgelöst
         \end{itemize}
@@ -207,8 +179,5 @@
     \begin{itemize}
         \item Obere und untere Limite, stopp wenn oben, start wenn unten
     \end{itemize}
-    Implizites Stop-and-Wait:
-    \begin{itemize}
-        \item Sender wartet auf Bestätigung (ACK) bevor er weiter sendet
-    \end{itemize}
+    Implizites Stop-and-Wait: Sender wartet auf ACK vor Senden
 \end{concept}

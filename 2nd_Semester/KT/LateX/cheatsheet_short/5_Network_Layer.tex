@@ -1,37 +1,29 @@
 \section{Network Layer}
 \paragraph{Schicht 3: Internet}
 
-\includegraphics[width=1\linewidth]{images/orientierung_network_layer.png}
-
-\begin{definition}{Die Netzwerkschicht}\\
-    Verbindet Hosts in verschiedenen Netzen und ermöglicht den
-    Transport der IP-Pakete $\rightarrow$ NUR Transport \\
-    höhere Layer übernehmen: Fehlerkorrektur, Flusskontrolle, etc.
-\end{definition}
-
-\begin{lemma}{Grundsätze des Internets}
+\begin{concept}{Grundsätze des Internets}
     \begin{itemize}
         \item Jedes Netzwerk soll für sich selbst funktionsfähig sein
         \item Die Kommunikation basiert auf «best effort»
         \item Die Verbindung der Netze erfolgt durch Black Boxes
         \item Keine zentrale Funktionssteuerung wird benötigt
     \end{itemize}
-\end{lemma}
+\end{concept}
 
 \begin{definition}{Kommunikationsobjekte} OSI Layern zugeordnet
        \begin{itemize}
-        \item \textcolor{orange}{(Application-)Message/Stream} Layer 5-7
-        \item \textcolor{green}{(Transport-)Paket, Datagram} Layer 4
-        \item \textcolor{blue}{(IP-)Paket (früher Datagram)} Layer 3
+        \item \textcolor{darkorange}{(Application-)Message/Stream} Layer 5-7
+        \item \textcolor{darkfrog}{(Transport-)Paket, Datagram} Layer 4
+        \item \textcolor{darkblue}{(IP-)Paket (früher Datagram)} Layer 3
         \item \textcolor{pink}{(HW-specific) Frame} Layer 1-2
     \end{itemize}
 \end{definition}
 
 
 
-\subsection{Netzwerk Applikationen und Protokolle}
+\subsubsection{Netzwerk Applikationen und Protokolle}
 
-\subsubsection{Routing}
+\paragraph{Routing}
 
 \begin{definition}{Router} verbinden Subnetze (Ethernet, xDSL, WLAN, etc.)
     \begin{itemize}
@@ -48,7 +40,7 @@
             \begin{itemize}
                 \item Router müssen optimalen Pfad zu jedem Host kennen
                 \item kleine oder Teilnetze: Statische Konfiguration
-                \item grössere Netze: Dynamisch durch Routing-Protokolle: Topologie des Netzes ermitteln $\rightarrow$ ideale Pfade bestimmen
+                \item grössere Netze: Dynamisch durch Routing-Protokolle: \\ Topologie des Netzes ermitteln $\rightarrow$ ideale Pfade bestimmen
             \end{itemize}
         \item Forwarding: Weiterleiten der Daten
         \begin{itemize}
@@ -77,7 +69,7 @@
 \subsubsection{IPv4}
 
 \begin{KR}{IP-Header Format}
-    Ein IP-Packet besteht aus einem Header (min. 20 Byte) und Nutzdaten.
+    {\small IP-Packet = Header (min. 20 Byte) + Nutzdaten}
     \begin{itemize}
         \item \textcolor{blue}{Version} IPv4 / IPv6
         \item \textcolor{blue}{IHL} Header Length in 4-Byte (20 Byte → IHL = 5)
@@ -87,21 +79,21 @@
             \item ECN: kann drohende Überlast markieren
         \end{itemize}
         \item \textcolor{blue}{Total Length} Länge des IP-Packets (Header + Nutzdaten)
-        \item \textcolor{Goldenrod}{ID Number} Identifikation des IP-Pakets / Fragmente, erlaubt Identifikation zusammengehöriger Fragmente
-        \item \textcolor{Goldenrod}{Flags} Kontroll-Flags für Fragmentierung (0/DF/MF)
-        \item \textcolor{Goldenrod}{Fragment Offset} Gibt an, wo ein Fragment hingehört
-        \item \textcolor{green}{Time to Live} anz. Sek, Hop-Counter, 0 → Paket wird verworfen
-        \item \textcolor{green}{Protocol} Übergeordnetes Protokoll
-        \item \textcolor{purple}{Header Checksum} verhindert fehlgeleitete Pakete ($\times $ Nutzdaten)
-        \item \textcolor{purple}{Source Address} Wer das Paket ursprünglich abgesendet hat
-        \item \textcolor{purple}{Destination Address} Wer das Paket schliesslich erhalten soll
-        \item \textcolor{purple}{Options/Padding} variabel, füllt auf ein Vielfaches von 32Bits auf
+        \item \textcolor{darkcorn}{ID Number} Identifikation des IP-Pakets / Fragmente, erlaubt Identifikation zusammengehöriger Fragmente
+        \item \textcolor{darkcorn}{Flags} Kontroll-Flags für Fragmentierung (0/DF/MF)
+        \item \textcolor{darkcorn}{Fragment Offset} Gibt an, wo ein Fragment hingehört
+        \item \textcolor{darkfrog}{Time to Live} anz. Sek, Hop-Counter, 0 → Paket wird verworfen
+        \item \textcolor{darkfrog}{Protocol} Übergeordnetes Protokoll
+        \item \textcolor{darkpurple}{Header Checksum} verhindert fehlgeleitete Pakete ($\times $ Nutzdaten)
+        \item \textcolor{darkpurple}{Source Address} Wer das Paket ursprünglich abgesendet hat
+        \item \textcolor{darkpurple}{Destination Address} Wer das Paket schliesslich erhalten soll
+        \item \textcolor{darkpurple}{Options/Padding} variabel, füllt auf ein Vielfaches von 32Bits auf
     \end{itemize}
         \includegraphics[width=1\linewidth]{images/internet_protokoll_format_ip.png}\\
-    Das unterliegende Netz limitiert die Grösse eines Pakets (Maximum Transfer Unit). Der Sender kennt die MTU der Netze nicht.\\
+    {\footnotesize Das unterliegende Netz limitiert die Grösse eines Pakets (Maximum Transfer Unit). Der Sender kennt die MTU der Netze nicht.}
 \end{KR}
 
-\subsubsection{Internet Protokolle (IP)}
+\paragraph{Internet Protokolle (IP)}
 
 \begin{definition}{Hierarchische Adressierung}\\
 IP-Adressen sind zweistufig hierarchisch
@@ -137,24 +129,67 @@ IP-Adressen sind zweistufig hierarchisch
     \end{itemize}
 \end{formula}
 
-\begin{concept}{Subnetzmaske}\\
-    bestimmt die Grenze zwischen Netz- und Interface-Adressbits:\\
-        \includegraphics[width=1\linewidth]{images/subnetzmaske.png}\\
-    \includegraphics[width=1\linewidth]{images/subnetzmaske_bsp.png}   
+\begin{concept}{Subnetzmaske}
+    {\small bestimmt Grenze zwischen Netz-/Interface-Adressbits:}\\
+        \includegraphics[width=1\linewidth]{images/subnetzmaske.png}
+    %\includegraphics[width=1\linewidth]{images/subnetzmaske_bsp.png}   
 \end{concept}
 
-\begin{formula}{Netzmasken}\\
-    \includegraphics[width=1\linewidth]{images/subnetzmaske_bsp_2.png}
+\begin{formula}{Netzmasken} bestimmen Anzahl adressierbarer Interfaces im Netz\\
+    Auflistung: Wert (dezimal/binär), alternative Schreibweise, Anzahl der adressierbaren Interfaces
+
+    \vspace{1mm}
+    
+    \begin{minipage}{0.45\linewidth}
+        \begin{tabular}{ccc}
+            255 (11111111) & /24 & 256\\
+            254 (11111110) & /23 & 512\\
+            252 (11111100) & /22 & 1024\\
+            248 (11111000) & /21 & 2048
+        \end{tabular}
+    \end{minipage}
+    \hspace{3mm}
+    \begin{minipage}{0.45\linewidth}
+        \begin{tabular}{ccc}
+            240 (11110000) & /20 & 4096\\
+            224 (11100000) & /19 & 8192\\
+            192 (11000000) & /18 & 16384\\
+            128 (10000000) & /17 & 32768\\
+            0 (00000000) & /16 & 65536
+        \end{tabular}
+    \end{minipage}
+
+    \vspace{1mm}
+
+    \textcolor{pink}{Achtung:} bei der Anzahl der adressierbaren Interfaces immer noch -2 rechnen (Netz- und Broadcastadresse)!
 \end{formula}
 
-\begin{KR}{Rechnen mit Netzmasken}\\
-    Typische Internet-Adressen Aufgabenstellung: Berechnen Sie die fehlenden Informationen\\
-        \includegraphics[width=1\linewidth]{images/rechenne_mit_netzmasken.png}
+\begin{KR}{Rechnen mit Netzmasken}
+    Typische Aufgabenstellung
 
-        Korrektur: Subnetzmaske c: /18 (nicht /24)
+    \vspace{1mm}
+
+    \resizebox{\linewidth}{!}{
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        IP-Adresse & Netzmaske & Netzadresse & Broadcastadr. & $\#$Adr.\\
+        \hline
+        17.8.7.8 & 255.255.0.0 /16 & 17.8.0.0 & 17.8.255.255 & 65536\\
+        \hline
+        11.7.177.4 & 255.255.224.0 /19 & 11.7.160.0 & 11.7.191.255 & 8192\\
+        \hline
+        144.3.133.1 & 255.255.192.0 /18 & 144.3.128.0 & 144.3.191.255 & 16384\\
+        \hline
+        31.4.2.166 & 255.255.255.248 /29 & 31.4.2.160 & 31.4.2.167 & 8\\
+        \hline
+    \end{tabular}}
+
+    \vspace{1mm}
+
+    {\footnotesize Anzahl ($\#$) der adressierbaren Interfaces inkl. Netz- und Broadcastadresse}
 \end{KR}
 
-\subsubsection{Flaches und Hierarchisches Routing}
+\paragraph{Flaches{,} Hierarchisches und Classful Routing}
 
 \begin{concept}{Flaches Routing}
     \begin{itemize}
@@ -162,7 +197,7 @@ IP-Adressen sind zweistufig hierarchisch
         \begin{itemize}
             \item Pakete an unbekannte Netze werden verworfen
         \end{itemize}
-        \item Einsatz: stark vermaschte Netze oder zentraler Bereich (Backbone)
+        \item Einsatz: stark vermaschte Netze / zentraler Bereich (Backbone)
         \item Nachteil: Sehr grosse Routing-Tabellen
     \end{itemize}
 \end{concept}
@@ -171,8 +206,8 @@ IP-Adressen sind zweistufig hierarchisch
 Was geschieht mit dem IP-Paket?
     \begin{itemize}
         \item Kein Unterbruch: Es wird nach gemäss dem 4. Eintrag der Routingtabelle von Router B an p0 weitergeleitet
-        \item Unterbruch von p0/Router B: Es wird gemäss Eintrag 5 in der Routingtabelle von Router B an p2 weitergeleitet.
-        \item zusätzlicher Unterbruch p0/Router C: Router C kann das IP-Paket nicht weiterleiten, es IP-Paket erreicht den Empfänger nicht.
+        \item Unterbruch von p0/Router B: Es wird gemäss Eintrag 5 in der Routingtabelle von Router B an p2 weitergeleitet
+        \item zusätzlicher Unterbruch p0/Router C: Router C kann das IP-Paket nicht weiterleiten, es erreicht den Empfänger nicht
     \end{itemize}
         \includegraphics[width=1\linewidth]{images/flaches_routing_bsp.png}
 \end{example2}
@@ -189,13 +224,9 @@ Was geschieht mit dem IP-Paket?
         \includegraphics[width=1\linewidth]{images/hierarchisches_routing.png}
 \end{concept}
 
-\subsubsection{Classful Routing: Sub-/Supernetting}
-
-\begin{concept}{Classful Routing}\\
-    Ursprünglich war der IP Adressbereich in fünf Netzklassen (A - E) eingeteilt
-    \begin{itemize}
-        \item Eine Prefix (die ersten 4 Adress-Bits) erlaubt die Bestimmung der Klasse
-    \end{itemize}
+\begin{concept}{Classful Routing}
+    ursprünglich fünf Netzklassen (A - E) für IPv4\\
+    Eine Prefix (Adress-Bits 0-3) erlaubt die Bestimmung der Klasse:\\
         \includegraphics[width=0.9\linewidth]{images/classfulrouitng.png}
 \end{concept}
 
@@ -205,8 +236,8 @@ Was geschieht mit dem IP-Paket?
 
 \begin{formula}{Adressbereiche für Classful Routing}
     \begin{itemize}
-        \item klassische Netze fixer Grösse sind unflexibel (ungeeignet für Unternehmen)
-        \\ $\rightarrow$ C zu klein, A zu gross, B zu wenig
+        \item klassische Netze fixer Grösse sind unflexibel (ungeeignet für \\Unternehmen)
+         $\rightarrow$ C zu klein, A zu gross, B zu wenig
         \item Abhilfe schafft CIDR – Classless Inter-Domain Routing
         \begin{itemize}
             \item Flexible Verwendung von Netzmasken beliebiger Länge
@@ -233,7 +264,7 @@ Was geschieht mit dem IP-Paket?
 
 \begin{example}
     Zusammenfassen von 4 Class C Netzen (22 = 2 Bits der Subnetzmaske)\\
-        \includegraphics[width=1\linewidth]{images/example_supernetting.png}
+        \includegraphics[width=0.95\linewidth]{images/example_supernetting.png}
 \end{example}
 
 \begin{concept}{Subnetting}
@@ -244,15 +275,15 @@ Was geschieht mit dem IP-Paket?
     \end{itemize}
     Verschieben der Netzmasken-Bits: 
     \begin{itemize}
-        \item $8 = 2^3$, 3 Bits identifizieren 8 Subnetze (000 → 111) in binärer Netzmaske
+        \item $8 = 2^3$, 3 Bits identifizieren 8 Subnetze (000 → 111)
         \item Netzmaske: /16 zu /19 (255.255.0.0 → 255.255.224.0)
         \item Interface-Anteil: $2^{16}$ zu $2^{13}$ = 8192 IP Adressen pro Subnetz
     \end{itemize}
-        \includegraphics[width=1\linewidth]{images/subnetting1.png}\\
+        \includegraphics[width=0.9\linewidth]{images/subnetting1.png}\\
     Damit haben wir 8 neue Subnetze mit den folgenden Netzadressen:\\
-        \includegraphics[width=0.75\linewidth]{images/subnetting2.png}
+        \includegraphics[width=0.7\linewidth]{images/subnetting2.png}
     \begin{itemize}
-        \item Netz-Anteil: 19 statt 16 "1" → Subnetzmaske: 255.255.224.0 oder /19
+        \item Netz-Anteil: 19 statt 16 "1" → Subnetzmaske: 255.255.224.0 /19
         \item Host-Anteil: 13 statt 16 "0" → Anzahl Hostadressen = 8'192
     \end{itemize}
     Das zweite Netz oben wird deshalb korrekt wie folgt gekennzeichnet:
@@ -343,11 +374,11 @@ Was geschieht mit dem IP-Paket?
     Header:
     \begin{itemize}
         \item \textcolor{blue}{Type} ICMP Typ
-        \item \textcolor{green}{Code} Message Details
-        \item \textcolor{green}{Checksum} Prüfsumme über die ICMP Meldung
+        \item \textcolor{darkfrog}{Code} Message Details
+        \item \textcolor{darkfrog}{Checksum} Prüfsumme über die ICMP Meldung
         \item \textcolor{pink}{depends on code} Wert/Verwendung je nach ICMP Typ
     \end{itemize}
-    \textcolor{purple}{Datenbereich} IP-Header und 64 Bits of Original Datagram
+    \textcolor{lilac}{Datenbereich} IP-Header und 64 Bits of Original Datagram
     \includegraphics[width=1\linewidth]{images/icmp_details.png}
 \end{KR}
 
@@ -391,15 +422,15 @@ Was geschieht mit dem IP-Paket?
 \begin{example2}{ICMP Destination Unreachable} Farben siehe IP-Header def.\\
     Host 160.85.31.3 sendet an Host 160.85.29.99:
     \begin{itemize}
-        \item \textcolor{blue}{4500 0028} \textcolor{yellow}{8b10 0000} \textcolor{green}{0711} \textcolor{purple}{a8a4 \colorbox{lightgrey}{a055 1f03} \colorbox{lightgrey}{a055 1d63} 8b0d 829d 0014 a348 030a 0000 7504 1137 407c 0800}
+        \item \textcolor{blue}{4500 0028} \textcolor{darkcorn}{8b10 0000} \textcolor{darkfrog}{0711} \textcolor{darkpurple}{a8a4 \colorbox{lightgrey}{a055 1f03} \colorbox{lightgrey}{a055 1d63} 8b0d 829d 0014 a348 030a 0000 7504 1137 407c 0800}
         \item \colorbox{lightgrey}{Senderadr.}: a055 1f03, \colorbox{lightgrey}{Destinationadr.}: a055 1d63
     \end{itemize}
     Router kennt keinen Weg: sendet Destination Unreachable Message zurück:
     \begin{itemize}
-        \item 4500 0038 8038 0000 fd\textbf{01} 5bc0 \colorbox{lightgrey}{a055 821e a055 1f03} \textcolor{blue}{03}\textcolor{green}{01 4bf7} \textcolor{pink}{0000 0000} \textcolor{purple}{4500 0028 8b10 0000 0711 a8a4 a055 1f03 a055 1d63 8b0d 829d 0014 a348}
+        \item 4500 0038 8038 0000 fd\textbf{01} 5bc0 \colorbox{lightgrey}{a055 821e a055 1f03} \textcolor{blue}{03}\textcolor{darkfrog}{01 4bf7} \textcolor{pink}{0000 0000} \textcolor{darkpurple}{4500 0028 8b10 0000 0711 a8a4 a055 1f03 a055 1d63 8b0d 829d 0014 a348}
         \item Erkennen dass dies ICMP Message ist: \textbf{Protocol}: 01
         \item ICMP Typ: \textcolor{blue}{Type}: 03
-        \item 64 Bytes of Original Datagram: \textcolor{purple}{Original Data}
+        \item 64 Bytes of Original Datagram: \textcolor{darkpurple}{Original Data}
     \end{itemize}
 \end{example2}
 
