@@ -1,0 +1,1062 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="metadata description" lang="en" name="description" xml:lang="en" />
+<meta content="description des métadonnées" lang="fr" name="description" xml:lang="fr" />
+<meta content="Sphinx, MyST" name="keywords" />
+<meta content="en_US" property="og:locale" />
+
+    <title>11 - Erste Schritte mit der Bash Shell &#8212; SNP Labs  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section class="tex2jax_ignore mathjax_ignore" id="erste-schritte-mit-der-bash-shell">
+<h1>11 - Erste Schritte mit der Bash Shell<a class="headerlink" href="#erste-schritte-mit-der-bash-shell" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p><img alt="" src="../_images/Shell.png" /></p>
+<hr class="docutils" />
+<section id="ubersicht">
+<h2>1. Übersicht<a class="headerlink" href="#ubersicht" title="Permalink to this headline">¶</a></h2>
+<p>Die Shell ist eine Schnittstelle zum Kernel die es erlaubt durch <strong>Texteingaben</strong> Kernel Funktionalität auszuführen. Man nennt diese Art von Schnittstelle <strong>Kommandointerpreter</strong>.</p>
+<p>Beispiel: man kann mittels der Shell in ein Filesystem Directory navigieren (<code class="docutils literal notranslate"><span class="pre">cd</span></code>) und den Inhalt von Files ausgegeben (<code class="docutils literal notranslate"><span class="pre">cat</span></code>).</p>
+<hr class="docutils" />
+<p><img alt="" src="../_images/bash_console.JPG" /></p>
+<p>Alternativ zur Shell gibt es graphische Oberflächen mit denen Ähnliches erreicht werden kann. Die graphische Oberfläche ist generell intuitiver zu bedienen, hingegen sind die Möglichkeiten eingeschränkter als mit der Shell.</p>
+<p>Z.B. wird durch Doppel-Klick auf ein spezifisches Directory Objekt in das entsprechende Directory gewechselt, analog zum Shell Kommando <code class="docutils literal notranslate"><span class="pre">cd</span></code>.</p>
+<hr class="docutils" />
+<p><img alt="" src="../_images/cd_directory.png" /></p>
+<p>Als weitere Alternative werden wir im Laufe des SNP Kurses lernen mittels der System-Library Kernel Funktionalität aus C Programmen heraus auszuführen.</p>
+<p>In diesem Praktikum konzentrieren wir uns vorerst auf den Kommandointerpreter.</p>
+</section>
+<hr class="docutils" />
+<section id="lernziele">
+<h2>2. Lernziele<a class="headerlink" href="#lernziele" title="Permalink to this headline">¶</a></h2>
+<p>In diesem Praktikum möchten wir Sie mit der Shell Programmierung unter Linux vertraut machen.</p>
+<ul class="simple">
+<li><p>Sie verstehen wie Kommandos aufgerufen werden und was der Exit Status ist.</p></li>
+<li><p>Sie können Ketten von Kommandos via Pipe und logische Verknüpfungen verbinden.</p></li>
+<li><p>Sie können Input und Output handhaben.</p></li>
+<li><p>Sie wissen was Shell Variablen sind.</p></li>
+<li><p>Sie verstehen einfache <code class="docutils literal notranslate"><span class="pre">if</span></code> und <code class="docutils literal notranslate"><span class="pre">for</span></code> Kontrollstrukturen.</p></li>
+<li><p>Sie können einfache Shell Scripts verstehen und debuggen.</p></li>
+<li><p>Sie können Scripts selber schreiben.</p></li>
+<li><p>Sie können Hilfe via <code class="docutils literal notranslate"><span class="pre">man</span></code> bzw. <code class="docutils literal notranslate"><span class="pre">help</span></code> Kommando erfragen.</p></li>
+</ul>
+<p>Die Bewertung dieses Praktikums ist am Ende angegeben.</p>
+<p>Die Code Beispiele liegen im <code class="docutils literal notranslate"><span class="pre">git</span></code> Repository <code class="docutils literal notranslate"><span class="pre">snp-lab-code.</span></code></p>
+<p>Die in diesem Praktikum verwendeten Kommandos werden hier z.T. erklärt.</p>
+<p>Weitere Informationen darüber können in der Einführungsvorlesung nachgelesen werden. Eine Liste von nützlichen Kommandos finden Sie in der Installationsanleitung für die Praktika. Im Anhang finden Sie Kopien der obigen beiden Referenzen.</p>
+</section>
+<hr class="docutils" />
+<section id="getting-started">
+<h2>3. Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>Dieser Abschnitt erstreckt sich über ca. 11 Seiten und ist als Einführung und Voraussetzung/Theorie für die Aufgaben gedacht. Im Anhang stehen noch weitere Unterlagen als Referenz zur Verfügung.</p>
+<p>Sie können diesen Abschnitt von oben nach unten durcharbeiten und sind dann bereit für die Lösung der Aufgaben.</p>
+<p>Wenn Sie schon Vorwissen mitbringen, können Sie auch nur die hervorgehobenen Zusammenfassungen pro Unterabschnitt durchmachen um zu entscheiden, ob Sie doch den einen oder anderen Unterabschnitt im Detail behandeln wollen.</p>
+<hr class="docutils" />
+<section id="die-bash-shell">
+<h3>3.1 Die Bash Shell<a class="headerlink" href="#die-bash-shell" title="Permalink to this headline">¶</a></h3>
+<p>Es gibt auf Linux Systemen verschiedene Kommandointerpreter. Wir behandeln in diesem Praktikum den Kommandointerpreter mit Namen <strong>Bash</strong>.</p>
+<p>Die Bash Shell ist ein mächtiges Werkzeug welches viele verschiedene Aspekte abdeckt von denen hier die Grundzüge behandelt werden. Weitergehende Information können in der Shell selber mittels <code class="docutils literal notranslate"><span class="pre">help</span></code> Kommando (für Bash Hilfe) oder <code class="docutils literal notranslate"><span class="pre">man</span></code> (für beliebige Themen) erfragt wer-den. Natürlich gibt es zur Vertiefung auch jede Menge von Online Tutorials und Referenzen welche Sie selbständig auskundschaften können.</p>
+</section>
+<hr class="docutils" />
+<section id="kommando-eingabe">
+<h3>3.2 Kommando Eingabe<a class="headerlink" href="#kommando-eingabe" title="Permalink to this headline">¶</a></h3>
+<p>Die Shell bietet einen Prompt wo man eine <strong>Kommando Text Zeile</strong> eingeben kann.</p>
+<hr class="docutils" />
+<p><img alt="" src="../_images/cmd_input.png" /></p>
+<p>Diese Zeile wird von der Shell in Häppchen (Tokens) aufgeteilt. Tokens sind <strong>Operatoren</strong> und <strong>Worte</strong> welche durch <strong>Leerzeichen</strong> oder gegebenenfalls durch Operatoren abgegrenzt sind. Der Begriff Wort ist also sehr weit gefasst. So ergibt Z.B. aus der Sicht der Shell die folgende Eingabe fünf Tokens:</p>
+<p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">Erste</span>&#160;&#160; <span class="pre">Schritte&gt;out.txt</span></code></p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Token Nr</strong></p></th>
+<th class="text-left head"><p><strong>Wert</strong></p></th>
+<th class="text-left head"><p><strong>Typ</strong></p></th>
+<th class="text-left head"><p><strong>Trennung</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>1</p></td>
+<td class="text-left"><p><strong>echo</strong></p></td>
+<td class="text-left"><p>Wort</p></td>
+<td class="text-left"><p>Trennung hier durch Leerzeichen</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>2</p></td>
+<td class="text-left"><p><strong>Erste</strong></p></td>
+<td class="text-left"><p>Wort</p></td>
+<td class="text-left"><p>Trennung hier durch Leerzeichen</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>3</p></td>
+<td class="text-left"><p><strong>Schritte</strong></p></td>
+<td class="text-left"><p>Wort</p></td>
+<td class="text-left"><p>Trennung hier durch Operator</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>4</p></td>
+<td class="text-left"><p><strong>&gt;</strong></p></td>
+<td class="text-left"><p>Operator</p></td>
+<td class="text-left"><p>der Operator ist in sich abgeschlossen, wenn erkannt</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>5</p></td>
+<td class="text-left"><p><strong>out.txt</strong></p></td>
+<td class="text-left"><p>Wort</p></td>
+<td class="text-left"><p>Trennung hier durch das Ende der Zeile</p></td>
+</tr>
+</tbody>
+</table>
+<p>Gewisse Worte plus die Operatoren haben für die Shell eine <strong>reservierte Bedeutung</strong>.
+Will man diese <strong>reservierte Bedeutung umgehen</strong>, bzw. gewissen Text wortwörtlich (inklusive alle Leerzeichen, etc.) behandeln, so kann man solchen Text mit Anführungsstrichen (<strong>Quoting</strong> genannt) umschliessen. (Auf die verschiedenen Varianten von Quoting gehen wir später ein.)</p>
+<p>Z.B. wird die reservierte Bedeutung von <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> in folgender Eingabe aufgehoben:</p>
+<p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;Die</span> <span class="pre">Bedeutung</span> <span class="pre">von</span> <span class="pre">&gt;</span> <span class="pre">ist,</span> <span class="pre">die</span> <span class="pre">Ausgabe</span> <span class="pre">in</span> <span class="pre">ein</span> <span class="pre">File</span> <span class="pre">zu</span> <span class="pre">schreiben&quot;</span></code></p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zusammenfassung: Kommando Eingabe</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>- die Shell liest eine <strong>Zeile</strong> Text</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>- der gelesene Text wird in Tokens (<strong>Worte</strong> und <strong>Operatoren</strong>) aufgeteilt</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>- <strong>Quoting</strong> erlaubt es, die reservierte Bedeutung von Worten und Operatoren aufzuheben</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="kommando-ausfuhrung">
+<h3>3.3 Kommando Ausführung<a class="headerlink" href="#kommando-ausfuhrung" title="Permalink to this headline">¶</a></h3>
+<p>Wenn die eingegebene Zeile in Tokens aufgeteilt ist, teilt die Shell die Tokens in Kommando Aufrufe auf, welche durch Operatoren oder das Ende der Zeile terminiert sind.</p>
+<p>Z.B. <code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">Hallo</span> <span class="pre">&gt;</span> <span class="pre">out.txt</span> <span class="pre">;</span> <span class="pre">wc</span> <span class="pre">-l</span> <span class="pre">out.txt</span></code></p>
+<p>Diese Kommandozeile besteht aus zwei Kommando Aufrufen (<code class="docutils literal notranslate"><span class="pre">echo</span></code>… und <code class="docutils literal notranslate"><span class="pre">wc</span></code>…) getrennt durch den Strich-Punkt Operator.</p>
+<p>Übrigens: <code class="docutils literal notranslate"><span class="pre">wc</span></code> ist «word-count» und gibt mit dem Argument <code class="docutils literal notranslate"><span class="pre">-l</span></code> die Anzahl Zeilen (lines) aus.</p>
+<p>Das auszuführende Kommando findet die Shell indem <strong>das erste Wort interpretiert</strong> wird:</p>
+<ol class="arabic simple">
+<li><p>Ist das Wort ein Kommando das die Shell selber ausführen kann (built-in oder user-definierte Funktion), z.B. <code class="docutils literal notranslate"><span class="pre">echo</span></code>?</p></li>
+<li><p>Ist das Wort ein File Path? Wenn ja, führt die Shell das entsprechende Programm aus, z.B. <code class="docutils literal notranslate"><span class="pre">/usr/bin/wc</span></code>.</p></li>
+<li><p>Sonst durchsucht die Shell die Directory Pfade aus der Variable <strong>PATH</strong>. Das erste Pro-gramm das in einem der Directories gefunden wird, wird ausgeführt, z.B. <code class="docutils literal notranslate"><span class="pre">wc</span></code>.</p></li>
+</ol>
+<p>Mit dem Shell built-in Kommando <code class="docutils literal notranslate"><span class="pre">type</span></code> mit Argument <code class="docutils literal notranslate"><span class="pre">-a</span></code>, gefolgt von den Kommandos die er-fragt werden sollen, kann geprüft werden über welche der obigen Stufen ein Kommando von der Shell gefunden wird.
+Z.B. <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">-a</span> <span class="pre">echo</span> <span class="pre">wc</span> <span class="pre">type</span> <span class="pre">for</span> <span class="pre">if</span></code></p>
+<hr class="docutils" />
+<p><img alt="" src="../_images/bash_console_echo_type.JPG" /></p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zusammenfassung: Kommando Eingabe</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>die Token Sequenz einer Kommandozeile wird in Kommando Aufrufe aufgeteilt</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>das erste Wort pro Kommandoaufruf wird dreistufig gesucht</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>1.	Ist es ein built-in oder eine user-function?</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>2.	Ist es explizit durch einen File Pfad gegeben?</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>3.	Wird es in einem Directory, gegeben durch die PATH Variable, gefunden?</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="exit-code">
+<h3>3.4 Exit Code<a class="headerlink" href="#exit-code" title="Permalink to this headline">¶</a></h3>
+<p>Jedes Kommando gibt einen <strong>Exit Code</strong> an die Shell zurück. Dieser Exit Code gibt Auskunft über den Erfolg (gleich 0) oder Misserfolg (ungleich 0) der Kommandoausführung.
+Der Exit Code des unmittelbar vorher ausgeführten Kommandos kann mittels <code class="docutils literal notranslate"><span class="pre">$?</span></code> abgefragt werden. Z.B. <code class="docutils literal notranslate"><span class="pre">wc</span> <span class="pre">-l</span> <span class="pre">xxx.txt</span> <span class="pre">;</span> <span class="pre">echo</span> <span class="pre">&quot;Error:</span> <span class="pre">$?&quot;</span></code> gibt folgendes aus:</p>
+<hr class="docutils" />
+<p><img alt="" src="../_images/bash_console_questionmark.JPG" /></p>
+<p>Man kann die Ausführung eines Folgekommandos vom Erfolg des Vorgängerkommandos abhängig machen. Dazu gibt es drei Operatoren und zwei Built-in Kommandos:</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Operator</strong></p></th>
+<th class="text-left head"><p><strong>Bedeutung</strong></p></th>
+<th class="text-left head"><p><strong>Beispiele</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>cmd1 <code class="docutils literal notranslate"><span class="pre">&amp;&amp;</span></code> cmd2</p></td>
+<td class="text-left"><p><strong>Logisches «Und»</strong>: cmd2 wird nur ausgeführt, wenn cmd1 <strong>erfolgreich</strong> war</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">xxx</span> <span class="pre">&amp;&amp;</span> <span class="pre">echo</span> <span class="pre">$?</span></code>: <code class="docutils literal notranslate"><span class="pre">echo</span></code> wird <strong>nicht ausgeführt</strong>, weil <code class="docutils literal notranslate"><span class="pre">type</span></code> nicht erfolgreich war</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">echo</span> <span class="pre">&amp;&amp;</span> <span class="pre">echo</span> <span class="pre">$?</span></code>: <code class="docutils literal notranslate"><span class="pre">echo</span></code> wird <strong>ausgeführt</strong>, weil <code class="docutils literal notranslate"><span class="pre">type</span></code> erfolgreich war</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>cmd1 <code class="docutils literal notranslate"><span class="pre">||</span></code> cmd2</p></td>
+<td class="text-left"><p><strong>Logisches «Oder»</strong> <br> cmd2 wird nur ausgeführt, wenn cmd1 <strong>nicht erfolgreich</strong> war</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">xxx</span> <span class="pre">||</span> <span class="pre">echo</span> <span class="pre">$?</span></code><br><code class="docutils literal notranslate"><span class="pre">echo</span></code> wird <strong>ausgeführt</strong>, weil <code class="docutils literal notranslate"><span class="pre">type</span></code> nicht erfolgreich war</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">echo</span> <span class="pre">||</span> <span class="pre">echo</span> <span class="pre">$?</span></code> <br><code class="docutils literal notranslate"><span class="pre">echo</span></code> wird <strong>nicht ausgeführt</strong>, weil <code class="docutils literal notranslate"><span class="pre">type</span></code> erfolgreich war</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">!</span></code> cmd</p></td>
+<td class="text-left"><p><strong>Invertierung</strong> des Exit Codes: <br> aus Erfolg wird Misserfolg und umgekehrt</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">xxx</span> <span class="pre">;</span> <span class="pre">echo</span> <span class="pre">$?</span></code> <br> Ausgabe von <code class="docutils literal notranslate"><span class="pre">echo</span></code>: 1</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">!</span> <span class="pre">type</span> <span class="pre">xxx</span> <span class="pre">;</span> <span class="pre">echo</span> <span class="pre">$?</span></code><br>Ausgabe von <code class="docutils literal notranslate"><span class="pre">echo</span></code>: 0</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td class="text-left"><p>Kommando welches den Exit Code 0 zurückgibt</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">true</span> <span class="pre">&amp;&amp;</span> <span class="pre">echo</span> <span class="pre">$?</span></code> <br>Ausgabe von <code class="docutils literal notranslate"><span class="pre">echo</span></code>: 0</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
+<td class="text-left"><p>Kommando welches den Exit Code 1 zurückgibt</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">false</span>&#160; <span class="pre">||</span> <span class="pre">echo</span> <span class="pre">$?</span></code> <br>Ausgabe von <code class="docutils literal notranslate"><span class="pre">echo</span></code>: 1</p></td>
+</tr>
+</tbody>
+</table>
+<p>Die obige Tabelle zeigt, dass in der Shell der Exit Code 0 als logisch «true» interpretiert wird, alle übrigen Exit Codes als «false».</p>
+<p>Man kann diese Logischen Operatoren und Kommandos nutzbringend wie folgt anwenden:</p>
+<ul>
+<li><p><strong>Fallback</strong> ausführen beim Fehlschalgen eines Kommandos</p>
+<p>z.B. <code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">-d</span> <span class="pre">directory</span> <span class="pre">||</span> <span class="pre">mkdir</span> <span class="pre">directory</span> </code></p>
+<p>-&gt; hier: das Directory wird nur kreiert, wenn es nicht existiert</p>
+<ul class="simple">
+<li><p>das Kommando <code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">-d</span></code> ist erfolgreich, wenn das <code class="docutils literal notranslate"><span class="pre">directory</span></code> existiert</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mkdir</span></code> kreiert das <code class="docutils literal notranslate"><span class="pre">directory</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Abbrechen</strong> beim ersten fehlschlagenden Kommando in einer Kette von Kommandos</p>
+<p>z.B. <code class="docutils literal notranslate"><span class="pre">mkdir</span> <span class="pre">directory</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">directory</span></code></p>
+<p>-&gt; hier: es wird nur in das Directory gewechselt, wenn es kreiert werden konnte</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cd</span></code> wechselt in das gegebene <code class="docutils literal notranslate"><span class="pre">directory</span></code></p></li>
+</ul>
+</li>
+</ul>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zusammenfassung Exit Status</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>- jedes ausgeführte Kommando gibt einen Exit Code zurück: 0 = Erfolg, sonst Misserfolg</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>- <code class="docutils literal notranslate"><span class="pre">$?</span></code> gibt den Exit Code des unmittelbar vorher ausgeführten Kommandos zurück</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>- Logische Operatoren und Kommandos welche sich auf Exit Code beziehen: <code class="docutils literal notranslate"><span class="pre">&amp;&amp;</span></code> , <code class="docutils literal notranslate"><span class="pre">||</span></code>, <code class="docutils literal notranslate"><span class="pre">!</span></code>, <code class="docutils literal notranslate"><span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>- Exit Code 0 hat die Bedeutung von <code class="docutils literal notranslate"><span class="pre">true</span></code>, alle anderen Exit Codes bedeuten <code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="i-o-umleitung">
+<h3>3.5 I/O Umleitung<a class="headerlink" href="#i-o-umleitung" title="Permalink to this headline">¶</a></h3>
+<p>Die Shell bietet etliche Operatoren um <strong>stdin</strong>, <strong>stdout</strong> und <strong>stderr</strong> umzuleiten.</p>
+<p>Eine Auswahl von gängigen Shell I/O Operatoren finden Sie in der Einführungsvorlesung und als Kopie davon im Anhang.</p>
+<p><strong>Beispiele</strong>:</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><div style="width:200px">Operator</div></p></th>
+<th class="text-left head"><p></p></th>
+<th class="text-left head"><p></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>… <code class="docutils literal notranslate"><span class="pre">&lt;</span></code> input.txt</p></td>
+<td class="text-left"><p>stdin von File lesen</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">wc</span> <span class="pre">-l</span> <span class="pre">&lt;</span> <span class="pre">~/.bashrc</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>… <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> output.txt</p></td>
+<td class="text-left"><p>stdout in File schreiben</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;Hello&quot;</span> <span class="pre">&gt;</span> <span class="pre">hello.txt</span> </code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>… <code class="docutils literal notranslate"><span class="pre">|</span></code> …</p></td>
+<td class="text-left"><p>stdout auf Pipe schreiben und stdin von Pipe lesen</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;Hello&quot;</span> <span class="pre">|</span> <span class="pre">wc</span> <span class="pre">-l</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>… <code class="docutils literal notranslate"><span class="pre">2&gt;</span></code> error.txt</p></td>
+<td class="text-left"><p>stderr auf File schreiben</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">wc</span> <span class="pre">-l</span> <span class="pre">xxx</span> <span class="pre">2&gt;</span> <span class="pre">error.txt</span> </code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>… <code class="docutils literal notranslate"><span class="pre">&gt;&amp;</span></code> mixed.txt</p></td>
+<td class="text-left"><p>stderr und stdout kombi-nieren</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">wc</span> <span class="pre">-l</span> <span class="pre">xxx</span> <span class="pre">&gt;&amp;</span> <span class="pre">mixed.txt</span> </code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>… &gt; <code class="docutils literal notranslate"><span class="pre">/dev/null</span></code> <br> … 2&gt;<code class="docutils literal notranslate"><span class="pre">/dev/null</span></code></p></td>
+<td class="text-left"><p>Output verschlucken</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">wc</span> <span class="pre">-l</span> <span class="pre">xxx</span> <span class="pre">2&gt;/dev/null</span> <span class="pre">||</span> <span class="pre">echo</span> <span class="pre">&quot;$?&quot;</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>… &lt; <code class="docutils literal notranslate"><span class="pre">/dev/null</span></code></p></td>
+<td class="text-left"><p>Leerer Input</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">wc</span> <span class="pre">-l</span> <span class="pre">&lt;</span> <span class="pre">/dev/null</span> </code></p></td>
+</tr>
+</tbody>
+</table>
+<br> 
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zusammenfassung I/O Umleitung</strong></p></th>
+<th class="text-left head"><p></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>Die Shell kann I/O Streams umleiten</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>von Files lesen:</p></td>
+<td class="text-left"><p>cmd <code class="docutils literal notranslate"><span class="pre">&lt;</span></code> input.txt</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>in Files schreiben:</p></td>
+<td class="text-left"><p>cmd <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> input.txt</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>über Pipe schreiben bzw. lesen:</p></td>
+<td class="text-left"><p>cmd1 <code class="docutils literal notranslate"><span class="pre">|</span></code> cmd2</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Error Output in File schreiben:</p></td>
+<td class="text-left"><p>cmd <code class="docutils literal notranslate"><span class="pre">2&gt;</span></code> error.txt</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>Error zusammen mit Standard Out:</p></td>
+<td class="text-left"><p>cmd <code class="docutils literal notranslate"><span class="pre">&gt;&amp;</span></code> mixed.txt</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>Spezielle Files</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Output verschlucken:</p></td>
+<td class="text-left"><p>cmd &gt; <code class="docutils literal notranslate"><span class="pre">/dev/null</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>leeres File lesen:</p></td>
+<td class="text-left"><p>cmd &lt; <code class="docutils literal notranslate"><span class="pre">/dev/null</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="shell-variablen">
+<h3>3.6 Shell Variablen<a class="headerlink" href="#shell-variablen" title="Permalink to this headline">¶</a></h3>
+<p>In der Shell können Sie Werte in Variablen speichern und wieder abfragen.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zugriff</strong></p></th>
+<th class="text-left head"><p><strong>Bedeutung</strong></p></th>
+<th class="text-left head"><p><strong>Beispiel</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>Setzen</p></td>
+<td class="text-left"><p>Eine Variable hat einen Namen und optional einen Wert.</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">meineZahl=123</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Gross- und Kleinschreibung ist von Bedeutung.</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Eine Variable hat keinen Typen, d.h. der Wert wird als Text gespeichert.</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p><strong>Achtung: es dürfen keine Spaces vor oder nach dem Gleichheitszeichen stehen!</strong></p></td>
+<td class="text-left"><p></p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zugriff</strong></p></th>
+<th class="text-left head"><p><strong>Bedeutung</strong></p></th>
+<th class="text-left head"><p><strong>Beispiel</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>Auslesen</p></td>
+<td class="text-left"><p>Wenn ein Wert einer Variab-len verwendet werden soll wird der Name der Variablen mit einem führenden <code class="docutils literal notranslate"><span class="pre">$</span></code> Zeichen geschrieben.</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;Meine</span> <span class="pre">Zahl</span> <span class="pre">ist</span> <span class="pre">$meineZahl&quot;</span></code>: &gt; Meine Zahl ist 123</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Der Text <code class="docutils literal notranslate"><span class="pre">$name</span></code> wird von der Shell an der besagten Stelle mit dem Wert der Variablen ersetzt.</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;${meineZahl}te</span> <span class="pre">Zahl&quot;</span> </code>: &gt; 123te Zahl</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Alternativ kann der Wert der Variable auch so angesprochen werden: <code class="docutils literal notranslate"><span class="pre">${name}</span></code>.</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Einen Zugriff auf eine Variable die nicht gesetzt wurde resultiert in einem leeren Wert.</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zugriff</strong></p></th>
+<th class="text-left head"><p><strong>Bedeutung</strong></p></th>
+<th class="text-left head"><p><strong>Beispiel</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>Zugriff</p></td>
+<td class="text-left"><p>Es gibt viele Möglichkeiten einen Wert noch zu transformieren, wenn er angewendet wird.</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">var=&quot;string</span> <span class="pre">ping&quot;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Stellvertretend dafür folgende Anwendung:</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;$var</span> <span class="pre">-&gt;</span> <span class="pre">${var//i/o}&quot;</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Beim Anwenden des Wertes alle Instanzen eines (Sub-) Textes ersetzen:</p></td>
+<td class="text-left"><p>&gt;string ping -&gt; strong pong</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">${name//Text/Ersatz}</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">~</span> <span class="pre">&amp;&amp;</span> <span class="pre">echo</span> <span class="pre">&quot;$PWD</span> <span class="pre">-&gt;</span> <span class="pre">${PWD////-}&quot;</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p>&gt;/home/vagrant -&gt; -home-vagrant</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p>Anmerkung: <strong>$PWD</strong> wird von der Shell auf den Pfad auf das aktuelle Directory gesetzt.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zugriff</strong></p></th>
+<th class="text-left head"><p><strong>Bedeutung</strong></p></th>
+<th class="text-left head"><p><strong>Beispiel</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>Kommando Output in Variable speichern</p></td>
+<td class="text-left"><p>Mit <code class="docutils literal notranslate"><span class="pre">$(Kommando)</span></code> kann man den stdout eines Kommandos in einer Variablen speichern.</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">var=$(du</span> <span class="pre">-sk</span> <span class="pre">~)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">$var</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p>&gt;270696 /home/vagrant</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p>Anmerkung: das Kommando <code class="docutils literal notranslate"><span class="pre">du</span> <span class="pre">-sk</span></code> ist «disk usage» und gibt mit den gegebenen Optionen den Platz in Kilo-Bytes an, welches der gesamte File Baum unter dem gegebenen Pfad auf dem Filesystem beansprucht.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zugriff</strong></p></th>
+<th class="text-left head"><p><strong>Bedeutung</strong></p></th>
+<th class="text-left head"><p><strong>Beispiel</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>Rechnen</p></td>
+<td class="text-left"><p>Die Shell kann ganzzahlig rechnen. Dies muss speziell angegeben werden mit <code class="docutils literal notranslate"><span class="pre">$((Text))</span></code>.</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;Plus</span> <span class="pre">1</span> <span class="pre">=</span> <span class="pre">$meineZahl+1&quot;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p>&gt; Plus 1 = 123+1</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Mit <code class="docutils literal notranslate"><span class="pre">$((Text))</span></code> wird angegeben, dass der angegebene <code class="docutils literal notranslate"><span class="pre">Text</span></code> als arithmetischer Ausdruck interpretiert werden soll.</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;Plus</span> <span class="pre">1</span> <span class="pre">=</span> <span class="pre">$((meineZahl+1))&quot;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p>&gt; Plus 1 = 124</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">meineZahl=$((meineZahl+17))</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">$meineZahl</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-left"><p>&gt; 140</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zusammenfassung Shell Variablen</strong></p></th>
+<th class="text-left head"><p></p></th>
+<th class="text-left head"><p></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>Setzen</p></td>
+<td class="text-left"><p>var=value</p></td>
+<td class="text-left"><p><strong>usage=“usage: cmd arg1 arg2”</strong></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>Anwenden:</p></td>
+<td class="text-left"><p><span class="math notranslate nohighlight">\(var oder \)</span>{var}</p></td>
+<td class="text-left"><p><strong>wer=$USER</strong></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Transformation:</p></td>
+<td class="text-left"><p>${name//Text/Ersatz}</p></td>
+<td class="text-left"><p><strong>var=${PATH//: /}</strong></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>Kommando Output:</p></td>
+<td class="text-left"><p>$(Kommando)</p></td>
+<td class="text-left"><p><strong>n=$(cat myfile.txt | wc -l)</strong></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Rechnen:</p></td>
+<td class="text-left"><p>$((Ausdruck))</p></td>
+<td class="text-left"><p><strong>i=$((i+1))</strong></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="shell-scripts">
+<h3>3.7 Shell Scripts<a class="headerlink" href="#shell-scripts" title="Permalink to this headline">¶</a></h3>
+<p>Die Shell bietet die Möglichkeit, Kommandozeilen in Scripts zusammenzufassen um diese dann als Ganzes auszuführen. Dies erlaubt es, wiederkehrende Kommandoaufrufe zusammenzufassen und bei Bedarf als Ganzes auszuführen wie wenn man jede Zeile händisch eingetippt und ausgeführt hätte.</p>
+<p><strong>Beispiel</strong></p>
+<p>Angenommen ist folgender Text im File<code class="docutils literal notranslate"> <span class="pre">~/disk-usage-of-home-directory.sh</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;Size in KB of the home directory&quot;</span>
+du -sk ~
+</pre></div>
+</div>
+<p>Resultat der Ausführung:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash ~/disk-usage-of-home-directory.sh
+&gt; Size <span class="k">in</span> KB of the home directory
+&gt; <span class="m">270700</span>	/home/vagrant
+</pre></div>
+</div>
+<br>
+<p><strong>She-Bang</strong></p>
+<p>Um nicht jedes Mal <code class="docutils literal notranslate"><span class="pre">bash</span> <span class="pre">…</span></code> angeben zu müssen, bietet das Betriebssystem die Möglichkeit, im Script anzugeben, dass Bash als Kommandointerpreter für das gegebene Script anzuwenden ist.</p>
+<p>Dies geschieht mit dem so genannten <strong>«she-bang»</strong>. Das ist ein Kommentar von spezieller Form auf der ersten Zeile des Scripts. Diese Zeile gibt an mit welcher Kommandozeile das Script vom Betriebssystem aufgerufen werden soll.</p>
+<p>Wir ergänzen somit das obige Script mit dem she-bang für Bash (<code class="docutils literal notranslate"><span class="pre">#!/bin/bash</span></code>)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nb">echo</span> <span class="s2">&quot;Size in KB of the home directory&quot;</span>
+du -sk ~
+</pre></div>
+</div>
+<p>Damit das Script direkt, das heisst ohne bash auf der Kommandozeile anzugeben, aufgerufen werden kann muss die Erlaubnis dafür gegeben werden. Dies wird im File Modus angegeben, z.B.</p>
+<p><code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">a+x</span> <span class="pre">~/disk-usage-of-home-directory.sh</span></code></p>
+<p>Das Kommando <code class="docutils literal notranslate"><span class="pre">chmod</span></code> ändert in diesem Beispiel die Attribute des Files so dass es als Kommando ausführbar ist. Da das <code class="docutils literal notranslate"><span class="pre">chmod</span></code> Kommando die Erlaubnis gibt ein Kommando ausführbar zu machen, kann es sein, dass Sie erhöhte Rechte benötigen um das <code class="docutils literal notranslate"><span class="pre">chmod</span></code> Kommando aus-zuführen. Dies geschieht mit dem Kommando <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">...</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">chmod</span> <span class="pre">a+x</span> <span class="pre">~/disk-usage-of-home-directory.sh</span></code></p>
+<p>Dies erfragt Ihr Passwort (Ihr Login ist in dieser Umgebung Teil der Administratoren Gruppe) und führt dann das Kommando <code class="docutils literal notranslate"><span class="pre">chmod</span></code> mit Administrator Rechten aus.</p>
+<p>Nun können Sie ohne bash auf der Kommandozeile das script wie folgt ausführen:</p>
+<p><code class="docutils literal notranslate"><span class="pre">~/disk-usage-of-home-directory.sh</span></code><br />
+<br></p>
+<p><strong>Script Argumente</strong></p>
+<p>In der Kommandozeile können Argumente einem Kommando übergeben werden.</p>
+<p>Innerhalb eines Shell Scripts kann auf die Argumente via die Variablen <code class="docutils literal notranslate"><span class="pre">${nr}</span></code> zugegriffen werden, bzw. für die Argumente <code class="docutils literal notranslate"><span class="pre">0…9</span></code> geht auch <code class="docutils literal notranslate"><span class="pre">$0</span></code>, <code class="docutils literal notranslate"><span class="pre">$1</span></code>, <code class="docutils literal notranslate"><span class="pre">…$9</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">$0</span></code> steht für den Kommandonamen (bzw. wie das Kommando aufgerufen wurde), <code class="docutils literal notranslate"><span class="pre">$1</span></code> für das erste Argument, <code class="docutils literal notranslate"><span class="pre">$2</span></code> für das zweite, etc.</p>
+<br> 
+<p><strong>Exit Code eines Scripts</strong></p>
+<p>Jedes Kommando, und somit auch jedes Script, geben der Shell einen Exit Code zurück.</p>
+<p>Der Exit Code eines Scripts ist der Exit Code des zuletzt ausgeführten Kommandos innerhalb des Scripts.
+<br></p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zusammenfassung Shell Scripts</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>Ein Script sind eine oder mehrere Kommandozeilen in einem Text File.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">#!/bin/bash</span></code> als erste Zeile sagt dem OS wie das Script als Kommando aufzurufen ist.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Damit das Script ausführbar ist muss es Ausführungsrechte erhalten (<code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">a+x</span></code> …).</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>Falls ein Kommando Administrator Rechte benötigt um ausgeführt werden zu können, kann das mit dem Kommando <code class="docutils literal notranslate"><span class="pre">sudo</span></code> vorangestellt erreicht werden.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Script Argumente können mit den Variablen <code class="docutils literal notranslate"><span class="pre">${nr}</span></code>, oder kurz <code class="docutils literal notranslate"><span class="pre">$0…$9</span></code>, angesprochen werden.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">$0</span></code> steht für den Kommandoaufruf.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Der Exit Code eines Scripts ist der Exit Code des letzten ausgeführten Kommandos des Scripts.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="kontrollfluss">
+<h3>3.8 Kontrollfluss<a class="headerlink" href="#kontrollfluss" title="Permalink to this headline">¶</a></h3>
+<p>Die Shell bietet Kontrollstrukturen wie Verzweigungen und Wiederholungen an.</p>
+<p>Dies ist speziell nützlich in Scripts und weniger bei der direkten Eingabe auf der Kommandozeile da man interaktiv bei der Eingabe auf den Output der aufgerufenen Kommandos reagieren kann.</p>
+<p>Stellvertretend für verschiedene Varianten von Kontrollstrukturen werden hier <code class="docutils literal notranslate"><span class="pre">if</span></code> und eine Variante von <code class="docutils literal notranslate"><span class="pre">for</span></code> besprochen.</p>
+<p><strong>Verzweigung mittels «if»</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> cmd  <span class="c1"># gehe zu &quot;then&quot; wenn der Exit Code von cmd true ist</span>
+<span class="k">then</span>
+...
+<span class="k">fi</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> cmd  <span class="c1"># wie oben, aber gehe im &quot;false&quot; Fall nach &quot;else&quot;</span>
+<span class="k">then</span>
+...
+<span class="k">else</span>
+...
+<span class="k">fi</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> cmd1  <span class="c1"># wie oben, aber gehe im &quot;false&quot; Fall zum ersten &quot;elif&quot;</span>
+<span class="k">then</span>
+...
+<span class="k">elif</span> cmd2 <span class="c1"># analog zum &quot;if&quot;: true -&gt; &quot;then&quot;, &quot;false&quot; -&gt; &quot;else&quot;/&quot;elif&quot;</span>
+<span class="k">then</span>
+...
+<span class="k">else</span>
+...
+<span class="k">fi</span>
+</pre></div>
+</div>
+<p><strong>Wiederholung mittels «for»</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># &quot;name&quot; nimmt hintereinander die gegebenen Werte an und durchläuft</span>
+<span class="c1"># jeweils den do...done Block</span>
+<span class="k">for</span> name <span class="k">in</span> <span class="o">(</span>Wort1 Wort2 Wort3 ... WortN<span class="o">)</span>
+<span class="k">do</span>
+...
+<span class="k">done</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># &quot;name&quot; nimmt hintereinander die Werte an, welche durch das</span>
+<span class="c1"># Ausführen von &quot;cmd&quot; auf stdout generiert werden, separiert</span>
+<span class="c1"># durch Leerzeichen, und durchläuft jeweils den do...done Block</span>
+<span class="k">for</span> name <span class="k">in</span> <span class="k">$(</span>cmd<span class="k">)</span>
+<span class="k">do</span>
+...
+<span class="k">done</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># &quot;name&quot; nimmt hintereinander die Werte an, welche durch Splitten</span>
+<span class="c1"># des $var Wertes produziert werden, getrennt durch Leerzeichen,</span>
+<span class="c1"># und durchläuft jeweils den do...done Block</span>
+<span class="k">for</span> name <span class="k">in</span> <span class="nv">$var</span>
+<span class="k">do</span>
+...
+<span class="k">done</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># wie oben, aber der die Variable (wie hier z.B. PATH) wird nicht</span>
+<span class="c1"># an Leerstellen getrennt, sondern an Doppel-Punkten (IFS=&quot;:&quot;)</span>
+<span class="nv">IFS</span><span class="o">=</span><span class="s2">&quot;:&quot;</span>  <span class="c1"># input-field-separator ist der Doppel-Punkt</span>
+<span class="k">for</span> name <span class="k">in</span> <span class="nv">$PATH</span>
+<span class="k">do</span>
+...
+<span class="k">done</span>
+<span class="nv">IFS</span><span class="o">=</span>  <span class="c1"># input-field-separator zurückgesetzt auf Leerzeichen-Trennung</span>
+</pre></div>
+</div>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zusammenfassung Kontrollfluss</strong></p></th>
+<th class="text-left head"><p></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>if</p></td>
+<td class="text-left"><p>wenn Exit Code = true den then-Block ausführen</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>if else</p></td>
+<td class="text-left"><p>wie oben, aber falls Exit Code = false else-Block ausführen</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>if elif else</p></td>
+<td class="text-left"><p>wie oben, aber anstelle des else-Blocks, den ersten elif-Block</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>for in (…)</p></td>
+<td class="text-left"><p>für alle Werte in der Space-separierten (…) Liste wiederholen</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>for in $(…)</p></td>
+<td class="text-left"><p>wie oben, aber die Liste aus stdout vom Kommando extrahieren</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>for in $var</p></td>
+<td class="text-left"><p>wie oben, aber die Liste durch Space-splitten der Variablen</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>IFS=… for in $var</p></td>
+<td class="text-left"><p>wie oben, aber Splitten am IFS Zeichen (z.B. an “:” )</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="test-kommando">
+<h3>3.9 test Kommando<a class="headerlink" href="#test-kommando" title="Permalink to this headline">¶</a></h3>
+<p>Als nützliches Kommando für die Abfrage verschiedenster Natur gibt es das <code class="docutils literal notranslate"><span class="pre">test</span></code> Kommando.</p>
+<p>Dieses wird oft in <code class="docutils literal notranslate"><span class="pre">if</span></code>-Kommandos benötigt um z.B. zu prüfen ob ein File existiert, etc.</p>
+<p>Da der Aufruf des <code class="docutils literal notranslate"><span class="pre">test</span></code> Kommandos eine häufige Aufgabe ist, gibt es eine alternative Möglichkeit des Aufrufes:</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Beispiel <code class="docutils literal notranslate"><span class="pre">test</span></code> Kommando Aufruf</strong></p></th>
+<th class="text-left head"><p><strong>Gleichwertige Alternative</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">-d</span> <span class="pre">$dir</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">-d</span> <span class="pre">$dir</span> <span class="pre">]</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">test</span> <span class="pre">-d</span> <span class="pre">$dir</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">[</span> <span class="pre">-d</span> <span class="pre">$dir</span> <span class="pre">]</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">-d</span> <span class="pre">$dir</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">$dir</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">-d</span> <span class="pre">$dir</span> <span class="pre">]</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">$dir</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Ein paar <code class="docutils literal notranslate"><span class="pre">test</span></code> Abfragen folgen hier. Für mehr Details darüber sind Sie an die entsprechende <code class="docutils literal notranslate"><span class="pre">man</span></code> page verwiesen.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Abfrage</strong></p></th>
+<th class="text-left head"><p></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">-f</span> <span class="pre">&quot;$path&quot;</span> <span class="pre">]</span> </code></p></td>
+<td class="text-left"><p>Existiert das File $path?</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">-d</span> <span class="pre">&quot;$path&quot;</span> <span class="pre">]</span> </code></p></td>
+<td class="text-left"><p>Existiert das Directory $path?</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">-x</span> <span class="pre">&quot;$path&quot;</span> <span class="pre">]</span> </code></p></td>
+<td class="text-left"><p>Execute Permission auf dem File oder Directory?</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">-n</span> <span class="pre">&quot;$var&quot;</span> <span class="pre">]</span> </code></p></td>
+<td class="text-left"><p>Ist die Länge des Wertes <strong>nicht</strong> Null?</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">[</span> <span class="pre">-z</span> <span class="pre">&quot;$var&quot;</span> <span class="pre">]</span> </code></p></td>
+<td class="text-left"><p>Ist die Länge des Wertes Null?</p></td>
+</tr>
+</tbody>
+</table>
+<p>Zu beachten: die Variablen sind meistens in Quotes gegeben um damit Leerzeichen oder reservierte Worte und Operatoren in den Werten zu ermöglichen.</p>
+<br> 
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p><strong>Zusammenfassung [ … ] bzw. test Kommando</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>viele Abfragen sind über dieses Kommando durchführbar (siehe <code class="docutils literal notranslate"><span class="pre">man</span> <span class="pre">test</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>oft als [ … ] vorzufinden, aber identisch mit <code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">...</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-1-lesen-und-verstehen-von-shell-scripts">
+<h2>4. Aufgabe 1: Lesen und Verstehen von Shell Scripts<a class="headerlink" href="#aufgabe-1-lesen-und-verstehen-von-shell-scripts" title="Permalink to this headline">¶</a></h2>
+<hr class="docutils" />
+<section id="was-ist-der-output">
+<h3>4.1 Was ist der Output<a class="headerlink" href="#was-ist-der-output" title="Permalink to this headline">¶</a></h3>
+<p>Gehen Sie in der Bash Shell im <code class="docutils literal notranslate"><span class="pre">git</span></code> Repository <code class="docutils literal notranslate"><span class="pre">snp-lab-code</span></code> nach <code class="docutils literal notranslate"><span class="pre">P01_Bash/code</span></code>.
+Führen sie das Script <code class="docutils literal notranslate"><span class="pre">./get-exec-list-arg.sh</span></code> aus.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ./get-exec-list-arg.sh <span class="nv">$PWD</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+<section id="trace-output">
+<h3>4.2 Trace Output<a class="headerlink" href="#trace-output" title="Permalink to this headline">¶</a></h3>
+<p>Lassen Sie die Shell ausgeben, was für Kommandos sie gerade ausführt.</p>
+<p>Was sehen sie?</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ bash -x get-exec-list-arg.sh <span class="nv">$PWD</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+<section id="experimentieren">
+<h3>4.3 Experimentieren<a class="headerlink" href="#experimentieren" title="Permalink to this headline">¶</a></h3>
+<p>Lesen Sie die obersten Kommentare (#…) im Script und experimentieren Sie mit entsprechen-den Aufrufen.</p>
+</section>
+<section id="erklaren-sie-das-script">
+<h3>4.4 Erklären Sie das Script<a class="headerlink" href="#erklaren-sie-das-script" title="Permalink to this headline">¶</a></h3>
+<p>Stellen Sie das Script auf der Shell mittels <code class="docutils literal notranslate"><span class="pre">nl</span></code> («number lines») dar.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ nl -ba get-exec-list-arg.sh
+</pre></div>
+</div>
+<p>Als Resultat sollten Sie in etwa folgenden Output bekommen</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span> <span class="m">1</span>	<span class="c1">#!/bin/bash</span>
+ <span class="m">2</span>	
+ <span class="m">3</span>	<span class="c1"># produces a tabular output of all executables as found over the $PATH environment variable</span>
+ <span class="m">4</span>	<span class="c1"># - output format: [1-based index of $PATH entry]:[$PATH entry]:[name of the executable]</span>
+ <span class="m">5</span>	<span class="c1">#   - e.g. 6:/bin:bash</span>
+ <span class="m">6</span>	<span class="c1"># - the first argument (if given) is used as alternative to $PATH (e.g. for testing purpos-es)</span>
+ <span class="m">7</span>	<span class="c1"># usage: ./get-exec-list-arg.sh            # examines $PATH</span>
+ <span class="m">8</span>	<span class="c1"># usage: ./get-exec-list-arg.sh &quot;$PATH&quot;    # equivalent to the above call</span>
+ <span class="m">9</span>	<span class="c1"># usage: ./get-exec-list-arg.sh &quot;.:~/bin&quot;  # examines the current directory (.) and ~/bin</span>
+<span class="m">10</span>	
+<span class="m">11</span>	<span class="c1"># argument handling</span>
+<span class="m">12</span>	<span class="nv">path</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span>
+<span class="m">13</span>	<span class="o">[</span> -n <span class="s2">&quot;</span><span class="nv">$path</span><span class="s2">&quot;</span> <span class="o">]</span> <span class="o">||</span> <span class="nv">path</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+<span class="m">14</span>	
+<span class="m">15</span>	<span class="c1"># input-field-separator: tells the shell to split in the &#39;for&#39; loop the $var by &quot;:&quot;</span>
+<span class="m">16</span>	<span class="nv">IFS</span><span class="o">=</span><span class="s2">&quot;:&quot;</span>
+<span class="m">17</span>	
+<span class="m">18</span>	<span class="k">for</span> p <span class="k">in</span> <span class="nv">$path</span>
+<span class="m">19</span>	<span class="k">do</span>
+<span class="m">20</span>	    <span class="nv">i</span><span class="o">=</span><span class="k">$((</span>i+1<span class="k">))</span>
+<span class="m">21</span>	    <span class="o">[</span> -n <span class="s2">&quot;</span><span class="nv">$p</span><span class="s2">&quot;</span> <span class="o">]</span> <span class="o">||</span> <span class="nv">p</span><span class="o">=</span><span class="s2">&quot;.&quot;</span>
+<span class="m">22</span>	    <span class="k">if</span> <span class="o">[</span> -d <span class="s2">&quot;</span><span class="nv">$p</span><span class="s2">&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> -x <span class="s2">&quot;</span><span class="nv">$p</span><span class="s2">&quot;</span> <span class="o">]</span>
+<span class="m">23</span>	    <span class="k">then</span>
+<span class="m">24</span>	        find -L <span class="s2">&quot;</span><span class="nv">$p</span><span class="s2">&quot;</span> -maxdepth <span class="m">1</span> -type f -executable -printf <span class="s2">&quot;</span><span class="nv">$i</span><span class="s2">:%h:%f\n&quot;</span> <span class="m">2</span>&gt;/dev/null
+<span class="m">25</span>	    <span class="k">fi</span>
+<span class="m">26</span>	<span class="k">done</span>
+</pre></div>
+</div>
+<p><strong>Was machen folgende Zeilen?</strong></p>
+<hr class="docutils" />
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">path</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span>  <span class="c1"># Was ist der Wert von path, wenn kein Argument übergeben wird?</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span> -n <span class="s2">&quot;</span><span class="nv">$path</span><span class="s2">&quot;</span> <span class="o">]</span> <span class="o">||</span> <span class="nv">path</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PATH</span><span class="s2">&quot;</span>  <span class="c1"># Wann wird das zweite Kommando ausgeführt?</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> p <span class="k">in</span> <span class="nv">$path</span>  <span class="c1"># Wie oft wird der Loop ausgeführt mit path=a:b:c</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">i</span><span class="o">=</span><span class="k">$((</span>i+1<span class="k">))</span>  <span class="c1"># Weshalb nicht einfach i=i+1?</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span> -n <span class="s2">&quot;</span><span class="nv">$p</span><span class="s2">&quot;</span> <span class="o">]</span> <span class="o">||</span> <span class="nv">p</span><span class="o">=</span><span class="s2">&quot;.&quot;</span> <span class="c1"># Wenn p=abc, was ist der Wert von p nach dieser Zeile?</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="o">[</span> -d <span class="s2">&quot;</span><span class="nv">$p</span><span class="s2">&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> -x <span class="s2">&quot;</span><span class="nv">$p</span><span class="s2">&quot;</span> <span class="o">]</span>  <span class="c1"># Wann ist die Bedingung wahr?</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>find -L <span class="s2">&quot;</span><span class="nv">$p</span><span class="s2">&quot;</span> -maxdepth <span class="m">1</span> -type f -executable -printf <span class="s2">&quot;</span><span class="nv">$i</span><span class="s2">:%h:%f\n&quot;</span> <span class="m">2</span>&gt;/dev/null
+<span class="c1"># find traversier hier alle Files ohne in die Tiefe zu gehen</span>
+<span class="c1"># Was bedeutet der printf Format String?</span>
+<span class="c1"># Was bedeutet 2&gt;/dev/null?</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-2-pipe-anwenden">
+<h2>5. Aufgabe 2: Pipe Anwenden<a class="headerlink" href="#aufgabe-2-pipe-anwenden" title="Permalink to this headline">¶</a></h2>
+<section id="formatierung-von-output">
+<h3>5.1 Formatierung von Output<a class="headerlink" href="#formatierung-von-output" title="Permalink to this headline">¶</a></h3>
+<p>Das Script <code class="docutils literal notranslate"><span class="pre">get-exec-list-arg.sh</span></code> generiert Daten wie wir gesehen haben. Das Script <code class="docutils literal notranslate"><span class="pre">tab2html.sh</span></code> formatiert den Output von <code class="docutils literal notranslate"><span class="pre">get-exec-list-arg.sh</span></code> in eine einfache HTML Tabelle.</p>
+<p>Rufen Sie beide Scripts auf, verbunden durch eine <strong>Pipe</strong>, und speichern Sie das Resultat in ein <code class="docutils literal notranslate"><span class="pre">out.html</span></code> File. Rufen Sie schliesslich auf derselben einen Kommandozeile <code class="docutils literal notranslate"><span class="pre">firefox</span></code> auf mit dem <code class="docutils literal notranslate"><span class="pre">out.html</span></code> als Input File auf.</p>
+<p>Geben Sie Ihre Kommandozeile hier an.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+<section id="filtern-und-sortieren">
+<h3>5.2 Filtern und Sortieren<a class="headerlink" href="#filtern-und-sortieren" title="Permalink to this headline">¶</a></h3>
+<p>Die Tabelle welche durch <code class="docutils literal notranslate"><span class="pre">get-exec-list-arg.sh</span></code> generiert wird besteht aus drei Spalten.</p>
+<p>Mit dem <code class="docutils literal notranslate"><span class="pre">cut</span></code> Kommando kann man Spalten ausblenden, bzw. die übrigen selektieren (aber nicht deren Reihenfolge ändern). Finden Sie heraus was <code class="docutils literal notranslate"><span class="pre">cut</span> <span class="pre">-d:</span> <span class="pre">-f1,2</span></code> für einen Effekt hat durch ausprobieren (z.B. <code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">&quot;a:b:c&quot;</span> <span class="pre">|</span> <span class="pre">cut</span> <span class="pre">-d:</span> <span class="pre">-f1,2</span></code>) und durch nachschauen in <code class="docutils literal notranslate"><span class="pre">man</span> <span class="pre">cut</span></code>.</p>
+<p>Das Kommando <code class="docutils literal notranslate"><span class="pre">sort</span></code> sortiert Text. Finden Sie in <code class="docutils literal notranslate"><span class="pre">man</span> <span class="pre">sort</span></code> heraus was <code class="docutils literal notranslate"><span class="pre">sort</span> <span class="pre">-u</span> <span class="pre">-n</span></code> bewirkt.</p>
+<p>Rufen Sie schliesslich die drei Elemente in einer Pipe Kette auf und beobachten Sie den Output.</p>
+<p>Geben Sie Ihre Kommandozeile hier an. Was macht dies Kette?</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-3-eigenes-script-schreiben">
+<h2>6. Aufgabe 3: Eigenes Script schreiben<a class="headerlink" href="#aufgabe-3-eigenes-script-schreiben" title="Permalink to this headline">¶</a></h2>
+<p>Ergänzen Sie folgendes Script and den markierten (TODO) Stellen und finden Sie heraus was es macht.</p>
+<p>Zum Debuggen des <code class="docutils literal notranslate"><span class="pre">date</span></code> Kommandos, führen Sie es in der Shell direkt aus.</p>
+<p>Z.B. <code class="docutils literal notranslate"><span class="pre">date</span> <span class="pre">'+%x</span> <span class="pre">'</span></code>.</p>
+<p>Erst wenn Sie mit dem Resultat zufrieden sind, schreiben Sie das Script ab und integrieren Sie obiges Format im Script.</p>
+<p>Setzten Sie den die File Permission so dass alle Ausführungs-Erlaubnis haben:</p>
+<p><code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">a+x</span> <span class="pre">your-script-name</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1"># TODO: please describe the purpose and usage of the script</span>
+<span class="nv">timestamp</span><span class="o">=</span><span class="k">$(</span>date <span class="s1">&#39;+%?%?%?-%?%?%?&#39;</span><span class="k">)</span>     <span class="c1"># TODO: produce YYYYMMDD-HHMMSS format</span>
+<span class="nv">location</span><span class="o">=</span><span class="si">${</span><span class="nv">PWD</span><span class="p">////_</span><span class="si">}</span>                   <span class="c1"># get PWD value and replace all / by _</span>
+<span class="nv">name</span><span class="o">=</span><span class="s2">&quot;backup_</span><span class="si">${</span><span class="nv">location</span><span class="si">}</span><span class="s2">_</span><span class="si">${</span><span class="nv">timestamp</span><span class="si">}</span><span class="s2">&quot;</span> <span class="c1"># put together the elements of the name</span>
+<span class="nv">fullname</span><span class="o">=</span>/tmp/<span class="nv">$name</span>.tgz                <span class="c1"># the full file name</span>
+
+tar czvf <span class="nv">$fullname</span> .                   <span class="c1"># create an archive of the current directory</span>
+<span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span>                        <span class="c1"># check outcome ...</span>
+<span class="k">then</span>
+  <span class="nb">echo</span> <span class="s2">&quot;SUCCESS: </span><span class="nv">$fullname</span><span class="s2">&quot;</span>
+<span class="k">else</span>
+  <span class="nb">echo</span> <span class="s2">&quot;FAILED: </span><span class="nv">$fullname</span><span class="s2">&quot;</span>
+<span class="k">fi</span>
+</pre></div>
+</div>
+<p>Was ist das Resultat der <strong>TODO</strong>s?</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="bewertung">
+<h2>7. Bewertung<a class="headerlink" href="#bewertung" title="Permalink to this headline">¶</a></h2>
+<p>Die gegebenenfalls gestellten Theorieaufgaben und der funktionierende Programmcode müs-sen der Praktikumsbetreuung gezeigt werden. Die Lösungen müssen mündlich erklärt werden.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p>Aufgabe</p></th>
+<th class="text-left head"><p>Kriterium</p></th>
+<th class="text-left head"><p>Punkte</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>1</p></td>
+<td class="text-left"><p>Sie können die Fragen beantworten und erklären.</p></td>
+<td class="text-left"><p>2</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>2</p></td>
+<td class="text-left"><p>Sie können die verschiedenen Pipe Anwendungen demonstrieren und erklären.</p></td>
+<td class="text-left"><p>1</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>3</p></td>
+<td class="text-left"><p>Das Script funktioniert und erfüllt die Vorgaben.</p></td>
+<td class="text-left"><p>1</p></td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+<p>Version: 10.01.2022</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">SNP Labs</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../P01_Erste_Schritte_mit_C/README.html">01 - Erste Schritte mit C</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P02_Funktionen_Datentyp_enum/README.html">02:  Funktionen, Datentyp “enum”</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P03_Bit_Operation_struct_typedef/README.html">03 - Bit Operationen, Struct, Typedef</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P04_Modularisieren_von_C_Code/README.html">04 - Modularisieren von C Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P05_TicTacToe/README.html">05 - Arrays/Strings/TicTacToe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P06_Personen_Verwaltung_Linked_List/README.html">06 - Personen Verwaltung – Linked List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P07_Prozesse_und_Threads/README.html">07 - Prozesse und Threads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P08_Sync/README.html">08 - Synchronisationsprobleme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P09_File_Operations/README.html">09 - File Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P10_IPC/README.html">10 - Interprozesskommunikation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, stsh.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/P11_Bash/README.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

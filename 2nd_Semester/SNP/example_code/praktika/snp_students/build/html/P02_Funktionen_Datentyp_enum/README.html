@@ -1,0 +1,412 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="metadata description" lang="en" name="description" xml:lang="en" />
+<meta content="description des métadonnées" lang="fr" name="description" xml:lang="fr" />
+<meta content="Sphinx, MyST" name="keywords" />
+<meta content="en_US" property="og:locale" />
+
+    <title>02: Funktionen, Datentyp “enum” &#8212; SNP Labs  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="03 - Bit Operationen, Struct, Typedef" href="../P03_Bit_Operation_struct_typedef/README.html" />
+    <link rel="prev" title="01 - Erste Schritte mit C" href="../P01_Erste_Schritte_mit_C/README.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section class="tex2jax_ignore mathjax_ignore" id="funktionen-datentyp-enum">
+<h1>02:  Funktionen, Datentyp “enum”<a class="headerlink" href="#funktionen-datentyp-enum" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p><img alt="" src="../_images/random_number.png" /></p>
+<p>(Copyright Bild: <a class="reference external" href="http://xkcd.com">xkcd.com</a>)</p>
+<hr class="docutils" />
+<section id="ubersicht">
+<h2>1. Übersicht<a class="headerlink" href="#ubersicht" title="Permalink to this headline">¶</a></h2>
+<p>In diesem Praktikum sind zwei Themen im Fokus: Funktionen und der Datentyp enum.</p>
+<p>Funktionen sind der wesentlichste Bestandteil der C Programmierung, welcher eine strukturierte Programmierung ermöglicht:</p>
+<ul class="simple">
+<li><p>Eine Funktion ist ein Teil eines C Codes, der eine spezielle Aufgabe ausführt. Sie kann aus dem Hauptprogramm, oder aus anderen Funktionen, aufgerufen werden.</p></li>
+<li><p>Jede Funktion besitzt einen eindeutigen Namen, eine eindeutige Signatur (Typen und Reihenfolge der Parameter) und einen Rückgabewert (int falls nichts angegeben wird).</p></li>
+<li><p>Eine Funktion kann Werte aus dem aufrufenden Kontext übernehmen und bei Bedarf einen Wert an den aufrufenden Kontext zurückliefern.
+Beispiel einer Additions-Funktion:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#include &lt;stdio.h&gt;</span>
+
+<span class="o">/*</span> <span class="n">Funktionsdeklaration</span> <span class="o">*/</span>
+<span class="nb">int</span> <span class="n">add</span><span class="p">(</span><span class="nb">int</span> <span class="n">a</span><span class="p">,</span> <span class="nb">int</span> <span class="n">b</span><span class="p">);</span>
+
+<span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="n">void</span><span class="p">)</span> <span class="p">{</span>
+   <span class="nb">int</span> <span class="n">aa</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bb</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cc</span><span class="p">;</span>
+   <span class="p">(</span><span class="n">void</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> + </span><span class="si">%d</span><span class="s2"> = </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">,</span> <span class="n">add</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">));</span>
+   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">/*</span> <span class="n">Funktionsdefinition</span> <span class="o">*/</span>
+<span class="nb">int</span> <span class="n">add</span><span class="p">(</span><span class="nb">int</span> <span class="n">a</span><span class="p">,</span> <span class="nb">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+   <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Der Datentyp enum wird verwendet um die Lesbarkeit von Programmen zu erhöhen:</p>
+<p>Beispiel eines enum:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">enum</span> <span class="n">Ampeln</span> <span class="o">=</span> <span class="p">{</span><span class="n">rot</span> <span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gelb</span><span class="p">,</span> <span class="n">gruen</span><span class="p">};</span>
+
+<span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="n">void</span><span class="p">)</span> <span class="p">{</span>
+   <span class="n">Ampeln</span> <span class="n">ampel1</span><span class="p">;</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">ampel1</span> <span class="o">==</span> <span class="n">rot</span><span class="p">)</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span> 
+   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="lernziele">
+<h2>2. Lernziele<a class="headerlink" href="#lernziele" title="Permalink to this headline">¶</a></h2>
+<p>In diesem Praktikum lernen Sie Funktionen zu definieren und aufzurufen, sowie enum anzuwenden.</p>
+<ul class="simple">
+<li><p>Sie können ein Programm schreiben, welches aus mehreren Funktionen besteht.</p></li>
+<li><p>Sie können Funktionen deklarieren, definieren und aufrufen.</p></li>
+<li><p>Sie können enum Typen definieren und deren Werte bestimmen und abfragen.</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="aufgaben">
+<h2>3. Aufgaben<a class="headerlink" href="#aufgaben" title="Permalink to this headline">¶</a></h2>
+<p><img alt="" src="../_images/kalender-108_v-ARDFotogalerie.jpg" /></p>
+<p>(Copyright Bild: <a class="reference external" href="http://www.planet-wissen.de">www.planet-wissen.de</a>)</p>
+<section id="aufgabe-1-tage-pro-monat">
+<h3>3.1 Aufgabe 1 Tage pro Monat<a class="headerlink" href="#aufgabe-1-tage-pro-monat" title="Permalink to this headline">¶</a></h3>
+<p>In der ersten Aufgabe berechnen Sie die Anzahl Tage pro Monat einer beliebigen Kombination Monat / Jahr.
+Erweitern Sie dazu das Programm um folgende Aspekte:</p>
+<ul class="simple">
+<li><p>Bereichsprüfung von Jahr und Monat</p></li>
+<li><p>Funktion istSchaltjahr, welche berechnet, ob das Jahr eine Schaljahr ist</p></li>
+<li><p>Funktion tageProMonat, welche die Anzahl Tage des gegebenen Monats und Jahres berechnet.</p></li>
+</ul>
+<p>Vorgaben:</p>
+<ul class="simple">
+<li><p>Die Funktion istSchaltjahr nimmt einen Integer (jahr) entgegen und gibt 1 im Falle eines Schaltjahres und 0 im andreren Fall zurück</p></li>
+<li><p>Die Funktion tageProMonat nimmt zwei Integer (monat und jahr) entgegen und gibt die Anzahl Tage als Integer zurück</p></li>
+<li><p>Die Jahreszahl, welche den Funktionen übergeben wird, muss überprüft werden und grösser gleich 1599 und kleiner als 10000 sein</p></li>
+<li><p>Der übergebene Monat muss grösser als 0 und kleiner als 13 sein.</p></li>
+</ul>
+<p>Die Regeln für die Schaltjahrberechnung:</p>
+<ul class="simple">
+<li><p>Schaltjahre sind alle Jahre, die durch 4 teilbar sind.</p></li>
+<li><p>Eine Ausnahme bilden die Jahrhunderte (1600, 1700…). Diese sind keine Schaltjahre.</p></li>
+<li><p>zu den 100er gibt es ebenfalls Ausnahmen: Diese sind immer Schaltjahre, wenn sie durch 400 teilbar sind
+… also zum Beispiel 1600 ist eines, nicht jedoch 1700. Weiterführende Details finden Sie unter <a class="reference external" href="https://de.wikipedia.org/wiki/Gregorianischer_Kalender">https://de.wikipedia.org/wiki/Gregorianischer_Kalender</a></p></li>
+</ul>
+<p>Gegeben ist die main Funktion des Programms. Ergänzen Sie die enum Definition und die fehlenden Funktionen:</p>
+<ul class="simple">
+<li><p>gibIntWert: Die Funktion soll einen Int Wert zurückgeben. Der Bereich, wie auch Fehleingaben sollen berücksichtigt werden. (atoi und fgets sind hier hilfreich)</p></li>
+<li><p>istSchaltjahr: Die Funktion gibt 1 im Falle eines Schaltjahrs und o im anderen Falle zurück.</p></li>
+<li><p>tageProMonat: Die Funktion gibt den die Tage des Monats für das definierte Jahr zurück. Verwenden Sie die Switch-Anweisung , sowie den enum Datentypen</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>int main (int argc, char *argv[]) {
+
+    int monat, jahr;
+    
+    //  Monat einlesen und Bereich ueberpruefen
+    monat = gibIntWert(&quot;Monat&quot;, 1, 12);
+    jahr  = gibIntWert(&quot;Jahr&quot;, 1600, 9999);
+
+    //  Ausgabe zum Test
+    (void) printf(&quot;Monat: %d, Jahr: %d \n&quot;, monat, jahr);    
+    
+    //  Ausgabe zum Test (hier mit dem ternaeren Operator &quot;?:&quot;)
+    (void) printf(&quot;%d ist %s Schaltjahr\n&quot;, jahr, istSchaltjahr(jahr) ? &quot;ein&quot; : &quot;kein&quot;);
+
+    // Ausgabe
+    (void) printf(&quot;Der Monat %02d-%d hat %d Tage.\n&quot;, monat, jahr, tageProMonat(jahr, monat));
+
+    return 0;
+}
+</pre></div>
+</div>
+<p>Tipp: Angenommen Sie verwenden den enum month_t { JAN=1, FEB, MAR, APR, MAI, JUN, JUL, AUG, SEP, OKT, NOV, DEZ };
+Dann können Sie im Programm direkt die Konstanten verwenden:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">m</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="o">...</span>		<span class="o">//</span> <span class="n">schlecht</span> <span class="n">lesbar</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">monat</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="o">...</span>	<span class="o">//</span> <span class="n">besserer</span> <span class="n">Variablenname</span> 
+<span class="k">if</span> <span class="p">(</span><span class="n">monat</span> <span class="o">==</span> <span class="n">FEB</span><span class="p">)</span> <span class="o">...</span>	<span class="o">//</span> <span class="n">am</span> <span class="n">besten</span> <span class="n">lesbar</span>
+</pre></div>
+</div>
+<p>Als Abnahme müssen die Tests unverändert ohne Fehler ausgeführt werden (<code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">test</span></code>)</p>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-2-bestimmen-des-wochentags">
+<h3>3.2 Aufgabe 2 Bestimmen des Wochentags<a class="headerlink" href="#aufgabe-2-bestimmen-des-wochentags" title="Permalink to this headline">¶</a></h3>
+<p>Erweitern Sie das vorgegebene zweite Programm Gerüst an den bezeichneten Stellen so, dass das Programm von der Kommando Zeile ein Argument entgegennimmt, es auf Gültigkeit überprüft und schliesslich den Wochentag für das gegebene Datum berechnet und ausgibt.
+Prüfen Sie die Umsetzung beider Teilaufgaben mittels make test.</p>
+<section id="teilaufgabe-argumente-parsen-und-auf-korrektheit-prufen">
+<h4>3.2.1	Teilaufgabe Argumente Parsen und auf Korrektheit prüfen<a class="headerlink" href="#teilaufgabe-argumente-parsen-und-auf-korrektheit-prufen" title="Permalink to this headline">¶</a></h4>
+<p>Das Argument stellt ein gültiges Datum unseres Gregorianischen Kalenders dar (d.h. ein Datum ab Donnerstag, den 15. Oktober 1582, mit der Gregorianischen Schaltjahr Regel).
+Wenn kein Argument gegeben ist oder wenn das eingegebene Datum nicht gültig ist, soll das Programm einen Hilfetext auf stderr ausgeben und mit EXIT_FAILURE Exit Code terminieren. Wenn ein gültiges Datum erkannt wurde terminiert das Programm mit Exit Code EXIT_SUCCESS.</p>
+<section id="argument-format">
+<h5>3.2.1.1 Argument Format<a class="headerlink" href="#argument-format" title="Permalink to this headline">¶</a></h5>
+<p>Das Format des Kommando Zeilen Arguments soll yyyy-mm-dd sein, wobei yyyy für das vier-stellige Jahr, mm für einen 1-2-stelligen Monat (1…12) und dd für einen Tag des Monats, beginnend mit 01. Z.B. 2020-02-29.</p>
+</section>
+<section id="korrektes-datum">
+<h5>3.2.1.2 Korrektes Datum<a class="headerlink" href="#korrektes-datum" title="Permalink to this headline">¶</a></h5>
+<p>Das Datum muss alle folgenden Bedingungen erfüllen damit es als korrekt erkannt wird:</p>
+<ul class="simple">
+<li><p>Obergrenze für ein «sinnvolles» Datum ist das Jahr 9999</p></li>
+<li><p>es muss Gregorianisch sein, d.h. ab 15. Oktober 1582 (inklusive)</p></li>
+<li><p>es darf nur Monate von 1 für Januar bis 12 für Dezember beinhalten</p></li>
+<li><p>der Tag muss grösser oder gleich 1 sein</p></li>
+<li><p>der Tag darf nicht grösser als 31 sein für Monate mit einer Länge von 31 Tagen</p></li>
+<li><p>der Tag darf nicht grösser als 30 sein für Monate mit einer Länge von 30 Tagen</p></li>
+<li><p>der Tag darf für den Februar nicht grösser sein als 29 für ein Schaltjahr</p></li>
+<li><p>der Tag darf für den Februar nicht grösser sein als 28 für ein Nicht-Schaltjahr</p></li>
+</ul>
+</section>
+<section id="vorgaben-an-die-umsetzung">
+<h5>3.2.1.3 Vorgaben an die Umsetzung<a class="headerlink" href="#vorgaben-an-die-umsetzung" title="Permalink to this headline">¶</a></h5>
+<ol class="arabic simple">
+<li><p>Definieren Sie einen enum Typen mit (typedef) Namen month_t dessen Werte die Englischen 3-Zeichen Abkürzungen der Monate sind, nämlich Jan, Feb, … Dec und stellen Sie sicher dass die Abkürzungen für die uns geläufigen Monatsnummer stehen.</p></li>
+<li><p>Definierend Sie einen struct Typen mit (typedef) Namen date_t und den int Elementen year, month, day. Lesen Sie das Argument (falls vorhanden) via sscanf und dem Formatstring “%d-%d-%d” in die drei Elemente einer Date Variable. Siehe dazu die Hinweise im Anhang.</p></li>
+<li><p>Für die Berechnung der Monatslänge implementieren Sie die Hilfsfunktion is_leap_year(date_t date) (nach obigen Vorgaben). Der Return Wert 0 bedeutet «Kein Schaltjahr», 1 bedeutet «Schaltjahr».</p></li>
+<li><p>Implementieren Sie die Funktion <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">get_month_length(date_t</span> <span class="pre">date)</span></code>. Diese soll für den Monat des Datums die Monatslänge (was dem letzten Tag des Monats entspricht) ausgeben – geben Sie 0 für ungültige Monatswerte zurück.</p></li>
+<li><p>Schliesslich implementieren Sie die Funktion int is_gregorian_date(date_t date) welche prüft, ob ein gegebenes Datum im Bereich 15. Oktober 1582 und dem Jahr 9999 ist (0 = nein, 1 = ja).</p></li>
+<li><p>Implementieren Sie eine Funktion int is_valid_date(date_t date), welche obige Bedingungen für ein gültiges Datum umsetzt. Der Return Wert 0 bedeutet «Kein gültiges Datum», 1 bedeutet «Gültiges Datum». Benutzen Sie für die Prüfung des Datums die <code class="docutils literal notranslate"><span class="pre">month_t</span></code> Werte wo immer möglich und sinnvoll. Verwenden Sie die oben implementierten Hilfsfunktionen.</p></li>
+</ol>
+</section>
+<section id="hinweise">
+<h5>3.2.1.4 Hinweise<a class="headerlink" href="#hinweise" title="Permalink to this headline">¶</a></h5>
+<p>Beachten Sie die Kommentare im Code für die geforderten Implementierungs-Details.</p>
+</section>
+</section>
+<section id="teilaufgabe-wochentag-berechnung">
+<h4>3.2.2	Teilaufgabe Wochentag Berechnung<a class="headerlink" href="#teilaufgabe-wochentag-berechnung" title="Permalink to this headline">¶</a></h4>
+<p>Schreiben Sie eine Funktion, welche zu einem Datum den Wochentag berechnet.
+Die Formel wird Georg Glaeser zugeschrieben, möglicherweise angelehnt an eine Formel von Carl Friedrich Gauss.</p>
+<p><img alt="" src="../_images/Wochentagsberechnung.jpg" /></p>
+<p>(Quelle: <a class="reference external" href="https://de.wikipedia.org/wiki/Wochentagsberechnung">https://de.wikipedia.org/wiki/Wochentagsberechnung</a>)</p>
+<p>Hier ist eine für C abgewandelte Variante davon.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">weekday</span> <span class="o">=</span> <span class="p">((</span><span class="n">day</span> <span class="o">+</span> <span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">y</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">c</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span> <span class="o">%</span> <span class="mi">7</span> <span class="o">+</span> <span class="mi">7</span><span class="p">)</span> <span class="o">%</span> <span class="mi">7</span>
+<span class="n">alle</span> <span class="n">Zahlen</span> <span class="n">sind</span> <span class="nb">int</span> <span class="n">Werte</span> <span class="n">und</span> <span class="n">alles</span> <span class="n">basiert</span> <span class="n">auf</span> <span class="nb">int</span><span class="o">-</span><span class="n">Arithmetik</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">month</span> <span class="o">+</span> <span class="mi">9</span><span class="p">)</span> <span class="o">%</span> <span class="mi">12</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">year</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">(</span><span class="n">für</span> <span class="n">month</span> <span class="o">&lt;</span> <span class="n">Mar</span><span class="p">),</span> <span class="n">ansonsten</span> <span class="n">year</span> 
+<span class="n">y</span> <span class="o">=</span> <span class="n">a</span> <span class="o">%</span> <span class="mi">100</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">/</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>Erweitern sie das Programm so, dass vor dem erfolgreichen Terminieren des Programms folgende Zeile (inklusive Zeilenumbruch) ausgegeben wird: yyyy-mm-dd is a Ddd, wobei yyyy für das Jahr, mm für die Nummer des Monats (01…12) und dd für den Tag im Monat (01…). Z.B. 2020-02-29 is a Sat.
+Vorgaben an die Umsetzung</p>
+<ol class="arabic simple">
+<li><p>Definieren Sie einen enum Typen mit (typedef) Namen weekday_t dessen Werte die Englischen 3-Zeichen Abkürzungen der Tage sind, nämlich Sun, Mon, … Sat und stellen Sie sicher, dass die Abkürzungen für die Werte 0…6 stehen.</p></li>
+<li><p>Schreiben Sie eine Funktion weekday_t calculate_weekday(date_t date) nach der Beschreibung der obigen Formel. Das date Argument ist als gültig angenommen, d.h. es ist ein Programmier-Fehler, wenn das Programm diese Funktion mit einem ungültigen Datum aufruft. Machen Sie dafür als erste Codezeile in der Funktion eine Zu-sicherung (assert(is_valid_date(date));)</p></li>
+<li><p>Schreiben Sie eine Funktion void print_weekday(weekday_t day), welche für jeden gülteigen Tag eine Zeile auf stdout schreibt mit den Englischen 3-Zeichen Ab-kürzungen für den Wochentag, z.B. Sonntag: Sun, Montag: Mon, etc. Wenn ein ungültiger Wert für day erkannt wird, soll assert(!“day is out-of-range”); aufgerufen werden.
+Hinweise
+•	Für interessierte, siehe: <a class="reference external" href="https://de.wikipedia.org/wiki/Wochentagsberechnung">https://de.wikipedia.org/wiki/Wochentagsberechnung</a></p></li>
+</ol>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="bewertung">
+<h2>4. Bewertung<a class="headerlink" href="#bewertung" title="Permalink to this headline">¶</a></h2>
+<p>Die gegebenenfalls gestellten Theorieaufgaben und der funktionierende Programmcode müssen der Praktikumsbetreuung gezeigt werden. Die Lösungen müssen mündlich erklärt werden können.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p>Aufgabe</p></th>
+<th class="text-left head"><p>Kriterium</p></th>
+<th class="text-left head"><p>Gewicht</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>alle</p></td>
+<td class="text-left"><p>Sie können das funktionierende Programm inklusive funktionierende Tests demonstrieren und erklären.</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>gibIntWert</p></td>
+<td class="text-left"><p>Eingabe, Bereichsüberprüfung korrekt</p></td>
+<td class="text-left"><p>1</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>istSchaltjahr</p></td>
+<td class="text-left"><p>Funktion korrekt</p></td>
+<td class="text-left"><p>1</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>TageProMonat</p></td>
+<td class="text-left"><p>Funktion korrekt</p></td>
+<td class="text-left"><p>1</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Aufgabe 2</p></td>
+<td class="text-left"><p>Fehlenden Teile ergänzt und lauffähig</p></td>
+<td class="text-left"><p>1</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="anhang">
+<h2>5. Anhang<a class="headerlink" href="#anhang" title="Permalink to this headline">¶</a></h2>
+<section id="sprachelemente">
+<h3>5.1 Sprachelemente<a class="headerlink" href="#sprachelemente" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-int notranslate"><div class="highlight"><pre><span></span>  ...
+}	argc: Anzahl Einträge in argv.
+argv: Array von Command Line Argumenten.
+argv[0]: wie das Programm gestartet wurde
+argv[1]: erstes Argument
+…
+argv[argc-1]: letztes Argument
+int a = 0;
+int b = 0;
+int c = 0;
+int res = sscanf(argv[1]
+                , &quot;%d-%d-%d&quot;
+                , &amp;a, &amp;b, &amp;c
+                );
+if (res != 3) {
+    // Fehler Behandlung...
+    // ...
+}	
+</pre></div>
+</div>
+</section>
+<section id="beschreibung">
+<h3>5.2 Beschreibung<a class="headerlink" href="#beschreibung" title="Permalink to this headline">¶</a></h3>
+<p>Siehe man 3 sscanf.
+Die Funktion sscanf gibt die Anzahl erfolgreich erkannte Argumente zurück. Unbedingt prüfen und angemessen darauf reagieren.
+Die gelesenen Werte werden in a, b und c, gespeichert, dazu müssen Sie die Adresse der Variablen übergeben. Mehr Details dazu werden später erklärt.
+fprintf(stderr, “Usage: %s…\n”, argv[0]);	Siehe man 3 fprintf.
+Schreibt formatierten Text auf den stderr Stream.</p>
+<hr class="docutils" />
+<p>Version: 15.02.2022</p>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">SNP Labs</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../P01_Erste_Schritte_mit_C/README.html">01 - Erste Schritte mit C</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">02:  Funktionen, Datentyp “enum”</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ubersicht">1. Übersicht</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lernziele">2. Lernziele</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aufgaben">3. Aufgaben</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-1-tage-pro-monat">3.1 Aufgabe 1 Tage pro Monat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-2-bestimmen-des-wochentags">3.2 Aufgabe 2 Bestimmen des Wochentags</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#teilaufgabe-argumente-parsen-und-auf-korrektheit-prufen">3.2.1	Teilaufgabe Argumente Parsen und auf Korrektheit prüfen</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#argument-format">3.2.1.1 Argument Format</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#korrektes-datum">3.2.1.2 Korrektes Datum</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#vorgaben-an-die-umsetzung">3.2.1.3 Vorgaben an die Umsetzung</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#hinweise">3.2.1.4 Hinweise</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#teilaufgabe-wochentag-berechnung">3.2.2	Teilaufgabe Wochentag Berechnung</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#bewertung">4. Bewertung</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#anhang">5. Anhang</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sprachelemente">5.1 Sprachelemente</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beschreibung">5.2 Beschreibung</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../P03_Bit_Operation_struct_typedef/README.html">03 - Bit Operationen, Struct, Typedef</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P04_Modularisieren_von_C_Code/README.html">04 - Modularisieren von C Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P05_TicTacToe/README.html">05 - Arrays/Strings/TicTacToe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P06_Personen_Verwaltung_Linked_List/README.html">06 - Personen Verwaltung – Linked List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P07_Prozesse_und_Threads/README.html">07 - Prozesse und Threads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P08_Sync/README.html">08 - Synchronisationsprobleme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P09_File_Operations/README.html">09 - File Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P10_IPC/README.html">10 - Interprozesskommunikation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../P01_Erste_Schritte_mit_C/README.html" title="previous chapter">01 - Erste Schritte mit C</a></li>
+      <li>Next: <a href="../P03_Bit_Operation_struct_typedef/README.html" title="next chapter">03 - Bit Operationen, Struct, Typedef</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, stsh.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/P02_Funktionen_Datentyp_enum/README.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
