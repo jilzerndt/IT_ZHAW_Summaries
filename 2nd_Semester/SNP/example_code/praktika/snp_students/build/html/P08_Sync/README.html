@@ -1,0 +1,388 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="metadata description" lang="en" name="description" xml:lang="en" />
+<meta content="description des métadonnées" lang="fr" name="description" xml:lang="fr" />
+<meta content="Sphinx, MyST" name="keywords" />
+<meta content="en_US" property="og:locale" />
+
+    <title>08 - Synchronisationsprobleme &#8212; SNP Labs  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="09 - File Operations" href="../P09_File_Operations/README.html" />
+    <link rel="prev" title="07 - Prozesse und Threads" href="../P07_Prozesse_und_Threads/README.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section class="tex2jax_ignore mathjax_ignore" id="synchronisationsprobleme">
+<h1>08 - Synchronisationsprobleme<a class="headerlink" href="#synchronisationsprobleme" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<section id="ubersicht">
+<h2>1. Übersicht<a class="headerlink" href="#ubersicht" title="Permalink to this headline">¶</a></h2>
+<p><img alt="" src="../_images/synchronisationsprobleme.png" /></p>
+<p><a class="reference external" href="https://commons.wikimedia.org/wiki/File:Velgast-suedbahn.jpg">Quelle: https://commons.wikimedia.org/wiki/File:Velgast-suedbahn.jpg</a></p>
+<p>In diesem Praktikum lernen sie zuerst am Beispiel eines Kaffee-Automaten verschiedene grundlegende Synchronisationsprobleme kennen und mit Hilfe von Locks (Mutexes) und Semaphoren lösen:</p>
+<ul class="simple">
+<li><p>gegenseitiger Ausschluss mit einem Lock</p></li>
+<li><p>Erzwingen einer einfachen Reihenfolge</p></li>
+<li><p>Erzwingen einer erweiterten Reihenfolge</p></li>
+</ul>
+<p>Im zweiten Teil werden sie auf Basis dieser Grundlagen ein komplexeres Synchronisationsproblem bearbeiten, diesmal am Beispiel von Bank Transaktionen.</p>
+<hr class="docutils" />
+<section id="nachweis">
+<h3>1.1 Nachweis<a class="headerlink" href="#nachweis" title="Permalink to this headline">¶</a></h3>
+<p>Dieses Praktikum ist eine leicht abgewandelte Variante des Sync Praktikum des Moduls BSY, angepasst an die Verhältnisse des SNP Moduls. Die Beispiele und Beschreibungen wurden, wo möglich, eins-zu-ein übernommen.</p>
+<p>Als Autor des BSY Praktikums ist genannt: M. Thaler.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="lernziele">
+<h2>2. Lernziele<a class="headerlink" href="#lernziele" title="Permalink to this headline">¶</a></h2>
+<p>In diesem Praktikum werden sie Synchronisationsprobleme lösen</p>
+<ul class="simple">
+<li><p>Sie wissen wie man systematisch Synchronisationsprobleme analysiert</p></li>
+<li><p>Sie wissen wann ein potentieller Deadlock entstehen kann</p></li>
+<li><p>Sie können Mutex mit Threads anwenden</p></li>
+<li><p>Sie können Semaphoren mit Prozessen anwenden</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="einfuhrung">
+<h2>3. Einführung<a class="headerlink" href="#einfuhrung" title="Permalink to this headline">¶</a></h2>
+<p>Das Lösen von Synchronisationsproblemen ist oft nicht einfach, weil Prozesse bzw. Threads gleichzeitig ablaufen, ihre Aktivitäten jedoch nach Vorgaben koordiniert werden müssen: man verliert schnell den Überblick. Systematisches Vorgehen mit Aufzeichnen der Abläufe und Synchronisationsbedingungen bewährt ich sich in diesem Fall.</p>
+<hr class="docutils" />
+<section id="wie-lost-man-synchronisationsprobleme">
+<h3>3.1	Wie löst man Synchronisationsprobleme?<a class="headerlink" href="#wie-lost-man-synchronisationsprobleme" title="Permalink to this headline">¶</a></h3>
+<p>Gehen sie beim Lösen von Synchronisationsproblemen in folgenden Schritten vor:</p>
+<ul class="simple">
+<li><p><strong>Schritt 1:  Prozesse (Threads) der Problemstellung identifizieren.</strong><br />
+Prozesse sind die Aktivitäten, die gleichzeitig ausgeführt werden. In diesem Sinne sind sie eigenständige Ausführungs-Einheiten, deren zeitliches Verhalten synchronisiert werden muss.</p></li>
+<li><p><strong>Schritt 2:  Ausführungsschritte der einzelnen Prozesse (Threads) ermitteln.</strong><br />
+Erstellen sie eine Liste mit einer Spalte für jeden Prozess. Notieren sie für jeden Prozess stichwortartig die wesentlichen Aktionen in der gewünschten zeitlichen Reihenfolge. Tragen sie noch keine Synchronisationsoperationen ein, sondern Texte wie warten auf Geld, etc. Übertragen sie anschliessend die Liste in einen Ablaufgraphen (Siehe Beispiel in Abbildung 1).</p></li>
+<li><p><strong>Schritt 3: Synchronisationsbedingungen ermitteln.</strong><br />
+Eine Synchronisationsbedingung ist eine zeitliche Beziehung (Abhängigkeit) zwischen Aktionen verschiedener Prozesse, die für das korrekte Arbeiten erforderlich ist. Zeichnen sie diese Beziehungen mit Pfeilen in den Ablaufgraphen aus Schritt 2 ein (Siehe Abbildung 1).</p></li>
+<li><p><strong>Schritt 4: Benötigte Semaphore definieren.</strong><br />
+Für jede Synchronisationsbedingung wird ein eigener Semaphor benötigt. Notieren sie für jeden Semaphor einen Namen und den Wert, mit dem er initialisiert werden muss.</p></li>
+<li><p><strong>Schritt 5: Prozesse mit Semaphore Operationen ergänzen.</strong><br />
+Erweitern sie nun alle Prozesse aus Schritt 2 mit den notwendigen Semaphore Operati-onen (Siehe Pseudocode in Abbildung 1).</p></li>
+<li><p><strong>Schritt 6: Implementation.</strong><br />
+Implementieren und testen sie das vollständige Programm.</p></li>
+</ul>
+<p><img alt="" src="../_images/coffee_customer.png" /></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">coin</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">sem_open</span><span class="p">(...,</span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="n">coffee</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sem_open</span><span class="p">(...,</span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Ablaufgraph und Pseudocode für 2 Prozesse und zwei Semaphore<br />
+<img alt="" src="../_images/sequence_graph.png" /></p>
+</section>
+</section>
+<section id="der-kaffee-automat">
+<h2>4. Der Kaffee-Automat<a class="headerlink" href="#der-kaffee-automat" title="Permalink to this headline">¶</a></h2>
+<p>Als Beispiel verwenden wir einen Automaten, der Kaffee verkauft. Der Kunde muss zum Kauf eines Kaffees zuerst eine bzw. mehrere Münzen einwerfen und anschliessend den gewünsch-ten Kaffee wählen. Der Automat gibt dann das entsprechende Getränk aus.</p>
+<p>Im ersten Beispiel werden der Automat und die Kunden mit Threads modelliert und tauschen Daten über gemeinsame Speichervariablen aus. Im zweiten und dritten Beispiel werden der Automat und die Kunden mit Prozessen modelliert, dabei wird der Ablauf mit Hilfe von Sema-phoren gesteuert bzw. erzwungen.</p>
+<p><strong>Hinweis:</strong> die Programme zu den folgenden Aufgaben können alle mit <strong>startApp.e</strong> gestartet werden. Dieses Programm startet und stoppt Threads und Prozesse, alloziert und dealloziert die Ressourcen (Mutexes, Semaphore).</p>
+<hr class="docutils" />
+<section id="aufgabe-mutual-exclusion">
+<h3>4.1 Aufgabe: Mutual Exclusion<a class="headerlink" href="#aufgabe-mutual-exclusion" title="Permalink to this headline">¶</a></h3>
+<p>Greifen mehrere Threads (oder Prozesse) auf gemeinsame Daten zu, können sogenannte Race Conditions entstehen. Das Resultat ist in diesem Fall abhängig von der Reihenfolge, in der die Threads (Prozesse) ausgeführt werden.</p>
+<p>Im vorliegenden Beispiel wirft der Kunde eine 1 Euro Münze ein und drückt anschliessend auf eine von zwei Kaffeewahltasten. Dabei wird die Anzahl Münzen (<em>coinCount</em>) und die gewählte Kaffeesorte (<em>selCount1</em>, <em>selCount2</em>) inkrementiert. Diese Variablen sind in der Datenstruktur <em>cData</em> abgelegt, auf die gemeinsam Kaffee-Automat und Kunden zugreifen können. Der Auto-mat überprüft, ob die Anzahl Münzen und die Anzahl der Kaffeewahlen gleich gross sind, falls nicht, wird eine Fehlermeldung ausgegeben und alle Zähler auf <em>Null</em> gesetzt.</p>
+<section id="aufgaben">
+<h4>Aufgaben<a class="headerlink" href="#aufgaben" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li><p>Übersetzen sie die Programme im Verzeichnis <em>mutex</em> mit <em>make</em> und starten sie den Kaffee-Automaten mit <strong>startApp.e</strong> mehrmals hintereinander.
+Analysieren sie die Datenwerte in den Fehlermeldungen, beschreiben sie was die Gründe dafür sind bzw. sein können.</p></li>
+<li><p>Schützen sie nun den Zugriff auf die gemeinsamen Daten mit einem Mutex so, dass alle Threads eine konsistente Sicht der Daten haben.
+Wir haben für sie einen Mutex vorbereitet: die Datenstruktur <em>cData</em> enthält die Mutex-Variable <em>mutex</em>, die in <strong>startApp.c</strong> initialisiert wird. Die Funktionen für das Schliessen und das Öffnen des Mutex (Locks) aus der <em>pthread</em> Bibliothek sind:</p></li>
+</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">pthread</span><span class="w"> </span><span class="n">mutex</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">cD</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">));</span><span class="w"></span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>und</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">pthread</span><span class="w"> </span><span class="n">mutex</span><span class="w"> </span><span class="n">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">cD</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">));</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Überprüfen sie, ob der Kaffee-Automat nun keine Fehlermeldungen mehr ausgibt. Erhö-hen sie dazu auch die Anzahl Kunden <em>CUSTOMERS</em> in <strong>commonDefs.h</strong>, z.B. auf 10.</p>
+<ol class="arabic simple" start="3">
+<li><p>Im Thread des Kaffee-Automaten wird an verschiedenen Orten mehrmals auf die gemeinsamen Daten in <em>cD</em> zugegriffen. Wenn sie die gemeinsamen Daten in lokale Variablen kopieren und dann nur noch auf diese lokalen Variablen zugreifen würden, könn-ten sie dann auf die Synchronisation mit dem Mutex verzichten?</p></li>
+<li><p>Wie oft kann ein einzelner Kunde einen Kaffee beziehen, bis der nächste Kunde an die Reihe kommt? Hier reicht eine qualitative Aussage.</p></li>
+</ol>
+</section>
+</section>
+<section id="aufgabe-einfache-reihenfolge">
+<h3>4.2 Aufgabe: Einfache Reihenfolge<a class="headerlink" href="#aufgabe-einfache-reihenfolge" title="Permalink to this headline">¶</a></h3>
+<p>Wie sie im ersten Beispiel festgestellt haben, verhindert ein Mutex zwar, dass Race Conditions auftreten, die Verarbeitungsreihenfolge der Threads lässt sich jedoch nicht beeinflussen und ist zufällig.
+Im Folgenden soll eine erzwungene Verarbeitungsreihenfolge implementiert werden:</p>
+<ul class="simple">
+<li><p>Ein Kunde benutzt den Automat für einen Kaffeekauf exklusiv, d.h. alle Schritte des Kunden werden innerhalb eines Mutexes ausgeführt. Ist ein Kunde an der Reihe, wartet er bis der Automat bereit ist, wirft eine Münze ein, wartet auf den Kaffee und gibt anschlies-send den Automaten für den nächsten Kunden frei.</p></li>
+<li><p>Der Automat meldet zuerst in einer Endlos-Schleife, dass er für die Geld-Eingabe bereit ist, wartet dann auf die Eingabe einer Münze, gibt den Kaffee aus und meldet anschliessend wieder, wenn er bereit ist, etc.</p></li>
+</ul>
+<p>Für die Lösung dieses Problems benötigen wir Semaphore, die, im Gegensatz zu Mutexes, auch in verschiedenen Prozessen gesetzt bzw. zurückgesetzt werden dürfen. Den Kaffee-Automat und die Kunden implementieren wir mit Prozessen. sie finden die entsprechenden Prozesse im Verzeichnis <strong>basicSequence</strong>.</p>
+<section id="id1">
+<h4>Aufgaben<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li><p>Beschreiben sie den Kaffee-Automaten mit Hilfe der 6 Schritte aus Abschnitt 3 auf Papier, dokumentieren sie dabei alle Schritte schriftlich.</p></li>
+<li><p>Implementieren sie nun den Kaffee-Automaten. Ergänzen sie dazu den <em>coffeeTeller</em> und den <em>customer</em> Prozess so mit vier Semaphoren, dass die vorgegebenen Ablaufbedingungen eingehalten werden. Mit welchen Werten müssen die Semaphore initialisiert werden?
+Wir haben für sie vier Semaphore vorbereitet: Achtung, sie sind aber noch auskommentiert (siehe commonDefs.h und startApp.c. Die benötigten Semaphor-Funktionen aus der POSIX Bibliothek sind:</p></li>
+</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">semaphor</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>und</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">semaphor</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Analysieren sie die Ausgabe der Prozesse (mehrmals starten). Was fällt auf?</p>
+<ol class="arabic simple" start="3">
+<li><p>Gibt Ihr Programm den Output in der korrekten Reihenfolge aus? Falls nicht, wie könnte das gelöst werden?</p></li>
+</ol>
+</section>
+</section>
+<section id="aufgabe-erweiterte-reihenfolge">
+<h3>4.3	Aufgabe: Erweiterte Reihenfolge<a class="headerlink" href="#aufgabe-erweiterte-reihenfolge" title="Permalink to this headline">¶</a></h3>
+<p>Die Preise steigen dauernd … auch der Kaffee wird immer teurer, er kostet nun 3 Euro. Da der Automat nur 1 Euro Stücke annehmen kann, muss der Kunde 3 Münzen einwerfen. Erweitern sie die Prozesse aus Aufgabe 4.2 so, dass eine vordefinierte Anzahl Münzen eingegeben werden muss (die Anzahl Münzen ist in <em>commonDefs.h</em> als <em>NUM_COINS</em> definiert). Verwenden sie keine zusätzlichen Semaphore, sondern nutzen sie, dass wir Counting Semaphore verwenden. Die vordefinierten Prozesse finden sie im Verzeichnis <em>advancedSequence</em>.</p>
+<section id="aufgabe">
+<h4>Aufgabe<a class="headerlink" href="#aufgabe" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p>Passen sie den coffeeTeller und den customer Prozess so an, dass der Kunde mehrere Münzen einwerfen muss, bis der Automat einen Kaffee ausgeben kann.</p></li>
+</ul>
+<p><strong>Hinweis:</strong> POSIX Semaphore sind Counting Semaphore, können aber nicht auf vordefinierte Werte gesetzt werden (ausser bei der Initialisierung). Abhilfe schafft hier das mehrmalige Aufrufen von <em>sem_post()</em>, z.B. in einer for-Schleife.</p>
+</section>
+</section>
+<section id="zusammenfassung">
+<h3>4.4	Zusammenfassung<a class="headerlink" href="#zusammenfassung" title="Permalink to this headline">¶</a></h3>
+<p>Wir haben drei grundlegenden Typen von Synchronisationsproblemen kennen gelernt:</p>
+<ul class="simple">
+<li><p><strong>Mutex</strong> nur ein Prozess bzw. Thread kann gleichzeitig auf gemeinsame Daten zugreifen.</p>
+<ul>
+<li><p>Beispiel: entweder liest der Kaffee-Automat die Daten oder ein Kunde verändert sie.</p></li>
+</ul>
+</li>
+<li><p><strong>Einfache Reihenfolge</strong> ein Prozess wartet auf die Freigabe durch einen anderen Prozess.</p>
+<ul>
+<li><p>Beispiel: der Kaffee-Automat wartet auf die Eingabe einer Münze.</p></li>
+</ul>
+</li>
+<li><p><strong>Erweiterte Reihenfolge</strong> ein Prozess wartet auf mehrere Freigaben durch einen anderen Pro-zess.</p>
+<ul>
+<li><p>Beispiel: der Kaffee-Automat wartet auf die Eingabe von drei Münzen.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="international-banking">
+<h2>5. International Banking<a class="headerlink" href="#international-banking" title="Permalink to this headline">¶</a></h2>
+<p>Die International Bank of Transfer (IBT) besitzt in 128 Ländern Filialen und stellt für 2048 spezielle Handels-Kunden in jeder Filiale ein Konto zur Verfügung. Gelder dieser Kunden werden dauernd zwischen den Filialen hin und her transferiert, dazu beschäftigt die Bank sogenannte Pusher. Pusher heben Geldbeträge von Konten in einer Filiale ab und buchen sie auf den entsprechenden Konten in irgendeiner (auch in der eigenen) Filiale wieder ein. Die Beträge liegen zwischen 1000 und 100’000 Dollar und werden zufällig ausgewählt, die Wahl der beiden Filialen ist ebenfalls zufällig.</p>
+<section id="implementation">
+<h3>5.1	Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h3>
+<p>Im Folgenden arbeiten wir mit einer <em>pthread</em>-basierten Implementation der IBT, die Pusher werden dabei mit Threads implementiert. Die Filialen der Bank sind als Array von Strukturen implementiert, wobei pro Filiale ein Lock (<em>branchLock</em>) und ein Array von Konten (Accounts) definiert ist. Die Konten sind wiederum Strukturen mit dem Kontostand (<em>account</em>) und dem Lock (<em>acntLock</em>), siehe dazu auch den Source Code. Die Zugriffe auf die Gelder sind imple-mentiert (Funktionen <em>withdraw()</em>, <em>deposit()</em>, <em>transfer()</em>), aber nicht synchronisiert.
+<strong>Hinweis:</strong> es ist von Vorteil hier mit mehreren CPUs zu arbeiten. Falls sie eine VM verwenden, setzen sie die Anzahl CPUs auf das Maximum.</p>
+</section>
+<section id="aufgabe-konto-synchronisation">
+<h3>5.2	Aufgabe: Konto Synchronisation<a class="headerlink" href="#aufgabe-konto-synchronisation" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Wechseln sie ins Verzeichnis <strong>banking/a1</strong>, übersetzen sie das Programm und starten sie es mit dem Skript <code class="docutils literal notranslate"><span class="pre">./startApp</span></code>. Analysieren und erklären sie die Resultate. Notie-ren sie sich zudem die Laufzeiten für 1, 2 und 4 Threads.</p></li>
+<li><p>Synchronisieren sie die Kontenzugriffe so, dass möglichst viele Zugriffe gleichzeitig ausgeführt werden können und die Zugriffe atomar sind. Sie dürfen nur eines der beiden Locks <em>branchLock</em> bzw. <em>acntLock</em> verwenden: welches wählen sie und wieso? Be-gründen sie ihre Antwort und testen sie ihre Lösung.</p></li>
+</ol>
+</section>
+<section id="aufgabe-filialen-zugriff-in-critical-section">
+<h3>5.3	Aufgabe: Filialen Zugriff in Critical Section<a class="headerlink" href="#aufgabe-filialen-zugriff-in-critical-section" title="Permalink to this headline">¶</a></h3>
+<p>Ihr Chef meint, dass es wohl aus Sicherheitsgründen besser wäre, sowohl die Filialen und die jeweiligen Kontenzugriffen zu ”locken”.</p>
+<ol class="arabic simple">
+<li><p>Wechseln sie ins Verzeichnis banking/a2 und kopieren sie banking.c aus Aufgabe 5.2. Implementieren sie diese zusätzlichen Anforderungen. Analysieren sie die Resultate. Was stellen sie fest im Vergleich mit den Resultaten aus der Aufgabe 5.2? Was raten sie ihrem Chef?</p></li>
+<li><p>Ein Kollege meint, es wäre effizienter beim Abheben des Betrags zuerst das Konto zu locken und dann die Filiale, hingegen beim Einbuchen zuerst die die Filiale und dann das Konto. Was für eine Antwort geben sie ihrem Kollegen?<strong>Hinweis:</strong> falls sie nicht sicher sind: probieren sie es aus.</p></li>
+</ol>
+</section>
+<section id="aufgabe-refactoring-der-synchronisation">
+<h3>5.4	Aufgabe: Refactoring der Synchronisation<a class="headerlink" href="#aufgabe-refactoring-der-synchronisation" title="Permalink to this headline">¶</a></h3>
+<p>Das International Banking Committe (IBC) erlässt neue Richtlinien, die unter anderem fordern, dass die Gesamtbilanz einer Bank über sämtliche Filialen zu jeder Zeit konsistent sein muss.</p>
+<ol class="arabic simple">
+<li><p>Erklären sie wieso die Implementationen aus Aufgabe 5.2 und 5.3 diese Anforderungen nicht erfüllen.</p></li>
+<li><p>Ihr Entwicklungsteam kommt zum Schluss, dass den Pushern neu nur noch eine Funktion <em>transfer()</em> für die Überweisung von Beträgen zwischen den Filialen und Konten zur Verfügung gestellt werden darf.
+Welche Locks bzw. welches Lock muss verwendet werden, damit die Forderung des IBC erfüllt werden kann? Wechseln sie ins Verzeichnis <em>banking/a3</em> und ergänzen sie die Funktion <em>transfer()</em> in banking.c um die entsprechenden Lock-Funktionen.
+Wichtiger
+<strong>Hinweis:</strong> es darf kein neues Lock eingeführt werden und die Gesamtbilanz über sämtliche Filialen muss jederzeit konsistent sein.</p></li>
+<li><p>Testen und analysieren sie das Programm und vergleichen sie die Resultate (Funktionalität, Laufzeit) mit den Lösungen aus Aufgabe 5.2 und 5.3. Notieren sie sich, was ihnen bei dieser Aufgabe wichtig erscheint.</p></li>
+<li></li>
+</ol>
+</section>
+</section>
+<hr class="docutils" />
+<section id="bewertung">
+<h2>6. Bewertung<a class="headerlink" href="#bewertung" title="Permalink to this headline">¶</a></h2>
+<p>Die gegebenenfalls gestellten Theorieaufgaben und der funktionierende Programmcode müssen der Praktikumsbetreuung gezeigt werden. Die Lösungen müssen mündlich erklärt werden.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p>Aufgabe</p></th>
+<th class="text-left head"><p>Kriterium</p></th>
+<th class="text-left head"><p>Gewicht</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Sie können die gestellten Fragen erklären.</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>4</p></td>
+<td class="text-left"><p>4.1 Aufgabe: Mutual Exclusion<br>4.2 Aufgabe: Einfache Reihenfolge<br>4.3 Aufgabe: Erweiterte Reihenfolge</p></td>
+<td class="text-left"><p>4</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>5</p></td>
+<td class="text-left"><p>5.2 Aufgabe: Konto Synchronisation<br>5.3 Aufgabe: Filialen Zugriff in Critical Section<br>5.4 Aufgabe: Refactoring der Synchronisation</p></td>
+<td class="text-left"><p>4</p></td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+<hr class="docutils" />
+<p>Version: 18.08.2021</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">SNP Labs</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../P01_Erste_Schritte_mit_C/README.html">01 - Erste Schritte mit C</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P02_Funktionen_Datentyp_enum/README.html">02:  Funktionen, Datentyp “enum”</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P03_Bit_Operation_struct_typedef/README.html">03 - Bit Operationen, Struct, Typedef</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P04_Modularisieren_von_C_Code/README.html">04 - Modularisieren von C Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P05_TicTacToe/README.html">05 - Arrays/Strings/TicTacToe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P06_Personen_Verwaltung_Linked_List/README.html">06 - Personen Verwaltung – Linked List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P07_Prozesse_und_Threads/README.html">07 - Prozesse und Threads</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">08 - Synchronisationsprobleme</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ubersicht">1. Übersicht</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nachweis">1.1 Nachweis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#lernziele">2. Lernziele</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#einfuhrung">3. Einführung</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#wie-lost-man-synchronisationsprobleme">3.1	Wie löst man Synchronisationsprobleme?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#der-kaffee-automat">4. Der Kaffee-Automat</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-mutual-exclusion">4.1 Aufgabe: Mutual Exclusion</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#aufgaben">Aufgaben</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-einfache-reihenfolge">4.2 Aufgabe: Einfache Reihenfolge</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Aufgaben</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-erweiterte-reihenfolge">4.3	Aufgabe: Erweiterte Reihenfolge</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#aufgabe">Aufgabe</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#zusammenfassung">4.4	Zusammenfassung</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#international-banking">5. International Banking</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#implementation">5.1	Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-konto-synchronisation">5.2	Aufgabe: Konto Synchronisation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-filialen-zugriff-in-critical-section">5.3	Aufgabe: Filialen Zugriff in Critical Section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-refactoring-der-synchronisation">5.4	Aufgabe: Refactoring der Synchronisation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#bewertung">6. Bewertung</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../P09_File_Operations/README.html">09 - File Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P10_IPC/README.html">10 - Interprozesskommunikation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../P07_Prozesse_und_Threads/README.html" title="previous chapter">07 - Prozesse und Threads</a></li>
+      <li>Next: <a href="../P09_File_Operations/README.html" title="next chapter">09 - File Operations</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, stsh.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/P08_Sync/README.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

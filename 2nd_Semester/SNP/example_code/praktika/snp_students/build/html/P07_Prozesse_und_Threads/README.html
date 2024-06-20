@@ -1,0 +1,668 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta content="metadata description" lang="en" name="description" xml:lang="en" />
+<meta content="description des métadonnées" lang="fr" name="description" xml:lang="fr" />
+<meta content="Sphinx, MyST" name="keywords" />
+<meta content="en_US" property="og:locale" />
+
+    <title>07 - Prozesse und Threads &#8212; SNP Labs  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="08 - Synchronisationsprobleme" href="../P08_Sync/README.html" />
+    <link rel="prev" title="06 - Personen Verwaltung – Linked List" href="../P06_Personen_Verwaltung_Linked_List/README.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section class="tex2jax_ignore mathjax_ignore" id="prozesse-und-threads">
+<h1>07 - Prozesse und Threads<a class="headerlink" href="#prozesse-und-threads" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p><img alt="" src="../_images/ein_mann_orchester.png" /></p>
+<p><a class="reference external" href="https://www.wikiwand.com/de/Ein-Mann-Orchester">Quelle: https://www.wikiwand.com/de/Ein-Mann-Orchester</a></p>
+<hr class="docutils" />
+<section id="ubersicht">
+<h2>1. Übersicht<a class="headerlink" href="#ubersicht" title="Permalink to this headline">¶</a></h2>
+<p>In diesem Praktikum werden wir uns mit Prozessen, Prozesshierarchien und Threads beschäftigen, um ein gutes Grundverständnis dieser Abstraktionen zu erhalten. Sie werden bestehenden Code analysieren und damit experimentieren. D.h. dies ist nicht ein «Codierungs»-Praktikum, sondern ein «Analyse»- und «Experimentier»-Praktikum.</p>
+<hr class="docutils" />
+<section id="nachweis">
+<h3>1.1 Nachweis<a class="headerlink" href="#nachweis" title="Permalink to this headline">¶</a></h3>
+<p>Dieses Praktikum ist eine leicht abgewandelte Variante des ProcThreads Praktikum des Moduls BSY, angepasst an die Verhältnisse des SNP Moduls. Die Beispiele und Beschreibungen wurden, wo möglich, eins-zu-ein übernommen.</p>
+<p>Als Autoren des BSY Praktikums sind genannt: M. Thaler, J. Zeman.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="lernziele">
+<h2>2. Lernziele<a class="headerlink" href="#lernziele" title="Permalink to this headline">¶</a></h2>
+<p>In diesem Praktikum werden Sie sich mit Prozessen, Prozesshierarchien und Threads beschäftigen. Sie erhalten einen vertieften Einblick und Verständnis zur Erzeugung, Steuerung und Terminierung von Prozessen unter Unix/Linux und Sie werden die unterschiedlichen Eigenschaften von Prozessen und Threads kennenlernen.</p>
+<ul class="simple">
+<li><p>Sie können Prozesse erzeugen und die Prozesshierarchie erklären</p></li>
+<li><p>Sie wissen was beim Erzeugen eines Prozesses vom Elternprozess vererbt wird</p></li>
+<li><p>Sie wissen wie man auf die Terminierung von Kindprozessen wartet</p></li>
+<li><p>Sie kennen die Unterschiede zwischen Prozessen und Threads</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="aufgaben">
+<h2>3. Aufgaben<a class="headerlink" href="#aufgaben" title="Permalink to this headline">¶</a></h2>
+<p>Das Betriebssystem bietet Programme um die aktuellen Prozesse und Threads darzustellen.</p>
+<p>Die Werkzeuge kommen mit einer Vielzahl von Optionen für die Auswahl und Darstellung der Daten, z.B. ob nur Prozesse oder auch Threads aufgelistet werden sollen, und ob alle Prozesse oder nur die «eigenen» Prozesse ausgewählt werden sollen, etc.</p>
+<p>Siehe die entsprechenden <code class="docutils literal notranslate"><span class="pre">man</span></code> Pages für weitere Details.</p>
+<p>Eine Auswahl, welche unter Umständen für die folgenden Aufgaben nützlich sind:</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p></p></th>
+<th class="text-left head"><p></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">ps</span></code></p></td>
+<td class="text-left"><p>Auflisten der Prozess Zustände zum gegebenen Zeitpunkt.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">pstree</span></code></p></td>
+<td class="text-left"><p>Darstellung der gesamten Prozesshierarchie.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">top</span></code></p></td>
+<td class="text-left"><p>Wie <code class="docutils literal notranslate"><span class="pre">ps</span></code>, aber die Darstellung wird in Zeitintervallen aufdatiert.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">htop</span></code></p></td>
+<td class="text-left"><p>Wie <code class="docutils literal notranslate"><span class="pre">top</span></code>, aber zusätzlich dazu die Auslastung der CPU in einem System mit mehreren CPUs.</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">lscpu</span></code></p></td>
+<td class="text-left"><p>Auflisten der CPUs.</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">cat</span></code>/<code class="docutils literal notranslate"><span class="pre">proc</span></code>/<code class="docutils literal notranslate"><span class="pre">cpuinfo</span></code></p></td>
+<td class="text-left"><p>Ähnlich zu <code class="docutils literal notranslate"><span class="pre">lscpu</span></code>, aber mit Zusatzinformationen wie enthaltene CPU Bugs (z.B. <code class="docutils literal notranslate"><span class="pre">bugs:</span> <span class="pre">cpu_meltdown</span> <span class="pre">spectre_v1</span> <span class="pre">spect-re_v2</span> <span class="pre">spec_store_bypass</span> <span class="pre">l1tf</span> <span class="pre">mds</span> <span class="pre">swapgs</span> <span class="pre">itlb_multihit</span></code>)</p></td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+<section id="aufgabe-1-prozess-mit-fork-erzeugen">
+<h3>3.1 Aufgabe 1: Prozess mit fork() erzeugen<a class="headerlink" href="#aufgabe-1-prozess-mit-fork-erzeugen" title="Permalink to this headline">¶</a></h3>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Verstehen, wie mit <code class="docutils literal notranslate"><span class="pre">fork()</span></code> Prozesse erzeugt werden.</p></li>
+<li><p>Einfache Prozesshierarchien kennenlernen.</p></li>
+<li><p>Verstehen, wie ein Programm, das <code class="docutils literal notranslate"><span class="pre">fork()</span></code> aufruft, durchlaufen wird.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic">
+<li><p>Studieren Sie zuerst das Programm <code class="docutils literal notranslate"><span class="pre">ProcA1.c</span></code> und beschrieben Sie was geschieht.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Notieren Sie sich, was ausgegeben wird. Starten Sie das Programm und vergleichen Sie die Ausgabe mit ihren Notizen? Was ist gleich, was anders und wieso?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-2-prozess-mit-fork-und-exec-programm-image-ersetzen">
+<h3>3.2 Aufgabe 2: Prozess mit fork() und exec(): Programm Image ersetzen<a class="headerlink" href="#aufgabe-2-prozess-mit-fork-und-exec-programm-image-ersetzen" title="Permalink to this headline">¶</a></h3>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>An einem Beispiel die Funktion <code class="docutils literal notranslate"><span class="pre">execl()</span></code> kennenlernen.</p></li>
+<li><p>Verstehen, wie nach <code class="docutils literal notranslate"><span class="pre">fork()</span></code> ein neues Programm gestartet wird.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic">
+<li><p>Studieren Sie zuerst die Programme <code class="docutils literal notranslate"><span class="pre">ProcA2.c</span></code> und <code class="docutils literal notranslate"><span class="pre">ChildProcA2.c</span></code>.</p></li>
+<li><p>Starten Sie <code class="docutils literal notranslate"><span class="pre">ProcA2.e</span></code> und vergleichen Sie die Ausgabe mit der Ausgabe unter Aufgabe 1. Diskutieren und erklären Sie was gleich ist und was anders.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Benennen Sie <code class="docutils literal notranslate"><span class="pre">ChildProcA2.e</span></code> auf <code class="docutils literal notranslate"><span class="pre">ChildProcA2.f</span></code> um (Shell Befehl <code class="docutils literal notranslate"><span class="pre">mv</span></code>) und überlegen Sie, was das Programm nun ausgibt. Starten Sie <code class="docutils literal notranslate"><span class="pre">ProcA2.e</span></code> und vergleichen Sie Ihre Überlegungen mit der Programmausgabe.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Nennen Sie das Kindprogramm wieder <code class="docutils literal notranslate"><span class="pre">ChildProcA2.e</span></code> und geben Sie folgenden Befehl ein: <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">-x</span> <span class="pre">ChildProcA2.e</span></code>. Starten Sie wiederum <code class="docutils literal notranslate"><span class="pre">ProcA2.e</span></code> und analysieren Sie die Ausgabe von <code class="docutils literal notranslate"><span class="pre">perror(&quot;...&quot;)</span></code>. Wieso verwenden wir <code class="docutils literal notranslate"><span class="pre">perror()</span></code>?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-3-prozesshierarchie-analysieren">
+<h3>3.3 Aufgabe 3: Prozesshierarchie analysieren<a class="headerlink" href="#aufgabe-3-prozesshierarchie-analysieren" title="Permalink to this headline">¶</a></h3>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Verstehen, was <code class="docutils literal notranslate"><span class="pre">fork()</span></code> wirklich macht.</p></li>
+<li><p>Verstehen, was Prozesshierarchien sind.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic simple">
+<li><p>Studieren Sie zuerst Programm <code class="docutils literal notranslate"><span class="pre">ProcA3.c</span></code> und zeichnen Sie die entstehende Prozesshierarchie (Baum) von Hand auf. Starten Sie das Programm und verifizieren Sie ob Ihre Prozesshierarchie stimmt.</p></li>
+<li><p>Mit dem Befehl <code class="docutils literal notranslate"><span class="pre">ps</span> <span class="pre">f</span></code> oder <code class="docutils literal notranslate"><span class="pre">pstree</span></code> können Sie die Prozesshierarchie auf dem Bildschirm ausgeben. Damit die Ausgabe von <code class="docutils literal notranslate"><span class="pre">pstree</span></code> übersichtlich ist, müssen Sie in dem Fenster, wo Sie das Programm <code class="docutils literal notranslate"><span class="pre">ProcA3.e</span></code> starten, zuerst die PID der Shell erfragen, z.B. über <code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">$$</span></code>. Wenn Sie nun den Befehl <code class="docutils literal notranslate"><span class="pre">pstree</span> <span class="pre">-n</span> <span class="pre">-p</span> <span class="pre">pid-von-oben</span></code> eingeben, wird nur die Prozesshierarchie ausgehend von der Bash Shell angezeigt: <code class="docutils literal notranslate"><span class="pre">-n</span></code> sortiert die Prozesse numerisch, <code class="docutils literal notranslate"><span class="pre">-p</span></code> zeigt für jeden Prozess die PID an.</p></li>
+</ol>
+<p><strong>Hinweis:</strong> alle erzeugten Prozesse müssen arbeiten (d.h. nicht terminiert sein), damit die Darstellung gelingt. Wie wird das im gegebenen Programm erreicht?</p>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-4-zeitlicher-ablauf-von-prozessen">
+<h3>3.4 Aufgabe 4: Zeitlicher Ablauf von Prozessen<a class="headerlink" href="#aufgabe-4-zeitlicher-ablauf-von-prozessen" title="Permalink to this headline">¶</a></h3>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Verstehen, wie Kind- und Elternprozesse zeitlich ablaufen.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic">
+<li><p>Studieren Sie Programm <code class="docutils literal notranslate"><span class="pre">ProcA4.c.</span></code> Starten Sie nun mehrmals hintereinander das Programm <code class="docutils literal notranslate"><span class="pre">ProcA4.e</span></code> und vergleichen Sie die jeweiligen Outputs (leiten Sie dazu auch die Ausgabe auf verschiedene Dateien um). Was schliessen Sie aus dem Resultat?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p><strong>Anmerkung:</strong> Der Funktionsaufruf <code class="docutils literal notranslate"><span class="pre">selectCPU(0)</span></code> erzwingt die Ausführung des Eltern- und Kindprozesses auf CPU 0 (siehe Modul <code class="docutils literal notranslate"><span class="pre">setCPU.c</span></code>). Die Prozedur <code class="docutils literal notranslate"><span class="pre">justWork(HARD_WORK)</span></code> simuliert CPU-Load durch den Prozess (siehe Modul <code class="docutils literal notranslate"><span class="pre">workerUtils.c</span></code>).</p>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-5-waisenkinder-orphan-processes">
+<h3>3.5 Aufgabe 5: Waisenkinder (Orphan Processes)<a class="headerlink" href="#aufgabe-5-waisenkinder-orphan-processes" title="Permalink to this headline">¶</a></h3>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Verstehen, was mit verwaisten Kindern geschieht.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic">
+<li><p>Analysieren Sie Programm <code class="docutils literal notranslate"><span class="pre">ProcA5.c</span></code>: was läuft ab und welche Ausgabe erwarten Sie?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Starten Sie <code class="docutils literal notranslate"><span class="pre">ProcA5.e</span></code>: der Elternprozess terminiert: was geschieht mit dem Kind?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Was geschieht, wenn der Kindprozess vor dem Elternprozess terminiert? Ändern Sie dazu im <code class="docutils literal notranslate"><span class="pre">sleep()</span></code> Befehl die Zeit von 2 Sekunden auf 12 Sekunden und verfolgen Sie mit top das Verhalten der beiden Prozesse, speziell auch die Spalte S.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-6-terminierte-halbtote-prozesse-zombies">
+<h3>3.6 Aufgabe 6: Terminierte, halbtote Prozesse (Zombies)<a class="headerlink" href="#aufgabe-6-terminierte-halbtote-prozesse-zombies" title="Permalink to this headline">¶</a></h3>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Verstehen, was ein Zombie ist.</p></li>
+<li><p>Eine Möglichkeit kennenlernen, um Zombies zu verhindern.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic">
+<li><p>Analysieren Sie das Programm <code class="docutils literal notranslate"><span class="pre">ProcA6.c</span></code>.</p></li>
+<li><p>Starten Sie das Script <code class="docutils literal notranslate"><span class="pre">mtop</span></code> bzw. <code class="docutils literal notranslate"><span class="pre">mtop</span> <span class="pre">aaaa.e</span></code>. Es stellt das Verhalten der Prozesse dynamisch dar.</p>
+<p><strong>Hinweis:</strong> <code class="docutils literal notranslate"><span class="pre">&lt;defunct&gt;</span></code> = Zombie.</p>
+</li>
+<li><p>Starten Sie <code class="docutils literal notranslate"><span class="pre">aaaa.e</span></code> und verfolgen Sie im <code class="docutils literal notranslate"><span class="pre">mtop</span></code>-Fenster was geschieht. Was beachten Sie?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>In gewissen Fällen will man nicht auf die Terminierung eines Kindes mit <code class="docutils literal notranslate"><span class="pre">wait()</span></code>, bzw. <code class="docutils literal notranslate"><span class="pre">waitpid()</span></code> warten. Überlegen Sie sich, wie Sie in diesem Fall verhindern können, dass ein Kind zum Zombie wird.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-7-auf-terminieren-von-kindprozessen-warten">
+<h3>3.7 Aufgabe 7: Auf Terminieren von Kindprozessen warten<a class="headerlink" href="#aufgabe-7-auf-terminieren-von-kindprozessen-warten" title="Permalink to this headline">¶</a></h3>
+<p><strong>Vorbemerkung:</strong> Diese Aufgabe verwendet Funktionen welche erst in der Vorlesung über <em>Inter-Process-Communication (IPC)</em> im Detail behandelt werden.</p>
+<p>Sie können diese Aufgabe bis dann aufsparen oder die verwendeten Funktionen selber via <code class="docutils literal notranslate"><span class="pre">man</span></code> Pages im benötigten Umfang kennenlernen: <code class="docutils literal notranslate"><span class="pre">man</span> <span class="pre">2</span> <span class="pre">kill</span></code> und <code class="docutils literal notranslate"><span class="pre">man</span> <span class="pre">7</span> <span class="pre">signal</span></code>.</p>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Verstehen, wie Informationen zu Kindprozessen abgefragt werden können.</p></li>
+<li><p>Die Befehle <code class="docutils literal notranslate"><span class="pre">wait()</span></code> und <code class="docutils literal notranslate"><span class="pre">waitpid()</span></code> verwenden können.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic">
+<li><p>Starten Sie das Programm <code class="docutils literal notranslate"><span class="pre">ProcA7.e</span></code> und analysieren Sie wie die Ausgabe im Hauptprogramm zustande kommt und was im Kindprozess <code class="docutils literal notranslate"><span class="pre">ChildProcA7.c</span></code> abläuft.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Starten Sie <code class="docutils literal notranslate"><span class="pre">ProcA7.e</span></code> und danach nochmals mit <code class="docutils literal notranslate"><span class="pre">1</span></code> als erstem Argument. Dieser Argument Wert bewirkt, dass im Kindprozess ein ”Segmentation Error” erzeugt wird, also eine Speicherzugriffsverletzung. Welches Signal wird durch die Zugriffsverletzung an das Kind geschickt? Diese Information finden Sie im Manual mit <code class="docutils literal notranslate"><span class="pre">man</span> <span class="pre">7</span> <span class="pre">signal</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Bei einer Zugriffsverletzung kann das System so konfiguriert werden, dass ein core Dump erstellt wird. Ein core Dump ist ein Abbild des Speichers z.B. zum Zeitpunkt, wenn das Programm abstürzt (wie oben mit der Speicher Zugriff Verletzung). Der Dump wird üblicherweise File <strong>core</strong> abgelegt und kann mit dem <strong>gdb</strong> (GNU-Debugger) gelesen werden (siehe auch <code class="docutils literal notranslate"><span class="pre">README</span></code>).
+Schalten Sie nun core dump ein (siehe auch <code class="docutils literal notranslate"><span class="pre">README</span></code>) uns analysieren Sie die Ausgabe:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ulimit</span> <span class="pre">-c</span> <span class="pre">unlimited</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">/bin/bash</span> <span class="pre">-c</span> <span class="pre">'echo</span> <span class="pre">core</span> <span class="pre">&gt;</span> <span class="pre">/proc/sys/kernel/core_pattern'</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gdb</span> <span class="pre">ChildProcA7.e</span> <span class="pre">core.*</span></code></p></li>
+<li><p>innerhalb von <strong>gdb</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">where</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">list</span></code>
+Damit sie den Ort des Absturzes sehen. Mit <code class="docutils literal notranslate"><span class="pre">quit</span></code> verlassen Sie <strong>gdb</strong> wieder.
+Dokumentieren Sie hier Ihre Beobachtungen zu <code class="docutils literal notranslate"><span class="pre">ProcA7.e</span> <span class="pre">1</span></code>:</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<ol class="arabic" start="3">
+<li><p>Wenn Sie <code class="docutils literal notranslate"><span class="pre">ProcA7.e</span> <span class="pre">2</span></code> starten, sendet das Kind das Signal 30 an sich selbst. Was geschieht?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Wenn Sie <code class="docutils literal notranslate"><span class="pre">ProcA7.e</span> <span class="pre">3</span></code> starten, sendet ProcA7.e das Signal SIGABRT (abort) an das Kind: was geschieht in diesem Fall?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Mit <code class="docutils literal notranslate"><span class="pre">ProcA7.e</span> <span class="pre">4</span></code> wird das Kind gestartet und terminiert nach 5 Sekunden. Analysieren Sie wie in ProcA7.e der Lauf- bzw. Exit-Zustand des Kindes abgefragt wird (siehe dazu auch <code class="docutils literal notranslate"><span class="pre">man</span> <span class="pre">3</span> <span class="pre">exit</span></code>).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-8-kindprozess-als-kopie-des-elternprozesses">
+<h3>3.8 Aufgabe 8: Kindprozess als Kopie des Elternprozesses<a class="headerlink" href="#aufgabe-8-kindprozess-als-kopie-des-elternprozesses" title="Permalink to this headline">¶</a></h3>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Verstehen, wie Prozessräume vererbt werden.</p></li>
+<li><p>Unterschiede zwischen dem Prozessraum von Eltern und Kindern erfahren.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic">
+<li><p>Analysieren Sie Programm <code class="docutils literal notranslate"><span class="pre">ProcA8_1.c</span></code>: was gibt das Programm aus?</p>
+<ul class="simple">
+<li><p>Starten Sie <code class="docutils literal notranslate"><span class="pre">ProcA8_1.e</span> </code>und überprüfen Sie Ihre Überlegungen.</p></li>
+<li><p>Waren Ihre Überlegungen richtig? Falls nicht, was könnten Sie falsch überlegt haben?</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Analysieren Sie Programm <code class="docutils literal notranslate"><span class="pre">ProcA8_2.c</span></code>: was gibt das Programm aus?</p>
+<ul class="simple">
+<li><p>Starten Sie <code class="docutils literal notranslate"><span class="pre">ProcA8_2.e</span></code> und überprüfen Sie Ihre Überlegungen.</p></li>
+<li><p>Waren Ihre Überlegungen richtig? Falls nicht, was könnten Sie falsch gemacht haben?</p></li>
+<li><p>Kind und Eltern werden in verschiedener Reihenfolge ausgeführt: ist ein Unterschied ausser der Reihenfolge festzustellen?</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Analysieren Sie Programm <code class="docutils literal notranslate"><span class="pre">ProcA8_3.c</span></code> und Überlegen Sie, was in die Datei <code class="docutils literal notranslate"><span class="pre">AnyOutPut.txt</span></code> geschrieben wird, wer schreibt alles in diese Datei (sie wird ja vor <code class="docutils literal notranslate"><span class="pre">fork()</span></code> geöffnet) und wieso ist das so?</p>
+<ul class="simple">
+<li><p>Starten Sie <code class="docutils literal notranslate"><span class="pre">ProcA8_3.e</span></code> und überprüfen Sie Ihre Überlegungen.</p></li>
+<li><p>Waren Ihre Überlegungen richtig? Falls nicht, wieso nicht?</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-9-unterschied-von-threads-gegenuber-prozessen">
+<h3>3.9 Aufgabe 9: Unterschied von Threads gegenüber Prozessen<a class="headerlink" href="#aufgabe-9-unterschied-von-threads-gegenuber-prozessen" title="Permalink to this headline">¶</a></h3>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Den Unterschied zwischen Thread und Prozess kennenlernen.</p></li>
+<li><p>Problemstellungen um Threads kennenlernen.</p></li>
+<li><p>Die <code class="docutils literal notranslate"><span class="pre">pthread</span></code>-Implementation kennen lernen.</p></li>
+</ul>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic simple">
+<li><p>Studieren Sie Programm <code class="docutils literal notranslate"><span class="pre">ProcA9.c</span></code> und überlegen Sie, wie die Programmausgabe aussieht. Vergleichen Sie Ihre Überlegungen mit denjenigen aus Aufgabe 8.2 b)  (<code class="docutils literal notranslate"><span class="pre">Pro-cA8_2.e</span></code>).</p>
+<ul class="simple">
+<li><p>Starten Sie <code class="docutils literal notranslate"><span class="pre">ProcA9.e</span></code> und vergleichen das Resultat mit Ihren Überlegungen.</p></li>
+<li><p>Was ist anders als bei <code class="docutils literal notranslate"><span class="pre">ProcA8_2.e</span></code>?</p></li>
+</ul>
+</li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<ol class="arabic" start="2">
+<li><p>Setzen Sie in der Thread-Routine vor dem Befehl <code class="docutils literal notranslate"><span class="pre">pthread_exit()</span></code> eine unendliche Schleife ein, z.B. <code class="docutils literal notranslate"><span class="pre">while(1)</span> <span class="pre">{</span> <span class="pre">}</span></code>; .</p>
+<ul>
+<li><p>Starten Sie das Programm und beobachten Sie das Verhalten mit <code class="docutils literal notranslate"><span class="pre">top</span></code>. Was beobachten Sie und was schliessen Sie daraus?</p>
+<p><strong>Hinweis:</strong> wenn Sie in <code class="docutils literal notranslate"><span class="pre">top</span></code> den Buchstaben H eingeben, werden die Threads einzeln dargestellt.</p>
+</li>
+<li><p>Kommentieren Sie im Hauptprogram die beiden <code class="docutils literal notranslate"><span class="pre">pthread_join()</span></code> Aufrufe aus und starten Sie das Programm. Was geschieht? Erklären Sie das Verhalten.</p></li>
+</ul>
+</li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-10-optional">
+<h3>3.10 Aufgabe 10 (optional):<a class="headerlink" href="#aufgabe-10-optional" title="Permalink to this headline">¶</a></h3>
+<section id="id1">
+<h4>3.10.1 Übersicht<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>Dieser Teil des Praktikums behandelt spezielle Prozesse: die Dämon Prozesse («daemon pro-cesses»). Es ist gedacht als Zusatz zum Basis Praktikum über Prozesse und Threads.</p>
+<p>Auch dieser Teil ist ein «Analyse»- und «Experimentier»-Praktikum.</p>
+<hr class="docutils" />
+<section id="id2">
+<h5>3.10.1.1 Nachweis<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h5>
+<p>Dieses Praktikum ist eine leicht abgewandelte Variante des ProcThreads Praktikum des Moduls BSY, angepasst an die Verhältnisse des SNP Moduls. Die Beispiele und Beschreibungen wurden, wo möglich, eins-zu-ein übernommen.</p>
+<p>Als Autoren des BSY Praktikums sind genannt: M. Thaler, J. Zeman.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id3">
+<h4>3.10.2 Lernziele<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>In diesem Praktikum werden Sie sich mit Dämon Prozessen beschäftigen.</p>
+<ul class="simple">
+<li><p>Sie können die Problemstellung der Dämon Prozesse erklären</p></li>
+<li><p>Sie können einen Dämon Prozess kreieren</p></li>
+<li><p>Sie können aus dem Dämon Prozess mit der Umgebung kommunizieren</p></li>
+<li></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="aufgabe-damon-prozesse">
+<h4>3.10.3 Aufgabe: Dämon Prozesse<a class="headerlink" href="#aufgabe-damon-prozesse" title="Permalink to this headline">¶</a></h4>
+<p><strong>Ziele</strong></p>
+<ul class="simple">
+<li><p>Problemstellungen um Daemons kennenlernen:</p>
+<ul>
+<li><p>wie wird ein Prozess zum Daemon?</p></li>
+<li><p>wie erreicht man, dass nur ein Daemon vom gleichen Typ aktiv ist?</p></li>
+<li><p>wie teilt sich ein Daemon seiner Umwelt mit?</p></li>
+<li><p>wo “lebt” ein Daemon?</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Einleitung</strong></p>
+<p>Für diese Aufgabe haben wir einen Daemon implementiert: <strong>MrTimeDaemon</strong> gibt auf Anfrage die Systemzeit Ihres Rechners bekannt. Abfragen können Sie diese Zeit mit dem Programm <code class="docutils literal notranslate"><span class="pre">WhatsTheTimeMr</span> <span class="pre">localhost</span></code>. Die Kommunikation zwischen den beiden Prozessen haben wir mit TCP/IP Sockets implementiert. Weitere Infos zum Daemon finden Sie nach den Aufgaben.</p>
+<p>Im Abschnitt 4 finden Sie Zusatzinformationen über diese Implementation eines Dämon Prozesses plus weiterführende Informationen.</p>
+<p><strong>Aufgaben</strong></p>
+<ol class="arabic">
+<li><p>Für die folgende Aufgabe benötigen Sie mindestens zwei Fenster (Kommandozeilen-Konsolen). Übersetzen Sie die Programme mit <code class="docutils literal notranslate"><span class="pre">make</span></code> und starten Sie das Programm <strong>PlapperMaul</strong> in einem der Fenster. Das Programm schreibt (ca.) alle 0.5 Sekunden <em>Hallo, ich bins… Pidi</em> plus seine Prozess-ID auf den Bildschirm. Mit dem Shell Befehl <code class="docutils literal notranslate"><span class="pre">ps</span></code> können Sie Ihre aktiven Prozesse auflisten, auch <strong>PlapperMaul</strong>. Überlegen Sie sich zuerst, was mit <strong>PlapperMaul</strong> geschieht, wenn Sie das Fenster schliessen: läuft <strong>PlapperMaul</strong> weiter? Was geschieht mit <strong>PlapperMaul</strong> wenn Sie sich ausloggen und wieder einloggen? Testen Sie Ihre Überlegungen, in dem Sie die entsprechenden Aktionen durchführen. Stimmen Ihre Überlegungen?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Starten Sie nun das Programm bzw. den Daemon <strong>MrTimeDaemon</strong>. Stellen Sie die gleichen Überlegungen an wie mit <strong>PlapperMaul</strong> und testen Sie wiederum, ob Ihre Überlegungen stimmen. Ob <strong>MrTimeDaemon</strong> noch läuft können Sie feststellen, indem Sie die Zeit abfragen oder den Befehl <code class="docutils literal notranslate"><span class="pre">ps</span> <span class="pre">ajx</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">MrTimeDaemon</span></code> eingeben: was fällt Ihnen am Output auf? Was schliessen Sie aus Ihren Beobachtungen?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Starten Sie <strong>MrTimeDaemon</strong> erneut, was geschieht?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Stoppen Sie nun <strong>MrTimeDaemon</strong> mit <code class="docutils literal notranslate"><span class="pre">killall</span> <span class="pre">MrTimeDaemon</span></code>.</p></li>
+<li><p>Starten Sie <strong>MrTimeDaemon</strong> und fragen Sie mit <code class="docutils literal notranslate"><span class="pre">WhatsTheTimeMr</span> <span class="pre">localhost</span></code> oder mit <code class="docutils literal notranslate"><span class="pre">WhatsTheTimeMr</span> <span class="pre">127.0.0.1</span></code> die aktuelle Zeit auf Ihrem Rechner ab.</p>
+<p><strong>Optional:</strong>
+Fragen Sie die Zeit bei einem Ihrer Kollegen ab. Dazu muss beim Server (dort wo <strong>MrTimeDaemon</strong> läuft) ev. die Firewall angepasst werden. Folgende Befehle müssen dazu mit <strong>root-Privilegien</strong> ausgeführt werden:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>iptables-save &gt; myTables.txt <span class="c1"># sichert die aktuelle Firewall</span>
+iptables -I INPUT <span class="m">1</span> -p tcp --dport <span class="m">65534</span> -j ACCEPT
+iptables -I OUTPUT <span class="m">2</span> -p tcp --sport <span class="m">65534</span> -j ACCEPT
+</pre></div>
+</div>
+<p>Nun sollten Sie über die IP-Nummer oder über den Rechner-Namen auf den <strong>TimeServer</strong> mit <code class="docutils literal notranslate"><span class="pre">WhatsTheTimeMr</span></code> zugreifen können.
+Die Firewall können Sie mit folgendem Befehl wiederherstellen:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>iptables-restore myTables.txt
+</pre></div>
+</div>
+</li>
+<li><p>Studieren Sie <code class="docutils literal notranslate"><span class="pre">MrTimeDaemon.c</span></code>, <code class="docutils literal notranslate"><span class="pre">Daemonizer.c</span></code> und <code class="docutils literal notranslate"><span class="pre">TimeDaemon.c</span></code> und analysieren Sie, wie die Daemonisierung abläuft. Entfernen Sie die Kommentare im Macro <code class="docutils literal notranslate"><span class="pre">Out-PutPIDs</span></code> am Anfang des Moduls <code class="docutils literal notranslate"><span class="pre">Daemonizer.c</span></code>. Übersetzen Sie die Programme mit make und starten Sie <code class="docutils literal notranslate"><span class="pre">MrTimeDaemon</span></code> erneut. Analysieren Sie die Ausgabe, was fällt Ihnen auf? Notieren Sie alle für die vollständige Daemonisierung notwendigen Schritte.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p>Setzen Sie beim Aufruf von <code class="docutils literal notranslate"><span class="pre">Daemonizer()</span></code> in <code class="docutils literal notranslate"><span class="pre">MrTimeDaemon.c</span></code> anstelle von <code class="docutils literal notranslate"><span class="pre">lock-FilePath</span></code> den Null-Zeiger <code class="docutils literal notranslate"><span class="pre">NULL</span></code> ein. Damit wird keine lock-Datei erzeugt. Übersetzen Sie die Programme und starten Sie erneut <code class="docutils literal notranslate"><span class="pre">MrTimedaemon</span></code>. Was geschieht bzw. wie können Sie feststellen, was geschehen ist?</p>
+<p><strong>Hinweis:</strong> lesen Sie das log-File: <code class="docutils literal notranslate"><span class="pre">/tmp/timeDaemon.log.</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<p>Wenn Sie noch Zeit und Lust haben: messen Sie die Zeit, zwischen Start der Zeitanfrage und Eintreffen der Antwort. Dazu müssen Sie die Datei <code class="docutils literal notranslate"><span class="pre">WhatsTheTimeMr.c</span></code> entsprechend anpassen.</p>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="zusatzinformationen">
+<h4>3.10.4 Zusatzinformationen<a class="headerlink" href="#zusatzinformationen" title="Permalink to this headline">¶</a></h4>
+<hr class="docutils" />
+<section id="diese-implementation">
+<h5>3.10.4.1	Diese Implementation<a class="headerlink" href="#diese-implementation" title="Permalink to this headline">¶</a></h5>
+<p>Dieser Daemon besteht aus den 3 Komponenten.</p>
+<p><strong>Hauptprogramm: MrTimeDaemon.c</strong></p>
+<p>Hier werden die Pfade für die lock-Datei, die log-Datei und der ”Aufenthaltsort” des Daemons gesetzt. Die lock-Datei wird benötigt um sicherzustellen, dass der Daemon nur einmal gestartet werden kann. In die lock-Datei schreibt der Daemon z.B. seine PID und sperrt sie dann für Schreiben. Wird der Daemon ein zweites Mal gestartet und will seine PID in diese Datei schreiben, erhält er eine Fehlermeldung und terminiert (es soll ja nur ein Daemon arbeiten). Terminiert der Daemon, wird die Datei automatisch freigegeben. Weil Daemonen sämtliche Kontakte mit ihrer Umwelt im Normalfall abbrechen und auch kein Kontrollterminal besitzen, ist es sinnvoll, zumindest die Ausgabe des Daemons in eine log-Datei umzuleiten. Dazu stehen einige Systemfunktionen für Logging zur Verfügung. Der Einfachheit halber haben wir hier eine normale Datei im Verzeichnis <code class="docutils literal notranslate"><span class="pre">/tmp</span></code> gewählt.</p>
+<blockquote>
+<div><p><strong>Anmerkung:</strong> die Wahl des Verzeichnisses <code class="docutils literal notranslate"><span class="pre">/tmp</span></code> für die lock- und log-Datei ist für den normalen Betrieb problematisch, weil der Inhalt dieses Verzeichnisses jederzeit gelöscht werden kann, bzw. darf. Wir haben dieses Verzeichnis gewählt, weil wir die beiden Dateien nur für die kurze Zeit des Praktikums benötigen.</p>
+</div></blockquote>
+<p>Der Daemon erbt sein Arbeitsverzeichnis vom Elternprozesse, er sollte deshalb in ein festes Verzeichnis des Systems wechseln, um zu verhindern, dass er sich in einem montierten (gemounteten) Verzeichnis aufhält, das dann beim Herunterfahren nicht demontiert werden könnte (wir haben hier wiederum <code class="docutils literal notranslate"><span class="pre">/tmp</span></code> gewählt).</p>
+<p><strong>Daemonizer: Daemonizer.c</strong></p>
+<p>Der Daemonizer macht aus dem aktuellen Prozess einen Daemon. Z.B. sollte er Signale (eine Art Softwareinterrupts) ignorieren: wenn Sie die CTRL-C Taste während dem Ausführen eines Vordergrundprozess drücken, erhält dieser vom Betriebssystem das Signal SIGINT und bricht seine Ausführung ab. Weiter sollte er die Dateierzeugungsmaske auf 0 setzen (Dateizugriffsrechte), damit kann er beim Öffnen von Dateien beliebige Zugriffsrechte verlangen (die Dateierzeugungsmaske erbt er vom Elternprozess). Am Schluss startet der Daemonizer das eigentliche Daemonprogramm: TimeDaemon.e.</p>
+<p><strong>Daemonprogramm: TimeDaemon.c</strong></p>
+<p>Das Daemonprogramm wartet in einer unendlichen Schleife auf Anfragen zur Zeit und schickt die Antwort an den Absender zurück. Die Datenkommunikation ist, wie schon erwähnt, mit Sockets implementiert, auf die wir aber im Rahmen dieses Praktikums nicht weiter eingehen wollen (wir stellen lediglich Hilfsfunktionen zur Verfügung).</p>
+</section>
+<hr class="docutils" />
+<section id="zusatzinformation-zu-damon-prozessen">
+<h5>3.10.4.2	Zusatzinformation zu Dämon Prozessen<a class="headerlink" href="#zusatzinformation-zu-damon-prozessen" title="Permalink to this headline">¶</a></h5>
+<p>Dämonen oder englisch Daemons sind eine spezielle Art von Prozessen, die vollständig unabhängig arbeiten, d.h. ohne direkte Interaktion mit dem Anwender. Dämonen sind Hintergrundprozesse und terminieren i.A. nur, wenn das System heruntergefahren wird oder abstürzt. Dämonen erledigen meist Aufgaben, die periodisch ausgeführt werden müssen, z.B. Überwachung von Systemkomponenten, abfragen, ob neue Mails angekommen sind, etc.</p>
+<p>Ein typisches Beispiel unter Unix ist der Printer Daemon <code class="docutils literal notranslate"><span class="pre">lpd</span></code>, der periodisch nachschaut, ob ein Anwender eine Datei zum Ausdrucken hinterlegt hat. Wenn ja, schickt er die Datei auf den Drucker.</p>
+<p>Hier wird eine weitere Eigenschaft von Daemons ersichtlich: meist kann nur ein Dämon pro Aufgabe aktiv sein: stellen Sie sich vor, was passiert, wenn zwei Druckerdämonen gleichzeitig arbeiten. Andererseits muss aber auch dafür gesorgt werden, dass ein Dämon wieder gestartet wird, falls er stirbt.</p>
+<hr class="docutils" />
+</section>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="bewertung">
+<h2>4. Bewertung<a class="headerlink" href="#bewertung" title="Permalink to this headline">¶</a></h2>
+<p>Die gegebenenfalls gestellten Theorieaufgaben und der funktionierende Programmcode müssen der Praktikumsbetreuung gezeigt werden. Die Lösungen müssen mündlich erklärt werden.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p>Aufgabe</p></th>
+<th class="text-left head"><p>Kriterium</p></th>
+<th class="text-left head"><p>Punkte</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p></p></td>
+<td class="text-left"><p>Sie können die gestellten Fragen erklären.</p></td>
+<td class="text-left"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>1</p></td>
+<td class="text-left"><p>Prozess mit <code class="docutils literal notranslate"><span class="pre">fork()</span></code> erzeugen</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>2</p></td>
+<td class="text-left"><p>Prozess mit <code class="docutils literal notranslate"><span class="pre">fork()</span></code> und <code class="docutils literal notranslate"><span class="pre">exec()</span></code>: Programm Image ersetzen</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>3</p></td>
+<td class="text-left"><p>Prozesshierarchie analysieren</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>4</p></td>
+<td class="text-left"><p>Zeitlicher Ablauf von Prozessen</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>5</p></td>
+<td class="text-left"><p>Waisenkinder (Orphan Processes)</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>6</p></td>
+<td class="text-left"><p>Terminierte, halbtote Prozesse (Zombies)</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>7</p></td>
+<td class="text-left"><p>Auf Terminieren von Kindprozessen warten</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>8</p></td>
+<td class="text-left"><p>Kindprozess als Kopie des Elternprozesses</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>9</p></td>
+<td class="text-left"><p>Unterschied von Threads gegenüber Prozessen</p></td>
+<td class="text-left"><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>10</p></td>
+<td class="text-left"><p>Dämon Prozesse</p></td>
+<td class="text-left"><p>(4)</p></td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+<p>Version: 11.01.2022</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">SNP Labs</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../P01_Erste_Schritte_mit_C/README.html">01 - Erste Schritte mit C</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P02_Funktionen_Datentyp_enum/README.html">02:  Funktionen, Datentyp “enum”</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P03_Bit_Operation_struct_typedef/README.html">03 - Bit Operationen, Struct, Typedef</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P04_Modularisieren_von_C_Code/README.html">04 - Modularisieren von C Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P05_TicTacToe/README.html">05 - Arrays/Strings/TicTacToe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P06_Personen_Verwaltung_Linked_List/README.html">06 - Personen Verwaltung – Linked List</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">07 - Prozesse und Threads</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ubersicht">1. Übersicht</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nachweis">1.1 Nachweis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#lernziele">2. Lernziele</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aufgaben">3. Aufgaben</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-1-prozess-mit-fork-erzeugen">3.1 Aufgabe 1: Prozess mit fork() erzeugen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-2-prozess-mit-fork-und-exec-programm-image-ersetzen">3.2 Aufgabe 2: Prozess mit fork() und exec(): Programm Image ersetzen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-3-prozesshierarchie-analysieren">3.3 Aufgabe 3: Prozesshierarchie analysieren</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-4-zeitlicher-ablauf-von-prozessen">3.4 Aufgabe 4: Zeitlicher Ablauf von Prozessen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-5-waisenkinder-orphan-processes">3.5 Aufgabe 5: Waisenkinder (Orphan Processes)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-6-terminierte-halbtote-prozesse-zombies">3.6 Aufgabe 6: Terminierte, halbtote Prozesse (Zombies)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-7-auf-terminieren-von-kindprozessen-warten">3.7 Aufgabe 7: Auf Terminieren von Kindprozessen warten</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-8-kindprozess-als-kopie-des-elternprozesses">3.8 Aufgabe 8: Kindprozess als Kopie des Elternprozesses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-9-unterschied-von-threads-gegenuber-prozessen">3.9 Aufgabe 9: Unterschied von Threads gegenüber Prozessen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufgabe-10-optional">3.10 Aufgabe 10 (optional):</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">3.10.1 Übersicht</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#id2">3.10.1.1 Nachweis</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">3.10.2 Lernziele</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#aufgabe-damon-prozesse">3.10.3 Aufgabe: Dämon Prozesse</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#zusatzinformationen">3.10.4 Zusatzinformationen</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#diese-implementation">3.10.4.1	Diese Implementation</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#zusatzinformation-zu-damon-prozessen">3.10.4.2	Zusatzinformation zu Dämon Prozessen</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#bewertung">4. Bewertung</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../P08_Sync/README.html">08 - Synchronisationsprobleme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P09_File_Operations/README.html">09 - File Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../P10_IPC/README.html">10 - Interprozesskommunikation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../P06_Personen_Verwaltung_Linked_List/README.html" title="previous chapter">06 - Personen Verwaltung – Linked List</a></li>
+      <li>Next: <a href="../P08_Sync/README.html" title="next chapter">08 - Synchronisationsprobleme</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, stsh.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/P07_Prozesse_und_Threads/README.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

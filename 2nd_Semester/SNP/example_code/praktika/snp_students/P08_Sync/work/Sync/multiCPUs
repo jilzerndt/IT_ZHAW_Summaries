@@ -1,0 +1,56 @@
+#!/bin/bash
+#******************************************************************************
+# Purpose: turn off all CPU's but one (CPU 0), turn on all CPU's
+#          Linux only
+# Author:  M. Thaler, BSy 4/2014
+
+# Usage:   multiCPUs off: turn off all CPUs but one
+#          multiCPUs on:  turn all CPUs on
+#
+# Version: v.fs20
+#******************************************************************************
+
+theDir="/sys/devices/system/cpu"
+
+# check if sys exists
+if test ! -d $theDir
+then
+    echo "*** cannot set to single CPU ***"
+    exit 1
+fi
+
+# figure out what to do: multi CPUs off (single CPU) or all CPU's on
+let status=1
+if test "$1" = "on"
+then
+   let status=1
+else
+   if test "$1" = "off"
+   then
+      let status=0
+   else
+      echo "*** what do you want: ... on or off? ***"
+      exit 1
+   fi
+fi
+
+# turn CPU's on or off
+
+cd $theDir
+
+CPUs=`ls -d cpu* | grep 'cpu[0-9][0-9]*'`
+for CPU in $CPUs
+do
+    if test ! "$CPU" = "cpu0"
+    then
+        echo "$CPU on = $status"
+        currVal=`cat ./$CPU/online`
+        # only change if different ... avoid error message
+        if test ! "$currVal" = "$status"
+        then
+	        echo "$status" > "./$CPU/online"
+        fi
+    fi
+done
+
+#******************************************************************************
