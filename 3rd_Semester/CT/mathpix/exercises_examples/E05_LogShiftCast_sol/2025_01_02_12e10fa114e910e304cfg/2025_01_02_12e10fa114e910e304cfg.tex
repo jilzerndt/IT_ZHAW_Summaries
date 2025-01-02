@@ -1,0 +1,158 @@
+% This LaTeX document needs to be compiled with XeLaTeX.
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{ucharclasses}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[version=4]{mhchem}
+\usepackage{stmaryrd}
+\usepackage{polyglossia}
+\usepackage{fontspec}
+\setmainlanguage{german}
+\setotherlanguages{hindi}
+\newfontfamily\hindifont{Noto Serif Devanagari}
+\newfontfamily\lgcfont{CMU Serif}
+\setDefaultTransitions{\lgcfont}{}
+\setTransitionsFor{Hindi}{\hindifont}{\lgcfont}
+
+\begin{document}
+\section*{CT1 Übungsaufgaben Log- Shift-Operationen und Casting}
+\section*{Aufgabe 1 - Logische Instruktionen}
+Geben Sie die Assemblerinstruktionen für die folgenden Fälle an.\\
+a) Invertieren des Inhaltes des Registers R1 (Bilden des Einerkomplementes)
+
+\begin{verbatim}
+MVNS R1,R1
+\end{verbatim}
+
+b) Verändern Sie den Inhalt des Registers R1 so, dass
+
+\begin{itemize}
+  \item die Bits $3 . .0$ alle eins,
+  \item die Bits $7 . .4$ alle null,
+  \item die Bits 17-16 alle invertiert und
+  \item alle übrigen Bits unverändert sind.
+\end{itemize}
+
+\begin{verbatim}
+MOVS RO,#0xF
+ORRS R1,R0 ; 3-0 -> 1
+MOVS RO,#0xFO
+BICS R1,R0 ; 7-4 -> 0
+MOVS R0,#0x30
+LSLS R0,#12 ;0x30000 ,shift 4 nibbles = 12bit
+EORS R1,R0 ; 17-16 invertiert
+\end{verbatim}
+
+\section*{Aufgabe 2 - Multiplikation mit einer Konstanten}
+Schreiben Sie eine Codesequenz in Assembler welche den vorzeichenlosen Inhalt des Registers R7 mit der Dezimalzahl 43 multipliziert und im Register R7 abspeichert.\\
+a) Verwenden Sie die Multiplikationsinstruktion
+
+\begin{verbatim}
+MOVS RO,#43
+MULS R7,R0,R7
+\end{verbatim}
+
+b) Ersetzen Sie die Multiplikationsinstruktion durch Shift- und Additionsbefehle
+
+\begin{verbatim}
+MOVS R7,R0 ;1
+LSLS RO,RO,#1 ;2
+ADDS R7,R7,R0
+LSLS RO,RO,#2 ; 8=4*2
+ADDS R7,R7,R0
+LSLS RO,RO,#2 ; 32=8*4
+ADDS R7,R7,R0
+\end{verbatim}
+
+\section*{Aufgabe 3-Reverse Engineering}
+Die folgenden Assemblersequenzen wurden durch den bcc Compiler aus einem C Programm erzeugt. Schreiben Sie einen möglichen C-Code, welcher diese Assemblersequenz erzeugt.
+
+Die Speicherstellen im Assembler werden den ursprünglichen Variablen im C-Programm wie folgt zugeordnet:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+ux & DCD & ? & प & uint32\_t ux \\
+\hline
+uy & DCD & ? & [ & uint $32-$ t uy \\
+\hline
+uz & DCD & ? & [ & uint32 t uz \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+ & Assembler & C \\
+\hline
+Beispiel & \( \begin{array}{ll} \text { LDR } & \text { R0, }=\text { ux } \\ \text { LDR } & \text { R1, [R0] } \\ \text { ADDS } & \text { R1,\#1 } \\ \text { STR } & \text { R1, }[R 0] \end{array} \) & ux++; \\
+\hline
+a) & \begin{tabular}{ll}
+LDR & R0, =ux \\
+LDR & R1, [R0] \\
+LSLS & R1,R1, \#1 \\
+ &  \\
+LDR & R2, =uy \\
+LDR & R3,[R2] \\
+ADDS & R3,R1 \\
+LSLS & R3,R3,\#3 \\
+STR & R3, [R2] \\
+\end{tabular} & \texttt{Lsg: uy = 8 * (2 * ux + uy); oder uy = ((ux << 1) + uy) << 3;} \\
+\hline
+b) & \begin{tabular}{ll}
+LDR & R0, =ux \\
+LDR & R1, [R0] \\
+LDR & R2, =uy \\
+LDR & R3, [R2] \\
+LDR & R4, =uz \\
+LDR & R5,[R4] \\
+LSRS & R1,R1,\#3 \\
+LSLS & R3, R3,\#4 \\
+ORRS & R1,R3 \\
+MVNS & R1,R1 \\
+ANDS & $R 1, R 5$ \\
+STR & R1,[R4] \\
+\end{tabular} & \texttt{Lsg: uz = \~{}( (ux >> 3) | (uy << 4)) \& uz; oder uz = \~{}( (ux / 8) | (uy * 16)) \& uz;} \\
+\hline
+\end{tabular}
+\end{center}
+
+\section*{Aufgabe 4 - Explicit Casting in C}
+a) Gegeben ist der folgende C Code:
+
+\begin{verbatim}
+uint8_t ux = 100;
+int8_t sx = (int8_t)ux;
+\end{verbatim}
+
+Als welche Dezimalzahl wird der Inhalt der Variable sx nach dem Cast interpretiert?
+
+\begin{verbatim}
+100d --> ux hat Speicherinhalt 0x64 oder Binär 0110'0100
+sx hat denselben Speicherinhalt, wird aber als signed
+interpretiert. Da das höchstwertigste Bit nicht gesetzt ist, hat die
+Interpretation aber in diesem Fall keinen Einfluss.
+sx wird ebenfalls als 100d interpretiert
+\end{verbatim}
+
+b) Gegeben ist der folgende C Code:
+
+\begin{verbatim}
+int8_t sx = -10;
+uint8_t ux = (uint_8)sx;
+\end{verbatim}
+
+Als welche Dezimalzahl wird der Inhalt der Variable ux nach dem Cast interpretiert?
+
+\begin{verbatim}
+-10d --> sx hat Speicherinhalt 0xF6 oder Binär 1111'0110
+(-128+64+32+16+4 + 2)
+ux hat denselben Speicherinhalt, wird aber als unsigned
+interpretiert. So ergibt sich 128 + 64 + 32 + 16 + 4 + 2 = 246d
+\end{verbatim}
+
+
+\end{document}

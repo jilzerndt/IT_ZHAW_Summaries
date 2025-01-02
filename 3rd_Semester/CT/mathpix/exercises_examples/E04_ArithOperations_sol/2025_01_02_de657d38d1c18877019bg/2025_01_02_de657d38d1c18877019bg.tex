@@ -1,0 +1,147 @@
+\documentclass[10pt]{article}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[version=4]{mhchem}
+\usepackage{stmaryrd}
+
+\begin{document}
+\section*{CT1 Übungsaufgaben Arithmetische und Logische Instruktionen}
+\section*{Aufgabe 1 - Codieren von arithmetischen Ausdrücken}
+Für die folgenden Variablen wurde entsprechend Speicherplatz im Datenbereich reserviert:
+
+\begin{center}
+\begin{tabular}{lrr}
+ & AREA & progData, DATA, READWRITE \\
+Zahl1 & DCD & $0 ;(32$ bit $)$ \\
+Zahl2 & DCD & $0 ;(32$ bit $)$ \\
+Zahl3 & DCW & $0 ;(16$ bit) \\
+Zahl4 & DCW & $0 ;(16$ bit $)$ \\
+Zahl5 & DCB & $0 ;(8$ bit) \\
+Zahl6 & DCB & $0 ;(8$ bit) \\
+\end{tabular}
+\end{center}
+
+Codieren Sie die folgenden Ausdrücke in Assembler.\\
+a) $\mathrm{R} 0=\mathrm{R} 1+\mathrm{R} 2$
+
+$$
+\text { ADDS } \quad \mathrm{R} 0, \mathrm{R} 1, \mathrm{R} 2
+$$
+
+b) $\mathrm{R} 0=\mathrm{R} 1+\mathrm{R} 2+\mathrm{R} 3$
+
+\begin{center}
+\begin{tabular}{ll}
+ADDS & R0, R1, R2 \\
+ADDS & R0, R0, R3 \\
+\end{tabular}
+\end{center}
+
+c) $\mathrm{R} 8=\mathrm{R} 8+1$
+
+MOVS R0,\#1\\
+ADD R8,R8,R0\\
+d) $\mathrm{R} 1=\mathrm{R} 2+200$\\
+; ADDS R1,R2,\#200 falsch, rd = rn\\
+MOVS R1,\#200\\
+ADD R1,R1,R2\\
+e) $\mathrm{R} 10=\mathrm{R} 8-\mathrm{R} 7$
+
+\begin{center}
+\begin{tabular}{ll}
+MOV & R0, R8 \\
+SUBS & R0, R0, R7 \\
+MOV & R10,R0 \\
+\end{tabular}
+\end{center}
+
+f) $R 8=-R 8$
+
+MOV R7, R8\\
+RSBS R7,\#0\\
+MOV R8,R7\\
+g) Zahl1 = Zahl1 - 1
+
+\begin{center}
+\begin{tabular}{ll}
+LDR & R1, =Zahl1 \\
+LDR & R0, [R1] \\
+SUBS & R0,\#1 \\
+STR & R0, [r1] \\
+\end{tabular}
+\end{center}
+
+h) Zahl1 = Zahl1 + Zahl2
+
+\begin{verbatim}
+LDR R0, =Zahl1
+LDR R1, [R0]
+LDR R2, =Zahl2
+LDR R3, [R2]
+ADDS R1, R1, R3
+STR R1, [R0]
+\end{verbatim}
+
+i) Zahl3 = Zahl3 - Zahl4 (unsigned)\\
+LDR R0,=Zahl3\\[0pt]
+LDRH R1, [R0]\\
+LDR R2,=Zah14\\[0pt]
+LDRH R3,[R2]\\
+SUBS R1,R1,R3\\[0pt]
+STRH R1, [R0]\\
+j) Zahl1 = R5 * Zahl3 (unsigned)\\
+LDR R0,=Zahl1\\
+LDR R1,=Zahl3\\[0pt]
+LDRH R2,[R1]\\
+MULS R2,R5,R2\\[0pt]
+STR R2,[R0]
+
+\section*{Aufgabe 2 - Multiword Addition/Subtraktion}
+Für die folgenden 64-bit Variablen wurde entsprechend Speicherplatz im Datenbereich reserviert:
+
+\begin{center}
+\begin{tabular}{llc}
+ & AREA & progData, DATA, READWRITE \\
+Long1 & DCD & $0 ;$ low word \\
+ & Long2 & DCD \\
+ & 0; high word &  \\
+ & LCD & $0 ;$ low word \\
+ & DCD & $0 ;$ high word \\
+ & DCD & $0 ;$ low word \\
+ & $0 ;$ high word &  \\
+\end{tabular}
+\end{center}
+
+Implementieren Sie die folgenden 64-bit Operationen in Assembler.\\
+a) Long3 $=$ Long1 + Long2
+
+\begin{center}
+\begin{tabular}{ll}
+LDR & R0, =Long1 \\
+LDM & R0!, \{R1-R4\} \\
+ADDS & R1, R1, R3 \\
+ADCS & R2, R2,R4 \\
+LDR & R0, =Long3 \\
+STM & R0!, \{R1,R2\} \\
+\end{tabular}
+\end{center}
+
+b) Long3 $=$ Long2 - Long1
+
+\begin{center}
+\begin{tabular}{ll}
+LDR & R0, =Long1 \\
+LDM & R0!, \{R1-R4\} \\
+SUBS & R3, R3, R1 \\
+SBCS & R4, R4, R2 \\
+LDR & R0, =Long3 \\
+STM & R0!, \{R3,R4\} \\
+\end{tabular}
+\end{center}
+
+
+\end{document}
