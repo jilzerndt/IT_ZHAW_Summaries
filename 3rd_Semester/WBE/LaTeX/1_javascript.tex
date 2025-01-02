@@ -395,4 +395,534 @@ begin{concept}{Json: JavaScript Object Notation}
 
 \subsection{Asynchrone Programmierung}
 
+\begin{definition}{File API}
+    Mit require('fs') wird auf die File-Api zugegriffen.
+\end{definition}
+
+\section*{Datei-Informationen}
+\begin{verbatim}
+const fs = require('fs')
+fs.stat('test.txt' , (err, stats) => {
+    if (err) {
+    console.error(err)
+    return
+    }
+    stats.isFile() /* true */
+    stats.isDirectory() /* false */
+    stats.isSymbolicLink() /* false */
+stats.size /* 1024000 = ca 1MB */
+})
+\end{verbatim}
+
+\section*{Pfade der Datei}
+Um Pfad-informationen einer Datei zu ermitteln muss man dies mit require('path') machen.
+
+\begin{verbatim}
+const path = require('path')
+const notes = '/users/bkrt/notes.txt'
+path.dirname(notes) /* /users/bkrt */
+path.basename(notes) /* notes.txt */
+path.extname(notes) /* .txt */
+path.basename(notes, path.extname(notes)) /* notes */
+\end{verbatim}
+
+\section*{Lesen aus einer Datei}
+\begin{verbatim}
+const fs = require('fs')
+fs.readFile('/etc/hosts',"utf8", (err, data) => {
+        if (err) throw err
+        console.log(data)
+})
+\end{verbatim}
+
+\section*{Dateien schreiben}
+\begin{verbatim}
+1 const fs = require('fs')
+2}\mathrm{ const content = 'Node was here!'
+3 fs.writeFile('/Users/bkrt/test.txt', content, (err) => {
+4 if (err) {
+5 console.error(`Failed to write file: ${err}`)
+6 return
+7 }
+8 ** file written successfully */
+9 })
+\end{verbatim}
+
+Weitere FS Funktionen
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+Funktion & Bezeichnung \\
+\hline
+fs.access & Zugriff auf Datei oder Ordner prüfen \\
+\hline
+fs.mkdir & Verzeichnis anlegen \\
+\hline
+fs.readdir & Verzeichnis lesen, liefert Array von Einträgen \\
+\hline
+fs.rename & Verzeichnis umbenennen \\
+\hline
+fs.rmdir & Verzeichnis löschen \\
+\hline
+fs.chmod & Berechtigungen ändern \\
+\hline
+fs.chown & Besitzer und Gruppe ändern \\
+\hline
+fs.copyFile & Datei kopieren \\
+\hline
+fs.link & Besitzer und Gruppe ändern \\
+\hline
+fs.symlink & Symbolic Link anlegen \\
+\hline
+fs.watchFile & Datei auf Änderungen überwachen \\
+\hline
+\end{tabular}
+\end{center}
+
+\section*{Callbacks}
+Ein Callback ist eine Funktion, welche als Argument einer anderen Funktion übergeben wird und erst aufgerufen wird, wenn das Ereignis eingetreten ist. In der folgenden Abbildung wird die KlickFunktion vom Button mit der Id «Button» abonniert.
+
+1 document.getElementById('button').addEventListener('click', () => \{\\
+2 //item clicked\\
+3 \})
+
+\section*{SetTimeout}
+\begin{itemize}
+  \item Mit setTimeout kann Code definiert werden, der zu einem späteren Zeitpunkt ausgeführt werden soll
+  \item Eintrag in die Timer-Liste, auch wenn Zeit auf 0 gesetzt wird
+  \item Kann mit clearTimeout entfernt werden
+\end{itemize}
+
+1 setTimeout(() => \{\\
+2 /* runs after 50 milliseconds */\\
+3 \}, 50)
+
+\section*{SetInterval}
+\begin{itemize}
+  \item Callback alle n Millisekunden in die Callback Queue eingefügt
+  \item Kann mit clearInterval beendet werden
+\end{itemize}
+
+\begin{verbatim}
+1 const id = setInterval(() => {
+2 // runs every 2 seconds
+3 }, 2000)
+4 clearInterval(id)
+\end{verbatim}
+
+\section*{SetImmediate}
+\begin{verbatim}
+1 setImmediate(() => {
+2 console.log('immediate')
+3 })
+4
+\end{verbatim}
+
+\section*{Event-Modul (EventMitter)}
+\begin{itemize}
+  \item EventEmitter verwaltet Liste von Listeners zu bestimmten Events
+  \item Listener für das Event können hinzugefügt oder entfernt werden
+  \item Event kann ausgelöst werden $\rightarrow$ Listener werden informiert
+\end{itemize}
+
+\section*{Listener hinzufügen}
+\begin{verbatim}
+4 const EventEmitter = require('events')
+5 const door = new EventEmitter()
+6
+7 door.on('open', () => \{
+8 console.log('Door was opened')
+9 \})
+\end{verbatim}
+
+\section*{Event auslösen}
+\begin{verbatim}
+1 door.on('open', (speed) => \{
+2 console.log(`Door was opened, speed: \$\{speed /| 'unknown'\}`)
+3 \})
+4
+5 door.emit('open')
+6 door.emit('open', 'slow')
+\end{verbatim}
+
+\section*{Promises}
+Ist ein Platzhalter für einen Wert, der erst später voraussichtlich verfügbar sein wird.
+
+\begin{verbatim}
+Funktion mit Promise
+\end{verbatim}
+
+\begin{verbatim}
+function readFilePromise (file) {
+\end{verbatim}
+
+function readFilePromise (file) \{\\
+let promise = new Promise(\\
+let promise = new Promise(\\
+function resolver (resolve, reject) \{\\
+function resolver (resolve, reject) \{\\
+fs.readFile(file, "utf8", (err, data) => \{\\
+fs.readFile(file, "utf8", (err, data) => \{\\
+if (err) reject(err)\\
+if (err) reject(err)\\
+else resolve(data)\\
+else resolve(data)\\
+\})\\
+\})\\
+\})\\
+\})\\
+return promise\\
+return promise\\
+\}
+
+\begin{verbatim}
+}
+\end{verbatim}
+
+Gibt nun ein Promise-Object zurück
+
+\section*{Promise-Konstruktor erhlt resolver-Funktion}
+Rückgabe einer Promise: potentieller Wert kann später erfüllt oder zurückgewiesen werden
+
+\begin{itemize}
+  \item Rückgabe einer Promise: potentieller Wert
+  \item kann später erfüllt oder zurückgewiesen werden
+\end{itemize}
+
+Aufruf neu:
+
+\begin{verbatim}
+readFilePromise('/etc/hosts')
+    .then(console.log)
+    .catch(() => {
+        console.log("Error reading file")
+    })
+\end{verbatim}
+
+\section*{Promise-Zustände}
+\begin{itemize}
+  \item pending: Ausgangzustand
+  \item fulfilled: erfolgreich abgeschlossen
+  \item rejected: ohne Erfolg abgeschlossen
+  \item Nur ein Zustandsübergang möglich
+  \item Zustand in Promise-Objekt gekapselt\\
+\includegraphics[max width=\textwidth, center]{2024_12_29_858f09cde51177c71657g-14}
+\end{itemize}
+
+\section*{Promises Verknüpfen}
+\begin{itemize}
+  \item Then-Aufruf gibt selbst Promise zurück
+  \item Catch-Aufruf ebenfalls, per Default erfüllt
+  \item So können diese Aufrufe verkettet werden
+  \item Promise, welche unmittelbar resolved wird: Promise.resolve (...)
+  \item Promise, welche unmittelbar rejected wird: Promise.reject (...)
+\end{itemize}
+
+\section*{Promise.all()}
+\begin{itemize}
+  \item Erhält Array von Promises
+  \item Erfüllt mit Array der Result, wenn alle erfüllt sind
+  \item Zurückgewiesen sobald eine Promise zurückgewiesen wird
+\end{itemize}
+
+\section*{Promise.race()}
+\begin{itemize}
+  \item Erhält Array von Promises
+  \item Erfüllt sobald eine davon erfüllt ist
+  \item Zurückgewiesen sobald eine davon zurückgewiesen wird
+\end{itemize}
+
+\section*{ASYNC/AWAIT}
+Beispiel 1
+
+\begin{verbatim}
+/* Bekanntes Beispiel */
+const readHosts =() => {
+    readFilePromise('/etc/hosts')
+        .then(console.log)
+        . catch(() => {
+            console.log("Error reading file")
+        })
+}
+/* Mit async/await */
+const readHosts = async () => {
+    try {
+        console.log(await readFilePromise('/etc/hosts'))
+    }
+    catch (err) {
+        console.log("Error reading file")
+    }
+}
+\end{verbatim}
+
+\section*{Beispiel 2}
+\begin{verbatim}
+function resolveAfter2Seconds (x) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(x)
+        }, 2000)
+    })
+}
+async function add1(x) {
+    var a = resolveAfter2Seconds(20)
+    var b = resolveAfter2Seconds(30)
+    return x + await a + await b
+}
+add1(10).then(console.log)
+\end{verbatim}
+
 \subsection{Webserver}
+Die Standard-Ports von einem Webserver sind 80 und 443. Der Webserver wartet auf eine Anfrage vom Client.
+
+\section*{Server im Internet}
+\begin{itemize}
+  \item Wartet auf Anfragen auf bestimmtem Port
+  \item Client stellt Verbindung her und sendet Anfrage
+  \item Server beantwortet Anfrage
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+Port & Service \\
+\hline
+$\mathbf{2 0}$ & FTP - Data \\
+\hline
+$\mathbf{2 1}$ & FTP - Control \\
+\hline
+$\mathbf{2 2}$ & SSH Remote Login Protocol \\
+\hline
+$\mathbf{2 3}$ & Telnet \\
+\hline
+$\mathbf{2 5}$ & Simple Mail Transfer Protocol (SMTP) \\
+\hline
+$\mathbf{5 3}$ & Domain Name System (DNS) \\
+\hline
+$\mathbf{8 0}$ & HTTP \\
+\hline
+$\mathbf{4 4 3}$ & HTTPs \\
+\hline
+\end{tabular}
+\end{center}
+
+File-Transfer (File Server)\\
+Um Dateien auf einem File-Server auszutauschen, werden die Protokolle FTP (File Transfer Protocol) und SFTP (SSH File Transfer Protocol) verwendet.
+
+HTTP\\
+HTTP-Requests
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+Methode & Beschreibung \\
+\hline
+GET & Ressource laden \\
+\hline
+POST & Information senden \\
+\hline
+PUT & Ressource anlegen, überschreiben \\
+\hline
+PATCH & Ressource anpassen \\
+\hline
+DELETE & Ressource löschen \\
+\hline
+\end{tabular}
+\end{center}
+
+HTTP-Response Codes
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+Code & Beschreibung \\
+\hline
+$\mathbf{1 x x}$ & Information (101 Switching protocols) \\
+\hline
+$\mathbf{2 x x}$ & Erfolg (200 OK) \\
+\hline
+$\mathbf{3 x x}$ & Weiterleitung (301 Moved permanently) \\
+\hline
+$\mathbf{4 x x}$ & Fehler in Anfrage (403 Forbidden, 404 Not Found) \\
+\hline
+$\mathbf{5 x x}$ & Server-Fehler (501 Not implemented) \\
+\hline
+\end{tabular}
+\end{center}
+
+Node.js Webserver\\
+Einfacher Webserver
+
+\begin{verbatim}
+const {createServer} = require("http")
+Let server = createServer((request, response) => {
+    response.writeHead(200, {"Content-Type": "text/html"})
+    response.write(`
+        <h1>Hello!</h1>
+        <p>You asked for <code>${request.url}</code></p>`)
+    response.end()
+})
+server.listen(8000)
+console.log("Listening! (port 8000)")|
+\end{verbatim}
+
+\section*{Einfacher Webclient}
+\begin{verbatim}
+onst {request} = require("http")
+let requestStream = request({
+    hostname: "eloquentjavascript.net",
+        path: "/20_node.html",
+        method: "GET"
+        headers: {Accept: "text/html"}
+}, response => {
+        console.log("Server responded with status code", response.statusCode)
+})
+requestStream.end()
+\end{verbatim}
+
+\section*{Server und Client mit Streams}
+\begin{verbatim}
+const {createServer} = require("http")
+createServer((request, response) => {
+    response.writeHead(200, {"Content-Type": "text/plain"})
+        request.on("data", chunk =>
+            response.write(chunk.toString().toUpperCase()))
+        request.on("end" , () => response.end())
+    }).listen(8000)
+\end{verbatim}
+
+\begin{verbatim}
+const \{request\} = require("http")
+Let $\mathrm{rq}=$ request(\{
+    hostname: "localhost",
+    port: 8000,
+    method: "POST"
+\}, response => \{
+    response.on("data", chunk =>
+    process.stdout.write(chunk.toString()));
+\})
+rq.write("Hello server\n")
+rq.write("And good bye\n")
+rq.end()
+\end{verbatim}
+
+\section*{REST API}
+\begin{itemize}
+  \item REST: Representational State Transfer
+  \item Zugriff auf Ressourcen über ihre Adresse (URI)
+  \item Kein Zustand: jede Anfrage komplett unabhängig
+  \item Kein Bezug zu vorhergehenden Anfragen
+  \item Alle nötigen Informationen in Anfrage enthalten
+  \item Verwenden der HTTP-Methoden: GET , PUT , POST , ...\\
+(WBE\_Alles.pdf) Page 363.\\
+Express.js\\
+Express.Js ist ein minimales, aber flexibles Framework für Web-apps. Es hat zahlreiche Utilities und Erweiterungen. Express.js basiert auf Node.js.
+\end{itemize}
+
+\section*{http://expressjs.com}
+\section*{Installation}
+\begin{itemize}
+  \item Der Schritt npm init fragt eine Reihe von Informationen (Projektname, Version, ...) zum Projekt ab
+  \item Als Entry Point ist hier index.js voreingestellt
+  \item Das kann zum Beispiel in app.js geändert werden.
+\end{itemize}
+
+\begin{verbatim}
+$ mkdir myapp
+$ cd myapp
+$ npm init
+$ npm install express --save
+\end{verbatim}
+
+\section*{Beispiel: Express Server}
+\begin{verbatim}
+const express = require('express')
+const app = express()
+const port = 3000
+app.get('/', (req, res) => {
+        res.send('Hello World!')
+})
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+}})
+\end{verbatim}
+
+\begin{verbatim}
+Routing
+\end{verbatim}
+
+\begin{verbatim}
+app.get('/', function (req, res) {
+\end{verbatim}
+
+app.get('/', function (req, res) \{\\
+res.send('Hello World!')\\
+res.send('Hello World!')\\
+\})\\
+\})\\
+app.post('/', function (req, res) \{\\
+app.post('/', function (req, res) \{\\
+res.send('Got a POST request')\\
+res.send('Got a POST request')\\
+\})\\
+\})\\
+app.put('/user', function (req, res) \{\\
+app.put('/user', function (req, res) \{\\
+res.send('Got a PUT request at /user')\\
+res.send('Got a PUT request at /user')\\
+\})\\
+\})\\
+app.delete('/user', function (req, res) \{\\
+app.delete('/user', function (req, res) \{\\
+res.send('Got a DELETE request at /user')\\
+res.send('Got a DELETE request at /user')\\
+\})
+
+\begin{verbatim}
+})
+\end{verbatim}
+
+Jasmine (Testing)
+
+\section*{BEISPIEL (ZUGEHÖRIGE TESTS)}
+\begin{verbatim}
+/* PlayerSpec.js - Auszug */
+describe("when song has been paused", function() {
+    beforeEach(function() {
+        player.play(song)
+        player.pause()
+    })
+    it("should indicate that the song is currently paused", function() {
+        expect(player.isPlaying).toBeFalsy()
+        /* demonstrates use of 'not' with a custom matcher */
+        expect(player).not.toBePlaying(song)
+    })
+    it("should be possible to resume", function() {
+        player.resume()
+        expect(player.isPlaying).toBeTruthy()
+        expect(player.currentlyPlayingSong).toEqual(song)
+    })
+})
+\end{verbatim}
+
+\section*{JASMINE: MATCHER}
+\begin{verbatim}
+expect([1, 2, 3]).toEqual([1, 2, 3])
+expect(12).toBeTruthy()
+expect("").toBeFalsy()
+expect("Hello planet").not.toContain("world")
+expect(null).toBeNull()
+expect(8).toBeGreaterThan(5)
+expect(12.34).toBeCloseTo(12.3, 1)
+expect("horse_ebooks.jpg").toMatch(/\w+.(jpg|gif|png|svg)/i)
+\end{verbatim}
+
+\section*{JASMINE: TESTS DURCHFÜHREN}
+\$ npx jasmine\\
+Randomized with seed 03741\\
+Started
+
+5 specs, 0 failures\\
+Finished in 0.014 seconds\\
+Randomized with seed 03741 (jasmine --random=true --seed=03741)\\
