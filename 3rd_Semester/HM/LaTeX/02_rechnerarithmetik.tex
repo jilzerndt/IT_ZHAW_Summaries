@@ -1,7 +1,89 @@
 \section{Rechnerarithmetik}
 
-\subsection{Zahlendarstellung}
+\subsection{Zahlendarstellung und Maschinenzahlen}
 
-\subsection{Maschinenzahlen}
+Maschinendarstellbare Zahlen $M$ zur Basis $B$ :
+
+$$
+M=\left\{x \in \mathbb{R} \mid x= \pm 0 . m_{1} m_{2} m_{3} \ldots m_{n} \cdot B^{ \pm e_{1} e_{2} \ldots e_{l}}\right\} \cup\{0\}
+$$
+
+Dabei gilt $m_{1} \neq 0, m_{i}, e_{i} \in\{0,1, \ldots, B-1\}$ für $i \neq 0$ und $B \in \mathbb{N}(B>1)$
+
+\section*{Der Wert $\widehat{\boldsymbol{\omega}}$ einer solchen Zahl ist definiert als}
+$$
+\widehat{\omega}=\sum_{i=1}^{n} m_{i} B^{\hat{\mathrm{e}}-i}, \quad \hat{\mathrm{e}}=\sum_{l=1}^{l} e_{i} B^{l-i}
+$$
+
+$x$ wird als n -stellige Gleitpunktzahl zur Basis $B$ bezeichnet.\\
+Beispiel: $\underbrace{0.3211}_{n=4} \cdot \underbrace{4^{12}}_{l=2}$
+
+\begin{enumerate}
+  \item $\hat{e}=1 \cdot 4^{1}+2 \cdot 4^{0}=6$
+  \item $\widehat{\omega}=3 \cdot 4^{5}+2 \cdot 4^{4}+1 \cdot 4^{3}+1 \cdot 4^{2}=3664$
+\end{enumerate}
+
+\section*{Gleitpunktzahlen}
+\begin{itemize}
+  \item Single Precision (32 Bit) $\quad V=1$ Bit $\quad E=8$ Bit $\quad M=23$ Bit
+  \item Double Precision (64 Bit) $V=1$ Bit $\quad E=11$ Bit $\quad M=52$ Bit
+\end{itemize}
+
+Bei allgemeiner Basis $B$ gilt (Maschinengenauigkeit $=e p s$ )
+
+$$
+\text { eps }:=\frac{B}{2} \cdot B^{-n}, \quad e p s_{10}:=5 \cdot 10^{-n}
+$$
+
+Sie bezeichnet den maximalen relativen Fehler, der durch Rundungen entstehen kann.
+
+$$
+\left|\frac{r d(x)-x}{x}\right| \leq 5 \cdot 10^{-n} \quad\left(\text { da } x \geq 10^{e-1}\right)
+$$
 
 \subsection{Approximations- und Rundungsfehler}
+
+Die Maschinenzahlen sind nicht gleichmässig verteilt. Bei jedem Rechner gibt es eine grösste $\left(x_{\max }\right)$ und kleinste $\left(x_{\min }\right)$ positive Maschinenzahl.
+
+\begin{itemize}
+  \item $x_{\text {max }}=B^{e_{\max }}-B^{e_{\max }-n}=\left(1-B^{-n}\right) \cdot B^{e_{\max }}$
+  \item $x_{\text {min }}=B^{e_{\text {min }}-1}$
+\end{itemize}
+
+\section*{Definition}
+Gegeben sei eine Näherung $\tilde{x}$ zu einem exakten Wert $x$
+
+\begin{itemize}
+  \item Absoluter Fehler\\
+$|\tilde{x}-x|$
+  \item Relativer Fehler\\
+$\left|\frac{\tilde{x}-x}{x}\right| b z w \cdot \frac{|\tilde{x}-x|}{|x|}$
+\end{itemize}
+
+\section*{Fehlerfortpflanzung bei Funktionsauswertungen / Konditionierung}
+Näherung für den absoluten und relativen Fehler bei Funktionsauswertungen
+
+$$
+\begin{aligned}
+\underbrace{|f(\tilde{x})-f(x)|}_{\text {absoluter Fehler von } f(x)} & \approx\left|f^{\prime}(x)\right| \cdot \underbrace{|\tilde{x}-x|}_{\text {absoluter Fehler von } x} \\
+\underbrace{\frac{|f(\tilde{x})-f(x)|}{|f(x)|}}_{\text {relativer Fehler von } f(x)} & \approx \underbrace{\frac{\left|f^{\prime}(x)\right| \cdot|x|}{|f(x)|}}_{\text {Konditionszahl } K} . \quad \underbrace{|\tilde{x}-x|}_{\begin{array}{c}
+|x| \\
+\text { relativer Fehler von } x
+\end{array}}
+\end{aligned}
+$$
+
+Den Faktor $K$ nennt man Konditionszahl.
+
+$$
+K:=\frac{\left|f^{\prime}(x)\right| \cdot|x|}{|f(x)|}
+$$
+
+Relative Fehlervergrösserung von $x$, bei einer Funktionsauswertung von $f(x)$.
+
+\begin{center}
+\begin{tabular}{ll}
+- Gut konditionierte Probleme & Konditionszahl ist klein $(\leq 1)$ \\
+- Schlecht konditionierte Probleme & Konditionszahl ist gross $(>1)$ \\
+\end{tabular}
+\end{center}
