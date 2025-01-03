@@ -1,0 +1,132 @@
+\section{UI Bibliothek}
+
+\subsection{Frameworks und Bibliotheken}
+\begin{KR}{Unterschied Framework vs. Bibliothek}
+    \begin{itemize}
+        \item \textbf{Bibliothek}: 
+            \begin{itemize}
+                \item Kontrolle beim eigenen Programm
+                \item Funktionen/Klassen der Bibliothek werden verwendet (z.B. jQuery)
+            \end{itemize}
+        \item \textbf{Framework}: 
+            \begin{itemize}
+                \item Rahmen für die Anwendung 
+                \item Kontrolle liegt beim Framework
+                \item Hollywood-Prinzip: "don't call us, we'll call you"
+            \end{itemize}
+    \end{itemize}
+\end{KR}
+
+\subsection{Architektur}
+\begin{itemize}
+    \item \textbf{MVC (Model-View-Controller)}:
+        \begin{itemize}
+            \item Model: Repräsentiert Daten und Geschäftslogik
+            \item View: Bildet UI, kommuniziert mit Controller
+            \item Controller: Verarbeitet Eingaben, aktualisiert Model
+        \end{itemize}
+    \item \textbf{Single Page Apps (SPAs)}:
+        \begin{itemize}
+            \item Vermeidet Neuladen von Seiten
+            \item Inhalte dynamisch nachgeladen (Ajax, REST)
+            \item Bessere Usability durch schnellere UI-Reaktion
+        \end{itemize}
+\end{itemize}
+
+\subsection{JSX und SJDON}
+\begin{KR}{JSX (JavaScript XML)}
+    \begin{itemize}
+        \item XML-Syntax in JavaScript
+        \item Muss zu JavaScript transpiliert werden
+        \item HTML-Tags in Kleinbuchstaben
+        \item Eigene Komponenten mit Grossbuchstaben
+        \item JavaScript-Code in geschweiften Klammern \{...\}
+        \item Beispiel:
+            \begin{verbatim}
+const List = ({data}) => (
+    <ul>
+        {data.map(item => (
+            <li key={item}>{item}</li>
+        ))}
+    </ul>
+)
+            \end{verbatim}
+    \end{itemize}
+\end{KR}
+
+\begin{KR}{SJDON (Simple JavaScript DOM Notation)}
+    \begin{itemize}
+        \item Alternative zu JSX, reines JavaScript
+        \item Array-basierte Notation
+        \item Erstes Element ist Elementtyp
+        \item Attribute als Objekte
+        \item Beispiel:
+            \begin{verbatim}
+const List = ({data}) =>
+    ["ul", ...data.map(item => 
+        ["li", {key: item}, item]
+    )]
+            \end{verbatim}
+    \end{itemize}
+\end{KR}
+
+\subsection{Komponenten}
+\begin{KR}{React/SuiWeb Komponenten}
+    \begin{itemize}
+        \item Funktionskomponenten definieren:
+            \begin{verbatim}
+const MyComponent = ({prop1, prop2}) => (
+    ["div", 
+        ["h1", prop1],
+        ["p", prop2]
+    ]
+)
+            \end{verbatim}
+        \item Props sind readonly
+        \item Zustand mit useState Hook:
+            \begin{verbatim}
+const [state, setState] = useState(initialValue)
+            \end{verbatim}
+        \item Event Handler definieren:
+            \begin{verbatim}
+const handler = () => setState(newValue)
+            \end{verbatim}
+    \end{itemize}
+\end{KR}
+
+\subsection{State Management}
+\begin{KR}{Zustandsverwaltung}
+    \begin{itemize}
+        \item Kontrollierte Eingabefelder:
+            \begin{verbatim}
+const [text, setText] = useState("")
+["input", {
+    value: text,
+    oninput: e => setText(e.target.value)
+}]
+            \end{verbatim}
+        \item Container Components:
+            \begin{itemize}
+                \item Verwalten Zustand
+                \item Holen Daten (z.B. API-Calls)
+                \item Geben Daten via props weiter
+            \end{itemize}
+        \item Effect Hook für Seiteneffekte:
+            \begin{verbatim}
+useEffect(() => {
+    // Nach Rendering ausgeführt
+    fetchData().then(...)
+}, [dependencies])
+            \end{verbatim}
+    \end{itemize}
+\end{KR}
+
+\subsection{Best Practices}
+\begin{itemize}
+    \item Komponenten klein und wiederverwendbar halten
+    \item Zustand in wenigen Container-Komponenten konzentrieren
+    \item Props für Datenweitergabe nach unten
+    \item Events für Kommunikation nach oben
+    \item Module für bessere Separation of Concerns
+    \item Deklarativer statt imperativer Code
+\end{itemize}

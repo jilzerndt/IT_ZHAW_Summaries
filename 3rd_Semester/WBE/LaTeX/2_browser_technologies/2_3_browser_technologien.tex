@@ -1,0 +1,64 @@
+\subsection{Web Storage}
+
+\begin{KR}{Local Storage}
+1. Daten speichern:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Speichern
+localStorage.setItem('key', 'value')
+localStorage.setItem('user', JSON.stringify({name: 'Max'}))
+
+// Lesen
+const value = localStorage.getItem('key')
+const user = JSON.parse(localStorage.getItem('user'))
+
+// Loeschen
+localStorage.removeItem('key')
+localStorage.clear()  // Alles loeschen
+\end{lstlisting}
+
+2. Session Storage (nur für aktuelle Session):
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+sessionStorage.setItem('key', 'value')
+sessionStorage.getItem('key')
+sessionStorage.removeItem('key')
+\end{lstlisting}
+
+Wichtig zu beachten:
+\begin{itemize}
+  \item Limit ca. 5-10 MB pro Domain
+  \item Nur Strings speicherbar (JSON für Objekte)
+  \item Synchroner API-Zugriff
+\end{itemize}
+\end{KR}
+
+\subsection{Cookies}
+
+\begin{KR}{Cookie Handling}
+1. Cookie setzen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+document.cookie = "username=Max; expires=Fri, 31 Dec 2024 23:59:59 GMT; path=/"
+\end{lstlisting}
+
+2. Cookies lesen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function getCookie(name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+\end{lstlisting}
+
+3. Cookie löschen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/"
+\end{lstlisting}
+
+Wichtige Cookie-Attribute:
+\begin{itemize}
+  \item expires/max-age: Gültigkeitsdauer
+  \item path: Gültigkeitspfad
+  \item secure: Nur über HTTPS
+  \item httpOnly: Kein JavaScript-Zugriff
+  \item samesite: Cross-Site-Cookie-Verhalten
+\end{itemize}
+\end{KR}

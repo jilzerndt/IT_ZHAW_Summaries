@@ -1,0 +1,268 @@
+\section{JavaScript}
+
+% Console and Data Types
+\begin{formula}{Web-Konsole}
+    JavaScript Console im Browser:
+    \begin{itemize}
+        \item \texttt{console.log(message)}: Gibt eine Nachricht aus
+        \item \texttt{console.clear()}: Löscht die Konsole
+        \item \texttt{console.trace(message)}: Stack trace ausgeben
+        \item \texttt{console.error(message)}: stderr ausgeben
+        \item \texttt{console.time()}: Timer starten
+        \item \texttt{console.timeEnd()}: Timer stoppen
+    \end{itemize}
+    API-Dokumentation: \url{https://nodejs.org/api/console.html}
+\end{formula}
+
+\begin{definition}{Datentypen}
+    JavaScript kennt folgende primitive Datentypen:
+    \begin{itemize}
+        \item \texttt{number}: 64-Bit Floating Point (IEEE 754)
+        \begin{itemize}
+            \item \texttt{Infinity}: $1/0$
+            \item \texttt{NaN}: Not a Number ($0/0$)
+        \end{itemize}
+        \item \texttt{bigint}: Ganzzahlen beliebiger Größe (mit n am Ende)
+        \item \texttt{string}: Zeichenketten in \texttt{''}, \texttt{""} oder \texttt{``}
+        \item \texttt{boolean}: \texttt{true} oder \texttt{false}
+        \item \texttt{undefined}: Variable deklariert aber nicht initialisiert
+        \item \texttt{null}: Variable bewusst ohne Wert
+        \item \texttt{symbol}: Eindeutiger Identifier
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{typeof-Operator}
+Mit \texttt{typeof} kann der Typ eines Wertes ermittelt werden:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+typeof 42          // 'number'
+typeof 42n         // 'bigint'
+typeof "text"      // 'string'
+typeof true        // 'boolean'
+typeof undefined   // 'undefined'
+typeof null        // 'object' (!)
+typeof {}          // 'object'
+typeof []          // 'object'
+typeof (() => {})  // 'function'
+\end{lstlisting}
+\end{KR}
+
+\begin{theorem}{Variablenbindung}
+    JavaScript kennt drei Arten der Variablendeklaration:
+    \begin{center}
+    \begin{tabular}{|l|l|l|}
+        \hline
+        Keyword & Scope & Eigenschaften \\ 
+        \hline
+        \texttt{var} & Funktions-Scope & Kann neu deklariert werden \\ 
+        \hline
+        \texttt{let} & Block-Scope & Moderne Variante für veränderliche Werte \\ 
+        \hline
+        \texttt{const} & Block-Scope & Wert kann nicht neu zugewiesen werden \\ 
+        \hline
+    \end{tabular}
+    \end{center}
+\end{theorem}
+
+\begin{KR}{Vergleichsoperatoren}
+    JavaScript unterscheidet zwei Arten von Gleichheit:
+    \begin{itemize}
+        \item \texttt{==} und \texttt{!=}: Mit Typumwandlung
+        \item \texttt{===} und \texttt{!==}: Ohne Typumwandlung (strikt)
+    \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+5 == "5"     // true  (Typumwandlung)
+5 === "5"    // false (keine Typumwandlung)
+null == undefined    // true
+null === undefined   // false
+\end{lstlisting}
+\end{KR}
+
+% Control Structures
+\begin{KR}{Kontrollstrukturen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// If-Statement
+if (condition) {
+    // code
+} else if (otherCondition) {
+    // code
+} else {
+    // code
+}
+
+// Switch Statement
+switch(value) {
+    case 1:
+        // code
+        break;
+    case 2:
+        // code
+        break;
+    default:
+        // code
+}
+
+// Loops
+for (let i = 0; i < n; i++) { }
+while (condition) { }
+do { } while (condition);
+for (let item of array) { }
+for (let key in object) { }
+\end{lstlisting}
+\end{KR}
+
+% Functions
+\begin{KR}{Funktionsdefinitionen}
+JavaScript kennt verschiedene Arten, Funktionen zu definieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Funktionsdeklaration
+function add(a, b) {
+    return a + b;
+}
+
+// Funktionsausdruck
+const multiply = function(a, b) {
+    return a * b;
+};
+
+// Arrow Function
+const subtract = (a, b) => a - b;
+
+// Arrow Function mit Block
+const divide = (a, b) => {
+    if (b === 0) throw new Error('Division by zero');
+    return a / b;
+};
+\end{lstlisting}
+\end{KR}
+
+% Objects and Arrays
+\begin{definition}{Objekte}
+    JavaScript-Objekte sind Sammlungen von Schlüssel-Wert-Paaren:
+    \begin{itemize}
+        \item Eigenschaften können dynamisch hinzugefügt/entfernt werden
+        \item Werte können beliebige Typen sein (auch Funktionen)
+        \item Schlüssel sind immer Strings oder Symbols
+    \end{itemize}
+\end{definition}
+
+\begin{examplecode}{Objekte erstellen und manipulieren}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Objekt-Literal
+const person = {
+    name: "Alice",
+    age: 30,
+    greet() {
+        return `Hello, I'm ${this.name}`;
+    }
+};
+
+// Eigenschaften manipulieren
+person.job = "Developer";    // hinzufugen
+delete person.age;          // loschen
+"name" in person;           // true
+\end{lstlisting}
+\end{examplecode}
+
+\begin{formula}{Arrays}
+    Arrays in JavaScript sind spezielle Objekte für geordnete Sammlungen:
+    \begin{itemize}
+        \item \texttt{push()}, \texttt{pop()}: Ende hinzufügen/entfernen
+        \item \texttt{unshift()}, \texttt{shift()}: Anfang hinzufügen/entfernen
+        \item \texttt{splice()}: Elemente einfügen/entfernen
+        \item \texttt{slice()}: Teilarray erstellen
+        \item \texttt{map()}, \texttt{filter()}, \texttt{reduce()}: Funktional
+    \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const arr = [1, 2, 3];
+arr.push(4);             // [1,2,3,4]
+arr.pop();              // [1,2,3]
+arr.unshift(0);         // [0,1,2,3]
+arr.shift();            // [1,2,3]
+\end{lstlisting}
+\end{formula}
+
+% Asynchronous Programming
+\begin{concept}{Asynchrone Programmierung}
+    JavaScript verwendet verschiedene Mechanismen für asynchrone Operationen:
+    \begin{itemize}
+        \item Callbacks: Traditioneller Ansatz
+        \item Promises: Moderner Ansatz für strukturiertere asynchrone Operationen
+        \item Async/Await: Syntaktischer Zucker für Promises
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Promise Erstellung und Verwendung}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Promise erstellen
+const myPromise = new Promise((resolve, reject) => {
+    // Asynchrone Operation
+    setTimeout(() => {
+        if (/* erfolg */) {
+            resolve(result);
+        } else {
+            reject(error);
+        }
+    }, 1000);
+});
+
+// Promise verwenden
+myPromise
+    .then(result => {
+        // Erfolgsfall
+    })
+    .catch(error => {
+        // Fehlerfall
+    })
+    .finally(() => {
+        // Wird immer ausgefuhrt
+    });
+
+// Async/Await Syntax
+async function myAsync() {
+    try {
+        const result = await myPromise;
+        // Erfolgsfall
+    } catch (error) {
+        // Fehlerfall
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+% Modules and Node.js
+\begin{concept}{Module System}
+    JavaScript verwendet verschiedene Modulsysteme:
+    \begin{itemize}
+        \item CommonJS (Node.js): \texttt{require}/\texttt{module.exports}
+        \item ES Modules: \texttt{import}/\texttt{export}
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Module Import/Export}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// CommonJS (Node.js)
+const fs = require('fs');
+module.exports = { /* ... */ };
+
+// ES Modules
+import { function1, function2 } from './module.js';
+export const variable = 42;
+export default class MyClass { /* ... */ }
+\end{lstlisting}
+\end{KR}
+
+% Error Handling
+\begin{KR}{Error Handling}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+try {
+    // Code der Fehler werfen konnte
+    throw new Error('Something went wrong');
+} catch (error) {
+    // Fehlerbehandlung
+    console.error(error.message);
+} finally {
+    // Wird immer ausgefuhrt
+    cleanup();
+}
+\end{lstlisting}
+\end{KR}

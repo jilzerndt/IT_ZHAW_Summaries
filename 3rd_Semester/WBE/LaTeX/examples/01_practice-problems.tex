@@ -1,0 +1,282 @@
+\section{Übungsaufgaben}
+
+\subsection{JavaScript Grundlagen}
+
+\begin{example2}{Datentypen und Operatoren}
+    \textbf{Aufgabe 1:} Was ist die Ausgabe folgender Ausdrücke?
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+typeof NaN
+typeof []
+typeof null
+typeof undefined
+[] == false
+null === undefined
+"5" + 3
+"5" - 3
+    \end{lstlisting}
+    
+    \textbf{Lösung:}
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+"number"     // NaN ist vom Typ number
+"object"     // Arrays sind Objekte
+"object"     // null ist historisch ein Objekt
+"undefined"  // undefined ist ein eigener Typ
+true         // [] wird zu 0 konvertiert
+false        // === vergleicht auch Typen
+"53"         // String-Konkatenation
+2            // Numerische Subtraktion
+    \end{lstlisting}
+\end{example2}
+
+\begin{example2}{Funktionen und Scoping}
+    \textbf{Aufgabe 2:} Was ist die Ausgabe dieses Codes?
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+let x = 1;
+const f = () => {
+    let x = 2;
+    return {
+        getX: () => x,
+        setX: (val) => { x = val; }
+    };
+};
+const obj = f();
+console.log(x);        // ?
+console.log(obj.getX()); // ?
+obj.setX(3);
+console.log(obj.getX()); // ?
+console.log(x);        // ?
+    \end{lstlisting}
+    
+    \textbf{Lösung:}
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+1    // Globales x bleibt 1
+2    // Closure hat Zugriff auf lokales x
+3    // Lokales x wird auf 3 gesetzt
+1    // Globales x bleibt unveraendert
+    \end{lstlisting}
+\end{example2}
+
+\subsection{DOM und Events}
+
+\begin{example2}{DOM Manipulation}
+    \textbf{Aufgabe 3:} Erstellen Sie eine Funktion, die eine ToDo-Liste verwaltet.
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+function createTodoList(containerId) {
+    // Container finden
+    const container = document.getElementById(containerId);
+    
+    // Input und Liste erstellen
+    const input = document.createElement('input');
+    const button = document.createElement('button');
+    const list = document.createElement('ul');
+    
+    // Button konfigurieren
+    button.textContent = 'Add';
+    button.onclick = () => {
+        if (input.value.trim()) {
+            const li = document.createElement('li');
+            li.textContent = input.value;
+            list.appendChild(li);
+            input.value = '';
+        }
+    };
+    
+    // Elemente zusammenfuegen
+    container.appendChild(input);
+    container.appendChild(button);
+    container.appendChild(list);
+}
+    \end{lstlisting}
+\end{example2}
+
+\begin{example2}{Event Handling}
+    \textbf{Aufgabe 4:} Implementieren Sie einen Klick-Zähler mit Event Delegation.
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+document.getElementById('container').addEventListener('click', 
+    (e) => {
+        if (e.target.matches('button')) {
+            const count = (
+                parseInt(e.target.dataset.count) || 0
+            ) + 1;
+            e.target.dataset.count = count;
+            e.target.textContent = `Clicked ${count} times`;
+        }
+    }
+);
+    \end{lstlisting}
+\end{example2}
+
+\subsection{Client-Server Kommunikation}
+
+\begin{example2}{Fetch API}
+    \textbf{Aufgabe 5:} Implementieren Sie eine Funktion für API-Requests.
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+async function apiRequest(url, method = 'GET', data = null) {
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    
+    if (data) {
+        options.body = JSON.stringify(data);
+    }
+    
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+    }
+}
+    \end{lstlisting}
+\end{example2}
+
+\begin{example2}{Formular-Validierung}
+    \textbf{Aufgabe 6:} Erstellen Sie eine Formular-Validierung.
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+function validateForm(formId) {
+    const form = document.getElementById(formId);
+    
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const errors = [];
+        
+        // Email validieren
+        const email = formData.get('email');
+        if (!email.includes('@')) {
+            errors.push('Invalid email');
+        }
+        
+        // Passwort validieren
+        const password = formData.get('password');
+        if (password.length < 8) {
+            errors.push('Password too short');
+        }
+        
+        if (errors.length === 0) {
+            // Form submission logic
+            console.log('Form valid, submitting...');
+            form.submit();
+        } else {
+            alert(errors.join('\n'));
+        }
+    });
+}
+    \end{lstlisting}
+\end{example2}
+
+\subsection{UI-Komponenten}
+
+\begin{example2}{SuiWeb Komponente}
+    \textbf{Aufgabe 7:} Erstellen Sie eine Counter-Komponente mit SuiWeb.
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+const Counter = () => {
+    const [count, setCount] = useState(0);
+    
+    return [
+        "div",
+        ["h2", `Count: ${count}`],
+        ["button", 
+            {onclick: () => setCount(count + 1)},
+            "Increment"
+        ],
+        ["button", 
+            {onclick: () => setCount(count - 1)},
+            "Decrement"
+        ]
+    ];
+};
+    \end{lstlisting}
+\end{example2}
+
+\begin{example2}{Container Component}
+    \textbf{Aufgabe 8:} Implementieren Sie eine UserList-Komponente.
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+const UserList = () => {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
+    if (loading) {
+        fetchUsers()
+            .then(data => {
+                setUsers(data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error(error);
+                setLoading(false);
+            });
+    }
+    
+    if (loading) {
+        return ["div", "Loading..."];
+    }
+    
+    return [
+        "div",
+        ["h2", "Users"],
+        ["ul", 
+            ...users.map(user => 
+                ["li", `${user.name} (${user.email})`)
+            ]
+        ]
+    ];
+};
+    \end{lstlisting}
+\end{example2}
+
+\subsection{Theoriefragen}
+
+\begin{example2}{Konzeptfragen}
+    \textbf{1. Erklären Sie den Unterschied zwischen == und === in JavaScript.}
+    
+    Antwort: == vergleicht Werte mit Typumwandlung, === vergleicht Werte und Typen ohne Umwandlung.
+    
+    \textbf{2. Was ist Event Bubbling?}
+    
+    Antwort: Events werden von dem auslösenden Element durch den DOM-Baum nach oben weitergeleitet.
+    
+    \textbf{3. Was ist der Unterschied zwischen localStorage und sessionStorage?}
+    
+    Antwort: localStorage persistiert Daten auch nach Schließen des Browsers, sessionStorage nur während der Session.
+    
+    \textbf{4. Erklären Sie den Unterschied zwischen synchronem und asynchronem Code.}
+    
+    Antwort: Synchroner Code wird sequentiell ausgeführt, asynchroner Code ermöglicht parallele Ausführung ohne Blockierung.
+\end{example2}
+
+\subsection{Praktische Aufgaben}
+
+\begin{example2}{Implementierungsaufgaben}
+    \textbf{1. Implementieren Sie eine Funktion zur Deep Copy von Objekten.}
+    
+    \textbf{2. Erstellen Sie eine Funktion, die prüft ob ein String ein Palindrom ist.}
+    
+    \textbf{3. Implementieren Sie eine debounce-Funktion.}
+    
+    \textbf{4. Erstellen Sie eine Komponente für einen Image Slider.}
+\end{example2}
+
+\begin{example2}{Debugging-Aufgaben}
+    \textbf{1. Finden Sie den Fehler im folgenden Code:}
+    \begin{lstlisting}[language=JavaScript, style=basesmol]
+const getData = () => {
+    fetch('api/data')
+        .then(response => response.json())
+        .then(data => {
+            return data;
+        });
+}
+// Warum kommt undefined zurueck?
+    \end{lstlisting}
+    
+    Antwort: Die Funktion hat kein explizites return Statement. Sie sollte entweder async/await verwenden oder die Promise zurückgeben.
+\end{example2}
