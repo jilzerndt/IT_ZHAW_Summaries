@@ -1,0 +1,408 @@
+\begin{example}{Adapter Pattern}\\
+\textbf{Szenario:} Altbestand an Drittanbieter-Bibliothek integrieren
+\begin{lstlisting}[language=Java, style=base] 
+// Bestehende Schnittstelle
+interface ModernPrinter {
+    void printDocument(String content);
+}
+
+// Alte Drittanbieter-Klasse
+class LegacyPrinter {
+    public void print(String[] pages) {
+        for(String page : pages) {
+            System.out.println(page);
+        }
+    }
+}
+
+// Adapter
+class PrinterAdapter implements ModernPrinter {
+    private LegacyPrinter legacyPrinter;
+    
+    public PrinterAdapter(LegacyPrinter printer) {
+        this.legacyPrinter = printer;
+    }
+    
+    public void printDocument(String content) {
+        String[] pages = content.split("\n");
+        legacyPrinter.print(pages);
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Simple Factory}\\
+\textbf{Szenario:} Erzeugung von verschiedenen Datenbankverbindungen
+\begin{lstlisting}[language=Java, style=base]
+class DatabaseFactory {
+    public static Database createDatabase(String type) {
+        switch(type) {
+            case "MySQL":
+                return new MySQLDatabase();
+            case "PostgreSQL":
+                return new PostgreSQLDatabase();
+            default:
+                throw new IllegalArgumentException("Unknown DB type");
+        }
+    }
+}
+
+// Verwendung
+Database db = DatabaseFactory.createDatabase("MySQL");
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Singleton}\\
+\textbf{Szenario:} Globale Konfigurationsverwaltung
+\begin{lstlisting}[language=Java, style=base]
+public class Configuration {
+    private static Configuration instance;
+    private Map<String, String> config;
+    
+    private Configuration() {
+        config = new HashMap<>();
+    }
+    
+    public static Configuration getInstance() {
+        if(instance == null) {
+            instance = new Configuration();
+        }
+        return instance;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Dependency Injection}\\
+\textbf{Szenario:} Flexible Logger-Implementation
+\begin{lstlisting}[language=Java, style=base]
+interface Logger {
+    void log(String message);
+}
+
+class FileLogger implements Logger {
+    public void log(String message) {
+        // Log to file
+    }
+}
+
+class UserService {
+    private final Logger logger;
+    
+    public UserService(Logger logger) { // Dependency Injection
+        this.logger = logger;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Proxy}\\
+\textbf{Szenario:} Verzögertes Laden eines großen Bildes
+\begin{lstlisting}[language=Java, style=base]
+interface Image {
+    void display();
+}
+
+class RealImage implements Image {
+    private String filename;
+    
+    public RealImage(String filename) {
+        this.filename = filename;
+        loadFromDisk();
+    }
+    
+    private void loadFromDisk() {
+        System.out.println("Loading " + filename);
+    }
+    
+    public void display() {
+        System.out.println("Displaying " + filename);
+    }
+}
+
+class ImageProxy implements Image {
+    private RealImage realImage;
+    private String filename;
+    
+    public ImageProxy(String filename) {
+        this.filename = filename;
+    }
+    
+    public void display() {
+        if(realImage == null) {
+            realImage = new RealImage(filename);
+        }
+        realImage.display();
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Chain of Responsibility}\\
+\textbf{Szenario:} Authentifizierungskette
+\begin{lstlisting}[language=Java, style=base]
+abstract class AuthHandler {
+    protected AuthHandler next;
+    
+    public void setNext(AuthHandler next) {
+        this.next = next;
+    }
+    
+    public abstract boolean handle(String username, String password);
+}
+
+class LocalAuthHandler extends AuthHandler {
+    public boolean handle(String username, String password) {
+        if(checkLocalDB(username, password)) {
+            return true;
+        }
+        return next != null ? next.handle(username, password) : false;
+    }
+}
+
+class LDAPAuthHandler extends AuthHandler {
+    public boolean handle(String username, String password) {
+        if(checkLDAP(username, password)) {
+            return true;
+        }
+        return next != null ? next.handle(username, password) : false;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Decorator}\\
+\textbf{Szenario:} Dynamische Erweiterung eines Text-Editors
+\begin{lstlisting}[language=Java, style=base]
+interface TextComponent {
+    String render();
+}
+
+class SimpleText implements TextComponent {
+    private String text;
+    
+    public SimpleText(String text) {
+        this.text = text;
+    }
+    
+    public String render() {
+        return text;
+    }
+}
+
+class BoldDecorator implements TextComponent {
+    private TextComponent component;
+    
+    public BoldDecorator(TextComponent component) {
+        this.component = component;
+    }
+    
+    public String render() {
+        return "<b>" + component.render() + "</b>";
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Observer}\\
+\textbf{Szenario:} News-Benachrichtigungssystem
+\begin{lstlisting}[language=Java, style=base]
+interface NewsObserver {
+    void update(String news);
+}
+
+class NewsAgency {
+    private List<NewsObserver> observers = new ArrayList<>();
+    
+    public void addObserver(NewsObserver observer) {
+        observers.add(observer);
+    }
+    
+    public void notifyObservers(String news) {
+        for(NewsObserver observer : observers) {
+            observer.update(news);
+        }
+    }
+}
+
+class NewsChannel implements NewsObserver {
+    private String name;
+    
+    public NewsChannel(String name) {
+        this.name = name;
+    }
+    
+    public void update(String news) {
+        System.out.println(name + " received: " + news);
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Strategy}\\
+\textbf{Szenario:} Verschiedene Zahlungsmethoden
+\begin{lstlisting}[language=Java, style=base]
+interface PaymentStrategy {
+    void pay(int amount);
+}
+
+class CreditCardPayment implements PaymentStrategy {
+    private String cardNumber;
+    
+    public void pay(int amount) {
+        System.out.println("Paid " + amount + " using Credit Card");
+    }
+}
+
+class PayPalPayment implements PaymentStrategy {
+    private String email;
+    
+    public void pay(int amount) {
+        System.out.println("Paid " + amount + " using PayPal");
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Composite}\\
+\textbf{Szenario:} Dateisystem-Struktur
+\begin{lstlisting}[language=Java, style=base]
+interface FileSystemComponent {
+    void list(String prefix);
+}
+
+class File implements FileSystemComponent {
+    private String name;
+    
+    public void list(String prefix) {
+        System.out.println(prefix + name);
+    }
+}
+
+class Directory implements FileSystemComponent {
+    private String name;
+    private List<FileSystemComponent> children = new ArrayList<>();
+    
+    public void add(FileSystemComponent component) {
+        children.add(component);
+    }
+    
+    public void list(String prefix) {
+        System.out.println(prefix + name);
+        for(FileSystemComponent child : children) {
+            child.list(prefix + "  ");
+        }
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{State}\\
+\textbf{Szenario:} Verkaufsautomat
+\begin{lstlisting}[language=Java, style=base]
+interface VendingMachineState {
+    void insertCoin();
+    void ejectCoin();
+    void selectProduct();
+    void dispense();
+}
+
+class HasCoinState implements VendingMachineState {
+    private VendingMachine machine;
+    
+    public void selectProduct() {
+        System.out.println("Product selected");
+        machine.setState(machine.getSoldState());
+    }
+    
+    public void insertCoin() {
+        System.out.println("Already have coin");
+    }
+}
+
+class VendingMachine {
+    private VendingMachineState currentState;
+    
+    public void setState(VendingMachineState state) {
+        this.currentState = state;
+    }
+    
+    public void insertCoin() {
+        currentState.insertCoin();
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Visitor}\\
+\textbf{Szenario:} Dokumentstruktur mit verschiedenen Operationen
+\begin{lstlisting}[language=Java, style=base]
+interface DocumentElement {
+    void accept(Visitor visitor);
+}
+
+interface Visitor {
+    void visit(Paragraph paragraph);
+    void visit(Heading heading);
+}
+
+class HTMLVisitor implements Visitor {
+    public void visit(Paragraph p) {
+        System.out.println("<p>" + p.getText() + "</p>");
+    }
+    
+    public void visit(Heading h) {
+        System.out.println("<h1>" + h.getText() + "</h1>");
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Facade}\\
+\textbf{Szenario:} Vereinfachte Multimedia-Bibliothek
+\begin{lstlisting}[language=Java, style=base]
+class MultimediaFacade {
+    private AudioSystem audio;
+    private VideoSystem video;
+    private SubtitleSystem subtitles;
+    
+    public void playMovie(String movie) {
+        audio.initialize();
+        video.initialize();
+        subtitles.load(movie);
+        video.play(movie);
+        audio.play();
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Abstract Factory}\\
+\textbf{Szenario:} GUI-Elemente für verschiedene Betriebssysteme
+\begin{lstlisting}[language=Java, style=base]
+interface GUIFactory {
+    Button createButton();
+    Checkbox createCheckbox();
+}
+
+class WindowsFactory implements GUIFactory {
+    public Button createButton() {
+        return new WindowsButton();
+    }
+    
+    public Checkbox createCheckbox() {
+        return new WindowsCheckbox();
+    }
+}
+
+class MacFactory implements GUIFactory {
+    public Button createButton() {
+        return new MacButton();
+    }
+    
+    public Checkbox createCheckbox() {
+        return new MacCheckbox();
+    }
+}
+\end{lstlisting}
+\end{example}
