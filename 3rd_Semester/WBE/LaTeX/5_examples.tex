@@ -1,0 +1,532 @@
+\section{Example Exercises}
+
+\subsection{JavaScript Fundamentals}
+
+\begin{example2}{Basic Array Manipulation}
+Write a function that takes an array of numbers and returns a new array containing only the even numbers, doubled.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Example solution
+function processArray(numbers) {
+    return numbers
+        .filter(num => num % 2 === 0)
+        .map(num => num * 2);
+}
+
+// Test
+console.log(processArray([1, 2, 3, 4, 5, 6])); // [4, 8, 12]
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Closure Implementation}
+Create a function that generates unique IDs with a given prefix. Each call should return a new ID with an incrementing number.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Example solution
+function createIdGenerator(prefix) {
+    let counter = 0;
+    return function() {
+        counter++;
+        return `${prefix}${counter}`;
+    };
+}
+
+// Test
+const generateUserId = createIdGenerator('user_');
+console.log(generateUserId()); // "user_1"
+console.log(generateUserId()); // "user_2"
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Async Programming}
+Write an async function that fetches user data from two different endpoints and combines them. Handle potential errors appropriately.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+async function getUserData(userId) {
+    try {
+        const [profile, posts] = await Promise.all([
+            fetch(`/api/profile/${userId}`).then(r => r.json()),
+            fetch(`/api/posts/${userId}`).then(r => r.json())
+        ]);
+        
+        return {
+            ...profile,
+            posts: posts
+        };
+    } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        throw new Error('Failed to load user data');
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\subsection{DOM Manipulation}
+
+\begin{example2}{Dynamic List Creation}
+Write a function that takes an array of items and creates a numbered list in the DOM. Add a button to each item that removes it from the list.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function createList(items, containerId) {
+    const container = document.getElementById(containerId);
+    const ul = document.createElement('ul');
+    
+    items.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${index + 1}. ${item} `;
+        
+        const button = document.createElement('button');
+        button.textContent = 'Remove';
+        button.onclick = () => li.remove();
+        
+        li.appendChild(button);
+        ul.appendChild(li);
+    });
+    
+    container.appendChild(ul);
+}
+\end{lstlisting}
+\end{example2}
+
+\subsection{Component Implementation}
+
+\begin{example2}{Form Component}
+Create a form component in SuiWeb that handles user input with validation and submits data to a server.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const UserForm = () => {
+    const [formData, setFormData] = useState({
+        username: '',
+        email: ''
+    });
+    const [errors, setErrors] = useState({});
+    
+    const validate = () => {
+        const newErrors = {};
+        if (!formData.username) {
+            newErrors.username = 'Username is required';
+        }
+        if (!formData.email.includes('@')) {
+            newErrors.email = 'Valid email is required';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+        
+        try {
+            await fetch('/api/users', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            });
+        } catch (error) {
+            setErrors({submit: 'Failed to submit form'});
+        }
+    };
+    
+    return [
+        "form",
+        {onsubmit: handleSubmit},
+        ["div",
+            ["label", {for: "username"}, "Username:"],
+            ["input", {
+                id: "username",
+                value: formData.username,
+                oninput: (e) => setFormData({
+                    ...formData,
+                    username: e.target.value
+                })
+            }],
+            errors.username && ["span", {class: "error"}, errors.username]
+        ],
+        ["div",
+            ["label", {for: "email"}, "Email:"],
+            ["input", {
+                id: "email",
+                type: "email",
+                value: formData.email,
+                oninput: (e) => setFormData({
+                    ...formData,
+                    email: e.target.value
+                })
+            }],
+            errors.email && ["span", {class: "error"}, errors.email]
+        ],
+        ["button", {type: "submit"}, "Submit"]
+    ];
+};
+\end{lstlisting}
+\end{example2}
+
+\subsection{API Implementation}
+
+\begin{example2}{REST API with Express}
+Create a simple REST API for a todo list with Express.js, including error handling and basic validation.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+let todos = [];
+
+// Get all todos
+app.get('/api/todos', (req, res) => {
+    res.json(todos);
+});
+
+// Create new todo
+app.post('/api/todos', (req, res) => {
+    const { title } = req.body;
+    
+    if (!title) {
+        return res.status(400).json({
+            error: 'Title is required'
+        });
+    }
+    
+    const todo = {
+        id: Date.now(),
+        title,
+        completed: false
+    };
+    
+    todos.push(todo);
+    res.status(201).json(todo);
+});
+
+// Update todo
+app.patch('/api/todos/:id', (req, res) => {
+    const { id } = req.params;
+    const { completed } = req.body;
+    
+    const todo = todos.find(t => t.id === parseInt(id));
+    
+    if (!todo) {
+        return res.status(404).json({
+            error: 'Todo not found'
+        });
+    }
+    
+    todo.completed = completed;
+    res.json(todo);
+});
+
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({
+        error: 'Internal server error'
+    });
+});
+
+app.listen(3000);
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{State Management}
+Implement a shopping cart component that manages products, quantities, and total price calculation.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const ShoppingCart = () => {
+    const [items, setItems] = useState([]);
+    
+    const addItem = (product) => {
+        setItems(current => {
+            const existing = current.find(
+                item => item.id === product.id
+            );
+            
+            if (existing) {
+                return current.map(item =>
+                    item.id === product.id
+                        ? {...item, quantity: item.quantity + 1}
+                        : item
+                );
+            }
+            
+            return [...current, {...product, quantity: 1}];
+        });
+    };
+    
+    const removeItem = (productId) => {
+        setItems(current =>
+            current.filter(item => item.id !== productId)
+        );
+    };
+    
+    const total = items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+    );
+    
+    return [
+        "div",
+        ["h2", "Shopping Cart"],
+        ["ul",
+            ...items.map(item => [
+                "li",
+                ["span", `${item.name} x ${item.quantity}`],
+                ["span", `$${item.price * item.quantity}`],
+                ["button", 
+                    {onclick: () => removeItem(item.id)},
+                    "Remove"
+                ]
+            ])
+        ],
+        ["div", `Total: $${total.toFixed(2)}`]
+    ];
+};
+\end{lstlisting}
+\end{example2}
+
+\subsection{Browser APIs and Events}
+
+\begin{example2}{Custom Event System}
+Implement a publish/subscribe system using browser events.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+class EventBus {
+    constructor() {
+        this.eventTarget = new EventTarget();
+    }
+
+    publish(eventName, data) {
+        const event = new CustomEvent(eventName, {
+            detail: data,
+            bubbles: true
+        });
+        this.eventTarget.dispatchEvent(event);
+    }
+
+    subscribe(eventName, callback) {
+        const handler = (e) => callback(e.detail);
+        this.eventTarget.addEventListener(eventName, handler);
+        return () => {
+            this.eventTarget.removeEventListener(eventName, handler);
+        };
+    }
+}
+
+// Usage
+const bus = new EventBus();
+const unsubscribe = bus.subscribe('userLoggedIn', (user) => {
+    console.log(`Welcome, ${user.name}!`);
+});
+
+bus.publish('userLoggedIn', { name: 'John' });
+unsubscribe(); // Cleanup
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Drag and Drop}
+Implement a simple drag and drop system for list items.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function initDragAndDrop(containerId) {
+    const container = document.getElementById(containerId);
+    let draggedItem = null;
+
+    container.addEventListener('dragstart', (e) => {
+        draggedItem = e.target;
+        e.target.classList.add('dragging');
+    });
+
+    container.addEventListener('dragend', (e) => {
+        e.target.classList.remove('dragging');
+    });
+
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(container, e.clientY);
+        if (afterElement) {
+            container.insertBefore(draggedItem, afterElement);
+        } else {
+            container.appendChild(draggedItem);
+        }
+    });
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [
+            ...container.querySelectorAll('li:not(.dragging)')
+        ];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset, element: child };
+            }
+            return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\subsection{Data Manipulation and Algorithms}
+
+\begin{example2}{Deep Object Comparison}
+Implement a function that deeply compares two objects for equality.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function deepEqual(obj1, obj2) {
+    // Handle primitives and null
+    if (obj1 === obj2) return true;
+    if (obj1 == null || obj2 == null) return false;
+    if (typeof obj1 !== 'object' || typeof obj2 !== 'object') 
+        return false;
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) return false;
+
+    return keys1.every(key => {
+        if (!keys2.includes(key)) return false;
+        return deepEqual(obj1[key], obj2[key]);
+    });
+}
+
+// Test
+const obj1 = {
+    a: 1,
+    b: { c: 2, d: [3, 4] },
+    e: null
+};
+const obj2 = {
+    a: 1,
+    b: { c: 2, d: [3, 4] },
+    e: null
+};
+console.log(deepEqual(obj1, obj2)); // true
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Custom Promise Implementation}
+Create a simplified version of the Promise API.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+class MyPromise {
+    constructor(executor) {
+        this.state = 'pending';
+        this.value = undefined;
+        this.handlers = [];
+
+        const resolve = (value) => {
+            if (this.state === 'pending') {
+                this.state = 'fulfilled';
+                this.value = value;
+                this.handlers.forEach(handler => this.handle(handler));
+            }
+        };
+
+        const reject = (error) => {
+            if (this.state === 'pending') {
+                this.state = 'rejected';
+                this.value = error;
+                this.handlers.forEach(handler => this.handle(handler));
+            }
+        };
+
+        try {
+            executor(resolve, reject);
+        } catch (error) {
+            reject(error);
+        }
+    }
+
+    handle(handler) {
+        if (this.state === 'pending') {
+            this.handlers.push(handler);
+        } else {
+            const cb = this.state === 'fulfilled' 
+                ? handler.onSuccess 
+                : handler.onFail;
+            if (cb) {
+                try {
+                    const result = cb(this.value);
+                    handler.resolve(result);
+                } catch (error) {
+                    handler.reject(error);
+                }
+            }
+        }
+    }
+
+    then(onSuccess, onFail) {
+        return new MyPromise((resolve, reject) => {
+            this.handle({
+                onSuccess: onSuccess || (val => val),
+                onFail: onFail || (err => { throw err; }),
+                resolve,
+                reject
+            });
+        });
+    }
+
+    catch(onFail) {
+        return this.then(null, onFail);
+    }
+}
+
+// Usage
+new MyPromise((resolve, reject) => {
+    setTimeout(() => resolve('Success!'), 1000);
+})
+.then(result => console.log(result))
+.catch(error => console.error(error));
+\end{lstlisting}
+\end{example2}
+
+\subsection{Component Testing}
+
+\begin{example2}{Unit Testing Components}
+Write tests for a form component using Jasmine.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+describe('UserForm Component', () => {
+    let form;
+    
+    beforeEach(() => {
+        form = new UserForm();
+    });
+
+    it('should initialize with empty values', () => {
+        expect(form.state.username).toBe('');
+        expect(form.state.email).toBe('');
+        expect(Object.keys(form.state.errors)).toHaveSize(0);
+    });
+
+    it('should validate email format', () => {
+        form.state.email = 'invalid-email';
+        const isValid = form.validate();
+        
+        expect(isValid).toBe(false);
+        expect(form.state.errors.email)
+            .toContain('Valid email is required');
+    });
+
+    it('should submit form with valid data', async () => {
+        form.state.username = 'testuser';
+        form.state.email = 'test@example.com';
+        
+        spyOn(window, 'fetch').and.returnValue(
+            Promise.resolve({ ok: true })
+        );
+        
+        await form.handleSubmit();
+        
+        expect(window.fetch).toHaveBeenCalledWith(
+            '/api/users',
+            jasmine.any(Object)
+        );
+        expect(form.state.errors).toEqual({});
+    });
+});
+\end{lstlisting}
+\end{example2}

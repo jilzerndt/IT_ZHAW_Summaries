@@ -1,0 +1,323 @@
+\section{JavaScript}
+
+\begin{concept}{JavaScript Overview}
+    \begin{itemize}
+        \item Created by Brendan Eich in 1995 for Netscape Navigator
+        \item Dynamic, weakly typed programming language
+        \item Multi-paradigm: Object-oriented, functional, imperative
+        \item Originally for client-side scripting, now also server-side (Node.js)
+        \item Regular updates via ECMAScript standard
+    \end{itemize}
+\end{concept}
+
+\subsection{Core Language Features}
+
+\begin{definition}{Data Types}
+    Primitive Types:
+    \begin{itemize}
+        \item \texttt{number}: 64-bit floating point (IEEE 754)
+        \item \texttt{bigint}: arbitrary precision integers (with n suffix)
+        \item \texttt{string}: text in '', "", or ``
+        \item \texttt{boolean}: true/false
+        \item \texttt{undefined}: uninitialized value
+        \item \texttt{null}: intentionally empty value
+        \item \texttt{symbol}: unique identifier
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Type Checking}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Type checking with typeof
+typeof 42          // 'number'
+typeof 42n         // 'bigint'
+typeof "text"      // 'string'
+typeof true        // 'boolean'
+typeof undefined   // 'undefined'
+typeof null        // 'object' (historical bug!)
+typeof {}          // 'object'
+typeof []          // 'object'
+typeof (() => {})  // 'function'
+
+// Special number values
+console.log(Infinity)    // Division by zero
+console.log(NaN)        // Invalid numeric operation
+\end{lstlisting}
+\end{KR}
+
+\begin{definition}{Variables}
+    Three ways to declare variables:
+    \begin{itemize}
+        \item \texttt{var}: function-scoped, hoisted (avoid)
+        \item \texttt{let}: block-scoped, mutable
+        \item \texttt{const}: block-scoped, immutable reference
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Control Structures}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Conditionals
+if (condition) {
+    // code
+} else if (otherCondition) {
+    // code
+} else {
+    // code
+}
+
+// Switch statement
+switch(value) {
+    case 1:
+        // code
+        break;
+    default:
+        // code
+}
+
+// Loops
+for (let i = 0; i < n; i++) { }
+while (condition) { }
+do { } while (condition);
+for (let item of array) { }
+for (let key in object) { }
+\end{lstlisting}
+\end{KR}
+
+\subsection{Objects and Arrays}
+
+\begin{concept}{Objects}
+    Key characteristics:
+    \begin{itemize}
+        \item Collections of key-value pairs
+        \item Dynamic - properties can be added/removed
+        \item Keys are strings or symbols
+        \item Values can be any type, including functions (methods)
+        \item Prototype-based inheritance
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Object Manipulation}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Object creation
+const person = {
+    name: "Alice",
+    age: 30,
+    greet() {
+        return `Hello, I'm ${this.name}`;
+    }
+};
+
+// Property access
+person.name           // dot notation
+person["age"]         // bracket notation
+
+// Property manipulation
+person.job = "Developer";    // add
+delete person.age;           // delete
+"name" in person;           // check existence
+
+// Object methods
+Object.keys(person)         // get keys
+Object.values(person)       // get values
+Object.entries(person)      // get key-value pairs
+Object.assign(target, ...sources)  // merge objects
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Arrays}
+    Special objects for ordered collections:
+    \begin{itemize}
+        \item Zero-based indexing
+        \item Dynamic length
+        \item Can contain mixed types
+        \item Many built-in methods for manipulation
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Array Methods}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const arr = [1, 2, 3];
+
+// Modifying arrays
+arr.push(4);             // add to end
+arr.pop();              // remove from end
+arr.unshift(0);         // add to start
+arr.shift();            // remove from start
+arr.splice(1, 1, 'new'); // remove/insert at position
+
+// Accessing arrays
+arr.slice(1, 3);        // get sub-array
+arr.indexOf(2);         // find element
+arr.includes(2);        // check existence
+
+// Functional methods
+arr.map(x => x * 2);    // transform elements
+arr.filter(x => x > 2); // filter elements
+arr.reduce((a, b) => a + b); // reduce to value
+arr.forEach(x => console.log(x)); // iterate
+\end{lstlisting}
+\end{KR}
+
+\subsection{Functions and Closures}
+
+\begin{concept}{Functions}
+    Functions in JavaScript are first-class objects:
+    \begin{itemize}
+        \item Can be assigned to variables
+        \item Passed as arguments
+        \item Returned from other functions
+        \item Have their own properties and methods
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Function Declarations}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Function declaration
+function greet(name) {
+    return `Hello, ${name}!`;
+}
+
+// Function expression
+const greet = function(name) {
+    return `Hello, ${name}!`;
+};
+
+// Arrow function
+const greet = name => `Hello, ${name}!`;
+
+// Arrow function with multiple parameters
+const add = (a, b) => a + b;
+
+// Arrow function with block
+const calculate = (a, b) => {
+    const result = a * b;
+    return result;
+};
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Function Parameters}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Default parameters
+function greet(name = 'Guest') {
+    return `Hello, ${name}!`;
+}
+
+// Rest parameters
+function sum(...numbers) {
+    return numbers.reduce((a, b) => a + b, 0);
+}
+
+// Destructuring parameters
+function printPerson({name, age}) {
+    console.log(`${name} is ${age} years old`);
+}
+
+// Spread operator
+const numbers = [1, 2, 3];
+console.log(Math.max(...numbers));
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Closures}
+    A closure is created when a function is defined inside another function:
+    \begin{itemize}
+        \item Has access to variables in outer function scope
+        \item Maintains access even after outer function returns
+        \item Used for data privacy and state management
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Closure Example}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function createCounter() {
+    let count = 0;
+    return {
+        increment() { return ++count; },
+        decrement() { return --count; },
+        getCount() { return count; }
+    };
+}
+
+const counter = createCounter();
+counter.increment(); // 1
+counter.increment(); // 2
+counter.decrement(); // 1
+\end{lstlisting}
+\end{KR}
+
+\subsection{Asynchronous Programming}
+
+\begin{concept}{Asynchronous JavaScript}
+    Methods for handling asynchronous operations:
+    \begin{itemize}
+        \item Callbacks (traditional)
+        \item Promises (modern)
+        \item Async/Await (modern, cleaner syntax)
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Promises}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Creating a Promise
+const myPromise = new Promise((resolve, reject) => {
+    // Async operation
+    setTimeout(() => {
+        if (success) {
+            resolve('Operation completed');
+        } else {
+            reject('Operation failed');
+        }
+    }, 1000);
+});
+
+// Using a Promise
+myPromise
+    .then(result => console.log(result))
+    .catch(error => console.error(error))
+    .finally(() => console.log('Cleanup'));
+
+// Async/Await
+async function fetchData() {
+    try {
+        const result = await myPromise;
+        console.log(result);
+    } catch (error) {
+        console.error(error);
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\subsection{Node.js and Modules}
+
+\begin{concept}{Node.js}
+    Server-side JavaScript runtime:
+    \begin{itemize}
+        \item Built on Chrome's V8 engine
+        \item Event-driven, non-blocking I/O
+        \item Large ecosystem (npm)
+        \item Used for web servers, CLI tools, etc.
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Module Systems}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// CommonJS (Node.js)
+const fs = require('fs');
+module.exports = { /* exports */ };
+
+// ES Modules
+import { function1 } from './module.js';
+export const variable = 42;
+export default class MyClass { /* ... */ }
+
+// Package.json
+{
+    "name": "my-project",
+    "version": "1.0.0",
+    "dependencies": {
+        "express": "^4.17.1"
+    }
+}
+\end{lstlisting}
+\end{KR}
