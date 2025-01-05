@@ -4,7 +4,9 @@
 
 \begin{concept}{Lineares Gleichungssystem}\\
 Ein lineares Gleichungssystem der Form $Ax = b$ besteht aus:
-$$A=\left[\begin{array}{ccc}
+\vspace{2mm}\\
+\resizebox{\linewidth}{!}{
+$A=\left[\begin{array}{ccc}
 a_{11} & \cdots & a_{1n} \\
 \vdots & \ddots & \vdots \\
 a_{n1} & \cdots & a_{nn}
@@ -18,7 +20,7 @@ b=\left(\begin{array}{c}
 b_1 \\
 \vdots \\
 b_n
-\end{array}\right) \in \mathbb{R}^n$$
+\end{array}\right) \in \mathbb{R}^n$}
 \end{concept}
 
 \subsection{Der Gauss-Algorithmus}
@@ -33,9 +35,7 @@ Erlaubte Operationen:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Gauss-Algorithmus}\\
-So lösen Sie ein lineares Gleichungssystem mit dem Gauss-Algorithmus:
-
+\begin{KR}{Gauss-Algorithmus}
 \paragraph{1. Elimination (Vorwärts)}
 \begin{enumerate}
     \item Für $i=1,\ldots,n-1$:
@@ -48,9 +48,10 @@ So lösen Sie ein lineares Gleichungssystem mit dem Gauss-Algorithmus:
 $$x_i = \frac{b_i - \sum_{j=i+1}^n a_{ij}x_j}{a_{ii}}, \quad i=n,n-1,\ldots,1$$
 \end{KR}
 
-\begin{example2}{Gauss-Elimination}{Lösung eines 3×3 Systems}
+\begin{example2}{Gauss-Elimination}
+\vspace{-3mm}\\
 Gegebenes System:
-$$A = \begin{pmatrix}
+$A = \begin{pmatrix}
 2 & 1 & -1\\
 4 & -1 & 3\\
 -2 & 2 & 1
@@ -58,7 +59,32 @@ $$A = \begin{pmatrix}
 3\\
 1\\
 4
-\end{pmatrix}$$
+\end{pmatrix}$
+\vspace{2mm}\\
+\textbf{  Eliminationsschritte: }
+\vspace{2mm}\\
+$\begin{pmatrix}
+    2 & 1 & -1 & | & 3\\
+    0 & -3 & 5 & | & -5\\
+    0 & 3 & -1 & | & 7
+    \end{pmatrix}
+    \Rightarrow
+    \begin{pmatrix}
+    2 & 1 & -1 & | & 3\\
+    0 & -3 & 5 & | & -5\\
+    0 & 0 & 4 & | & 2
+    \end{pmatrix}$
+
+    \raggedright
+$
+\begin{array}{lrl}
+    \textbf{Rückwärtseinsetzen: }& x_3 &= \frac{2}{4} = \frac{1}{2}\\
+    &x_2 &= \frac{-5 - 5(\frac{1}{2})}{-3} = -2\\
+    &x_1 &= \frac{3 - 1(-2) - (-1)(\frac{1}{2})}{2} = 1
+\end{array}
+$
+
+
 
 \begin{enumerate}
     \item Elimination der ersten Spalte:
@@ -190,5 +216,203 @@ R = \begin{pmatrix}
 0 & -3 & -2\\
 0 & 0 & -2
 \end{pmatrix}$$
+\end{example2}
+
+\begin{concept}{QR-Zerlegung}\\
+Eine orthogonale Matrix $Q \in \mathbb{R}^{n\times n}$ erfüllt: $Q^T Q = QQ^T = I_n$
+
+Die QR-Zerlegung einer Matrix $A$ ist:
+$$A = QR$$
+wobei $Q$ orthogonal und $R$ eine obere Dreiecksmatrix ist.
+\end{concept}
+
+\begin{definition}{Householder-Transformation}\\
+Eine Householder-Matrix hat die Form:
+$$H = I_n - 2uu^T$$
+mit $u \in \mathbb{R}^n$, $\|u\| = 1$. Es gilt:
+\begin{itemize}
+    \item $H$ ist orthogonal ($H^T = H^{-1}$)
+    \item $H$ ist symmetrisch ($H^T = H$)
+    \item $H^2 = I_n$
+\end{itemize}
+\end{definition}
+
+\begin{KR}{QR-Zerlegung mit Householder}\\
+So berechnen Sie die QR-Zerlegung:
+\begin{enumerate}
+    \item Initialisierung: $R := A$, $Q := I_n$
+    \item Für $i = 1,\ldots,n-1$:
+        \begin{itemize}
+            \item Bilde Vektor $v_i$ aus i-ter Spalte von $R$ ab Position $i$
+            \item $w_i := v_i + \text{sign}(v_{i1})\|v_i\|e_1$
+            \item $u_i := w_i/\|w_i\|$
+            \item $H_i := I_{n-i+1} - 2u_iu_i^T$
+            \item Erweitere $H_i$ zu $Q_i$ durch $I_{i-1}$ links oben
+            \item $R := Q_iR$
+            \item $Q := QQ_i^T$
+        \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{QR-Zerlegung}{Berechnung einer QR-Zerlegung}
+Matrix:
+$$A = \begin{pmatrix}
+1 & 1\\
+1 & 0\\
+0 & 1
+\end{pmatrix}$$
+
+Erste Householder-Transformation:
+\begin{enumerate}
+    \item $v_1 = (1,1,0)^T$
+    \item $w_1 = (1,1,0)^T + \sqrt{2}(1,0,0)^T$
+    \item $u_1 = \frac{1}{\sqrt{6}}(1+\sqrt{2},1,0)^T$
+    \item $H_1 = I_3 - 2u_1u_1^T$
+\end{enumerate}
+
+Nach allen Transformationen:
+$$Q = \begin{pmatrix}
+-0.7071 & -0.5774 & -0.4082\\
+-0.7071 & 0.5774 & 0.4082\\
+0 & -0.5774 & 0.8165
+\end{pmatrix}, \quad
+R = \begin{pmatrix}
+-1.4142 & -0.7071\\
+0 & -1.2247\\
+0 & 0
+\end{pmatrix}$$
+\end{example2}
+
+\subsection{Fehleranalyse}
+
+\begin{definition}{Matrix- und Vektornormen}\\
+Eine Vektornorm $\|\cdot\|$ erfüllt für alle $x,y \in \mathbb{R}^n, \lambda \in \mathbb{R}$:
+\begin{itemize}
+    \item $\|x\| \geq 0$ und $\|x\| = 0 \Leftrightarrow x = 0$
+    \item $\|\lambda x\| = |\lambda| \cdot \|x\|$
+    \item $\|x + y\| \leq \|x\| + \|y\|$ (Dreiecksungleichung)
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Wichtige Normen}\\
+\begin{minipage}[t]{0.3\textwidth}
+    \textbf{1-Norm:}\\
+    $\|x\|_1 = \sum_{i=1}^n |x_i|$\\
+    $\|A\|_1 = \max_j \sum_{i=1}^n |a_{ij}|$
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}[t]{0.3\textwidth}
+    \textbf{2-Norm:}\\
+    $\|x\|_2 = \sqrt{\sum_{i=1}^n x_i^2}$\\
+    $\|A\|_2 = \sqrt{\rho(A^TA)}$
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}[t]{0.3\textwidth}
+    $\infty$\textbf{-Norm:}\\
+    $\|x\|_\infty = \max_i |x_i|$\\
+    $\|A\|_\infty = \max_i \sum_{j=1}^n |a_{ij}|$
+\end{minipage}
+\end{concept}
+
+\begin{theorem}{Fehlerabschätzung für LGS}\\
+Sei $\|\cdot\|$ eine Norm, $A \in \mathbb{R}^{n\times n}$ regulär und $Ax = b$, $A\tilde{x} = \tilde{b}$. Dann gilt:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.47\textwidth}
+    \textbf{Absoluter Fehler:}\\
+    $\|x - \tilde{x}\| \leq \|A^{-1}\| \cdot \|b - \tilde{b}\|$
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}[t]{0.47\textwidth}
+    \textbf{Relativer Fehler:}\\
+    $\frac{\|x - \tilde{x}\|}{\|x\|} \leq \text{cond}(A) \cdot \frac{\|b - \tilde{b}\|}{\|b\|}$
+\end{minipage}
+
+Mit der Konditionszahl $\text{cond}(A) = \|A\| \cdot \|A^{-1}\|$
+\end{theorem}
+
+\begin{concept}{Konditionierung}\\
+Die Konditionszahl beschreibt die numerische Stabilität eines LGS:
+\begin{itemize}
+    \item $\text{cond}(A) \approx 1$: gut konditioniert
+    \item $\text{cond}(A) \gg 1$: schlecht konditioniert
+    \item $\text{cond}(A) \to \infty$: singulär
+\end{itemize}
+\end{concept}
+
+\subsection{Iterative Verfahren}
+
+\begin{definition}{Zerlegung der Systemmatrix}\\
+Für iterative Verfahren wird $A$ zerlegt in:
+$$A = L + D + R$$
+wobei:
+\begin{itemize}
+    \item $L$: streng untere Dreiecksmatrix
+    \item $D$: Diagonalmatrix
+    \item $R$: streng obere Dreiecksmatrix
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Jacobi-Verfahren}\\
+Gesamtschrittverfahren mit der Iteration:
+$$x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$$
+
+Komponentenweise:
+$$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$$
+\end{concept}
+
+\begin{concept}{Gauss-Seidel-Verfahren}\\
+Einzelschrittverfahren mit der Iteration:
+$$x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$$
+
+Komponentenweise:
+$$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$$
+\end{concept}
+
+\begin{theorem}{Konvergenzkriterien}\\
+Ein iteratives Verfahren konvergiert, wenn:
+\begin{enumerate}
+    \item Die Matrix $A$ diagonaldominant ist:\\
+    $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
+    \item Der Spektralradius der Iterationsmatrix kleiner 1 ist:\\
+    $\rho(B) < 1$ mit $B$ als jeweilige Iterationsmatrix
+\end{enumerate}
+\end{theorem}
+
+\begin{KR}{Implementation iterativer Verfahren}\\
+So implementieren Sie iterative Verfahren:
+\begin{enumerate}
+    \item Wählen Sie Startvektor $x^{(0)}$
+    \item Wählen Sie Abbruchkriterien:
+        \begin{itemize}
+            \item Maximale Iterationszahl $k_{max}$
+            \item Toleranz $\epsilon$ für Änderung $\|x^{(k+1)} - x^{(k)}\|$
+            \item Toleranz für Residuum $\|Ax^{(k)} - b\|$
+        \end{itemize}
+    \item Führen Sie Iteration durch bis Kriterien erfüllt
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Iterative Verfahren}{Vergleich Jacobi und Gauss-Seidel}
+System:
+$$\begin{pmatrix}
+4 & -1 & 0\\
+-1 & 4 & -1\\
+0 & -1 & 4
+\end{pmatrix}x = \begin{pmatrix}
+1\\
+5\\
+0
+\end{pmatrix}$$
+
+\begin{center}
+\begin{tabular}{c|cc|cc}
+k & \multicolumn{2}{c|}{Jacobi} & \multicolumn{2}{c}{Gauss-Seidel}\\
+\hline
+0 & $(0,0,0)^T$ & & $(0,0,0)^T$ &\\
+1 & $(0.25,1.25,0)^T$ & 1.25 & $(0.25,1.31,0.08)^T$ & 1.31\\
+2 & $(0.31,1.31,0.31)^T$ & 0.31 & $(0.33,1.33,0.33)^T$ & 0.02\\
+3 & $(0.33,1.33,0.33)^T$ & 0.02 & $(0.33,1.33,0.33)^T$ & 0.00
+\end{tabular}
+\end{center}
 \end{example2}
 
