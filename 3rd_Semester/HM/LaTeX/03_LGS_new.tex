@@ -1,0 +1,194 @@
+\section{Numerische Lösung linearer Gleichungssysteme}
+
+\subsection{Grundlagen}
+
+\begin{concept}{Lineares Gleichungssystem}\\
+Ein lineares Gleichungssystem der Form $Ax = b$ besteht aus:
+$$A=\left[\begin{array}{ccc}
+a_{11} & \cdots & a_{1n} \\
+\vdots & \ddots & \vdots \\
+a_{n1} & \cdots & a_{nn}
+\end{array}\right] \in \mathbb{R}^{n \times n}, \quad 
+x=\left(\begin{array}{c}
+x_1 \\
+\vdots \\
+x_n
+\end{array}\right) \in \mathbb{R}^n, \quad 
+b=\left(\begin{array}{c}
+b_1 \\
+\vdots \\
+b_n
+\end{array}\right) \in \mathbb{R}^n$$
+\end{concept}
+
+\subsection{Der Gauss-Algorithmus}
+
+\begin{concept}{Grundidee Gauss-Elimination}\\
+Transformation des Gleichungssystems $Ax=b$ in ein äquivalentes System $\tilde{A}x=\tilde{b}$, wobei $\tilde{A}$ eine obere Dreiecksmatrix ist.
+
+Erlaubte Operationen:
+\begin{itemize}
+    \item $z_j := z_j - \lambda z_i$ für $i<j$ und $\lambda \in \mathbb{R}$
+    \item $z_i \rightarrow z_j$ (Vertauschen von Zeilen)
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Gauss-Algorithmus}\\
+So lösen Sie ein lineares Gleichungssystem mit dem Gauss-Algorithmus:
+
+\paragraph{1. Elimination (Vorwärts)}
+\begin{enumerate}
+    \item Für $i=1,\ldots,n-1$:
+    \item \quad Für $j=i+1,\ldots,n$:
+    \item \quad\quad Berechne $\lambda_{ji} = a_{ji}/a_{ii}$
+    \item \quad\quad $z_j := z_j - \lambda_{ji} z_i$
+\end{enumerate}
+
+\paragraph{2. Rückwärtseinsetzen}
+$$x_i = \frac{b_i - \sum_{j=i+1}^n a_{ij}x_j}{a_{ii}}, \quad i=n,n-1,\ldots,1$$
+\end{KR}
+
+\begin{example2}{Gauss-Elimination}{Lösung eines 3×3 Systems}
+Gegebenes System:
+$$A = \begin{pmatrix}
+2 & 1 & -1\\
+4 & -1 & 3\\
+-2 & 2 & 1
+\end{pmatrix}, \quad b = \begin{pmatrix}
+3\\
+1\\
+4
+\end{pmatrix}$$
+
+\begin{enumerate}
+    \item Elimination der ersten Spalte:
+    $$\begin{pmatrix}
+    2 & 1 & -1 & | & 3\\
+    0 & -3 & 5 & | & -5\\
+    0 & 3 & -1 & | & 7
+    \end{pmatrix}$$
+    
+    \item Elimination der zweiten Spalte:
+    $$\begin{pmatrix}
+    2 & 1 & -1 & | & 3\\
+    0 & -3 & 5 & | & -5\\
+    0 & 0 & 4 & | & 2
+    \end{pmatrix}$$
+    
+    \item Rückwärtseinsetzen:
+    \begin{align*}
+        x_3 &= \frac{2}{4} = \frac{1}{2}\\
+        x_2 &= \frac{-5 - 5(\frac{1}{2})}{-3} = -2\\
+        x_1 &= \frac{3 - 1(-2) - (-1)(\frac{1}{2})}{2} = 1
+    \end{align*}
+\end{enumerate}
+\end{example2}
+
+\subsection{Pivotisierung}
+
+\begin{concept}{Spaltenpivotisierung}\\
+Strategie zur numerischen Stabilisierung des Gauss-Algorithmus durch Auswahl des betragsmäßig größten Elements als Pivotelement.
+
+Vor jedem Eliminationsschritt in Spalte $i$:
+\begin{itemize}
+    \item Suche $k$ mit $|a_{ki}| = \max\{|a_{ji}| \mid j = i,\ldots,n\}$
+    \item Falls $a_{ki} \neq 0$: Vertausche Zeilen $i$ und $k$
+    \item Falls $a_{ki} = 0$: Matrix ist singulär
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Gauss mit Pivotisierung}\\
+Erweiterter Gauss-Algorithmus mit Spaltenpivotisierung:
+\begin{enumerate}
+    \item Für $i=1,\ldots,n-1$:
+    \item \quad Finde $k \geq i$ mit $|a_{ki}| = \max\{|a_{ji}| \mid j = i,\ldots,n\}$
+    \item \quad Falls $a_{ki} = 0$: Stop (Matrix singulär)
+    \item \quad Vertausche Zeilen $i$ und $k$
+    \item \quad Für $j=i+1,\ldots,n$:
+    \item \quad\quad $z_j := z_j - \frac{a_{ji}}{a_{ii}}z_i$
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Pivotisierung}{Gauss-Elimination mit Pivotisierung}
+System:
+$$\begin{pmatrix}
+1 & 2 & -1\\
+4 & 8 & -3\\
+9 & 18 & -8
+\end{pmatrix}x = \begin{pmatrix}
+1\\
+4\\
+9
+\end{pmatrix}$$
+
+\begin{enumerate}
+    \item Erste Spalte: Pivot $|9|$ → Tausche Zeilen 1 und 3
+    \item Nach Elimination der ersten Spalte:
+    $$\begin{pmatrix}
+    9 & 18 & -8 & | & 9\\
+    0 & 0 & 0.89 & | & 0\\
+    0 & 0 & 0.89 & | & 0
+    \end{pmatrix}$$
+    \item System ist schlecht konditioniert (identische Zeilen)
+\end{enumerate}
+\end{example2}
+
+\subsection{Matrix-Zerlegungen}
+
+\begin{definition}{Dreieckszerlegung}\\
+Eine Matrix $A \in \mathbb{R}^{n\times n}$ kann zerlegt werden in:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Untere Dreiecksmatrix L:}\\
+    $l_{ij} = 0$ für $j > i$\\
+    Diagonale meist normiert ($l_{ii}=1$)
+\end{minipage}
+\hspace{3mm}
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Obere Dreiecksmatrix R:}\\
+    $r_{ij} = 0$ für $i > j$\\
+    Diagonalelemente $\neq 0$
+\end{minipage}
+\end{definition}
+
+\begin{theorem}{LR-Zerlegung}\\
+Jede reguläre Matrix $A$, für die der Gauss-Algorithmus ohne Zeilenvertauschungen durchführbar ist, lässt sich zerlegen in:
+$$A = LR$$
+wobei $L$ eine normierte untere und $R$ eine obere Dreiecksmatrix ist.
+\end{theorem}
+
+\begin{KR}{Berechnung der LR-Zerlegung}\\
+So berechnen Sie die LR-Zerlegung:
+\begin{enumerate}
+    \item Führen Sie Gauss-Elimination durch
+    \item $R$ ist die resultierende obere Dreiecksmatrix
+    \item Die Eliminationsfaktoren $-\frac{a_{ji}}{a_{ii}}$ bilden $L$
+    \item Lösen Sie dann nacheinander:
+        \begin{itemize}
+            \item $Ly = b$ (Vorwärtseinsetzen)
+            \item $Rx = y$ (Rückwärtseinsetzen)
+        \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{LR-Zerlegung}{Berechnung einer LR-Zerlegung}
+Matrix:
+$$A = \begin{pmatrix}
+2 & 1 & 1\\
+4 & -1 & 0\\
+-2 & 3 & 1
+\end{pmatrix}$$
+
+Schrittweise Elimination führt zu:
+$$L = \begin{pmatrix}
+1 & 0 & 0\\
+2 & 1 & 0\\
+-1 & 2 & 1
+\end{pmatrix}, \quad
+R = \begin{pmatrix}
+2 & 1 & 1\\
+0 & -3 & -2\\
+0 & 0 & -2
+\end{pmatrix}$$
+\end{example2}
+
