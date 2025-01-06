@@ -1,0 +1,222 @@
+\section{Browser APIs und DOM}
+
+\subsection{Vordefinierte Objekte}
+
+\begin{definition}{Browser Objekte}
+    Im Browser stehen spezielle globale Objekte zur Verfügung:
+    \begin{itemize}
+        \item \texttt{window}: Browserfenster und globaler Scope
+        \item \texttt{document}: Das aktuelle HTML-Dokument
+        \item \texttt{navigator}: Browser-Informationen
+        \item \texttt{location}: URL-Informationen
+        \item \texttt{history}: Browser-Verlauf
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Document Object Model (DOM)}
+    Das DOM ist eine Baumstruktur, die das HTML-Dokument repräsentiert:
+    \begin{itemize}
+        \item Jeder HTML-Tag wird zu einem Element-Knoten
+        \item Text innerhalb von Tags wird zu Text-Knoten
+        \item Attribute werden zu Attribut-Knoten
+        \item Kommentare werden zu Kommentar-Knoten
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{DOM Navigation}
+Zugriff auf DOM-Elemente:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Element ueber ID finden
+const elem = document.getElementById('myId');
+
+// Elemente ueber CSS-Selektor finden
+const elem1 = document.querySelector('.myClass');
+const elems = document.querySelectorAll('div.myClass');
+
+// Navigation im DOM-Baum
+elem.parentNode          // Elternknoten
+elem.childNodes         // Alle Kindknoten
+elem.children           // Nur Element-Kindknoten
+elem.firstChild         // Erster Kindknoten
+elem.lastChild          // Letzter Kindknoten
+elem.nextSibling        // Naechster Geschwisterknoten
+elem.previousSibling    // Vorheriger Geschwisterknoten
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{DOM Manipulation}
+Elemente erstellen und manipulieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Neues Element erstellen
+const newDiv = document.createElement('div');
+const newText = document.createTextNode('Hello');
+newDiv.appendChild(newText);
+
+// Element einfuegen
+parentElem.appendChild(newDiv);
+parentElem.insertBefore(newDiv, referenceElem);
+
+// Element entfernen
+elem.remove();
+parentElem.removeChild(elem);
+
+// Attribute manipulieren
+elem.setAttribute('class', 'myClass');
+elem.getAttribute('class');
+elem.removeAttribute('class');
+
+// HTML/Text Inhalt
+elem.innerHTML = '<span>Text</span>';
+elem.textContent = 'Nur Text';
+\end{lstlisting}
+\end{KR}
+
+\subsection{Events}
+
+\begin{concept}{Event Handling}
+    Events sind Ereignisse, die im Browser auftreten:
+    \begin{itemize}
+        \item Benutzerinteraktionen (Klicks, Tastatureingaben)
+        \item DOM-Änderungen
+        \item Ressourcen laden
+        \item Timer
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Event Listener}
+Event Listener registrieren und entfernen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Event Listener hinzufuegen
+element.addEventListener('click', function(event) {
+    console.log('Clicked!', event);
+});
+
+// Mit Arrow Function
+element.addEventListener('click', (event) => {
+    console.log('Clicked!', event);
+});
+
+// Event Listener entfernen
+const handler = (event) => {
+    console.log('Clicked!', event);
+};
+element.addEventListener('click', handler);
+element.removeEventListener('click', handler);
+\end{lstlisting}
+\end{KR}
+
+\begin{formula}{Wichtige Event-Typen}
+    \begin{itemize}
+        \item Maus: \texttt{click}, \texttt{dblclick}, \texttt{mousedown}, \texttt{mouseup}, \texttt{mousemove}
+        \item Tastatur: \texttt{keydown}, \texttt{keyup}, \texttt{keypress}
+        \item Formular: \texttt{submit}, \texttt{change}, \texttt{input}, \texttt{focus}, \texttt{blur}
+        \item Dokument: \texttt{DOMContentLoaded}, \texttt{load}, \texttt{unload}
+        \item Fenster: \texttt{resize}, \texttt{scroll}
+    \end{itemize}
+\end{formula}
+
+\begin{code}{Event Bubbling und Capturing}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Bubbling (default)
+element.addEventListener('click', handler);
+
+// Capturing
+element.addEventListener('click', handler, true);
+
+// Event-Ausbreitung stoppen
+element.addEventListener('click', (event) => {
+    event.stopPropagation();
+});
+
+// Default-Verhalten verhindern
+element.addEventListener('click', (event) => {
+    event.preventDefault();
+});
+\end{lstlisting}
+\end{code}
+
+\subsection{Browser Storage}
+
+\begin{definition}{Storage APIs}
+    Browser bieten verschiedene Möglichkeiten zur Datenspeicherung:
+    \begin{itemize}
+        \item \texttt{localStorage}: Permanente Speicherung
+        \item \texttt{sessionStorage}: Temporäre Speicherung (nur für aktuelle Session)
+        \item \texttt{cookies}: Kleine Datenpakete, die auch zum Server gesendet werden
+        \item \texttt{indexedDB}: NoSQL-Datenbank im Browser
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{LocalStorage Verwendung}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Daten speichern
+localStorage.setItem('key', 'value');
+localStorage.setItem('user', JSON.stringify({
+    name: 'John',
+    age: 30
+}));
+
+// Daten abrufen
+const value = localStorage.getItem('key');
+const user = JSON.parse(localStorage.getItem('user'));
+
+// Daten loeschen
+localStorage.removeItem('key');
+localStorage.clear();  // Alles loeschen
+\end{lstlisting}
+\end{KR}
+
+\subsection{Canvas und SVG}
+
+\begin{concept}{Grafik im Browser}
+    Zwei Haupttechnologien für Grafiken:
+    \begin{itemize}
+        \item Canvas: Pixel-basierte Grafik
+        \item SVG: Vektor-basierte Grafik
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Canvas Grundlagen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+
+// Rechteck zeichnen
+ctx.fillStyle = 'red';
+ctx.fillRect(10, 10, 100, 50);
+
+// Pfad zeichnen
+ctx.beginPath();
+ctx.moveTo(10, 10);
+ctx.lineTo(50, 50);
+ctx.stroke();
+
+// Text zeichnen
+ctx.font = '20px Arial';
+ctx.fillText('Hello', 10, 50);
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{SVG Manipulation}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// SVG-Element erstellen
+const svg = document.createElementNS(
+    "http://www.w3.org/2000/svg", 
+    "svg"
+);
+svg.setAttribute("width", "100");
+svg.setAttribute("height", "100");
+
+// Kreis hinzufuegen
+const circle = document.createElementNS(
+    "http://www.w3.org/2000/svg", 
+    "circle"
+);
+circle.setAttribute("cx", "50");
+circle.setAttribute("cy", "50");
+circle.setAttribute("r", "40");
+circle.setAttribute("fill", "red");
+
+svg.appendChild(circle);
+\end{lstlisting}
+\end{KR}

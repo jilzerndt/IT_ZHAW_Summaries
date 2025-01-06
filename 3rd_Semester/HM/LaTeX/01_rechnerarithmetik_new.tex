@@ -1,0 +1,285 @@
+\section{Rechnerarithmetik}
+
+\subsection{Zahlendarstellung}
+
+\begin{definition}{Maschinenzahlen}
+Eine maschinendarstellbare Zahl zur Basis $B$ ist ein Element der Menge:
+$$M = \{x \in \mathbb{R} \mid x = \pm 0.m_1m_2m_3\ldots m_n \cdot B^{\pm e_1e_2\ldots e_l}\} \cup \{0\}$$
+\begin{itemize}
+    \item $m_1 \neq 0$ (Normalisierungsbedingung) 
+    \item $m_i, e_i \in \{0,1,\ldots,B-1\}$ für $i \neq 0$
+    \item $B \in \mathbb{N}, B > 1$ (Basis)
+\end{itemize}
+\end{definition}
+
+\begin{formula}{Zahlenwert}
+Der Wert $\hat{\omega}$ einer Maschinenzahl berechnet sich durch: 
+\vspace{-5mm}\\
+$$\hat{\omega} = \sum_{i=1}^n m_i B^{\hat{e}-i}, \quad \text{mit} \quad \hat{e} = \sum_{i=1}^l e_i B^{l-i}$$
+\end{formula}
+
+\begin{example2}{Werteberechnung} Berechnung einer vierstelligen Zahl zur Basis 4:
+    \vspace{-2mm}\\
+    \begin{minipage}{0.3\textwidth}
+        $$\underbrace{0.3211}_{n=4} \cdot \underbrace{4^{12}}_{l=2}$$
+    \end{minipage}
+    \begin{minipage}[t]{0.65\textwidth}
+        Exponent: $\hat{e} = 1 \cdot 4^1 + 2 \cdot 4^0 = 6$ \vspace{1mm}\\
+        Wert: $\hat{\omega} = 3 \cdot 4^3 + 2 \cdot 4^2 + 1 \cdot 4^1 + 1 \cdot 4^0 = 57$
+    \end{minipage}
+\end{example2}
+
+\begin{concept}{IEEE-754 Standard} definiert zwei wichtige Gleitpunktformate:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.5\textwidth}
+    \textbf{Single Precision} (32 Bit)\\
+    Vorzeichen(V): 1 Bit\\
+    Exponent(E): 8 Bit (Bias 127)\\
+    Mantisse(M): \\ 23 Bit + 1 hidden bit
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+    \textbf{Double Precision} (64 Bit)\\
+    Vorzeichen(V): 1 Bit\\
+    Exponent(E): 11 Bit (Bias 1023)\\
+    Mantisse(M): \\ 52 Bit + 1 hidden bit
+\end{minipage}
+\end{concept}
+
+\begin{theorem}{Darstellungsbereich}
+Für jedes Gleitpunktsystem existieren:
+\begin{itemize}
+    \item Grösste darstellbare Zahl: \large{$x_{\text{max}} = (1-B^{-n}) \cdot B^{e_{\text{max}}}$}
+    \item \normalsize{Kleinste darstellbare positive Zahl:} \large{$x_{\text{min}} = B^{e_{\text{min}}-1}$}
+\end{itemize}
+\end{theorem}
+
+\subsection{Approximations- und Rundungsfehler}
+
+\begin{definition}{Fehlerarten}
+Sei $\tilde{x}$ eine Näherung des exakten Wertes $x$:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.35\textwidth}
+    \textbf{Absoluter Fehler:}  $$\left|\tilde{x}-x\right|$$
+\end{minipage}
+\hspace{3mm}
+\begin{minipage}[t]{0.5\textwidth}
+    \textbf{Relativer Fehler:}  $$\left|\frac{\tilde{x}-x}{x}\right| \text{ bzw. } \frac{|\tilde{x}-x|}{|x|} \text{ für } x \neq 0$$
+\end{minipage}
+\end{definition}
+
+\begin{lemma}{Maschinengenauigkeit} 
+    eps ist die kleinste positive Zahl, für die gilt:
+    \vspace{-3mm}\\
+\begin{minipage}[t]{0.35\textwidth}
+    \textbf{Allgemein:}  $$\text{eps} := \frac{B}{2} \cdot B^{-n}$$
+\end{minipage}
+\hspace{6mm}
+\begin{minipage}[t]{0.35\textwidth}
+    \textbf{Dezimal:}  $$\text{eps}_{10} := 5 \cdot 10^{-n}$$
+\end{minipage}
+
+\begin{minipage}[t]{0.45\textwidth}
+    Sie begrenzt den maximalen relativen Rundungsfehler:
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+    $$\left|\frac{rd(x)-x}{x}\right| \leq \text{eps}$$
+\end{minipage}
+\end{lemma}
+
+\begin{corollary}{Rundungseigenschaften}
+Für alle $x \in \mathbb{R}$ mit $|x| \geq x_{\text{min}}$ gilt:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Absoluter Fehler:}  $$|rd(x) - x| \leq \frac{B}{2} \cdot B^{e-n-1}$$
+\end{minipage}
+\hspace{3mm}
+\begin{minipage}[t]{0.35\textwidth}
+    \textbf{Relativer Fehler:}  $$\left|\frac{rd(x)-x}{x}\right| \leq \text{eps}$$
+\end{minipage}
+\end{corollary}
+
+\subsubsection{Fehlerfortpflanzung}
+
+\begin{concept}{Konditionierung}
+    Die Konditionszahl $K$ beschreibt die relative Fehlervergrösserung bei Funktionsauswertungen:
+    \vspace{1mm}\\
+\begin{minipage}{0.3\textwidth}
+    \vspace{-2mm}
+    $$K := \frac{|f'(x)| \cdot |x|}{|f(x)|}$$
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}{0.6\textwidth}
+\begin{itemize}
+    \item $K \leq 1$: gut konditioniert
+    \item $K > 1$: schlecht konditioniert
+    \item $K \gg 1$: sehr schlecht konditioniert
+\end{itemize}
+\end{minipage}
+\end{concept}
+
+\begin{theorem}{Fehlerfortpflanzung}
+Für $f$ (differenzierbar) gilt näherungsweise:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.47\textwidth}
+    \textbf{Absoluter Fehler:}  
+    \vspace{-2mm}\\
+    $$|f(\tilde{x})-f(x)| \approx |f'(x)| \cdot |\tilde{x}-x|$$
+\end{minipage}
+\hspace{3mm}
+\begin{minipage}[t]{0.43\textwidth}
+    \textbf{Relativer Fehler:}  
+    \vspace{-2mm}\\
+    $$\frac{|f(\tilde{x})-f(x)|}{|f(x)|} \approx K \cdot \frac{|\tilde{x}-x|}{|x|}$$
+\end{minipage}
+\end{theorem}
+
+\begin{KR}{Analyse der Fehlerfortpflanzung einer Funktion}
+\begin{enumerate}
+    \item Berechnen Sie $f'(x)$
+    \item Bestimmen Sie die Konditionszahl $K$
+    \item Schätzen Sie den absoluten Fehler ab
+    \item Schätzen Sie den relativen Fehler ab
+    \item Beurteilen Sie die Konditionierung anhand von $K$
+\end{enumerate}
+\vspace{1mm}
+$$
+\begin{aligned}
+\underbrace{|f(\tilde{x})-f(x)|}_{\text {absoluter Fehler von } f(x)} & \approx\left|f^{\prime}(x)\right| \cdot \underbrace{|\tilde{x}-x|}_{\text {absoluter Fehler von } x} \\
+\underbrace{\frac{|f(\tilde{x})-f(x)|}{|f(x)|}}_{\text {relativer Fehler von } f(x)} & \approx \underbrace{\frac{\left|f^{\prime}(x)\right| \cdot|x|}{|f(x)|}}_{\text {Konditionszahl } K} . \quad \underbrace{\frac{|\tilde{x}-x|}{|x|}}_{\text { relativer Fehler von } x }
+\end{aligned}
+$$
+\end{KR}
+
+\raggedcolumns
+
+\begin{example2}{Fehleranalyse}Beispiel: Fehleranalyse von $f(x)=\sin(x)$
+\begin{enumerate}
+    \item $f'(x) = \cos(x)$
+    \item $K = \frac{|x\cos(x)|}{|\sin(x)|}$
+    \item Für $x \to 0$: $K \to 1$ (gut konditioniert)
+    \item Für $x \to \pi$: $K \to \infty$ (schlecht konditioniert)
+    \item Der absolute Fehler wird nicht vergrössert, da $|\cos(x)| \leq 1$
+\end{enumerate}
+\end{example2}
+
+\subsubsection{Praktische Fehlerquellen der Numerik}
+
+\begin{concept}{Kritische Operationen} häufigste Fehlerquellen:
+\begin{itemize}
+    \item Auslöschung bei Subtraktion ähnlich großer Zahlen
+    \item Überlauf (overflow) bei zu großen Zahlen
+    \item Unterlauf (underflow) bei zu kleinen Zahlen
+    \item Verlust signifikanter Stellen durch Rundung
+\end{itemize}
+\end{concept}
+
+
+
+\begin{KR}{Vermeidung von Auslöschung}
+\begin{enumerate}
+    \item Identifizieren Sie Subtraktionen ähnlich großer Zahlen
+    \item Suchen Sie nach algebraischen Umformungen
+    \item Prüfen Sie alternative Berechnungswege
+    \item Verwenden Sie Taylorentwicklungen für kleine Werte
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Auslöschung} bei der Berechnung von $\sqrt{x^2 + 1} - 1$:
+    \vspace{1mm}\\
+    Für kleine $x$ führt die direkte Berechnung zu Auslöschung:
+    \vspace{1mm}\\
+    Für $x = 10^{-8}$: $\sqrt{10^{-16} + 1} - 1 \approx 1.000000000 - 1 = 0$
+    \vspace{1mm}\\
+    Korrekte Lösung durch Umformung: $\sqrt{x^2 + 1} - 1 = \frac{x^2}{\sqrt{x^2 + 1} + 1}$
+\end{example2}
+
+\begin{remark2}{Auslöschung}
+    Bei der Subtraktion fast gleich großer Zahlen können signifikante Stellen verloren gehen. Beispiel:
+    \begin{itemize}
+        \item $1.234567 - 1.234566 = 0.000001$
+        \item Aus 7 signifikanten Stellen wird 1 signifikante Stelle
+    \end{itemize}
+\end{remark2}
+
+\subsubsection{Analyse von Algorithmen}
+
+\begin{formula}{Fehlerakkumulation}
+Bei $n$ aufeinanderfolgenden Operationen mit relativen Fehlern $\leq \varepsilon$ gilt für den Gesamtfehler:
+\begin{itemize}
+    \item Best case: $\mathcal{O}(n\varepsilon)$ bei gleichverteilten Fehlern
+    \item Worst case: $\mathcal{O}(2^n\varepsilon)$ bei systematischen Fehlern
+\end{itemize}
+\end{formula}
+
+\begin{concept}{Numerische Stabilität eines Algorithmus}
+\begin{itemize}
+    \item Kleine Eingabefehler führen zu kleinen Ausgabefehlern
+    \item Rundungsfehler akkumulieren sich nicht übermäßig 
+    \item Konditionszahl des Problems wird nicht künstlich verschlechtert
+\end{itemize}
+\end{concept}
+
+\begin{examplecode}{Instabilität} bei rekursiver Berechnung: (Fibonacci-Zahlen)
+\begin{lstlisting}[language=Python, style=basesmol]
+def fib(n):
+    if n <= 1:
+        return n
+    return fib(n-1) + fib(n-2)
+\end{lstlisting}
+Exponentielles Wachstum der Operationen $\rightarrow$ Fehlerfortpflanzung
+\end{examplecode}
+
+\begin{KR}{Stabilitätsanalyse}
+Schritte zur Analyse der numerischen Stabilität:
+\begin{enumerate}
+    \item Bestimmen Sie kritische Operationen
+    \item Schätzen Sie Rundungsfehler pro Operation ab
+    \item Analysieren Sie die Fehlerfortpflanzung
+    \item Berechnen Sie die worst-case Fehlerschranke
+    \item Vergleichen Sie alternative Implementierungen
+\end{enumerate}
+\end{KR}
+
+\subsubsection{Praktische Implementierungen}
+
+\begin{definition}{Implementierungsgenauigkeit eines Algorithmus}
+\begin{itemize}
+    \item Relative Genauigkeit der Ausgabe
+    \item Maximale Anzahl korrekter Dezimalstellen
+    \item Stabilität gegenüber Eingabefehlern
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Robuste Implementierung von Algorithmen}
+\begin{enumerate}
+    \item Verwenden Sie stabile Grundoperationen
+    \item Vermeiden Sie Differenzen ähnlich großer Zahlen
+    \item Prüfen Sie auf Über- und Unterlauf
+    \item Implementieren Sie Fehlerkontrollen
+    \item Dokumentieren Sie numerische Einschränkungen
+\end{enumerate}
+\end{KR}
+
+\begin{examplecode}{Robuste Implementation} Beispiel: Quadratische Gleichung
+\begin{lstlisting}[language=Python, style=basesmol]
+def quadratic_stable(a, b, c):
+    # ax^2 + bx + c = 0
+    if a == 0:
+        return [-c/b] if b != 0 else []
+        
+    # Calculate discriminant
+    disc = b*b - 4*a*c
+    if disc < 0:
+        return []
+
+    # Choose numerically stable formula
+    if b >= 0:
+        q = -0.5*(b + sqrt(disc))
+    else:
+        q = -0.5*(b - sqrt(disc))
+    x1 = q/a
+    x2 = c/(q)
+
+    return sorted([x1, x2])
+\end{lstlisting}
+\end{examplecode}

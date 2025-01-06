@@ -1,457 +1,306 @@
 \section{Persistenz}
 
-\section*{Um was geht es?}
+\begin{concept}{Persistenz Grundlagen}\\
+Persistenz bezeichnet die dauerhafte Speicherung von Daten über das Programmende hinaus:
 \begin{itemize}
-  \item Wie kann ich meine Java Objekte dauerhaft speichern?
+    \item Speicherung in Datenbankmanagementsystemen (DBMS)
+    \item Haupttypen:
+    \begin{itemize}
+        \item Relationale Datenbanksysteme (RDBMS)
+        \item NoSQL-Datenbanken (ohne fixes Schema)
+    \end{itemize}
+    \item O/R-Mapping (Object Relational Mapping)
+    \begin{itemize}
+        \item Abbildung zwischen Objekten und Datensätzen
+        \item Überwindung des Strukturbruchs (Impedance Mismatch)
+    \end{itemize}
 \end{itemize}
+\end{concept}
 
-Java
-
+\begin{definition}{O/R-Mismatch}\\
+Der Strukturbruch zwischen objektorientierter und relationaler Welt:
 \begin{itemize}
-  \item Welche Arten von Datenspeicherung gibt es?
-  \item Welche Design Patterns stehen für die Realisierung von Persistenz in einer Applikation zur Verfügung?
-  \item Wie kann ich mit Hilfe von den Java APIs JDBC (Java Database Connectivity) und JPA (Java Persistence API) meine Objekte dauerhaft in einer Datenbank speichern?
+    \item \textbf{Typen-Systeme:}
+    \begin{itemize}
+        \item Unterschiedliche NULL-Behandlung
+        \item Datum/Zeit-Darstellung
+    \end{itemize}
+    \item \textbf{Beziehungen:}
+    \begin{itemize}
+        \item Richtung der Beziehungen
+        \item Mehrfachbeziehungen
+        \item Vererbung
+    \end{itemize}
+    \item \textbf{Identität:}
+    \begin{itemize}
+        \item OO: Implizite Objektidentität
+        \item DB: Explizite Identität (Primary Key)
+    \end{itemize}
 \end{itemize}
+\end{definition}
 
-\section*{Applikation}
-\begin{verbatim}
-DB API
-\end{verbatim}
+\subsection{JDBC - Java Database Connectivity}
 
-\begin{center}
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-02}
-\end{center}
-
-Treiber
-
-\section*{Lernziele LE 12 - Persistenz}
+\begin{concept}{JDBC Grundlagen}\\
+JDBC ist die standardisierte Schnittstelle für Datenbankzugriffe in Java:
 \begin{itemize}
-  \item Sie sind in der Lage
-  \item die Varianten der Datenspeicherung zu nennen,
-  \item die unterschiedlichen Design Patterns für die Persistenz zu erklären,
-  \item mit Hilfe des Design Patterns DAO (Data Access Object) und JDBC eine Persistenz in Java umzusetzen,
-  \item mit JPA ein Objekt-Relationales-Mapping (O/R-Mapping) in Java anzuwenden.
+    \item Seit JDK 1.1 (1997)
+    \item Plattformunabhängig
+    \item Datenbankunabhängig
+    \item Aktuelle Version: 4.2
 \end{itemize}
+\end{concept}
 
-\section*{1. Einführung in Persistenz}
+\begin{KR}{JDBC Verwendung}
+Grundlegende Schritte für Datenbankzugriff:
 \begin{enumerate}
-  \setcounter{enumi}{1}
-  \item Design-Optionen für Persistenz
-  \item Persistenz mit JDBC
-  \item O/R-Mapping mit DAO
-  \item O/R-Mapping mit JPA
-  \item Wrap-up und Ausblick
+    \item JDBC-Treiber installieren und laden
+    \item Verbindung zur Datenbank aufbauen
+    \item SQL-Statements ausführen
+    \item Ergebnisse verarbeiten
+    \item Transaktion abschließen (Commit/Rollback)
+    \item Verbindung schließen
 \end{enumerate}
+\end{KR}
 
-\section*{Problemstellung Persistenz (1/2)}
-\begin{itemize}
-  \item In vielen Applikationen müssen unterschiedliche Daten verarbeitet, verwaltet und dauerhaft, d.h. über das Programmende hinaus gesichert werden.
-  \item Letzteres bezeichnet man als Persistenz.
-  \item Die dauerhafte Speicherung erfolgt in Datenbankmanagementsystemen (DBMS).
-  \item Übliche Datenbanksysteme sind sogenannte Relationale Datenbanksysteme (RDBMS) und sogenannte NoSQL-Datenbanken.
-  \item NoSQL-Datenbanken speichern Daten ohne fixes Schema und in verschiedenen Formaten (Dokument Stores, Key-Value Stores, Graph DB, ...).
-\end{itemize}
-
-\section*{Problemstellung Persistenz (2/2)}
-\begin{itemize}
-  \item Die Abbildung zwischen Objekten und Datensätzen in Tabellen einer relationalen Datenbank wird auch als O/R-Mapping (Object Relational Mapping, ORM) bezeichnet.
-  \item Verhältnismässig viel Java-Code wird benötigt, um die Datensätze des Ergebnisses zu verarbeiten und in Java-Objekte zu transformieren.
-  \item Es besteht ein Strukturbruch (engl. Impedance Mismatch) aufgrund der unterschiedlichen Repräsentationsformen von Daten (flache Tabellenstruktur -Java-Objekte).
-\end{itemize}
-
-Objektorientiertes Programm\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-06}
-
-Relationale Datenbank\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-06(1)}
-
-\section*{Denkpause}
-\section*{Aufgabe 12.1 (5')}
-Diskutieren Sie in Murmelgruppen folgende Frage:
-
-\begin{itemize}
-  \item Was ist aktuell die vorherrschende Technologie zum Speichern von Daten im Enterprise-Umfeld?
-  \item Recherchieren Sie dazu unter \href{https://db-engines.com/en/ranking}{https://db-engines.com/en/ranking}.
-  \item Was sind die Gründe für dieses Ranking?
-\end{itemize}
-
-\begin{enumerate}
-  \item Einführung in Persistenz
-  \item Design-Optionen für Persistenz
-  \item Persistenz mit JDBC
-  \item O/R-Mapper mit DAO
-  \item O/R-Mapper mit JPA
-  \item Wrap-up und Ausblick
-\end{enumerate}
-
-\section*{Herausforderung: Der O/R-Mismatch (1/2)}
-\begin{itemize}
-  \item Der O/R-Mismatch ist ein Fakt.
-  \item Der O/R-Mismatch folgt aus konzeptionellen Unterschieden der zugrundeliegenden Technologien.
-  \item Es gibt viele verschiedene Möglichkeiten (Patterns) den O/R-Mismatch zu überwinden.
-  \item Active Record, O/R-Mapping resp. O/R-Mapping Frameworks oder Repositories (aus Domain Driven Design, DDD) sind ein möglicher Lösungsansatz.
-\end{itemize}
-
-\section*{Herausforderung: Der O/R-Mismatch (2/2)}
-\begin{itemize}
-  \item Typen-Systeme
-  \item Null
-  \item Datum/Zeit
-  \item Abbildung von Beziehungen
-  \item Richtung
-  \item Mehrfachbeziehungen
-  \item Vererbung
-  \item Identität
-  \item Objekte haben eine implizite Identität
-  \item Relationen haben eine explizite Identität (Primary Key)
-  \item Transaktionen
-\end{itemize}
-
-\section*{JDBC: Java Database Connectivity (1997)}
-School of Engineering
-
-\begin{itemize}
-  \item JDBC verbindet die Objektwelt mit der relationalen Datenbankwelt
-  \item Herausforderung: Objekte vs. Tabellen,
-  \item Verschiedene Datentypen etc.
-  \item Die Programmierung ist aufwändig\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-11}\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-11(1)}
-\end{itemize}
-
-\section*{Design Pattern für Persistenz}
-Für eine Persistenz-Strategie muss eine Entscheidung getroffen werden, wo die Zuordnung (Mapping) zwischen Objekten und Tabellen stattfinden soll:
-
-\begin{itemize}
-  \item Active Record (Anti Pattern): Jede Entität ist selber dafür zuständig
-  \item Data Access Object (DAO): Abstrahiert und kapselt den Zugriff auf die Datenquelle
-  \item O/R Data Mapper: Separate Klasse für das Mapping oder Einsatz eines ORM
-  \item Zugriffscode auf Datenbank ist in der Domänenklasse
-  \item Wrapper für eine Zeile einer Datenbanktabelle
-  \item Spiegelt die Datenbankstruktur
-  \item Enthält Daten und Verhalten
-  \item Fachlichkeit und Technik alles in einer Klasse (GRASP: Information Expert?)
-  \item Schlechte Testbarkeit der Domänenlogik ohne Datenbank\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-13}
-  \item Schlechte Wartbarkeit und Erweiterbarkeit (No separation of concerns!)
-\end{itemize}
-
-\section*{O/R-Mapping von Hand mit Hilfe eines Data Access Objects (DAO)}
-\begin{itemize}
-  \item Trennung von Fachlichkeit und Technik (Domänenklasse hat hohe Kohäsion)
-  \item Gute Testbarkeit und Mocking der Persistenz
-  \item Bevorzugtes Design ohne Einsatz eines O/RMappers\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-14}
-\end{itemize}
-
-\section*{Verwendung eines O/R-Mappers (JPA mit Hibernate/Eclipselink o.a. Framework)}
-\begin{itemize}
-  \item Viel weniger Aufwand bzw. Code und standardisierte Schnittstelle
-  \item Trennung von Fachlichkeit und Technik (Domänenklasse hat hohe Kohäsion)
-  \item Gute Testbarkeit und Mocking der Persistenz
-  \item DAO ist auch beim Einsatz von JPA empfehlenswert (Trennung von Fachlichkeit und Technik) - JPA könnte aber auch ohne DAO verwendet werden\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-15(1)}
-\end{itemize}
-
-Calls the method save() in the SaleDAO for persisting Sale
-
-\begin{verbatim}
-Same design pattems apply as for
-\end{verbatim}
-
-the option with handcrafted DAOs.
-
-For implementing the DAO\\
-the Java Persistence API the Java Persistence API (JPA) and a service provider (e.g. Hibernate) provide an orR mapping and the basic by using the annotations and a configuration file (persistence xml)For queries a Java Persistence Query Language (JPQL) is available.\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-15}
-
-\begin{enumerate}
-  \item Einführung in Persistenz
-  \item Design-Optionen für Persistenz
-  \item Persistenz mit JDBC
-  \item O/R-Mapper mit DAO
-  \item O/R-Mapper mit JPA
-  \item Wrap-up und Ausblick
-\end{enumerate}
-
-\section*{Was genau ist JDBC?}
-\begin{itemize}
-  \item JDBC = Java Data Base Connectivity
-  \item Standardisierte Schnittstelle, um auf relationale Datenbanken mit Hilfe von SQL zuzugreifen
-  \item Cross-Plattform und DB-independent
-  \item JDBC-API ist Teil der Java-Plattfrom seit JDK1.1 (1997)
-  \item Die aktuelle Version ist 4.2\\
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-18}
-\end{itemize}
-
-\section*{JDBC-API: Interfaces and Classes}
-\begin{center}
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-19}
-\end{center}
-
-\section*{Anwendung von JDBC}
-Basisanweisungen:
-
-\begin{enumerate}
-  \item Install and load JDBC driver
-  \item Connect to SQL database
-  \item Execute SQL statements
-  \item Process query results
-  \item Commit or Rollback DB updates
-  \item Close Connection to database
-\end{enumerate}
-
-\begin{verbatim}
+\begin{example}{JDBC Basisbeispiel}
+\begin{lstlisting}[language=Java, style=base]
 import java.sql.*;
+
 public class DbTest {
-    public static void main(String[] args)
-        throws ClassNotFoundException, SQLException {
+    public static void main(String[] args) 
+            throws SQLException {
+        // Verbindung aufbauen
         Connection con = DriverManager.getConnection(
             "jdbc:postgresql://test.zhaw.ch/testdb",
             "user", "password");
-        Statement st = con.createStatement();
-        ResultSet rs = st.executeQuery(
+            
+        // Statement erstellen und ausfuehren
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery(
             "SELECT * FROM test ORDER BY name");
+            
+        // Ergebnisse verarbeiten
         while (rs.next()) {
             System.out.println(
-                "Column 1 contains '" +
-                rs.getString(2) +"'");
+                "Name: " + rs.getString("name"));
         }
+        
+        // Aufraeumen
+        rs.close();
+        stmt.close();
         con.close();
     }
 }
+\end{lstlisting}
+\end{example}
 
-  \end{verbatim}
+\subsection{Design Patterns für Persistenz}
 
-1. Einführung in Persistenz
-2. Design-Optionen für Persistenz
-3. Persistenz mit JDBC
-4. O/R-Mapping mit DAO
-5. O/R-Mapping mit JPA
-6. Wrap-up und Ausblick
+\begin{theorem}{Persistenz Design Patterns}\\
+Drei grundlegende Ansätze für die Persistenzschicht:
+\begin{itemize}
+    \item \textbf{Active Record (Anti-Pattern):}
+    \begin{itemize}
+        \item Entität verwaltet eigene Persistenz
+        \item Vermischung von Fachlichkeit und Technik
+        \item Schlechte Testbarkeit
+    \end{itemize}
+    \item \textbf{Data Access Object (DAO):}
+    \begin{itemize}
+        \item Kapselung des Datenbankzugriffs
+        \item Trennung von Fachlichkeit und Technik
+        \item Gute Testbarkeit durch Mocking
+    \end{itemize}
+    \item \textbf{Repository (DDD):}
+    \begin{itemize}
+        \item Abstraktionsschicht über Data-Mapper
+        \item Zentralisierung von Datenbankabfragen
+        \item Komplexere Implementierung
+    \end{itemize}
+\end{itemize}
+\end{theorem}
 
-\section*{O/R-Mapping Pattern}
+\begin{KR}{DAO Implementation}\\
+Schritte zur Implementierung eines DAOs:
+\begin{enumerate}
+    \item Interface definieren:
+    \begin{itemize}
+        \item CRUD-Methoden (Create, Read, Update, Delete)
+        \item Spezifische Suchmethoden
+    \end{itemize}
+    \item Domänenklasse erstellen:
+    \begin{itemize}
+        \item Nur fachliche Attribute
+        \item Keine Persistenzlogik
+    \end{itemize}
+    \item DAO-Implementierung:
+    \begin{itemize}
+        \item Datenbankzugriff kapseln
+        \item O/R-Mapping implementieren
+        \item Transaktionshandling
+    \end{itemize}
+\end{enumerate}
+\end{KR}
 
-Es sollen beide Varianten des O/R-Mapper Patterns anhand eines praktischen Beispiels betrachtet werden:
-- DAO (Data Acess Object) ohne ein ORM (Object Relational Mapper)
-- Umsetzung von DAO mit Hilfe von JPA (Java Persistence API)
+\begin{example2}{DAO Implementation}
+\begin{lstlisting}[language=Java, style=base]
+public interface ArticleDAO {
+    void insert(Article item);
+    void update(Article item);
+    void delete(Article item);
+    Article findById(int id);
+    Collection<Article> findAll();
+    Collection<Article> findByName(String name);
+}
 
-\section*{DAO - Data Access Object Pattern}
-- Das Artikel-Objekt repräsentiert das Domain-Model-Objekt.
-- Die Verbindung zur Datenbank wird durch das DAO sichergestellt.
-- Enthält die üblichen CRUD-Methoden wie create, read, update und delete.
-- Kann auch Methoden enthalten wie findAll, findByName, findByID um eine Kollektion von Daten aus der Datenbank abzufragen.
+public class Article {
+    private long id;
+    private String name;
+    private float price;
+    
+    // Getter/Setter
+}
 
-\section*{DAO - Data Access Object Pattern}
+public class JdbcArticleDAO implements ArticleDAO {
+    private Connection conn;
+    
+    public void insert(Article item) {
+        PreparedStatement stmt = conn.prepareStatement(
+            "INSERT INTO articles (name, price) VALUES (?, ?)");
+        stmt.setString(1, item.getName());
+        stmt.setFloat(2, item.getPrice());
+        stmt.executeUpdate();
+    }
+    // weitere Implementierungen
+}
+\end{lstlisting}
+\end{example2}
 
-School of
+\subsection{Java Persistence API (JPA)}
 
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-24.jpg}
+\begin{concept}{JPA Grundkonzepte}\\
+JPA ist der Java-Standard für O/R-Mapping:
+\begin{itemize}
+    \item \textbf{Entity-Klassen:}
+    \begin{itemize}
+        \item Plain Old Java Objects (POJOs)
+        \item Annotation @Entity
+        \item Keine JPA-spezifischen Abhängigkeiten
+    \end{itemize}
+    \item \textbf{Referenzen:}
+    \begin{itemize}
+        \item Eager/Lazy Loading
+        \item Automatisches Nachladen
+    \end{itemize}
+    \item \textbf{Provider:}
+    \begin{itemize}
+        \item Hibernate
+        \item EclipseLink
+        \item OpenJPA
+    \end{itemize}
+\end{itemize}
+\end{concept}
 
-Das TransferObject aka. DTO kann zusätzlich für den Transport der Daten in einem verteilten System verwendet werden.
+\begin{concept}{JPA Technologie-Stack}\\
+\begin{itemize}
+    \item Java Application
+    \item Java Persistence API
+    \item JPA Provider (Hibernate, EclipseLink, etc.)
+    \item JDBC Driver
+    \item Relationale Datenbank
+\end{itemize}
+\includegraphics[width=0.8\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-29.jpg}
+\end{concept}
 
-\section*{Beispiel Article und ArticleDAO}
+\begin{KR}{JPA Entity Erstellung}
+\begin{enumerate}
+    \item Entity-Klasse definieren:
+    \begin{itemize}
+        \item @Entity Annotation
+        \item ID-Feld mit @Id markieren
+    \end{itemize}
+    \item Beziehungen definieren:
+    \begin{itemize}
+        \item @OneToMany, @ManyToOne etc.
+        \item Navigationsrichtung festlegen
+    \end{itemize}
+    \item Validierung hinzufügen:
+    \begin{itemize}
+        \item @NotNull, @Size etc.
+        \item Geschäftsregeln
+    \end{itemize}
+\end{enumerate}
+\end{KR}
 
-School of Engineering
+\begin{example}{Parent-Child Beziehung mit JPA}
+\begin{lstlisting}[language=Java, style=base]
+@Entity
+public class Department {
+    @Id @GeneratedValue
+    private Long id;
+    
+    private String name;
+    
+    @OneToMany(mappedBy = "department")
+    private List<Employee> employees;
+}
 
-\section*{Business Object}
+@Entity
+public class Employee {
+    @Id @GeneratedValue
+    private Long id;
+    
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+    
+    private String name;
+    private double salary;
+}
+\end{lstlisting}
+\end{example}
 
+\subsection{Repository Pattern}
 
-public class Article \{\\
-private long id;\\
-private String name;\\
-private float price;\\
-public long getId()\{\\
-return id;\\
-\}\\
-public void setId(long id)\{\\
-this id = id\\
-\};\\
-...\\
-\}
+\begin{concept}{Repository Pattern}\\
+Das Repository Pattern bietet eine zusätzliche Abstraktionsschicht über der Data-Mapper-Schicht:
+\begin{itemize}
+    \item Zentralisierung von Datenbankabfragen
+    \item Domänenorientierte Schnittstelle
+    \item Unterstützung komplexer Abfragen
+    \item Häufig in Kombination mit Spring Data
+\end{itemize}
+\end{concept}
 
-\begin{verbatim}
+\begin{example}{Spring Data Repository}
+\begin{lstlisting}[language=Java, style=base]
+@Repository
+public interface SaleRepository 
+        extends CrudRepository<Sale, String> {
+    
+    List<Sale> findOrderByDateTime();
+    
+    List<Sale> findByDateTime(
+        final LocalDateTime dateTime);
+}
 
-\section*{Data Access Object (DAO)}
-\end{verbatim}
+@Service
+public class ProcessSaleHandler {
+    private final ProductDescriptionRepository catalog;
+    private final SaleRepository saleRepository;
+    
+    @Transactional
+    public void endSale() {
+        assert(currentSale != null 
+            && !currentSale.isComplete());
+        this.currentSale.becomeComplete();
+        this.saleRepository.save(currentSale);
+    }
+}
+\end{lstlisting}
+\end{example}
 
-//Interface to be implemented by all ArticleDAOs\\
-public interface ArticleDAO \{\\
-public void insert(Article item);\\
-public void update(Article item);\\
-public void delete(Article item);\\
-public Article findById(int id);\\
-public Collection<Article> findAll();\\
-public Collection<Article> findByName (String name);\\
-public Collection<Article> findByPrice (float price);\\
-\}
-
-\begin{verbatim}
-1. Einführung in Persistenz
-2. Design-Optionen für Persistenz
-3. Persistenz mit JDBC
-4. O/R-Mapping mit DAO
-5. O/R-Mapping mit JPA
-6. Wrap-up und Ausblick
-\end{verbatim}
-
-\section*{Versprechen von automatischem O/R-Mapping}
-- Die Applikation wird von der DB entkoppelt
-- Applikationsentwickler muss kein SQL beherrschen.
-- Das relationale Modell der Datenbank hat keinen Einfluss auf das OO-Design.
-- Automatische Persistenz
-- Automatisierte Abbildung der Objekte in die relationalen Strukturen.
-- Die Applikationsentwickler muss sich nicht um die «low-level»-Details kümmern.
-- Transparente Persistenz / Persistence Ignorance
-- Die Klassen des Domain-Models wissen nicht, dass sie persistiert und geladen werden können und haben keine Abhängigkeit zur Persistenz-Infrastruktur.
-- JPA ist ein Java Standard für O/R-Mapping
-- Verschiedene Implementationen, Hibernate vermutlich die bekannteste
-
-\section*{JPA (Java Persistence API) Überblick}
-- Es folgt eine kurze, unvollständige Auflistung der wichtigsten Konzepte von JPA.
-- Starke Entkopplung der Anwendungslogik von der (relationalen) Datenbank.
-- Die Domänenklassen sind ganz normale Java Klassen (POJO)
-- Ausser Annotationen enthalten Sie keinen JPA spezifischen Code.
-- Referenzen
-- Werden entweder mit der referenzierenden Klasse (eager loading) oder erst, wenn die Referenz gebraucht wird (lazy loading), geladen.
-- Referenzen können direkt traversiert werden, JPA erledigt das Laden des referenzierten Objekts im Hintergrund.
-- Transaktionshandling und das Absetzen von Queries müssen über JPA spezifische Klassen abgewickelt werden.
-- EntityManagerFactory, EntityManager, EntityTransaction
-
-\section*{Technologie-Stack}
-
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-29.jpg}
-
-Java 5+
-
-JPA Spezifikation
-EclipseLink (TopLink), Hibernate, OpenJPA etc.
-JDBC 4.0
-Herstellerspezifisch
-SQL (und Dialekte)
-
-\section*{Entity Metadata}
-- Kennzeichnung mit Annotation @Entity oder Mapping mit XML
-- Klasse kann Basisklasse oder abgeleitet sein
-- Klasse kann abstrakt oder konkret sein
-- Serialisierbarkeit ist bezüglich Persistenz nicht erforderlich
-
-\section*{Beispiel Entity}
-
-School of
-- Minimale Anforderung an eine Entity
-
-
-@Entity\\
-public class Employee \{\\
-@Id\\
-@GeneratedValue(strategy = GenerationType.IDENTITY)\\
-private long id;\\
-private String name;\\
-private String lastName;
-\}
-
-\begin{verbatim}
-- Primärschlüssel können in Zusammenarbeit mit der Datenbank generiert werden. Strategien sind Identity, Table, Sequence und Auto
-\end{verbatim}
-
-@Entity public class Employee \{\\
-@Id\\
-@GeneratedValue(strategy = GenerationType.IDENTITY)\\
-public Integer id;\\
-\}\\
-public class Employee \{\\
-@TableGenerator(name = "Emp\_Gen", table = "ID\_GEN", pkColumnName = "GEN\_NAME",\\
-valueColumnName = "GEN\_VAL")\\
-@Id\\
-@GeneratedValue(strategy = GenerationType.TABLE, generator = "Emp\_Gen")\\
-private int id;
-\}
-
-
-
-\section*{Parent-Child Beziehung}
-
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-33.jpg}
-
-- Mapping des Klassenmodells auf das DB-Schema mittels JPA: Metadata ist erforderlich.
-- Je nach Klassenmodell wird entweder eine many-to-one Beziehung oder eine one-to-many Beziehung gemappt.
-- Falls beide Richtungen gemappt werden sollen, so muss definiert werden, dass für beide derselbe Foreign-Key zugrunde liegt.
-\begin{tabular}{|l|l|}
-\hline \multicolumn{1}{|c|}{ Employee } \\
-\hline id \\
-\hline name \\
-\hline salary \\
-\hline department id \\
-\hline
-\end{tabular}
-
-\section*{Ausblick Design Pattern Repository}
-- Ein System mit einem komplexen Domänen-Model profitiert wie vorher beschrieben von einer Data-Mapper-Schicht (mit JPA und DAOs), um die Details des Datenbankzugriffcodes zu isolieren.
-- Eine zusätzliche Abstraktionsschicht oberhalb des Data-Mappers kann helfen um die Konstruktion von Datenbank-Abfragen (Queries) an einem Ort zu konzentrieren.
-- Diese zusätzliche Schicht wird um so wichtiger je mehr Domänen-Klassen vorhanden sind, die viele Zugriffe auf die Datenbank vornehmen.
-- Die zusätzliche Schicht wird als Repository bezeichnet
-- Das Konzept stammt aus Domain Driven Design, DDD (Eric Evans).
-- Wird in den Wahlpflichtmodulen ASE1/2 anhand von Spring Data behandelt.
-
-\section*{Design Pattern Repository: Schichtenmodell}
-- 3-Tier Architecture
-- Persistenz kann mittels Repositories umgesetzt werden
-
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-35.jpg}
-
-\section*{Idee und Beispiel Repository Pattern}
-
-School of Engineering
-InIT Institut für angewandte Informationstechnologie
-- Eine Repository vermittelt zwischen Domänen- und Data-Mapping Schicht
-
-
-9 0/** * The GRASP controller for the use case process sale.\\
-11 */\\
-\textbackslash emptysetpublic class ProcessSaleHandler \{\\\}
-private ProductDescriptionRepository catalog;\\
-private SaleRepository saleRepository;\\
-private Sale currentSale;\\
-public ProcessSaleHandler(ProductDescriptionRepository catalog, SaleRepository saleRepository) \{\\\}
-public void makeNewSale() \{\\\}
-public void enterItem(String id, int quantity) \{\\\}
-public Money getTotalOfSale() \{\\\}
-@Transactional\\
-public void endSale() \{\\
-assert(currentSale != null \&\& !currentSale.isComplete());\\
-this.currentSale.becomeComplete()\\
-this.saleRepository.save(currentSale);\\
-\}\\
-public Money getTotalWithTaxesOfSale() \{\\\}
-public void makePayment() \{
-
-
-
-\includegraphics[width=\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-36.jpg}
-
-
-/**\\
-* Repository for Sale\\
-* An implementation of CRUD and common search methods\\
-* is automatically generated by Spring Data.\\
-*/\\
-6 @Repository\\
-\textbackslash emptysetpublic interface SaleRepository extends CrudRepository<Sale, String>\\
-public List<Sale> findOrderByDateTime();\\
-public List<Sale> findByDateTime(final LocalDateTime dateTime);\\
-L\}
-
-\begin{verbatim}
-1. Einführung in Persistenz
-2. Design-Optionen für Persistenz
-3. Persistenz mit JDBC
-4. O/R-Mapping mit DAO
-5. O/R-Mapping mit JPA
-6. Wrap-up und Ausblick
-- Viele Applikationen verlangen, dass Daten dauerhaft gesichert werden müssen nach dem Programmende.
-- Bei kleineren Applikationen kann diese Persistenz auch selber ausprogrammiert werden.
-- Dabei sollte aber das Design Pattern Data Access Object (DAO) oder Repository angewendet werden.
-- Für grössere Applikationen werden heute sogenannte O/R-Mapper eingesetzt.
-- Java bietet mit dem Java Persistence API (JPA) eine standardisierte Schnittstelle für das O/R-Mapping, für die es viele Provider gibt (z.B. Hibernate).
-\end{verbatim}
+\begin{remark}
+Spring Data unterstützt die automatische Generierung von Repository-Implementierungen basierend auf Methodennamen. Dies reduziert den Implementierungsaufwand erheblich.
+\end{remark}

@@ -1,0 +1,96 @@
+\subsection{Event Handling}
+
+\begin{KR}{Event Handler}
+Grundlegende Event Handling Schritte:
+
+1. Event Listener registrieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+element.addEventListener("event", handler)
+element.removeEventListener("event", handler)
+\end{lstlisting}
+
+2. Event Handler mit Event-Objekt:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+element.addEventListener("click", (event) => {
+  console.log(event.type)    // Art des Events
+  console.log(event.target)  // Ausloesendes Element
+  event.preventDefault()     // Default verhindern
+  event.stopPropagation()   // Bubbling stoppen
+})
+\end{lstlisting}
+
+Wichtige Event-Typen:
+\begin{itemize}
+  \item Mouse: click, mousedown, mouseup, mousemove
+  \item Keyboard: keydown, keyup, keypress
+  \item Form: submit, change, input
+  \item Document: DOMContentLoaded, load
+  \item Window: resize, scroll
+\end{itemize}
+\end{KR}
+
+\subsection{Formulare}
+
+\begin{KR}{Formular Handling}
+1. Formular erstellen:
+\begin{lstlisting}[language=HTML, style=basesmol]
+<form action="/api/submit" method="post">
+  <input type="text" name="username">
+  <input type="password" name="password">
+  <button type="submit">Login</button>
+</form>
+\end{lstlisting}
+
+2. Formular Events abfangen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+form.addEventListener("submit", (e) => {
+  e.preventDefault() 
+  // Eigene Verarbeitung
+})
+\end{lstlisting}
+
+3. Formulardaten verarbeiten:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const formData = new FormData(form)
+fetch("/api/submit", {
+  method: "POST",
+  body: formData
+})
+\end{lstlisting}
+\end{KR}
+
+\subsection{Fetch API}
+
+\begin{KR}{HTTP Requests mit Fetch}
+1. GET Request:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+fetch("/api/data")
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error(error))
+\end{lstlisting}
+
+2. POST Request:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+fetch("/api/create", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(data)
+})
+\end{lstlisting}
+
+3. Mit async/await:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+async function getData() {
+  try {
+    const response = await fetch("/api/data")
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error(error)
+  }
+}
+\end{lstlisting}
+\end{KR}

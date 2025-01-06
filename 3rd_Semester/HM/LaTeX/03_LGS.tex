@@ -1,0 +1,524 @@
+\section{Lineare Gleichungssysteme}
+
+\subsection{Gauss-Algorithmus}
+
+Gauss-Algorithmus für ein Gleichungssystem $A x=b$ :
+
+$$
+A=\left[\begin{array}{ccc}
+a_{11} & \cdots & a_{1 n} \\
+\vdots & \ddots & \vdots \\
+a_{n 1} & \cdots & a_{n n}
+\end{array}\right] \in \mathbb{R}^{n \times n}, \quad x=\left(\begin{array}{c}
+x_{1} \\
+\vdots \\
+x_{n}
+\end{array}\right) \in \mathbb{R}^{n}, \quad b=\left(\begin{array}{c}
+b_{1} \\
+\vdots \\
+b_{n}
+\end{array}\right) \in \mathbb{R}^{n}
+$$
+
+Umformung des Gleichungssystems $A x=b$, in ein äquivalentes Gleichungssystem $\tilde{A} x=b$, so dass die Matrix $\tilde{A}$ als obere Dreiecksmatrix vorliegt.
+
+\begin{itemize}
+  \item $\quad z_{j}:=z_{j}-\lambda z_{i} \quad i<j(\lambda \in \mathbb{R}), z_{i}$ ist die $i$-te Zeile des Gleichungssystems
+  \item $\quad z_{i} \rightarrow z_{j} \quad$ Vertauschen der $i$-ten und $j$-ten Zeile im System
+\end{itemize}
+
+Rekursive Vorschrift für ein Gleichungssystem $\tilde{A} x=b$ :
+
+$$
+\begin{gathered}
+x_{n}=\frac{b_{n}}{a_{n n}}, x_{n-1}=\frac{b_{n-1}-a_{(n-1) n} \cdot x_{n}}{a_{n-1 n-1}}, \ldots, x_{1}=\frac{b_{1}-a_{12} \cdot x_{2}-\cdots-a_{1 n} \cdot x_{n}}{a_{11}} \\
+x_{i}=\frac{b_{i}-\sum_{j=i+1}^{n} a_{i j} \cdot x_{j}}{a_{i i}}, \quad i=n, n-1, \ldots, 1
+\end{gathered}
+$$
+
+\subsection{Fehlerfortpflanzung und Pivotisierung}
+
+Für $i=1, . . n$ :\\
+Erzeuge Nullen unterhalb des Diagonalelements in der i-ten Spalte
+
+\begin{itemize}
+  \item Suche das betragsgrösste Element unterhalb der Diagonalen in der i-ten Spalte: Wähle $k$ so, dass $\left|a_{k i}\right|=\max \left\{\left|a_{j i}\right| \mid j=i, \ldots n\right\}$
+\end{itemize}
+
+$$
+\left\{\begin{array}{l}
+\text { falls } a_{k i}=0: \quad \text { A ist nicht regulär; stop; } \\
+\text { falls } a_{k i} \neq 0: \quad z_{k} \leftrightarrow z_{i}
+\end{array}\right.
+$$
+
+\begin{itemize}
+  \item Eliminationsschritt:
+\end{itemize}
+
+Für $j=i+1, \ldots, n$ eliminiere das Element $a_{j i}$ durch
+
+$$
+z_{j}:=z_{j}-\frac{a_{j i}}{a_{i i}} \cdot z_{i}
+$$
+
+\subsection{Dreieckszerlegung von Matrizen}
+
+\subsubsection{Determinante}
+
+Gegeben sei eine Matrix $A$, woraus die obere Dreiecksmatrix $\tilde{A}$ entsteht.
+
+\begin{itemize}
+  \item $\quad \tilde{a}_{i i}: \quad$ Diagonalelemente von $\tilde{A}$
+  \item $\quad l: \quad$ Anzahl Zeilenvertauschungen
+\end{itemize}
+
+$$
+\operatorname{det}(A)=(-1)^{l} \cdot \operatorname{det}(\tilde{A})=(-1)^{l} \cdot \prod_{i=1}^{n} \tilde{a}_{i i}
+$$
+
+Beispiel
+
+$$
+\begin{aligned}
+\left(\begin{array}{ccc}
+3 & 5 & 1 \\
+0 & 2 & 2 \\
+6 & 14 & 8
+\end{array}\right) & =\left(\begin{array}{lll}
+3 & 5 & 1 \\
+0 & 2 & 2 \\
+0 & 4 & 6
+\end{array}\right)=\left(\begin{array}{lll}
+3 & 5 & 1 \\
+0 & 2 & 2 \\
+0 & 0 & 2
+\end{array}\right) \\
+\operatorname{det}(A) & =(3) \cdot(2) \cdot(2)=12
+\end{aligned}
+$$
+
+\subsubsection{LR-Zerlegung}
+
+Das ursprüngliche Gleichungssystem $\boldsymbol{A} \boldsymbol{x}=\boldsymbol{b}$ lautet mit der $L R$-Zerlegung
+
+$$
+L R x=b \Leftrightarrow L y=b \text { und } R x=y
+$$
+
+Für eine $n \times n$ Matrix $A$, gibt es $n \times n$ Matrizen $L$ und $R$ mit den Eigenschaften
+
+\begin{itemize}
+  \item $L$ ist eine normierte untere Dreiecksmatrix $\operatorname{mit} l_{i i}=1(i=1, \ldots, n)$
+  \item $R$ ist eine obere Dreiecksmatrix\\
+$\operatorname{mit} r_{i i} \neq 0(i=1, \ldots, n)$
+  \item $\quad A=L \cdot R$ ist die $L R$-Zerlegung von $A$.
+\end{itemize}
+
+\section*{Zerlegung mit Zeilenvertauschung}
+$P_{K}$ erhält man aus der Einheitsmatrix $I_{n}$ durch Vertauschen der $i$-ten und $j$-ten Zeile.\\
+Zeilen-Vertauschungen werden durch $P_{1} \ldots P_{n}$ ausgedrückt.
+
+$$
+P=\prod_{i=1}^{n} P_{n-i+1}
+$$
+
+Mit dieser Permutationsmatrix erhält man dann als $R L-$ Zerlegung
+
+$$
+P A=L R
+$$
+
+Das lineare Gleichungssystem $A x=b$ lässt sich schreiben als $P A x=P b$ bzw. $L R x=$ $P b$ und in den zwei Schritten lösen
+
+$$
+\begin{gathered}
+L y=P b \rightarrow y=\cdots \\
+R x=y \rightarrow x=\cdots
+\end{gathered}
+$$
+
+Vertauschung der 1. Und 3. Zeile bei der Matrix
+
+$$
+\begin{gathered}
+A=\left(\begin{array}{lll}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{array}\right) \rightarrow A^{*}=\left(\begin{array}{lll}
+7 & 8 & 9 \\
+4 & 5 & 6 \\
+1 & 2 & 3
+\end{array}\right) \\
+I^{*} \cdot A=P_{1} \cdot A=A^{*}=\left(\begin{array}{lll}
+0 & 0 & 1 \\
+0 & 1 & 0 \\
+1 & 0 & 0
+\end{array}\right)\left(\begin{array}{lll}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{array}\right)=\left(\begin{array}{lll}
+7 & 8 & 9 \\
+4 & 5 & 6 \\
+1 & 2 & 3
+\end{array}\right) \\
+A=\left(\begin{array}{ccc}
+-1 & 1 & 1 \\
+1 & -3 & -2 \\
+5 & 1 & 4
+\end{array}\right)=L R \\
+i=1, j=2 \rightarrow z_{2}=z_{2}-\frac{1}{(-1)} \cdot z_{1} \rightarrow A_{1}=\left(\begin{array}{ccc}
+-1 \\
+1-1 & -3+1 & -1+1 \\
+5 & 1 & 4
+\end{array}\right) \\
+i=1, j=3 \rightarrow z_{3}=z_{3}-\underbrace{\frac{5}{(-1)}}_{l_{21}} \cdot z_{1} \rightarrow A_{2}=\left(\begin{array}{ccc}
+-1 & 1 & 1 \\
+0 & -2 & -1 \\
+5-5 & 1+5 & 4+5
+\end{array}\right) \\
+i=2, j=3 \rightarrow z_{3} \equiv z_{3}-\underbrace{\frac{6}{(-2)}}_{l_{32}} \cdot z_{2} \rightarrow A_{3}=\left(\begin{array}{c}
+-1 \\
+0 \\
+0+0 \\
+0
+\end{array}\right. \\
+R=2
+\end{gathered}
+$$
+
+Einsetzen in $L$
+
+$$
+\begin{gathered}
+l_{21}=\frac{1}{-1}=-1, \quad l_{31}=\frac{5}{-1}=-5, \quad l_{32}=\frac{6}{-2}=-3 \\
+L=\left(\begin{array}{ccc}
+1 & 0 & 0 \\
+l_{21} & 1 & 0 \\
+l_{31} & l_{32} & 1
+\end{array}\right)=\left(\begin{array}{ccc}
+1 & 0 & 0 \\
+-1 & 1 & 0 \\
+5 & -3 & 1
+\end{array}\right)
+\end{gathered}
+$$
+
+\subsubsection{QR-Zerlegung}
+
+Eine Matrix $Q \in \mathbb{R}^{n \times n}$ heisst orthogonal, wenn $Q^{T} \cdot Q=I_{n}$ ist. Dabei ist $I_{n}$ die $n \times n$ Einheitsmatrix.
+
+Sei $A \in \mathbb{R}^{n \times n}$. Eine $Q R$-Zerlegung von $A$ ist eine Darstellung von $A$ als Produkt einer orthogonalen $n \times n$ Matrix $Q$ und einer rechtsoberen $n \times n$ Dreiecksmatrix $R$
+
+$$
+A=Q R
+$$
+
+Lösung des Gleichungssystems
+
+$$
+A x=b \Leftrightarrow Q R x=b \Leftrightarrow R x=Q^{T} b
+$$
+
+Algorithmus zur QR-Zerlegung
+
+$$
+R:=A, \quad Q:=I_{n}
+$$
+
+Für $i=1, \ldots, n-1$ :\\
+erzeuge Nullen in $R$ in der $i$-ten Spalte unterhalb der Diagonalen
+
+\begin{enumerate}
+  \item $H_{i}$ mit $(n-i+1) \times(n-i+1)$ berechnen
+  \item $H_{i}$ mit $I_{i-1}$ Block links oben erweitern $\rightarrow Q_{i}$
+  \item $R:=Q_{i} \cdot R$
+  \item $Q:=Q \cdot Q_{i}^{T}$
+\end{enumerate}
+
+Ablauf
+
+$$
+\begin{gathered}
+H_{1} \cdot A_{1}=H_{1} \cdot \underbrace{\left(\begin{array}{lll}
+* & * & * \\
+* & * & * \\
+* & * & *
+\end{array}\right)}_{A_{1}}=\left(\begin{array}{lll}
+* & * & * \\
+0 & * & * \\
+0 & * & *
+\end{array}\right) \rightarrow \underbrace{\left(\begin{array}{cc}
+* & * \\
+* & *
+\end{array}\right)}_{A_{2}} \\
+a_{1}=\left(\begin{array}{l}
+a_{11} \\
+a_{21} \\
+a_{31}
+\end{array}\right), \quad e_{1}=\left(\begin{array}{l}
+1 \\
+0 \\
+0
+\end{array}\right)
+\end{gathered}
+$$
+
+\begin{enumerate}
+  \item $v_{1}:=a_{1}+\operatorname{sign}\left(a_{11}\right) \cdot\left|a_{1}\right| \cdot e_{1}$
+  \item $u_{1}:=\frac{1}{\left|v_{1}\right|} \cdot v_{1}$
+  \item $H_{1}:=I_{n}-2 u_{1} u_{1}^{T}=Q_{1}$
+\end{enumerate}
+
+$$
+\begin{gathered}
+H_{2} \cdot A_{2}=H_{2} \cdot \underbrace{\left(\begin{array}{ll}
+* & * \\
+* & *
+\end{array}\right)}_{A_{2}}=\left(\begin{array}{ll}
+* & * \\
+0 & *
+\end{array}\right) \\
+Q_{2}=\left(\begin{array}{ccc}
+1 & 0 & 0 \\
+0 & H_{2} & H_{2} \\
+0 & H_{2} & H_{2}
+\end{array}\right)
+\end{gathered}
+$$
+
+$$
+Q:=Q_{1}^{T} \cdot Q_{2}^{T}, \quad R:=\underbrace{Q_{2} \cdot Q_{1}}_{Q^{-1}} \cdot A
+$$
+
+\subsection{Fehlerrechnung und Aufwandabschätzung}
+
+Eine Abbildung $\|\|:. \mathbb{R}^{n} \rightarrow \mathbb{R}$ heisst Vektornorm, wenn die folgenden Bedingungen für alle $x, y \in \mathbb{R}^{n}, \lambda \in \mathbb{R}$ erfüllt sind:
+
+\begin{itemize}
+  \item $\|x\| \geq 0$ und $\|x\|=0 \Leftrightarrow x=0$
+  \item $\|\lambda x\|=|\lambda| \cdot\|x\|$
+  \item $\|x+y\| \leq\|x\|+\|y\|$ "Dreiecksgleichung"
+\end{itemize}
+
+Für Vektoren $x=\left(x_{1}, x_{2}, \ldots, x_{n}\right)^{T} \in \mathbb{R}^{n}$ gibt es die folgenden Vektornormen
+
+\begin{itemize}
+  \item 1-Norm Summennorm
+\end{itemize}
+
+$$
+\begin{aligned}
+& \|x\|_{1}=\sum_{i=1}^{n}\left|x_{i}\right| \\
+& \|x\|_{2}=\sqrt{\sum_{i=1}^{n} x_{i}^{2}} \\
+& \|x\|_{\infty}=\max _{i=1, \ldots, n}\left|x_{i}\right|
+\end{aligned}
+$$
+
+\begin{itemize}
+  \item 2-Norm Euklidische Norm
+  \item $\infty$-Norm Maximumnorm
+\end{itemize}
+
+Für eine $n \times n$ Matrix $A \in \mathbb{R}^{n \times n}$ gibt es die folgenden Matrixnormen
+
+\begin{itemize}
+  \item 1-Norm Spaltensummennorm $\|A\|_{1}=\max _{j-1, \ldots, n} \sum_{i=1}^{n}\left|x_{i}\right|$
+  \item 2-Norm Spektralnorm $\quad\|A\|_{2}=\sqrt{\rho\left(A^{T} A\right)}$
+  \item $\infty$-Norm Zeilensummennorm $\|A\|_{\infty}=\max _{i=1, \ldots, n} \sum_{j=1}^{n}\left|a_{i j}\right|$
+\end{itemize}
+
+\subsubsection{Fehlerabschätzung}
+
+\paragraph{Abschätzung für Fehlerhafte Matrizen}
+Sei $\|$.$\| eine Norm, A, \tilde{A} \in \mathbb{R}^{n \times n}$ eine reguläre $n \times n$ Matrix und $x, \tilde{x}, b, \tilde{b} \in$ $\mathbb{R}^{n}$ mit $A x=b$ und $\tilde{A} \tilde{x}=\tilde{b}$. Falls
+
+$$
+\operatorname{cond}(A) \cdot \frac{\|A-\tilde{A}\|}{\|A\|}<1
+$$
+
+Dann gilt
+
+$$
+\frac{\|x-\tilde{x}\|}{\|x\|} \leq \frac{\operatorname{cond}(A)}{1-\operatorname{cond}(A) \cdot \frac{\|A-\tilde{A}\|}{\|A\|}} \cdot\left(\frac{\|A-\tilde{A}\|}{\|A\|}+\frac{\|b-\tilde{b}\|}{\|b\|}\right)
+$$
+
+\paragraph{Abschätzung für Fehlerhafte Vektoren}
+Sei $\|$. $\|$ eine Norm, $A \in \mathbb{R}^{n \times n}$ eine reguläre $n \times n$ Matrix und $x, \tilde{x}, b, \tilde{b} \in \mathbb{R}^{n}$ mit $A x=b$ und $A \tilde{x}=\tilde{b}$. Dann gilt für den absoluten und den relativen Fehler in $x$ :
+
+\begin{itemize}
+  \item $\|x-\tilde{x}\| \leq\left\|A^{-1}\right\| \cdot\|b-\tilde{b}\|$
+  \item $\frac{\|x-\tilde{x}\|}{\|x\|} \leq\|A\| \cdot\left\|A^{-1}\right\| \cdot \frac{\|b-\tilde{b}\|}{\|b\|}$, falls $\|b\| \neq 0$\\
+$\operatorname{Die}$ Zahl cond $(A)=\|A\| \cdot\left\|A^{-1}\right\|$ nennt man Konditionszahl der Matrix $A$
+  \item $\quad \operatorname{cond}(A)$ gross $\rightarrow$ schlechte Konditionierung
+\end{itemize}
+
+Untersuchen Sie die Fehlerfortpflanzung im linearen Gleichungssystem $A x=b$ mit
+
+$$
+A=\left(\begin{array}{cc}
+2 & 4 \\
+4 & 8.1
+\end{array}\right), \quad b=\binom{1}{1.5}
+$$
+
+Für den Fall, dass die rechte Seite von $\tilde{b}$ in jeder Komponente um maximal 0.1 von $b$ abweicht.
+
+$$
+\begin{gathered}
+\|\tilde{b}-b\|_{\infty} \leq 0.1, \quad\|A\|_{\infty}=\max \{2+4,4+8.1\}=12.1 \\
+\left\|A^{-1}\right\|_{\infty}=\left\|\left(\begin{array}{cc}
+40.5 & -20 \\
+-20 & 10
+\end{array}\right)\right\|_{\infty}=60.5 \\
+\operatorname{cond}(A)_{\infty}=\|A\|_{\infty} \cdot\left\|A^{-1}\right\|_{\infty}=12.1 \cdot 60.5=732.05 \\
+\|x-\tilde{x}\|_{\infty} \leq\left\|A^{-1}\right\|_{\infty} \cdot\|b-\tilde{b}\|_{\infty} \leq 60.5 \cdot 0.1=\underbrace{6.05}_{\text {absoluter Fehler }} \\
+\frac{\|x-\tilde{x}\|_{\infty}}{\|x\|_{\infty}} \leq \operatorname{cond}(A)_{\infty} \cdot \frac{\|b-\tilde{b}\|_{\infty}}{\|b\|_{\infty}} \leq 732 \cdot \frac{0.1}{1.5}=\underbrace{48.8}_{\text {relativer Fehler }}
+\end{gathered}
+$$
+
+\subsubsection{Aufwandabschätzung}
+
+Die Anzahl Gleitkommaoperationen werden in Abhängigkeit von $n$ bestimmt.
+
+$$
+\sum_{i=1}^{n} i=\frac{(n+1) \cdot n}{2} \text { und } \sum_{i=1}^{n} i^{2}=\frac{1}{3} n^{3}+\frac{1}{2} n^{2}+\frac{1}{6} n, \quad n=\text { Dimension }
+$$
+
+Ein Algorithmus hat die Ordnung $O\left(n^{q}\right)$, wenn $q>0$ die minimale Zahl ist, für die es eine Konstante $C>0$ gibt, so dass der Algorithmus für alle $n \in N$ weniger als
+
+\section*{Beispiel}
+Wie viele Gleitkommaoperationen benötigt das Rückwärtseinsetzen gemäss Gauss?
+
+$$
+x_{i}=\frac{b_{i}-\sum_{j=i+1}^{n} a_{i j} \cdot x_{j}}{a_{i i}}, \quad i=n, n-1, \ldots, 1
+$$
+
+Multiplikation und Division
+
+$$
+1+2+3+\cdots+n=\sum_{i=1}^{n} i=\frac{(n+1) \cdot n}{2}
+$$
+
+Addition und Subtraktion
+
+$$
+0+1+2+\cdots+n-1=\sum_{i=1}^{n-1} i=\frac{(n-1+1) \cdot(n-1)}{2}=\frac{(n-1) \cdot n}{2}
+$$
+
+Summe beider Operationstypen
+
+$$
+\frac{n^{2}}{2}+\frac{n}{2}+\frac{n^{2}}{2}-\frac{n}{2}=n^{2}
+$$
+
+\subsection{Iterative Verfahren}
+
+Iterative Verfahren sind effizienter, jedoch kann man keine genauen Lösungen erwarten. Ausgehend von einem Startvektor $x^{(0)}$ berechnet man mittels einer Rechenvorschrift $F: \mathbb{R}^{n} \rightarrow \mathbb{R}^{n}$ iterativ eine Folge von Vektoren
+
+$$
+x^{(k+1)}=F\left(x^{(k)}\right) \text { mit } k=0,1,2, \ldots
+$$
+
+Zu lösen sei $A x=b$. Die Matrix $A=\left(a_{i j}\right)$ sei zerlegt in der Form $A=L+D+R=$
+
+\subsubsection{Jacobi-Verfahren}
+
+$$
+\begin{gathered}
+A x=b, \quad A=\left(\begin{array}{lll}
+8 & 5 & 2 \\
+5 & 9 & 1 \\
+4 & 2 & 7
+\end{array}\right), \quad b=\left(\begin{array}{c}
+19 \\
+5 \\
+34
+\end{array}\right), \quad x^{(0)}=\left(\begin{array}{c}
+1 \\
+-1 \\
+3
+\end{array}\right) \\
+x_{1}^{(1)}=\frac{1}{8}\left(19-\sum_{j=1, j \neq 1}^{3} a_{1 j} \cdot x_{j}^{(0)}\right)=\frac{1}{8}(19-(5 \cdot-1+2 \cdot 3))=\frac{18}{8} \\
+x_{2}^{(1)}=\frac{1}{9}\left(5-\sum_{j=1, j \neq 2}^{3} a_{2 j} \cdot x_{j}^{(0)}\right)=\frac{1}{9}(5-(5 \cdot 1+1 \cdot 3))=-\frac{1}{3} \\
+x_{3}^{(1)}=\frac{1}{7}\left(34-\sum_{j=1, j \neq 3}^{3} a_{3 j} \cdot x_{j}^{(0)}\right)=\frac{1}{7}(34-(4 \cdot 1+2 \cdot-1))=\frac{32}{7}
+\end{gathered}
+$$
+
+Fixpunktiteration gemäss Jacobi (Gesamtschritt-Verfahren):
+
+$$
+\begin{aligned}
+& D x^{(k+1)}=-(L+R) x^{(k)}+b \\
+& x^{(k+1)}=-D^{-1}(L+R) x^{(k)}+D^{-1} b
+\end{aligned}
+$$
+
+Implementation /Allgemeine Form gemäss Jacobi
+
+$$
+x_{i}^{(k+1)}=\frac{1}{a_{i i}}\left(b_{i}-\sum_{j=1, j \neq i}^{n} a_{i j} \cdot x_{j}^{(k)}\right), \quad i=1, \ldots, n
+$$
+
+\subsubsection{Gauss-Seidel-Verfahren}
+
+Fixpunktiteration gemäss Gauss-Seidel (Einzelschritt-Verfahren):
+
+$$
+\begin{aligned}
+& (D+L) x^{(k+1)}=-R x^{(k)}+b \\
+& x^{(k+1)}=-(D+L)^{-1} \cdot R x^{(k)}+(D+L)^{-1} \cdot b
+\end{aligned}
+$$
+
+Implementation / Allgemeine Form gemäss Gauss-Seidel\\
+$x_{i}^{(k+1)}=\frac{1}{a_{i i}}\left(b_{i}-\sum_{j=1}^{i-1} a_{i j} \cdot x_{j}^{(k+1)}-\sum_{j=i+1}^{n} a_{i j} \cdot x_{j}^{(k)}\right), \quad i=1, \ldots, n$
+
+\subsubsection{Konvergenz der Fixpunktiteration}
+
+Gegeben sei eine Fixpunktiteration
+
+$$
+x^{(n+1)}=B x^{(n)}+c=: F\left(x^{(n)}\right)
+$$
+
+Für das Gesamtschrittverfahren (Jacobi) gilt
+
+$$
+B=-D^{-1}(L+R)
+$$
+
+Für das Einzelschrittverfahren (Gauss-Seidel) gilt $\quad B=-(D+L)^{-1} R$
+
+Wobei $B$ eine $n \times n$ Matrix ist und $c \in \mathbb{R}^{n}$. Weiter sei $\|$. $\|$ eine der eingeführten Normen und $\bar{x} \in \mathbb{R}^{n}$ erfülle $\bar{x}=B \bar{x}+c=F(\bar{x})$. Dann heisst
+
+\begin{itemize}
+  \item $\bar{x}$ anziehender Fixpunkt, falls $\|B\|<1$
+  \item $\bar{x}$ abstossender Fixpunkt, falls $\|B\|>1$
+  \item $\left\|x^{(n)}-\bar{x}\right\| \leq \frac{\|B\|^{n}}{1-\|B\|} \cdot\left\|x^{(1)}-x^{(0)}\right\| \quad$ a-priori Abschätzung
+  \item $\left\|x^{(n)}-\bar{x}\right\| \leq \frac{\|B\|}{1-\|B\|} \cdot\left\|x^{(n)}-x^{(n-1)}\right\| \quad$ a-posteriori Abschätzung\\
+$A$ ist eine diagonaldominante Matrix, falls eines der beiden folgenden Kriterien gilt
+  \item $f$ ür alle $i=1, \ldots, n:\left|a_{i i}\right|>\sum_{j=1, j \neq i}^{n}\left|a_{i, j}\right| \quad$ (Zeilensummenkriterium)
+  \item für alle $j=1, \ldots, n:\left|a_{j j}\right|>\sum_{i=1, i \neq j}^{n}\left|a_{i, j}\right| \quad$ (Spaltensummenkriterium)
+\end{itemize}
+
+Beispiel
+
+$$
+A=\left(\begin{array}{ccc}
+4 & -1 & 1 \\
+-2 & 5 & 1 \\
+1 & -2 & 5
+\end{array}\right) \rightarrow \sum_{j=1, j \neq i}^{n}\left|a_{i j}\right| \rightarrow\left\{\begin{array}{l}
+i=1 \rightarrow 4>2 \\
+i=2 \rightarrow 5>3 \\
+i=3 \rightarrow 5>3
+\end{array}\right.
+$$
+
+Fall $A$ diagonaldominant ist, konvergiert das Gesamtschrittverfahren (Jacobi) und auch das Einzelschrittverfahren (Gauss-Seidel) für $A x=b$.
+
+Ein notwendiges und hinreichendes Kriterium für Konvergenz ist\\
+Spektralradius $\rho(B)<1$

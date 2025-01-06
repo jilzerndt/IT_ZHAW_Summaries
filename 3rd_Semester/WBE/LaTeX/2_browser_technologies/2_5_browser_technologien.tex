@@ -1,0 +1,104 @@
+\subsection{Browser APIs}
+
+\begin{KR}{Geolocation API}
+1. Einmalige Position abfragen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+navigator.geolocation.getCurrentPosition(
+  (position) => {
+    console.log(position.coords.latitude)
+    console.log(position.coords.longitude)
+    console.log(position.coords.accuracy)
+  },
+  (error) => {
+    console.error(error.message)
+  },
+  {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+  }
+)
+\end{lstlisting}
+
+2. Position kontinuierlich überwachen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const watchId = navigator.geolocation.watchPosition(
+  positionCallback,
+  errorCallback,
+  options
+)
+
+// Ueberwachung beenden
+navigator.geolocation.clearWatch(watchId)
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{History API}
+1. Navigation:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Navigation
+history.back()      // Eine Seite zurueck
+history.forward()   // Eine Seite vor
+history.go(-2)      // 2 Seiten zurueck
+\end{lstlisting}
+
+2. History Manipulation:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Neuen Eintrag hinzufuegen
+history.pushState(
+  {page: 1},           // State-Objekt
+  '',                  // Title (meist ignoriert)
+  '/neue-url'          // URL
+)
+
+// Aktuellen Eintrag ersetzen
+history.replaceState(
+  {page: 2},
+  '',
+  '/andere-url'
+)
+\end{lstlisting}
+
+3. Auf Änderungen reagieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+window.addEventListener('popstate', (event) => {
+  console.log(event.state)    // State-Objekt
+  console.log(location.href)  // Aktuelle URL
+})
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Web Workers}
+1. Worker erstellen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// main.js
+const worker = new Worker('worker.js')
+
+worker.postMessage({data: someData})
+
+worker.onmessage = (e) => {
+  console.log('Nachricht vom Worker:', e.data)
+}
+
+// worker.js
+self.onmessage = (e) => {
+  // Daten verarbeiten
+  const result = doSomeHeavyComputation(e.data)
+  self.postMessage(result)
+}
+\end{lstlisting}
+
+2. Worker beenden:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+worker.terminate()  // Im Hauptthread
+self.close()       // Im Worker
+\end{lstlisting}
+
+Wichtig:
+\begin{itemize}
+  \item Worker laufen in separatem Thread
+  \item Kein Zugriff auf DOM
+  \item Kommunikation nur über Nachrichten
+  \item Gut für rechenintensive Aufgaben
+\end{itemize}
+\end{KR}

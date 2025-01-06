@@ -1,0 +1,240 @@
+\section{Client-Server Interaktion}
+
+\subsection{Formulare}
+
+\begin{definition}{HTML-Formulare}
+    Formulare ermöglichen Benutzereingaben und Datenübertragung:
+    \begin{itemize}
+        \item \texttt{<form>} Element mit \texttt{action} und \texttt{method}
+        \item \texttt{method="GET"}: Daten in URL (sichtbar)
+        \item \texttt{method="POST"}: Daten im Request-Body (unsichtbar)
+        \item Verschiedene Input-Typen: text, password, checkbox, radio, etc.
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Formular Handling}
+\begin{lstlisting}[language=HTML, style=basesmol]
+<!-- HTML Form -->
+<form action="/submit" method="POST">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username">
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password">
+    
+    <button type="submit">Login</button>
+</form>
+
+<!-- JavaScript Handler -->
+form.addEventListener('submit', (event) => {
+    event.preventDefault(); // Verhindert Standard-Submit
+    
+    const formData = new FormData(form);
+    // Zugriff auf Formular-Daten
+    const username = formData.get('username');
+    const password = formData.get('password');
+});
+\end{lstlisting}
+\end{KR}
+
+\begin{formula}{Formular Events}
+    Wichtige Events bei Formularen:
+    \begin{itemize}
+        \item \texttt{submit}: Formular wird abgeschickt
+        \item \texttt{reset}: Formular wird zurückgesetzt
+        \item \texttt{change}: Wert eines Elements wurde geändert
+        \item \texttt{input}: Wert wird gerade geändert
+        \item \texttt{focus}: Element erhält Fokus
+        \item \texttt{blur}: Element verliert Fokus
+    \end{itemize}
+\end{formula}
+
+\subsection{AJAX und Fetch API}
+
+\begin{concept}{AJAX}
+    Asynchronous JavaScript And XML:
+    \begin{itemize}
+        \item Asynchrone Kommunikation mit dem Server
+        \item Kein vollständiges Neuladen der Seite nötig
+        \item Moderne Alternative: Fetch API
+        \item Datenformate: JSON, XML, Plain Text
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Fetch API Grundlagen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// GET Request
+fetch('https://api.example.com/data')
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error('Error:', error));
+
+// POST Request
+fetch('https://api.example.com/data', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        key: 'value'
+    })
+})
+    .then(response => response.json())
+    .then(data => console.log(data));
+
+// Mit async/await
+async function fetchData() {
+    try {
+        const response = await fetch('https://api.example.com/data');
+        const data = await response.json();
+        console.log(data);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\subsection{Cookies und Sessions}
+
+\begin{definition}{Cookies}
+    HTTP-Cookies sind kleine Datenpakete:
+    \begin{itemize}
+        \item Werden vom Server gesetzt
+        \item Im Browser gespeichert
+        \item Bei jedem Request mitgesendet
+        \item Haben Name, Wert, Ablaufdatum und Domain
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Cookie Handling}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Cookie setzen
+document.cookie = "username=John Doe; expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
+
+// Cookie lesen
+const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [name, value] = cookie.trim().split('=');
+    acc[name] = value;
+    return acc;
+}, {});
+
+// Cookie loeschen
+document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Sessions}
+    Server-seitige Speicherung von Benutzerdaten:
+    \begin{itemize}
+        \item Session-ID wird in Cookie gespeichert
+        \item Daten bleiben auf dem Server
+        \item Sicherer als Cookies für sensible Daten
+        \item Temporär (bis Browser geschlossen wird)
+    \end{itemize}
+\end{concept}
+
+\subsection{REST APIs}
+
+\begin{definition}{REST Prinzipien}
+    Representational State Transfer:
+    \begin{itemize}
+        \item Zustandslos (Stateless)
+        \item Ressourcen-orientiert
+        \item Einheitliche Schnittstelle
+        \item Standard HTTP-Methoden
+    \end{itemize}
+\end{definition}
+
+\begin{theorem}{HTTP-Methoden}
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \hline
+    Methode & Verwendung \\
+    \hline
+    GET & Daten abrufen \\
+    \hline
+    POST & Neue Daten erstellen \\
+    \hline
+    PUT & Daten aktualisieren (komplett) \\
+    \hline
+    PATCH & Daten aktualisieren (teilweise) \\
+    \hline
+    DELETE & Daten löschen \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{theorem}
+
+\begin{KR}{REST API Implementierung mit Express}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+// GET - Alle Benutzer abrufen
+app.get('/api/users', (req, res) => {
+    res.json(users);
+});
+
+// GET - Einzelnen Benutzer abrufen
+app.get('/api/users/:id', (req, res) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    if (!user) return res.status(404).send('User not found');
+    res.json(user);
+});
+
+// POST - Neuen Benutzer erstellen
+app.post('/api/users', (req, res) => {
+    const user = {
+        id: users.length + 1,
+        name: req.body.name
+    };
+    users.push(user);
+    res.status(201).json(user);
+});
+
+// PUT - Benutzer aktualisieren
+app.put('/api/users/:id', (req, res) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    if (!user) return res.status(404).send('User not found');
+    
+    user.name = req.body.name;
+    res.json(user);
+});
+
+// DELETE - Benutzer loeschen
+app.delete('/api/users/:id', (req, res) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    if (!user) return res.status(404).send('User not found');
+    
+    const index = users.indexOf(user);
+    users.splice(index, 1);
+    res.json(user);
+});
+\end{lstlisting}
+\end{KR}
+
+\begin{corollary}{HTTP Status Codes}
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \hline
+    Code & Bedeutung \\
+    \hline
+    200 & OK - Erfolgreich \\
+    \hline
+    201 & Created - Ressource erstellt \\
+    \hline
+    400 & Bad Request - Fehlerhafte Anfrage \\
+    \hline
+    401 & Unauthorized - Nicht authentifiziert \\
+    \hline
+    403 & Forbidden - Keine Berechtigung \\
+    \hline
+    404 & Not Found - Ressource nicht gefunden \\
+    \hline
+    500 & Internal Server Error - Serverfehler \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{corollary}

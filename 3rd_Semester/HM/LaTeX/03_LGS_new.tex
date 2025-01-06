@@ -1,0 +1,600 @@
+\section{Numerische Lösung linearer Gleichungssysteme}
+
+\subsubsection{Pivotisierung}
+
+\begin{concept}{Spaltenpivotisierung}\\
+Strategie zur numerischen Stabilisierung des Gauss-Algorithmus durch Auswahl des betragsmäßig größten Elements als Pivotelement.
+
+Vor jedem Eliminationsschritt in Spalte $i$:
+\begin{itemize}
+    \item Suche $k$ mit $|a_{ki}| = \max\{|a_{ji}| \mid j = i,\ldots,n\}$
+    \item Falls $a_{ki} \neq 0$: Vertausche Zeilen $i$ und $k$
+    \item Falls $a_{ki} = 0$: Matrix ist singulär
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Gauss-Algorithmus mit Pivotisierung}
+\paragraph{1. Elimination (Vorwärts)}
+\begin{enumerate}
+    \item Für $i=1,\ldots,n-1$:
+    \item \quad Finde $k \geq i$ mit $|a_{ki}| = \max\{|a_{ji}| \mid j = i,\ldots,n\}$
+    \item \quad Falls $a_{ki} = 0$: Stop (Matrix singulär)
+    \item \quad Vertausche Zeilen $i$ und $k$
+    \item \quad Für $j=i+1,\ldots,n$:
+    \item \quad\quad $z_j := z_j - \frac{a_{ji}}{a_{ii}}z_i$
+\end{enumerate}
+
+\paragraph{2. Rückwärtseinsetzen}
+$$x_i = \frac{b_i - \sum_{j=i+1}^n a_{ij}x_j}{a_{ii}}, \quad i=n,n-1,\ldots,1$$
+\end{KR}
+
+
+\begin{example2}{Gauss mit Pivotisierung}
+\vspace{-3mm}\\
+Gegebenes System:
+$A = \begin{pmatrix}
+0 & 1 & 1\\
+2 & 4 & -2\\
+0 & 3 & 15
+\end{pmatrix}, \quad b = \begin{pmatrix}
+4\\
+2\\
+36
+\end{pmatrix}$
+\vspace{2mm}\\
+\textbf{Eliminationsschritte: }
+\vspace{2mm}\\
+$\begin{pmatrix}
+    2 & 4 & -2 & | & 2\\
+    0 & 3 & 15 & | & 36\\
+    0 & 1 & 1 & | & 4
+    \end{pmatrix}
+    \Rightarrow
+    \begin{pmatrix}
+    2 & 4 & -2 & | & 2\\
+    0 & 3 & 15 & | & 36\\
+    0 & 0 & -2 & | & -8
+    \end{pmatrix}$
+
+    \vspace{2mm}
+$
+\begin{array}{lrl}
+    \textbf{Rückwärtseinsetzen: }& x_3 &= \frac{-8}{-2} = 4\\
+    &x_2 &= \frac{36 - 15(4)}{3} = 1\\
+    &x_1 &= \frac{2 - 4(4) + 2}{2} = -6
+\end{array}
+$
+    
+\end{example2}
+
+
+
+\begin{concept}{Permutationsmatrizen}\\
+Eine Permutationsmatrix $P$ ist eine Matrix, die aus der Einheitsmatrix durch Zeilenvertauschungen entsteht. Für die Vertauschung der $i$-ten und $j$-ten Zeile hat $P_k$ die Form:
+\begin{itemize}
+    \item $p_{ii} = p_{jj} = 0$ 
+    \item $p_{ij} = p_{ji} = 1$
+    \item Alle anderen Elemente wie in $I_n$
+\end{itemize}
+Wichtige Eigenschaften:
+\begin{itemize}
+    \item $P^{-1} = P^T = P$
+    \item Mehrere Vertauschungen: $P = P_l \cdot ... \cdot P_1$
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Zeilenvertauschung} für Matrix A mit Permutationsmatrix $P_1$:\\
+
+$\underbrace{\begin{pmatrix}
+1 & 2 & 3\\
+4 & 5 & 6\\
+7 & 8 & 9
+\end{pmatrix}}_{A} \cdot 
+\underbrace{\begin{pmatrix}
+0 & 0 & 1\\
+0 & 1 & 0\\
+1 & 0 & 0
+\end{pmatrix}}_{P_1} =
+\begin{pmatrix}
+7 & 8 & 9\\
+4 & 5 & 6\\
+1 & 2 & 3
+\end{pmatrix}$
+\vspace{2mm}\\
+$\Rightarrow A \cdot P_1$ bewirkt die Vertauschung von Zeile 1 und 3
+\end{example2}
+
+\subsection{Matrix-Zerlegungen}
+
+\begin{definition}{Dreieckszerlegung}
+Eine Matrix $A \in \mathbb{R}^{n\times n}$ kann zerlegt werden in:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.5\textwidth}
+    \textbf{Untere Dreiecksmatrix L:}\\
+    $l_{ij} = 0$ für $j > i$\\
+    Diagonale normiert ($l_{ii}=1$)
+\end{minipage}
+\hspace{3mm}
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Obere Dreiecksmatrix R:}\\
+    $r_{ij} = 0$ für $i > j$\\
+    Diagonalelemente $\neq 0$
+\end{minipage}
+\end{definition}
+
+\subsubsection{LR-Zerlegung}
+
+\begin{theorem}{LR-Zerlegung}\\
+Jede reguläre Matrix $A$, für die der Gauss-Algorithmus ohne Zeilenvertauschungen durchführbar ist, lässt sich zerlegen in:
+$A = LR$
+wobei $L$ eine normierte untere und $R$ eine obere Dreiecksmatrix ist.
+\end{theorem}
+
+\begin{KR}{Berechnung der LR-Zerlegung}\\
+So berechnen Sie die LR-Zerlegung:
+\begin{enumerate}
+    \item Führen Sie Gauss-Elimination durch
+    \item $R$ ist die resultierende obere Dreiecksmatrix
+    \item Die Eliminationsfaktoren $-\frac{a_{ji}}{a_{ii}}$ bilden $L$
+    \item Lösen Sie dann nacheinander:
+        \begin{itemize}
+            \item $Ly = b$ (Vorwärtseinsetzen)
+            \item $Rx = y$ (Rückwärtseinsetzen)
+        \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}[breakable]{LR-Zerlegung}
+$A = \begin{pmatrix}
+-1 & 1 & 1\\
+1 & -3 & -2\\
+5 & 1 & 4
+\end{pmatrix}, \quad b = \begin{pmatrix}
+0\\
+5\\
+3
+\end{pmatrix}$
+
+\paragraph{Schritt 1: Erste Spalte}
+Max. Element in 1. Spalte: $|a_{31}| = 5$, also Z1 und Z3 tauschen:
+$$P_1 = \begin{pmatrix}
+0 & 0 & 1\\
+0 & 1 & 0\\
+1 & 0 & 0
+\end{pmatrix}, \quad A^{(1)} = \begin{pmatrix}
+5 & 1 & 4\\
+1 & -3 & -2\\
+-1 & 1 & 1
+\end{pmatrix}$$
+Berechne Eliminationsfaktoren:
+$l_{21} = \frac{1}{5}, \quad l_{31} = -\frac{1}{5}$
+\vspace{2mm}\\
+Nach Elimination:
+$A^{(2)} = \begin{pmatrix}
+5 & 1 & 4\\
+0 & -3.2 & -2.8\\
+0 & 1.2 & 1.8
+\end{pmatrix}$
+
+\paragraph{Schritt 2: Zweite Spalte}
+Max. Element in 2. Spalte unter Diagonale: $|-3.2| > |1.2|$, \\ keine Vertauschung nötig.
+\vspace{2mm}\\
+Berechne Eliminationsfaktor:
+$l_{32} = -\frac{1.2}{-3.2} = \frac{3}{8}$
+\vspace{2mm}\\
+Nach Elimination:
+$R = \begin{pmatrix}
+5 & 1 & 4\\
+0 & -3.2 & -2.8\\
+0 & 0 & 2.85
+\end{pmatrix}$
+
+\paragraph{Endergebnis}
+Die LR-Zerlegung mit $PA = LR$ ist:
+\vspace{2mm}\\
+$$P = P_1 = \begin{pmatrix}
+0 & 0 & 1\\
+0 & 1 & 0\\
+1 & 0 & 0
+\end{pmatrix}$$, 
+$$L = \begin{pmatrix}
+1 & 0 & 0\\
+\frac{1}{5} & 1 & 0\\
+-\frac{1}{5} & \frac{3}{8} & 1
+\end{pmatrix}, 
+R = \begin{pmatrix}
+5 & 1 & 4\\
+0 & -3.2 & -2.8\\
+0 & 0 & 2.85
+\end{pmatrix}$$
+
+\paragraph{Lösung des Systems}
+\begin{enumerate}
+    \item $Pb = \begin{psmallmatrix} 3\\ 5\\ 0 \end{psmallmatrix}$
+    \item Löse $Ly = Pb$ durch Vorwärtseinsetzen:
+    $y = \begin{pmatrix} 3\\ 4.4\\ 2.85 \end{pmatrix}$
+    \item Löse $Rx = y$ durch Rückwärtseinsetzen:
+    $x = \begin{pmatrix} 1\\ -1\\ 1 \end{pmatrix}$
+\end{enumerate}
+
+\paragraph{Probe}
+$$Ax = \begin{pmatrix}
+-1 & 1 & 1\\
+1 & -3 & -2\\
+5 & 1 & 4
+\end{pmatrix} \begin{pmatrix} 1\\ -1\\ 1 \end{pmatrix} = \begin{pmatrix} 0\\ 5\\ 3 \end{pmatrix} = b$$
+\end{example2}
+
+\begin{KR}{Zeilenvertauschungen verfolgen}
+\begin{enumerate}
+    \item Initialisiere $P = I_n$
+    \item Für jede Vertauschung von Zeile $i$ und $j$:
+    \begin{itemize}
+        \item Erstelle $P_k$ durch Vertauschen von Zeilen $i,j$ in $I_n$
+        \item Aktualisiere $P = P_k \cdot P$
+        \item Wende Vertauschung auf Matrix an: $A := P_kA$
+    \end{itemize}
+    \item Bei der LR-Zerlegung mit Pivotisierung:
+    \begin{itemize}
+        \item $PA = LR$ 
+        \item Löse $Ly = Pb$ und $Rx = y$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{examplecode}{LR-Zerlegung mit Pivotisierung}
+\begin{lstlisting}[language=Python, style=basesmol]
+def lr_decomposition_with_pivoting(A):
+    n = len(A)
+    P = np.eye(n)    # Permutationsmatrix
+    L = np.eye(n)    # Untere Dreiecksmatrix
+    R = A.copy()     # Wird zur oberen Dreiecksmatrix
+    
+    for k in range(n-1):
+        # Finde Pivotelement
+        pivot = np.argmax(abs(R[k:,k])) + k
+        
+        if pivot != k:
+            # Erzeuge Permutationsmatrix
+            P_k = np.eye(n)
+            P_k[[k,pivot]] = P_k[[pivot,k]]
+            
+            # Aktualisiere Matrizen
+            P = P_k @ P
+            R[[k,pivot]] = R[[pivot,k]]
+            if k > 0:
+                L[[k,pivot], :k] = L[[pivot,k], :k]
+                
+        # Elimination durchfuehren
+        for i in range(k+1, n):
+            factor = R[i,k] / R[k,k]
+            L[i,k] = factor
+            R[i,k:] -= factor * R[k,k:]
+            
+    return P, L, R
+\end{lstlisting}
+\end{examplecode}
+
+
+
+\begin{concept}{Vorteile der Permutationsmatrix}
+    \begin{itemize}
+        \item Exakte Nachverfolgung aller Zeilenvertauschungen
+        \item Einfache Rückführung auf ursprüngliche Reihenfolge durch $P^{-1}$
+        \item Kompakte Darstellung mehrerer Vertauschungen
+        \item Numerisch stabile Implementierung der Pivotisierung
+    \end{itemize}
+\end{concept}
+
+\columnbreak
+
+\subsubsection{QR-Zerlegung}
+
+\begin{concept}{QR-Zerlegung}\\
+Eine orthogonale Matrix $Q \in \mathbb{R}^{n\times n}$ erfüllt: $Q^T Q = QQ^T = I_n$
+\vspace{1mm}\\
+Die QR-Zerlegung einer Matrix $A$ ist: $A = QR$
+\vspace{1mm}\\
+wobei $Q$ orthogonal und $R$ eine obere Dreiecksmatrix ist.
+\end{concept}
+
+\begin{definition}{Householder-Transformation}\\
+Eine Householder-Matrix hat die Form:
+$H = I_n - 2uu^T$
+
+mit $u \in \mathbb{R}^n$, $\|u\| = 1$. Es gilt:
+\begin{itemize}
+    \item $H$ ist orthogonal ($H^T = H^{-1}$)
+    \item $H$ ist symmetrisch ($H^T = H$)
+    \item $H^2 = I_n$
+\end{itemize}
+\end{definition}
+
+\begin{KR}{QR-Zerlegung mit Householder}
+\begin{enumerate}
+    \item Initialisierung: $R := A$, $Q := I_n$
+    \item Für $i = 1,\ldots,n-1$:
+        \begin{itemize}
+            \item Bilde Vektor $v_i$ aus i-ter Spalte von $R$ ab Position $i$
+            \item $w_i := v_i + \text{sign}(v_{i1})\|v_i\|e_1$
+            \item $u_i := w_i/\|w_i\|$
+            \item $H_i := I_{n-i+1} - 2u_iu_i^T$
+            \item Erweitere $H_i$ zu $Q_i$ durch $I_{i-1}$ links oben
+            \item $R := Q_iR$
+            \item $Q := QQ_i^T$
+        \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}[breakable]{QR-Zerlegung}
+$A = \begin{pmatrix}
+1 & -2 & 0\\
+4 & -2 & 6\\
+3 & 1 & 0
+\end{pmatrix}$
+
+\paragraph{Schritt 1: Erste Spalte}
+Erste Spalte $a_1$ und Einheitsvektor $e_1$:
+$a_1 = \begin{psmallmatrix} 1\\ 4\\ 3 \end{psmallmatrix}, \quad e_1 = \begin{psmallmatrix} 1\\ 0\\ 0 \end{psmallmatrix}$
+
+\textbf{Householder-Vektor berechnen:}
+\vspace{1mm}
+\begin{enumerate}
+    \item $|a_1| = \sqrt{1^2 + 4^2 + 3^2} = \sqrt{26} \approx 5.10$
+    \item $v_1 = a_1 + \sqrt{26}e_1 = \begin{psmallmatrix} 6.10\\ 4\\ 3 \end{psmallmatrix}$,
+    $|v_1| = \sqrt{6.10^2 + 4^2 + 3^2} = 7.89$
+    \item $u_1 = \frac{v_1}{|v_1|} = \begin{psmallmatrix} 0.77\\ 0.51\\ 0.38 \end{psmallmatrix}$
+\end{enumerate}
+
+Householder-Matrix $H_1 = I - 2u_1u_1^T = \begin{pmatrix}
+-0.20 & -0.78 & -0.59\\
+-0.78 & 0.49 & -0.39\\
+-0.59 & -0.39 & 0.71
+\end{pmatrix}$
+
+Nach Anwendung auf $A$:
+\vspace{-3mm}
+$$A^{(1)} = H_1A = \begin{pmatrix}
+-5.10 & 0.59 & -4.51\\
+0 & -2.93 & 3.70\\
+0 & 0.31 & -1.73
+\end{pmatrix}$$
+
+\paragraph{Schritt 2: Zweite Spalte}
+Untermatrix $A_2$ (ohne erste Zeile/Spalte):
+$A_2 = \begin{pmatrix} -2.93 & 3.70\\ 0.31 & -1.73 \end{pmatrix}$
+
+\textbf{Householder-Vektor berechnen:}
+\vspace{1mm}
+\begin{enumerate}
+    \item $|a_2| = \sqrt{(-2.93)^2 + 0.31^2} = 2.94$
+    \item $v_2 = \begin{pmatrix} -5.87\\ 0.31 \end{pmatrix}$
+    \item $|v_2| = 5.88$
+    \item $u_2 = \begin{pmatrix} -1.00\\ 0.05 \end{pmatrix}$
+\end{enumerate}
+
+Erweiterte Householder-Matrix $Q_2 = \begin{pmatrix}
+1 & 0 & 0\\
+0 & -0.99 & 0.10\\
+0 & 0.10 & 0.99
+\end{pmatrix}$
+
+Nach Anwendung auf $A^{(1)}$:
+$R = Q_2A^{(1)} = \begin{pmatrix}
+-5.10 & 0.59 & -4.51\\
+0 & 2.94 & -3.86\\
+0 & 0 & -1.33
+\end{pmatrix}$
+
+\paragraph{Endergebnis}
+Die QR-Zerlegung $A = QR$ ist:
+$$Q = H_1^TQ_2^T = \begin{pmatrix}
+-0.20 & 0.72 & -0.67\\
+-0.78 & -0.52 & -0.33\\
+-0.59 & 0.46 & 0.67
+\end{pmatrix}$$
+
+$$R = \begin{pmatrix}
+-5.10 & 0.59 & -4.51\\
+0 & 2.94 & -3.86\\
+0 & 0 & -1.33
+\end{pmatrix}$$
+
+\paragraph{Probe}
+\vspace{-2mm}
+$$QR = \begin{pmatrix}
+1 & -2 & 0\\
+4 & -2 & 6\\
+3 & 1 & 0
+\end{pmatrix} = A$$
+\end{example2}
+
+\begin{examplecode}{QR-Zerlegung Implementation}
+\begin{lstlisting}[language=Python, style=basesmol]
+def householder_vector(x):
+    # Berechne Householder-Vektor fuer Spalte x
+    alpha = np.linalg.norm(x)
+    v = x.copy()
+    v[0] += np.sign(x[0]) * alpha
+    v = v / np.linalg.norm(v)
+    return v
+
+def householder_reflection(A, k):
+    m, n = A.shape
+    v = householder_vector(A[k:, k])
+
+    # Householder-Matrix anwenden
+    H = np.eye(m-k)
+    H -= 2 * np.outer(v, v)
+
+    # Auf Untermatrix anwenden
+    A[k:, k:] = H @ A[k:, k:]
+    return A
+
+def qr_householder(A):
+    m, n = A.shape
+    R = A.copy()
+    Q = np.eye(m)
+
+    for k in range(n):
+        v = householder_vector(R[k:, k])
+        H = np.eye(m)
+        H[k:, k:] -= 2 * np.outer(v, v)
+        R = H @ R
+        Q = Q @ H.T
+    
+    return Q, R
+\end{lstlisting}
+
+\paragraph{Numerische Vorteile}
+\begin{itemize}
+    \item Numerisch stabil
+    \item Keine Wurzeloperationen während der Elimination
+    \item Orthogonalität der Transformation bleibt erhalten
+    \item Gute Eignung für Eigenwertberechnung
+\end{itemize}
+\end{examplecode}
+
+\subsection{Fehleranalyse}
+
+\begin{definition}{Matrix- und Vektornormen}\\
+Eine Vektornorm $\|\cdot\|$ erfüllt für alle $x,y \in \mathbb{R}^n, \lambda \in \mathbb{R}$:
+\begin{itemize}
+    \item $\|x\| \geq 0$ und $\|x\| = 0 \Leftrightarrow x = 0$
+    \item $\|\lambda x\| = |\lambda| \cdot \|x\|$
+    \item $\|x + y\| \leq \|x\| + \|y\|$ (Dreiecksungleichung)
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Wichtige Normen}
+
+\textbf{1-Norm:}
+        $$\|x\|_1 = \sum_{i=1}^n |x_i|,
+        \|A\|_1 = \max_j \sum_{i=1}^n |a_{ij}|$$
+\textbf{2-Norm:}
+        $$\|x\|_2 = \sqrt{\sum_{i=1}^n x_i^2}, 
+        \|A\|_2 = \sqrt{\rho(A^TA)}$$
+$\infty$\textbf{-Norm:}
+        $$\|x\|_\infty = \max_i |x_i|, 
+        \|A\|_\infty = \max_i \sum_{j=1}^n |a_{ij}|$$
+\end{concept}
+
+\begin{theorem}{Fehlerabschätzung für LGS}\\
+Sei $\|\cdot\|$ eine Norm, $A \in \mathbb{R}^{n\times n}$ regulär und $Ax = b$, $A\tilde{x} = \tilde{b}$
+\vspace{1mm}\\
+\begin{minipage}[t]{0.47\textwidth}
+    \textbf{Absoluter Fehler:}\\
+    $$\|x - \tilde{x}\| \leq \|A^{-1}\| \cdot \|b - \tilde{b}\|$$
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}[t]{0.47\textwidth}
+    \textbf{Relativer Fehler:}\\
+    $$\frac{\|x - \tilde{x}\|}{\|x\|} \leq \text{cond}(A) \cdot \frac{\|b - \tilde{b}\|}{\|b\|}$$
+\end{minipage}
+\vspace{1mm}\\
+Mit der Konditionszahl $\text{cond}(A) = \|A\| \cdot \|A^{-1}\|$
+\end{theorem}
+
+\begin{concept}{Konditionierung}\\
+Die Konditionszahl beschreibt die numerische Stabilität eines LGS:
+\begin{itemize}
+    \item $\text{cond}(A) \approx 1$: gut konditioniert
+    \item $\text{cond}(A) \gg 1$: schlecht konditioniert
+    \item $\text{cond}(A) \to \infty$: singulär
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Konditionierung}
+$$A = \begin{pmatrix}
+1 & 1\\
+1 & 1.01
+\end{pmatrix}, \quad b = \begin{pmatrix}
+2\\
+2.01
+\end{pmatrix}$$
+\vspace{2mm}\\
+Konditionszahl:
+$\text{cond}(A) = \|A\| \cdot \|A^{-1}\| \approx 400$
+\vspace{2mm}\\
+\paragraph{Fehlerabschätzung}
+Absoluter Fehler:
+$$\|x - \tilde{x}\| \leq 400 \cdot 0.01 = 4$$
+Relativer Fehler:
+$$\frac{\|x - \tilde{x}\|}{\|x\|} \leq 400 \cdot \frac{0.01}{2} = 2$$
+\end{example2}
+
+\subsection{Iterative Verfahren}
+
+\begin{definition}{Zerlegung der Systemmatrix}\\
+Für iterative Verfahren wird $A$ zerlegt in: $A = L + D + R$
+\begin{itemize}
+    \item $L$: streng untere Dreiecksmatrix
+    \item $D$: Diagonalmatrix
+    \item $R$: streng obere Dreiecksmatrix
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Jacobi-Verfahren}\\
+Gesamtschrittverfahren mit der Iteration:
+$$x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$$
+
+Komponentenweise:
+$$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$$
+\end{concept}
+
+\begin{concept}{Gauss-Seidel-Verfahren}\\
+Einzelschrittverfahren mit der Iteration:
+$$x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$$
+
+Komponentenweise:
+$$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$$
+\end{concept}
+
+\begin{theorem}{Konvergenzkriterien}\\
+Ein iteratives Verfahren konvergiert, wenn:
+\begin{enumerate}
+    \item Die Matrix $A$ diagonaldominant ist:\\
+    $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
+    \item Der Spektralradius der Iterationsmatrix kleiner 1 ist:\\
+    $\rho(B) < 1$ mit $B$ als jeweilige Iterationsmatrix
+\end{enumerate}
+\end{theorem}
+
+\begin{KR}{Implementation iterativer Verfahren}\\
+So implementieren Sie iterative Verfahren:
+\begin{enumerate}
+    \item Wählen Sie Startvektor $x^{(0)}$
+    \item Wählen Sie Abbruchkriterien:
+        \begin{itemize}
+            \item Maximale Iterationszahl $k_{max}$
+            \item Toleranz $\epsilon$ für Änderung $\|x^{(k+1)} - x^{(k)}\|$
+            \item Toleranz für Residuum $\|Ax^{(k)} - b\|$
+        \end{itemize}
+    \item Führen Sie Iteration durch bis Kriterien erfüllt
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Iterative Verfahren}{Vergleich Jacobi und Gauss-Seidel}
+System:
+$$\begin{pmatrix}
+4 & -1 & 0\\
+-1 & 4 & -1\\
+0 & -1 & 4
+\end{pmatrix}x = \begin{pmatrix}
+1\\
+5\\
+0
+\end{pmatrix}$$
+
+\begin{center}
+\begin{tabular}{c|cc|cc}
+k & \multicolumn{2}{c|}{Jacobi} & \multicolumn{2}{c}{Gauss-Seidel}\\
+\hline
+0 & $(0,0,0)^T$ & & $(0,0,0)^T$ &\\
+1 & $(0.25,1.25,0)^T$ & 1.25 & $(0.25,1.31,0.08)^T$ & 1.31\\
+2 & $(0.31,1.31,0.31)^T$ & 0.31 & $(0.33,1.33,0.33)^T$ & 0.02\\
+3 & $(0.33,1.33,0.33)^T$ & 0.02 & $(0.33,1.33,0.33)^T$ & 0.00
+\end{tabular}
+\end{center}
+\end{example2}
+
