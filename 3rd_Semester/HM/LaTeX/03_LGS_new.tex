@@ -320,93 +320,112 @@ mit $u \in \mathbb{R}^n$, $\|u\| = 1$. Es gilt:
             \item $u_i := w_i/\|w_i\|$
             \item $H_i := I_{n-i+1} - 2u_iu_i^T$
             \item Erweitere $H_i$ zu $Q_i$ durch $I_{i-1}$ links oben
-            \item $R := Q_iR$
-            \item $Q := QQ_i^T$
+            \item $R := Q_iR$ und $Q := QQ_i^T$
         \end{itemize}
 \end{enumerate}
 \end{KR}
 
-\begin{example2}[breakable]{QR-Zerlegung}
+\begin{example2}[breakable]{QR-Zerlegung mit Householder}
 $A = \begin{pmatrix}
-1 & -2 & 0\\
-4 & -2 & 6\\
-3 & 1 & 0
+2 & 5 & -1\\
+-1 & -4 & 2\\
+0 & 2 & 1
 \end{pmatrix}$
 
 \paragraph{Schritt 1: Erste Spalte}
 Erste Spalte $a_1$ und Einheitsvektor $e_1$:
-$a_1 = \begin{psmallmatrix} 1\\ 4\\ 3 \end{psmallmatrix}, \quad e_1 = \begin{psmallmatrix} 1\\ 0\\ 0 \end{psmallmatrix}$
+$a_1 = \begin{psmallmatrix} 2\\ -1\\ 0 \end{psmallmatrix}, \quad e_1 = \begin{psmallmatrix} 1\\ 0\\ 0 \end{psmallmatrix}$
 
-\textbf{Householder-Vektor berechnen:}
-\vspace{1mm}
+Householder-Vektor für erste Spalte:
 \begin{enumerate}
-    \item $|a_1| = \sqrt{1^2 + 4^2 + 3^2} = \sqrt{26} \approx 5.10$
-    \item $v_1 = a_1 + \sqrt{26}e_1 = \begin{psmallmatrix} 6.10\\ 4\\ 3 \end{psmallmatrix}$,
-    $|v_1| = \sqrt{6.10^2 + 4^2 + 3^2} = 7.89$
-    \item $u_1 = \frac{v_1}{|v_1|} = \begin{psmallmatrix} 0.77\\ 0.51\\ 0.38 \end{psmallmatrix}$
+    \item Berechne Norm: $|a_1| = \sqrt{2^2 + (-1)^2 + 0^2} = \sqrt{5}$
+    \vspace{1mm}
+    \item Bestimme Vorzeichen: $\text{sign}(a_{11}) = \text{sign}(2) = 1$
+         \begin{itemize}
+              \item Wähle positives Vorzeichen, da erstes Element positiv
+              \item Dies maximiert die erste Komponente von $v_1$
+              \item Verhindert Auslöschung bei der Subtraktion
+         \end{itemize}
+         \vspace{1mm}
+    \item $v_1 = a_1 + \text{sign}(a_{11})|a_1|e_1 = \begin{psmallmatrix} 2\\ -1\\ 0 \end{psmallmatrix} + \sqrt{5}\begin{psmallmatrix} 1\\ 0\\ 0 \end{psmallmatrix} = \begin{psmallmatrix} 2 + \sqrt{5}\\ -1\\ 0 \end{psmallmatrix}$
+    \vspace{1mm}
+    \item Normiere $v_1$: $|v_1| = \sqrt{(2 + \sqrt{5})^2 + 1} \Rightarrow
+            u_1 = \frac{v_1}{|v_1|} = \begin{psmallmatrix} 0.91\\ -0.41\\ 0 \end{psmallmatrix}$
 \end{enumerate}
-
-Householder-Matrix $H_1 = I - 2u_1u_1^T = \begin{pmatrix}
--0.20 & -0.78 & -0.59\\
--0.78 & 0.49 & -0.39\\
--0.59 & -0.39 & 0.71
-\end{pmatrix}$
-
-Nach Anwendung auf $A$:
-\vspace{-3mm}
-$$A^{(1)} = H_1A = \begin{pmatrix}
--5.10 & 0.59 & -4.51\\
-0 & -2.93 & 3.70\\
-0 & 0.31 & -1.73
-\end{pmatrix}$$
+\vspace{1mm}
+Householder-Matrix berechnen:
+$H_1 = I - 2u_1u_1^T = \begin{psmallmatrix} 
+-0.67 & -0.75 & 0\\
+-0.75 & 0.67 & 0\\
+0 & 0 & 1
+\end{psmallmatrix}$
+\vspace{1mm}\\
+A nach erster Transformation:
+$A^{(1)} = H_1A = \begin{psmallmatrix}
+-\sqrt{5} & -6.71 & 0.45\\
+0 & -0.89 & 1.79\\
+0 & 2.00 & 1.00
+\end{psmallmatrix}$
 
 \paragraph{Schritt 2: Zweite Spalte}
-Untermatrix $A_2$ (ohne erste Zeile/Spalte):
-$A_2 = \begin{pmatrix} -2.93 & 3.70\\ 0.31 & -1.73 \end{pmatrix}$
+Untermatrix für zweite Transformation:
+$A_2 = \begin{pmatrix} -0.89 & 1.79\\ 2.00 & 1.00 \end{pmatrix}$
 
-\textbf{Householder-Vektor berechnen:}
+Householder-Vektor für zweite Spalte:
 \vspace{1mm}
 \begin{enumerate}
-    \item $|a_2| = \sqrt{(-2.93)^2 + 0.31^2} = 2.94$
-    \item $v_2 = \begin{pmatrix} -5.87\\ 0.31 \end{pmatrix}$
-    \item $|v_2| = 5.88$
-    \item $u_2 = \begin{pmatrix} -1.00\\ 0.05 \end{pmatrix}$
+    \item $|a_2| = \sqrt{(-0.89)^2 + 2^2} = 2.19$
+    \vspace{1mm}
+    \item $\text{sign}(a_{22}) = \text{sign}(-0.89) = -1$ (da erstes Element negativ)
+    \vspace{1mm}
+    \item $v_2 = \begin{psmallmatrix} -0.89\\ 2.00 \end{psmallmatrix} - 2.19\begin{psmallmatrix} 1\\ 0 \end{psmallmatrix} = \begin{psmallmatrix} -3.09\\ 2.00 \end{psmallmatrix}$
+    \vspace{1mm}
+    \item $u_2 = \frac{v_2}{|v_2|} = \begin{psmallmatrix} -0.84\\ 0.54 \end{psmallmatrix}$
 \end{enumerate}
-
-Erweiterte Householder-Matrix $Q_2 = \begin{pmatrix}
+\vspace{1mm}
+Erweiterte Householder-Matrix:
+$Q_2 = \begin{psmallmatrix}
 1 & 0 & 0\\
-0 & -0.99 & 0.10\\
-0 & 0.10 & 0.99
-\end{pmatrix}$
+0 & -0.41 & -0.91\\
+0 & -0.91 & 0.41
+\end{psmallmatrix}$
 
-Nach Anwendung auf $A^{(1)}$:
-$R = Q_2A^{(1)} = \begin{pmatrix}
--5.10 & 0.59 & -4.51\\
-0 & 2.94 & -3.86\\
-0 & 0 & -1.33
-\end{pmatrix}$
+nach 2. Transformation:
+$R = Q_2A^{(1)} = \begin{psmallmatrix}
+-\sqrt{5} & -6.71 & 0.45\\
+0 & -2.19 & 1.34\\
+0 & 0 & -1.79
+\end{psmallmatrix}$
 
 \paragraph{Endergebnis}
 Die QR-Zerlegung $A = QR$ ist:
-$$Q = H_1^TQ_2^T = \begin{pmatrix}
--0.20 & 0.72 & -0.67\\
--0.78 & -0.52 & -0.33\\
--0.59 & 0.46 & 0.67
-\end{pmatrix}$$
-
-$$R = \begin{pmatrix}
--5.10 & 0.59 & -4.51\\
-0 & 2.94 & -3.86\\
-0 & 0 & -1.33
-\end{pmatrix}$$
+\vspace{2mm}\\
+\resizebox{\columnwidth}{!}{
+$Q = H_1^TQ_2^T = \begin{pmatrix}
+-0.89 & -0.45 & 0\\
+0.45 & -0.89 & 0\\
+0 & 0 & 1
+\end{pmatrix},
+R = \begin{pmatrix}
+-\sqrt{5} & -6.71 & 0.45\\
+0 & -2.19 & 1.34\\
+0 & 0 & -1.79
+\end{pmatrix}$}
 
 \paragraph{Probe}
-\vspace{-2mm}
-$$QR = \begin{pmatrix}
-1 & -2 & 0\\
-4 & -2 & 6\\
-3 & 1 & 0
-\end{pmatrix} = A$$
+\begin{enumerate}
+    \item $QR = A$ (bis auf Rundungsfehler)
+    \item $Q^TQ = QQ^T = I$ (Orthogonalität)
+    \item $R$ ist obere Dreiecksmatrix
+\end{enumerate}
+
+\paragraph{Wichtige Beobachtungen}
+\begin{itemize}
+    \item Die Wahl des Vorzeichens bei der Berechnung von $v_k$ ist entscheidend für die numerische Stabilität
+    \item Ein falsches Vorzeichen kann zu Auslöschung führen
+    \item Der Betrag der Diagonalelemente in $R$ entspricht der Norm der transformierten Spalten
+    \item $Q$ ist orthogonal: Spaltenvektoren sind orthonormal
+\end{itemize}
 \end{example2}
 
 \begin{examplecode}{QR-Zerlegung Implementation}
@@ -435,14 +454,14 @@ def qr_householder(A):
     m, n = A.shape
     R = A.copy()
     Q = np.eye(m)
-
+    
     for k in range(n):
         v = householder_vector(R[k:, k])
         H = np.eye(m)
         H[k:, k:] -= 2 * np.outer(v, v)
         R = H @ R
         Q = Q @ H.T
-    
+
     return Q, R
 \end{lstlisting}
 

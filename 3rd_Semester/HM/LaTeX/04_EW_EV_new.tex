@@ -82,25 +82,13 @@ $x = r\cos\varphi, \quad y = r\sin\varphi, \quad r = \sqrt{x^2 + y^2}\\
 
 \end{KR}
 
-\begin{example2}{Darstellungsformen}{Umrechnung verschiedener Darstellungen}
-Gegeben: $z = 3 - 11i$
-\begin{enumerate}
-    \item Berechnung von $r$: $r = \sqrt{3^2 + 11^2} = \sqrt{130}$
-    \item Berechnung von $\varphi$: $\varphi = \arcsin\left(\frac{11}{\sqrt{130}}\right) = 1.3$
-    \item Trigonometrische Form: $z = \sqrt{130}(\cos(1.3) + i\sin(1.3))$
-    \item Exponentialform: $z = \sqrt{130}e^{i\cdot 1.3}$
-\end{enumerate}
+\begin{example2}{Darstellungsformen}
+Gegeben: $z = 3 - 11i$ in Normalform
+$$r = \sqrt{3^2 + 11^2} = \sqrt{130}, \quad \varphi = \arcsin\left(\frac{11}{\sqrt{130}}\right) = 1.3 \text{rad} = 74.74^{\circ}$$
+\textbf{Trigonometrische Form:} $z = \sqrt{130}(\cos(1.3) + i\sin(1.3))$
+\vspace{2mm}\\
+\textbf{Exponentialform:} $z = \sqrt{130}e^{i\cdot 1.3}$
 \end{example2}
-
-\begin{example}{Umrechnungen}
-Gegeben: $z = 3 - 4i$ in Normalform
-\begin{enumerate}
-   \item $r = \sqrt{3^2 + (-4)^2} = 5$
-   \item $\varphi = \arctan(\frac{-4}{3}) + \pi = -0.927$ rad $= -53.13^{\circ} $
-   \item Trigonometrische Form: $z = 5(\cos(-0.927) + i\sin(-0.927))$
-   \item Exponentialform: $z = 5e^{-0.927i}$
-\end{enumerate}
-\end{example}
 
 \begin{theorem}{Rechenoperationen mit komplexen Zahlen}\\
 Für $z_1 = x_1 + iy_1$ und $z_2 = x_2 + iy_2$ gilt:
@@ -193,19 +181,18 @@ Die geometrische Vielfachheit ist stets kleiner oder gleich der algebraischen Vi
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{Eigenwertberechnung}{Matrix mit drei Eigenwerten}
-Gegeben sei: $A = \begin{pmatrix} 1 & 0 & 0\\ 2 & 3 & 0\\ 0 & 1 & 2\end{pmatrix}$
-
+\begin{example2}{Eigenwertberechnung}
+$$A = \begin{pmatrix} 1 & 0 & 0\\ 2 & 3 & 0\\ 0 & 1 & 2\end{pmatrix}$$
 \begin{enumerate}
-    \item Da $A$ eine Dreiecksmatrix ist, sind die Diagonalelemente die Eigenwerte:\\
-    $\lambda_1 = 1, \lambda_2 = 3, \lambda_3 = 2$
+    \item Da $A$ eine Dreiecksmatrix ist, sind die Diagonalelemente die Eigenwerte:
+    $$\lambda_1 = 1, \lambda_2 = 3, \lambda_3 = 2$$
     \item $\det(A) = \lambda_1\cdot\lambda_2\cdot\lambda_3 = 6$
     \item $\operatorname{tr}(A) = \lambda_1 + \lambda_2 + \lambda_3 = 6$
     \item Spektrum: $\sigma(A) = \{1,2,3\}$
 \end{enumerate}
 \end{example2}
 
-\subsection{Numerische Berechnung von Eigenwerten}
+\subsubsection{Numerische Berechnung von Eigenwerten}
 
 \begin{concept}{Ähnliche Matrizen}\\
 Zwei Matrizen $A,B \in \mathbb{R}^{n\times n}$ heißen ähnlich, wenn es eine reguläre Matrix $T$ gibt mit:
@@ -228,20 +215,18 @@ Für ähnliche Matrizen $A$ und $B = T^{-1}AT$ gilt:
 \end{enumerate}
 \end{theorem}
 
-\begin{definition}{Spektralradius}\\
+\begin{definition}{Spektralradius}
 Der Spektralradius einer Matrix $A$ ist definiert als:
 $$\rho(A) = \max\{|\lambda| \mid \lambda \text{ ist Eigenwert von } A\}$$
 Er gibt den Betrag des betragsmäßig größten Eigenwerts an.
 \end{definition}
 
-\subsection{Iterative Verfahren}
+\subsubsection{Iterative Verfahren}
 
 \begin{concept}{Von-Mises-Iteration (Vektoriteration)}\\
 Für eine diagonalisierbare Matrix $A$ mit Eigenwerten $|\lambda_1| > |\lambda_2| \geq \cdots \geq |\lambda_n|$ konvergiert die Folge:
-\begin{align*}
-    v^{(k+1)} &= \frac{Av^{(k)}}{\|Av^{(k)}\|_2}\\
-    \lambda^{(k+1)} &= \frac{(v^{(k)})^TAv^{(k)}}{(v^{(k)})^Tv^{(k)}}
-\end{align*}
+$$v^{(k+1)} = \frac{Av^{(k)}}{\|Av^{(k)}\|_2}, \quad
+\lambda^{(k+1)} = \frac{(v^{(k)})^TAv^{(k)}}{(v^{(k)})^Tv^{(k)}}$$
 gegen einen Eigenvektor $v$ zum betragsmäßig größten Eigenwert $\lambda_1$.
 \end{concept}
 
@@ -261,24 +246,18 @@ gegen einen Eigenvektor $v$ zum betragsmäßig größten Eigenwert $\lambda_1$.
 \begin{example2}{Von-Mises-Iteration}{Berechnung des größten Eigenwerts}
 \begin{lstlisting}[language=Python, style=basesmol]
 import numpy as np
-
 def power_iteration(A, tol=1e-10, max_iter=100):
     n = A.shape[0]
     v = np.random.rand(n)
     v = v / np.linalg.norm(v)
-    
     for i in range(max_iter):
         w = A @ v
         v_new = w / np.linalg.norm(w)
-        
         # Rayleigh-Quotient
         lambda_k = v_new.T @ A @ v_new
-        
         if np.linalg.norm(v_new - v) < tol:
             return lambda_k, v_new
-            
         v = v_new
-        
     return lambda_k, v_new
 \end{lstlisting}
 \end{example2}
