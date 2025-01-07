@@ -1,0 +1,476 @@
+\section{Browser-Technologien}
+
+\subsection{Vordefinierte Browser-Objekte}
+
+\begin{definition}{Browser-Objekte}
+    Im Browser stehen spezielle globale Objekte zur Verfügung:
+    \begin{itemize}
+        \item \texttt{window}: Browserfenster und globaler Scope
+            \begin{itemize}
+                \item \texttt{window.innerHeight}: Viewport Höhe
+                \item \texttt{window.pageYOffset}: Scroll Position
+                \item \texttt{window.location}: URL Manipulation
+            \end{itemize}
+        \item \texttt{document}: Das aktuelle HTML-Dokument
+        \item \texttt{navigator}: Browser-Informationen
+        \item \texttt{history}: Browser-Verlauf
+    \end{itemize}
+\end{definition}
+
+\subsection{Document Object Model (DOM)}
+
+\begin{concept}{DOM Struktur}
+    Das DOM ist eine Baumstruktur des HTML-Dokuments:
+    \begin{itemize}
+        \item Jeder HTML-Tag wird zu einem Element-Knoten
+        \item Text innerhalb von Tags wird zu Text-Knoten
+        \item Attribute werden zu Attribut-Knoten
+        \item NodeType Konstanten:
+            \begin{itemize}
+                \item 1: Element Node (ELEMENT_NODE)
+                \item 3: Text Node (TEXT_NODE)
+                \item 8: Comment Node (COMMENT_NODE)
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{DOM Navigation}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Element finden
+const elem = document.getElementById('myId');
+const elements = document.querySelectorAll('.myClass');
+const firstMatch = document.querySelector('div.myClass');
+
+// Navigation im DOM-Baum
+elem.parentNode          // Elternknoten
+elem.childNodes         // Alle Kindknoten
+elem.children           // Nur Element-Kindknoten
+elem.firstChild         // Erster Kindknoten
+elem.lastChild          // Letzter Kindknoten
+elem.nextSibling        // Naechster Geschwisterknoten
+elem.previousSibling    // Vorheriger Geschwisterknoten
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{DOM Manipulation}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Element erstellen
+const newDiv = document.createElement('div');
+const textNode = document.createTextNode('Hello');
+newDiv.appendChild(textNode);
+
+// Element einfuegen
+parentElem.appendChild(newDiv);
+parentElem.insertBefore(newDiv, referenceElem);
+
+// Element entfernen
+elem.remove();
+parentElem.removeChild(elem);
+
+// Attribute manipulieren
+elem.setAttribute('class', 'myClass');
+elem.getAttribute('class');
+elem.classList.add('newClass');
+elem.classList.remove('oldClass');
+
+// HTML/Text Inhalt
+elem.innerHTML = '<span>Text</span>';
+elem.textContent = 'Nur Text';
+\end{lstlisting}
+\end{KR}
+
+\subsection{Events}
+
+\begin{concept}{Event Handling}
+    Events sind Ereignisse, die im Browser auftreten:
+    \begin{itemize}
+        \item User Events: Klicks, Tastatureingaben
+        \item Form Events: submit, change, input
+        \item Document Events: DOMContentLoaded, load
+        \item Window Events: resize, scroll
+        \item Custom Events
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Event Listener}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Event Listener hinzufuegen
+element.addEventListener('click', (event) => {
+    console.log('Clicked!', event);
+    
+    // Event Informationen
+    event.type           // Art des Events
+    event.target         // Ausloesende Element
+    event.currentTarget  // Element mit Listener
+    
+    // Event Steuerung
+    event.preventDefault();  // Default verhindern
+    event.stopPropagation(); // Bubbling stoppen
+});
+
+// Event Listener entfernen
+element.removeEventListener('click', handler);
+\end{lstlisting}
+\end{KR}
+
+\begin{formula}{Event Typen}
+    Wichtige Event-Kategorien:
+    \begin{itemize}
+        \item \textbf{Maus:} click, dblclick, mousedown, mouseup, mousemove, mouseover
+        \item \textbf{Tastatur:} keydown, keyup, keypress
+        \item \textbf{Formular:} submit, change, input, focus, blur
+        \item \textbf{Dokument:} DOMContentLoaded, load, unload
+        \item \textbf{Fenster:} resize, scroll, popstate
+        \item \textbf{Drag \& Drop:} dragstart, drag, dragend, drop
+    \end{itemize}
+\end{formula}
+
+\subsection{Formulare}
+
+\begin{definition}{HTML-Formulare}
+    Formulare ermöglichen Benutzereingaben und Datenübertragung:
+    \begin{itemize}
+        \item form-Element mit action und method Attributen
+        \item GET: Daten in URL (sichtbar)
+        \item POST: Daten im Request-Body (unsichtbar)
+        \item Verschiedene Input-Typen
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Formular Handling}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Formular erstellen
+<form action="/submit" method="POST">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username">
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password">
+    
+    <button type="submit">Login</button>
+</form>
+
+// JavaScript Handler
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    
+    const formData = new FormData(form);
+    const username = formData.get('username');
+    
+    // Mit Fetch API senden
+    fetch('/submit', {
+        method: 'POST',
+        body: formData
+    });
+});
+\end{lstlisting}
+\end{KR}
+
+\subsection{Web Storage}
+
+\begin{concept}{Storage APIs}
+    Browser bieten verschiedene Speichermöglichkeiten:
+    \begin{itemize}
+        \item localStorage: Permanente Speicherung
+        \item sessionStorage: Temporär für aktuelle Session
+        \item cookies: Kleine Datenpakete, auch für Server
+        \item indexedDB: NoSQL-Datenbank im Browser
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Local Storage}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Daten speichern
+localStorage.setItem('key', 'value');
+localStorage.setItem('user', JSON.stringify({
+    name: 'John',
+    age: 30
+}));
+
+// Daten abrufen
+const value = localStorage.getItem('key');
+const user = JSON.parse(localStorage.getItem('user'));
+
+// Daten loeschen
+localStorage.removeItem('key');
+localStorage.clear();  // Alles loeschen
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Cookies}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Cookie setzen
+document.cookie = "username=John; expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
+
+// Cookies lesen
+const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [name, value] = cookie.trim().split('=');
+    acc[name] = value;
+    return acc;
+}, {});
+
+// Cookie loeschen
+document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+\end{lstlisting}
+\end{KR}
+
+\subsection{Canvas und SVG}
+
+\begin{concept}{Grafik im Browser}
+    Zwei Haupttechnologien für Grafiken:
+    \begin{itemize}
+        \item Canvas: Pixel-basierte Grafik
+            \begin{itemize}
+                \item Gut für komplexe Animationen
+                \item Direkte Pixel-Manipulation
+                \item Keine DOM-Struktur
+            \end{itemize}
+        \item SVG: Vektor-basierte Grafik
+            \begin{itemize}
+                \item Skalierbar ohne Qualitätsverlust
+                \item Teil des DOM
+                \item Event-Handler möglich
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Canvas API}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+
+// Formen zeichnen
+ctx.fillStyle = 'red';
+ctx.fillRect(10, 10, 100, 50);
+
+// Pfade
+ctx.beginPath();
+ctx.moveTo(10, 10);
+ctx.lineTo(50, 50);
+ctx.stroke();
+
+// Text
+ctx.font = '20px Arial';
+ctx.fillText('Hello', 10, 50);
+
+// Transformationen
+ctx.save();
+ctx.translate(100, 100);
+ctx.rotate(Math.PI / 4);
+ctx.scale(2, 2);
+ctx.restore();
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{SVG Manipulation}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// SVG erstellen
+<svg width="200" height="200">
+    <circle cx="100" cy="100" r="50" fill="red"/>
+    <rect x="20" y="20" width="50" height="50" fill="blue"/>
+</svg>
+
+// SVG mit JavaScript
+const circle = document.querySelector('circle');
+circle.setAttribute('fill', 'green');
+circle.setAttribute('r', '60');
+
+// Event Handler
+circle.addEventListener('click', () => {
+    circle.setAttribute('fill', 'yellow');
+});
+\end{lstlisting}
+\end{KR}
+
+\subsection{Client-Server Kommunikation}
+
+\begin{concept}{XMLHttpRequest und Fetch}
+    Moderne Ansätze für HTTP-Requests:
+    \begin{itemize}
+        \item XMLHttpRequest: Älterer Ansatz, komplexer
+        \item Fetch API: Moderner Ansatz, Promise-basiert
+        \item Unterstützung für verschiedene Datenformate
+        \item CORS (Cross-Origin Resource Sharing)
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Fetch API Grundlagen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// GET Request
+fetch('https://api.example.com/data')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => console.log(data))
+    .catch(error => console.error('Error:', error));
+
+// POST Request
+fetch('https://api.example.com/data', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        key: 'value'
+    })
+})
+    .then(response => response.json())
+    .then(data => console.log(data));
+
+// Mit async/await
+async function fetchData() {
+    try {
+        const response = await fetch('https://api.example.com/data');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{theorem}{HTTP Status Codes}
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \hline
+    Code & Bedeutung \\
+    \hline
+    200 & OK - Erfolgreich \\
+    \hline
+    201 & Created - Ressource erstellt \\
+    \hline
+    400 & Bad Request - Fehlerhafte Anfrage \\
+    \hline
+    401 & Unauthorized - Nicht authentifiziert \\
+    \hline
+    403 & Forbidden - Keine Berechtigung \\
+    \hline
+    404 & Not Found - Ressource nicht gefunden \\
+    \hline
+    500 & Internal Server Error - Serverfehler \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{theorem}
+
+\begin{KR}{REST API Implementierung}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// GET - Daten abrufen
+fetch('/api/users')
+    .then(response => response.json())
+    .then(users => console.log(users));
+
+// POST - Neue Ressource erstellen
+fetch('/api/users', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        name: 'John',
+        email: 'john@example.com'
+    })
+});
+
+// PUT - Ressource aktualisieren
+fetch('/api/users/123', {
+    method: 'PUT',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        name: 'John Updated'
+    })
+});
+
+// DELETE - Ressource löschen
+fetch('/api/users/123', {
+    method: 'DELETE'
+});
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{CORS (Cross-Origin Resource Sharing)}
+    Sicherheitsmechanismus für domainübergreifende Requests:
+    \begin{itemize}
+        \item Verhindert unauthorized Zugriffe
+        \item Server muss CORS-Header setzen
+        \item Preflight Requests für bestimmte Anfragen
+        \item Wichtige Header:
+            \begin{itemize}
+                \item Access-Control-Allow-Origin
+                \item Access-Control-Allow-Methods
+                \item Access-Control-Allow-Headers
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Sessions und Authentication}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Login Request
+async function login(username, password) {
+    const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',  // Für Cookies
+        body: JSON.stringify({
+            username,
+            password
+        })
+    });
+    
+    if (response.ok) {
+        const user = await response.json();
+        // Session Token in localStorage speichern
+        localStorage.setItem('token', user.token);
+    }
+}
+
+// Authenticated Request
+async function getProtectedData() {
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/protected', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return response.json();
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{WebSocket}
+    Bidirektionale Echtzeit-Kommunikation:
+    \begin{itemize}
+        \item Permanente Verbindung
+        \item Geringer Overhead
+        \item Ideal für Chat, Live-Updates
+        \item Events: open, message, close, error
+    \end{itemize}
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const ws = new WebSocket('ws://localhost:8080');
+
+ws.addEventListener('open', () => {
+    console.log('Connected to WebSocket');
+    ws.send('Hello Server!');
+});
+
+ws.addEventListener('message', event => {
+    console.log('Received:', event.data);
+});
+
+ws.addEventListener('close', () => {
+    console.log('Disconnected from WebSocket');
+});
+\end{lstlisting}
+\end{concept}

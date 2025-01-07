@@ -1,0 +1,327 @@
+\section{UI-Bibliotheken und Komponenten}
+
+\subsection{Frameworks und Bibliotheken}
+
+\begin{definition}{Framework vs. Bibliothek}
+    \begin{itemize}
+        \item \textbf{Bibliothek}: 
+            \begin{itemize}
+                \item Kontrolle beim eigenen Programm
+                \item Funktionen werden nach Bedarf verwendet
+                \item Beispiel: jQuery
+            \end{itemize}
+        \item \textbf{Framework}: 
+            \begin{itemize}
+                \item Rahmen für die Anwendung
+                \item Kontrolle liegt beim Framework
+                \item "Hollywood-Prinzip": don't call us, we'll call you
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Komponentenbasierte Entwicklung}
+    Grundprinzipien:
+    \begin{itemize}
+        \item UI in wiederverwendbare Komponenten aufteilen
+        \item Klarer Datenfluss (Props down, Events up)
+        \item Deklarativer Ansatz
+        \item Komponenten können verschachtelt werden
+        \item Zustandsverwaltung in Komponenten
+        \item Container vs. Präsentations-Komponenten
+    \end{itemize}
+\end{concept}
+
+\subsection{JSX und SJDON}
+
+\begin{definition}{JSX}
+    \begin{itemize}
+        \item XML-Syntax in JavaScript
+        \item Muss zu JavaScript transpiliert werden
+        \item HTML-Tags in Kleinbuchstaben
+        \item Eigene Komponenten mit Großbuchstaben
+        \item JavaScript-Ausdrücke in \{...\}
+    \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// JSX Komponente
+const Welcome = ({name}) => (
+    <div className="welcome">
+        <h1>Hello, {name}</h1>
+        <p>Welcome to our site!</p>
+    </div>
+);
+
+// Verwendung
+const element = <Welcome name="Alice" />;
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{SJDON}
+    Simple JavaScript DOM Notation:
+    \begin{itemize}
+        \item Alternative zu JSX
+        \item Verwendet pure JavaScript Arrays und Objekte
+        \item Kein Kompilierungsschritt nötig
+        \item Array-basierte Notation
+    \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// SJDON Komponente
+const Welcome = ({name}) => [
+    "div", {className: "welcome"},
+    ["h1", `Hello, ${name}`],
+    ["p", "Welcome to our site!"]
+];
+
+// Verwendung
+const element = [Welcome, {name: "Alice"}];
+\end{lstlisting}
+\end{definition}
+
+\begin{KR}{Vergleich JSX und SJDON}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// JSX
+const element = (
+    <div style={{background: 'salmon'}}>
+        <h1>Hello World</h1>
+        <h2 style={{textAlign: 'right'}}>
+            from Web Framework
+        </h2>
+    </div>
+);
+
+// SJDON
+const element = [
+    "div", {style: "background:salmon"},
+    ["h1", "Hello World"],
+    ["h2", {style: "text-align:right"}, 
+        "from Web Framework"]
+];
+\end{lstlisting}
+\end{KR}
+
+\subsection{SuiWeb Framework}
+
+\begin{concept}{SuiWeb Grundkonzepte}
+    Simple User Interface Toolkit for Web Exercises:
+    \begin{itemize}
+        \item Komponentenbasiert wie React
+        \item Unterstützt JSX und SJDON
+        \item Datengesteuert mit Props und State
+        \item Vereinfachte Implementation für Lernzwecke
+        \item Props sind read-only
+        \item State für veränderliche Daten
+    \end{itemize}
+\end{concept}
+
+\subsection{State Management}
+
+\begin{concept}{State Hook}
+    \begin{itemize}
+        \item Zustandsverwaltung in Funktionskomponenten
+        \item Initialisierung mit useState Hook
+        \item State Updates lösen Re-Rendering aus
+        \item Asynchrone Updates werden gequeued
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{State Verwaltung}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const Counter = () => {
+    // State initialisieren
+    const [count, setCount] = useState(0);
+    
+    // Event Handler
+    const increment = () => setCount(count + 1);
+    const decrement = () => setCount(count - 1);
+    
+    return [
+        "div",
+        ["button", {onclick: decrement}, "-"],
+        ["span", count],
+        ["button", {onclick: increment}, "+"]
+    ];
+};
+
+// Komplexere State Objekte
+const Form = () => {
+    const [state, setState] = useState({
+        username: '',
+        email: '',
+        isValid: false
+    });
+    
+    const updateField = (field, value) => {
+        setState({
+            ...state,
+            [field]: value
+        });
+    };
+};
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Kontrollierte Eingabefelder}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const InputForm = () => {
+    const [text, setText] = useState("");
+    
+    return [
+        "form",
+        ["input", {
+            type: "text",
+            value: text,
+            oninput: e => setText(e.target.value)
+        }],
+        ["p", "Eingabe: ", text]
+    ];
+};
+\end{lstlisting}
+\end{KR}
+
+\subsection{Komponenten-Design}
+
+\begin{concept}{Container Components}
+    \begin{itemize}
+        \item Trennung von Daten und Darstellung
+        \item Container kümmern sich um:
+            \begin{itemize}
+                \item Datenbeschaffung
+                \item Zustandsverwaltung
+                \item Event Handling
+            \end{itemize}
+        \item Präsentationskomponenten sind zustandslos
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Container Komponente}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const TodoContainer = () => {
+    const [todos, setTodos] = useState([]);
+    
+    // Daten laden
+    if (todos.length === 0) {
+        fetchTodos().then(data => setTodos(data));
+    }
+    
+    // Event Handler
+    const addTodo = (text) => {
+        setTodos([...todos, {
+            id: Date.now(),
+            text,
+            completed: false
+        }]);
+    };
+    
+    const toggleTodo = (id) => {
+        setTodos(todos.map(todo =>
+            todo.id === id
+                ? {...todo, completed: !todo.completed}
+                : todo
+        ));
+    };
+    
+    // Render Präsentationskomponente
+    return [TodoList, {
+        todos,
+        onToggle: toggleTodo,
+        onAdd: addTodo
+    }];
+};
+
+// Präsentationskomponente
+const TodoList = ({todos, onToggle, onAdd}) => [
+    "div",
+    [TodoForm, {onAdd}],
+    ["ul",
+        ...todos.map(todo => [
+            TodoItem, {
+                key: todo.id,
+                todo,
+                onToggle
+            }
+        ])
+    ]
+];
+\end{lstlisting}
+\end{KR}
+
+\begin{formula}{Component Design Principles}
+    \begin{itemize}
+        \item Single Responsibility Principle
+        \item DRY (Don't Repeat Yourself)
+        \item KISS (Keep It Simple, Stupid)
+        \item Lifting State Up
+        \item Props down, Events up
+        \item Komposition über Vererbung
+    \end{itemize}
+\end{formula}
+
+\subsection{Styling in SuiWeb}
+
+\begin{KR}{Style Optionen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// String Style
+["div", {style: "color: blue; font-size: 16px"}]
+
+// Style Objekt
+const styles = {
+    container: {
+        backgroundColor: "lightgray",
+        padding: "10px"
+    },
+    text: {
+        color: "darkblue",
+        fontSize: "14px"
+    }
+};
+
+// Kombinierte Styles
+["div", {
+    style: [
+        styles.container,
+        {borderRadius: "5px"}
+    ]
+}]
+\end{lstlisting}
+\end{KR}
+
+\begin{formula}{Styling Best Practices}
+    \begin{itemize}
+        \item Konsistente Styling-Methode verwenden
+        \item Styles in separaten Objekten/Modulen
+        \item Wiederverwendbare Style-Definitionen
+        \item Responsive Design beachten
+        \item CSS-Klassen für komplexe Styles
+    \end{itemize}
+\end{formula}
+
+\subsection{Performance Optimierung}
+
+\begin{concept}{Rendering Optimierung}
+    \begin{itemize}
+        \item Virtuelles DOM für effizientes Re-Rendering
+        \item Batching von State Updates
+        \item Memoization von Komponenten
+        \item Lazy Loading
+        \item Key Prop für Listen-Elemente
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Performance Best Practices}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Effiziente Listen-Rendering
+const List = ({items}) => [
+    "ul",
+    ...items.map(item => [
+        "li",
+        {key: item.id},  // Wichtig für Performance
+        item.text
+    ])
+];
+
+// Lazy Loading
+const LazyComponent = async () => {
+    const module = await import('./Component.js');
+    return module.default;
+};
+\end{lstlisting}
+\end{KR}
