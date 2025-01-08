@@ -59,7 +59,7 @@ typeof 'number'    // 'string'
 \end{lstlisting}
 \end{KR}
 
-\begin{theorem}{Variablenbindung}
+\begin{theorem}{Variablenbindung}\\
     JavaScript kennt drei Arten der Variablendeklaration:
     \begin{itemize}
         \item \texttt{var}
@@ -83,22 +83,43 @@ typeof 'number'    // 'string'
     \end{itemize}
 \end{theorem}
 
-\begin{formula}{Operatoren und Vergleiche}
+\begin{corollary}{Operatoren}
     \begin{itemize}
         \item Arithmetische Operatoren: $+, -, *, /, \%, ++, --$
-        \item Zuweisungsoperatoren: $=, +=, -=, *=, /=, \%=$
-        \item Vergleichsoperatoren: 
-            \begin{itemize}
-                \item \texttt{==}, \texttt{!=}: Mit Typumwandlung
-                \item \texttt{===}, \texttt{!==}: Ohne Typumwandlung (strikt)
-            \end{itemize}
+        \item Zuweisungsoperatoren: $=, +=, -=, *=, /=, \%=, **=, $\\$<<=, >>=, >>>=, \&=, ^=, |=$
+        \item Vergleichsoperatoren: $==, ===, !=, !==, >, <, >=, <=$
         \item Logische Operatoren: $\&\&, ||, !$
-        \item Nullish Coalescing: \texttt{??}
-        \item Optional Chaining: \texttt{?.}
+        \item Bitweise Operatoren: $\&, |, ^, ~, <<, >>, >>>$
+        \item Sonstige Operatoren: \texttt{typeof}, \texttt{instanceof}
     \end{itemize}
+\end{corollary}
+
+\begin{formula}{Vergleichsoperatoren}
+    JavaScript unterscheidet zwei Arten von Gleichheit:
+    \begin{itemize}
+        \item \texttt{==} und \texttt{!=}: Mit Typumwandlung
+        \item \texttt{===} und \texttt{!==}: Ohne Typumwandlung (strikt)
+    \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+5 == "5"     // true  (Typumwandlung)
+5 === "5"    // false (keine Typumwandlung)
+null == undefined    // true
+null === undefined   // false
+\end{lstlisting}
 \end{formula}
 
-\begin{KR}{Kontrollstrukturen}
+\begin{KR}{Verzweigungen\text{,} Wiederholung und Switch Case}
+    \begin{itemize}
+        \item \texttt{if (condition) \{...\} else \{...\}}
+        \item \texttt{switch (expression) \{ case x: ... break; default: ... \}}
+        \item \texttt{for (initialization; condition; increment) \{...\}}
+        \item \texttt{while (condition) \{...\}}
+        \item \texttt{do \{...\} while (condition)}
+        \item \texttt{for (let x of iterable) \{...\}}
+    \end{itemize}
+\end{KR}
+
+\begin{examplecode}{Kontrollstrukturen}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 // If-Statement
 if (condition) {
@@ -128,11 +149,11 @@ do { } while (condition);
 for (let item of array) { }
 for (let key in object) { }
 \end{lstlisting}
-\end{KR}
+\end{examplecode}
 
 \subsection{Objekte und Arrays}
 
-\begin{theorem}{Objekt vs Array}
+\begin{theorem}{Objekt vs Array}\\
     \begin{tabular}{|l|l|l|}
         \hline
         Was & Objekt & Array \\
@@ -143,7 +164,7 @@ for (let key in object) { }
         \hline
         Ohne Inhalt & werte = \{\} & liste = [] \\
         \hline
-        Elementzugriff & werte["a"] oder werte.a & liste[0] \\
+        Elementzugriff & werte[''a''] oder werte.a & liste[0] \\
         \hline
     \end{tabular}
 \end{theorem}
@@ -208,9 +229,61 @@ let parsed = JSON.parse(json);
 \end{lstlisting}
 \end{concept}
 
+\begin{definition}{JS-Objekte}
+    sind Sammlungen von Schlüssel-Wert-Paaren:
+    \begin{itemize}
+        \item Eigenschaften können dynamisch hinzugefügt/entfernt werden
+        \item Werte können beliebige Typen sein (auch Funktionen)
+        \item Schlüssel sind immer Strings oder Symbols
+    \end{itemize}
+\end{definition}
+
+\begin{examplecode}{Objekte erstellen und manipulieren}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Objekt-Literal
+const person = {
+    name: "Alice",
+    age: 30,
+    greet() {
+        return "Hello, I am" + this.name;
+    }
+};
+
+// Eigenschaften manipulieren
+person.job = "Developer";    // hinzufuegen
+delete person.age;          // loeschen
+"name" in person;           // true
+\end{lstlisting}
+\end{examplecode}
+
 \subsection{Funktionen}
 
-\begin{KR}{Funktionsdefinitionen}
+\begin{definition}{Funktionen}
+    \begin{itemize}
+        \item Funktionen sind spezielle, aufrufbare Objekte
+        \item Man kann ihnen jederzeit Attribute oder Methoden hinzufügen
+        \item Sie haben bereits vordefinierte Methoden
+      \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+> const add = (x, y) => x + y
+> add.doc = "This function adds two values"
+> add(3,4)
+7
+> add.doc
+'This function adds two values'
+\end{lstlisting}
+\end{definition}
+
+\begin{KR}{Funktionsdefinition}
+    \begin{itemize}
+        \item \texttt{function name(parameters) \{...\}}
+        \item \texttt{const name = (parameters) => \{...\}}
+        \item \texttt{const name = parameters => \{...\}}
+        \item \texttt{const name = parameters => expression}
+    \end{itemize}
+\end{KR}
+
+\begin{examplecode}{Funktionsdefinitionen}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 // Funktionsdeklaration
 function add(a, b) {
@@ -231,7 +304,7 @@ const divide = (a, b) => {
     return a / b;
 };
 \end{lstlisting}
-\end{KR}
+\end{examplecode}
 
 \begin{concept}{Parameter und Arguments}
     \begin{itemize}
@@ -270,6 +343,25 @@ myCounter.decrement(); // 1
 \end{lstlisting}
 \end{KR}
 
+\begin{concept}{Modulsystem in JavaScript}
+    \begin{itemize}
+        \item \texttt{import} und \texttt{export} für Module
+        \item \texttt{export default} für Standardexport
+        \item \texttt{import \{name\} from 'module'} für benannte Exports
+        \item \texttt{import * as name from 'module'} für alle Exports
+    \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const car = {                   //car-lib.js
+    brand: 'Ford',
+    model: 'Fiesta'
+}
+module.exports = car
+const car = require('./car-lib') //other js file
+\end{lstlisting}
+\end{concept}
+
+\subsection{Prototypen von Objekten}
+
 \begin{concept}{Prototypen}
     \begin{itemize}
         \item Jedes Objekt hat ein Prototyp-Objekt
@@ -279,7 +371,159 @@ myCounter.decrement(); // 1
     \end{itemize}
 \end{concept}
 
+\begin{concept}{Prototypen-Kette}
+    Call, apply, bind
+    \begin{itemize}
+        \item Weitere Argumente von call : Argumente der Funktion
+        \item Weiteres Argument von apply : Array mit den Argumenten
+        \item Erzeugt neue Funktion mit gebundenem this
+    \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function Employee (name, salary) {
+    Person.call(this, name)
+    this.salary = salary
+}
+Employee.prototype = new Person()
+Employee.prototype.constructor = Employee
+let e17 = new Employee("Mary", 7000)
+console.log(e17.toString()) // Person with name 'Mary' 
+console.log(e17.salary) // 7000 
+\end{lstlisting}
+\end{concept}
+
+\begin{definition}{Klassen}
+    \begin{itemize}
+        \item Klassen sind syntaktischer Zucker für Prototypen
+        \item Klassen können Attribute und Methoden enthalten
+        \item Klassen können von anderen Klassen erben
+    \end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+class Person {
+    constructor (name) {
+        this.name = name
+    }
+    toString () {
+        return `Person with name '${this.name}'
+    }
+}
+let p35 = new Person("John")
+console.log(p35.toString()) // Person with name 'John'
+\end{lstlisting}
+\end{definition}
+
+\begin{code}{Vererbung}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+class Employee extends Person {
+    constructor (name, salary) {
+        super(name)
+        this.salary = salary
+    }
+    toString () {
+        return `${super.toString()} and salary ${this.salary}
+    }
+}
+let e17 = new Employee("Mary", 7000);
+console.log(e17.toString()) /* Person with name 'Mary' and salary 7000 */
+console.log(e17.salary) /* 7000 */
+\end{lstlisting}
+\end{code}
+
+\begin{examplecode}{Getter und Setter}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+class PartTimeEmployee extends Employee {
+    constructor (name, salary, percentage) {
+        super(name, salary)
+        this.percentage = percentage
+    }
+    get salary100 () { return this.salary * 100 / this.percentage}
+    set salary100 (amount) { this.salary = amount * this.percentage / 100 }
+}
+let e18 = new PartTimeEmployee("Bob", 4000, 50)
+console.log(e18.salary100) /* -> 8000 */
+e18.salary100 = 9000
+console.log(e18.salary) /* \ 4500 */
+\end{lstlisting}
+\end{examplecode}
+
+\subsubsection{Filesystem}
+
+\begin{code}{Pfade der Datei}
+Um Pfad-informationen einer Datei zu ermitteln muss man dies mit require('path') machen.
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const path = require('path')
+const notes = '/users/bkrt/notes.txt'
+path.dirname(notes) /* /users/bkrt */
+path.basename(notes) /* notes.txt */
+path.extname(notes) /* .txt */
+path.basename(notes, path.extname(notes)) /* notes */
+\end{lstlisting}
+\end{code}
+
+\begin{definition}{File API}
+    Mit require('fs') wird auf die File-Api zugegriffen.
+    Die File-Api bietet Funktionen zum Lesen und Schreiben von Dateien.
+\end{definition}
+
+\begin{formula}{FS Funktionen}
+\begin{itemize}
+    \item \texttt{fs.access}: Zugriff auf Datei oder Ordner prüfen
+    \item \texttt{fs.mkdir}: Verzeichnis anlegen
+    \item \texttt{fs.readdir}: Verzeichnis lesen, liefert Array von Einträgen
+    \item \texttt{fs.rename}: Verzeichnis umbenennen
+    \item \texttt{fs.rmdir}: Verzeichnis löschen
+    \item \texttt{fs.chmod}: Berechtigungen ändern
+    \item \texttt{fs.chown}: Besitzer und Gruppe ändern
+    \item \texttt{fs.copyFile}: Datei kopieren
+    \item \texttt{fs.link}: Besitzer und Gruppe ändern
+    \item \texttt{fs.symlink}: Symbolic Link anlegen
+    \item \texttt{fs.watchFile}: Datei auf Änderungen überwachen
+\end{itemize}
+\end{formula}
+
+\begin{code}{Datei-Informationen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const fs = require('fs')
+fs.stat('test.txt' , (err, stats) => {
+    if (err) {
+    console.error(err)
+    return
+    }
+    stats.isFile() /* true */
+    stats.isDirectory() /* false */
+    stats.isSymbolicLink() /* false */
+stats.size /* 1024000 = ca 1MB */
+})
+\end{lstlisting}
+\end{code}
+
+\begin{examplecode}{Dateien lesen und schreiben}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const fs = require('fs')
+fs.readFile('/etc/hosts',"utf8", (err, data) => {
+        if (err) throw err
+        console.log(data)
+})
+
+const content = 'Node was here!'
+fs.writeFile('/Users/bkrt/test.txt', content, (err) => {
+    if (err) {
+        console.error(`Failed to write file: ${err}`)
+        return
+    } // file written successfully
+})
+\end{lstlisting}
+\end{examplecode}
+
 \subsection{Asynchrone Programmierung}
+
+\begin{concept}{Asynchrone Programmierung}\\
+    JavaScript verwendet verschiedene Mechanismen für asynchrone Operationen:
+    \begin{itemize}
+        \item Callbacks: Traditioneller Ansatz
+        \item Promises: Moderner Ansatz für strukturiertere asynchrone Operationen
+        \item Async/Await: Syntaktischer Zucker für Promises
+    \end{itemize}
+\end{concept}
 
 \begin{concept}{Event Loop}
     \begin{itemize}
@@ -290,6 +534,16 @@ myCounter.decrement(); // 1
         \item Microtask Queue für Promises und process.nextTick
     \end{itemize}
 \end{concept}
+
+\begin{definition}{Callbacks}
+Ein Callback ist eine Funktion, welche als Argument einer anderen Funktion übergeben wird und erst aufgerufen wird, wenn das Ereignis eingetreten ist. 
+In der folgenden Abbildung wird die KlickFunktion vom Button mit der Id «Button» abonniert.
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+document.getElementById('button').addEventListener('click', () => {
+//item clicked
+})
+\end{lstlisting}
+\end{definition}
 
 \begin{KR}{Callbacks und Timer}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -310,6 +564,93 @@ element.addEventListener('click', (event) => {
 });
 \end{lstlisting}
 \end{KR}
+
+\begin{code}{SetTimeout}
+\begin{itemize}
+  \item Mit setTimeout kann Code definiert werden, der zu einem späteren Zeitpunkt ausgeführt werden soll
+  \item Eintrag in die Timer-Liste, auch wenn Zeit auf 0 gesetzt wird
+  \item Kann mit clearTimeout entfernt werden
+\end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+setTimeout(() => {
+    /* runs after 50 milliseconds */
+}, 50)
+\end{lstlisting}
+\end{code}
+
+\begin{code}{SetInterval}
+\begin{itemize}
+  \item Callback alle n Millisekunden in die Callback Queue eingefügt
+  \item Kann mit clearInterval beendet werden
+\end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const id = setInterval(() => {
+// runs every 2 seconds
+}, 2000)
+clearInterval(id)
+\end{lstlisting}
+\end{code}
+
+\begin{code}{SetImmediate}
+\begin{itemize}
+  \item Callback wird in die Immediate Queue eingefügt
+  \item Wird nach dem aktuellen Event-Loop ausgeführt
+\end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+setImmediate(() => {
+    console.log('immediate')
+})
+\end{lstlisting}
+\end{code}
+
+\subsubsection{Events und Promises}
+
+\begin{definition}{Event-Modul (EventMitter)}
+\begin{itemize}
+  \item EventEmitter verwaltet Liste von Listeners zu bestimmten Events
+  \item Listener für das Event können hinzugefügt oder entfernt werden
+  \item Event kann ausgelöst werden $\rightarrow$ Listener werden informiert
+\end{itemize}
+\end{definition}
+
+\begin{examplecode}{Listener hinzufügen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const EventEmitter = require('events')
+const door = new EventEmitter()
+
+door.on('open', () => {
+    console.log('Door was opened')
+})
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Event auslösen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+door.on('open', (speed) => {
+    console.log(`Door was opened, speed: ${speed || 'unknown'}`)
+})
+
+door.emit('open')
+door.emit('open', 'slow')
+\end{lstlisting}
+\end{examplecode}
+
+\begin{definition}{Promises}
+Ist ein Platzhalter für einen Wert, der erst später voraussichtlich verfügbar sein wird.
+Funktion mit Promise:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function readFilePromise(file) {
+    let promise = new Promise(function resolver(resolve, reject) {
+        fs.readFile(file, "utf8", (err, data) => {
+            if (err) reject(err);
+            else resolve(data);
+        });
+    });
+    return promise;
+}
+\end{lstlisting}
+Gibt nun ein Promise-Object zurück
+\end{definition}
 
 \begin{KR}{Promises}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -349,6 +690,59 @@ Promise.race([promise1, promise2])
 \end{lstlisting}
 \end{KR}
 
+\begin{concept}{Promise-Konstruktor erhält resolver-Funktion}
+
+Rückgabe einer Promise: potentieller Wert kann später erfüllt oder zurückgewiesen werden
+\begin{itemize}
+  \item Rückgabe einer Promise: potentieller Wert
+  \item kann später erfüllt oder zurückgewiesen werden
+\end{itemize}
+Aufruf neu:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+readFilePromise('/etc/hosts')
+    .then(console.log)
+    .catch(() => {
+        console.log("Error reading file")
+    })
+\end{lstlisting}
+\end{concept}
+
+\begin{theorem}{Promise-Zustände}
+\begin{itemize}
+  \item pending: Ausgangzustand
+  \item fulfilled: erfolgreich abgeschlossen
+  \item rejected: ohne Erfolg abgeschlossen
+  \end{itemize}
+  Nur ein Zustandsübergang möglich und Zustand in Promise-Objekt gekapselt\\
+\includegraphics[width=0.8\linewidth]{images/2024_12_29_858f09cde51177c71657g-14}
+\end{theorem}
+
+\begin{corollary}{Promises Verknüpfen}
+\begin{itemize}
+  \item Then-Aufruf gibt selbst Promise zurück
+  \item Catch-Aufruf ebenfalls, per Default erfüllt
+  \item So können diese Aufrufe verkettet werden
+  \item Promise, welche unmittelbar resolved wird: Promise.resolve (...)
+  \item Promise, welche unmittelbar rejected wird: Promise.reject (...)
+\end{itemize}
+\end{corollary}
+
+\begin{definition}{Promise.all()}
+\begin{itemize}
+  \item Erhält Array von Promises
+  \item Erfüllt mit Array der Result, wenn alle erfüllt sind
+  \item Zurückgewiesen sobald eine Promise zurückgewiesen wird
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Promise.race()}
+\begin{itemize}
+  \item Erhält Array von Promises
+  \item Erfüllt sobald eine davon erfüllt ist
+  \item Zurückgewiesen sobald eine davon zurückgewiesen wird
+\end{itemize}
+\end{definition}
+
 \begin{KR}{Async/Await}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 // Async Funktion
@@ -373,6 +767,82 @@ async function getMultipleData() {
 \end{lstlisting}
 \end{KR}
 
+\begin{code}{ASYNC/AWAIT}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+/* Bekanntes Beispiel */
+const readHosts =() => {
+    readFilePromise('/etc/hosts')
+        .then(console.log)
+        . catch(() => {
+            console.log("Error reading file")
+        })
+}
+/* Mit async/await */
+const readHosts = async () => {
+    try {
+        console.log(await readFilePromise('/etc/hosts'))
+    }
+    catch (err) {
+        console.log("Error reading file")
+    }
+}
+\end{lstlisting}
+Beispiel 2:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function resolveAfter2Seconds (x) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(x)
+        }, 2000)
+    })
+}
+async function add1(x) {
+    var a = resolveAfter2Seconds(20)
+    var b = resolveAfter2Seconds(30)
+    return x + await a + await b
+}
+add1(10).then(console.log)
+\end{lstlisting}
+\end{code}
+
+\begin{KR}{Promise Erstellung und Verwendung}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Promise erstellen
+const myPromise = new Promise((resolve, reject) => {
+    // Asynchrone Operation
+    setTimeout(() => {
+        if (/* erfolg */) {
+            resolve(result);
+        } else {
+            reject(error);
+        }
+    }, 1000);
+});
+
+// Promise verwenden
+myPromise
+    .then(result => {
+        // Erfolgsfall
+    })
+    .catch(error => {
+        // Fehlerfall
+    })
+    .finally(() => {
+        // Wird immer ausgefuhrt
+    });
+
+// Async/Await Syntax
+async function myAsync() {
+    try {
+        const result = await myPromise;
+        // Erfolgsfall
+    } catch (error) {
+        // Fehlerfall
+    }
+}
+\end{lstlisting}
+\end{KR}
+
 \subsection{Node.js und Module}
 
 \begin{concept}{Node.js}
@@ -384,6 +854,43 @@ async function getMultipleData() {
         \item REPL für interaktive Entwicklung
     \end{itemize}
 \end{concept}
+
+\begin{concept}{Module System}
+    JavaScript verwendet verschiedene Modulsysteme:
+    \begin{itemize}
+        \item CommonJS (Node.js): \texttt{require}/\texttt{module.exports}
+        \item ES Modules: \texttt{import}/\texttt{export}
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Module Import/Export}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// CommonJS (Node.js)
+const fs = require('fs');
+module.exports = { /* ... */ };
+
+// ES Modules
+import { function1, function2 } from './module.js';
+export const variable = 42;
+export default class MyClass { /* ... */ }
+\end{lstlisting}
+\end{KR}
+
+% Error Handling
+\begin{KR}{Error Handling}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+try {
+    // Code der Fehler werfen konnte
+    throw new Error('Something went wrong');
+} catch (error) {
+    // Fehlerbehandlung
+    console.error(error.message);
+} finally {
+    // Wird immer ausgefuhrt
+    cleanup();
+}
+\end{lstlisting}
+\end{KR}
 
 \begin{KR}{Module System}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -417,6 +924,129 @@ export default class MyClass { /* ... */ }
         \item \texttt{npm update}: Packages aktualisieren
     \end{itemize}
 \end{formula}
+
+\subsection{Einfacher Webserver (Node.js)}
+
+\begin{concept}{Node.js Webserver}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const {createServer} = require("http")
+Let server = createServer((request, response) => {
+    response.writeHead(200, {"Content-Type": "text/html"})
+    response.write(`
+        <h1>Hello!</h1>
+        <p>You asked for <code>${request.url}</code></p>`)
+    response.end()
+})
+server.listen(8000)
+console.log("Listening! (port 8000)")|
+\end{lstlisting}
+\end{concept}
+
+
+\begin{code}{Einfacher Webclient}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const {request} = require("http")
+let requestStream = request({
+    hostname: "eloquentjavascript.net",
+        path: "/20_node.html",
+        method: "GET"
+        headers: {Accept: "text/html"}
+}, response => {
+        console.log("Server responded with status code", response.statusCode)
+})
+requestStream.end()
+\end{lstlisting}
+\end{code}
+
+\begin{examplecode}{Server und Client mit Streams}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const {createServer} = require("http")
+createServer((request, response) => {
+    response.writeHead(200, {"Content-Type": "text/plain"})
+        request.on("data", chunk =>
+            response.write(chunk.toString().toUpperCase()))
+        request.on("end" , () => response.end())
+    }).listen(8000)
+\end{lstlisting}
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const {request} = require("http")
+Let rq = request({
+    hostname: "localhost",
+    port: 8000,
+    method: "POST"
+}, response => {
+    response.on("data", chunk =>
+    process.stdout.write(chunk.toString()));
+})
+rq.write("Hello server\n")
+rq.write("And good bye\n")
+rq.end()
+\end{lstlisting}
+\end{examplecode}
+
+\begin{definition}{REST API}
+\begin{itemize}
+  \item REST: Representational State Transfer
+  \item Zugriff auf Ressourcen über ihre Adresse (URI)
+  \item Kein Zustand: jede Anfrage komplett unabhängig
+  \item Kein Bezug zu vorhergehenden Anfragen
+  \item Alle nötigen Informationen in Anfrage enthalten
+  \item Verwenden der HTTP-Methoden: GET , PUT , POST , ...
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Express.js}\\
+    Express.js ist ein minimales, aber flexibles Framework für Web-apps. Es hat zahlreiche Utilities und Erweiterungen. 
+    Express.js basiert auf Node.js.
+    $\rightarrow$ http://expressjs.com
+\end{concept}
+
+
+\begin{KR}{Installation}
+\begin{itemize}
+  \item Der Schritt npm init fragt eine Reihe von Informationen (Projektname, Version, ...) zum Projekt ab
+  \item Als Entry Point ist hier index.js voreingestellt
+  \item Das kann zum Beispiel in app.js geändert werden.
+\end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$ mkdir myapp
+$ cd myapp
+$ npm init
+$ npm install express --save
+\end{lstlisting}
+\end{KR}
+
+\begin{code}{Beispiel: Express Server}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const express = require('express')
+const app = express()
+const port = 3000
+app.get('/', (req, res) => {
+        res.send('Hello World!')
+})
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+}})
+\end{lstlisting}
+\end{code}
+
+\begin{KR}{Routing}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+app.get('/', function (req, res) {
+    res.send('Hello World!')
+})
+app.post('/', function (req, res) {
+    res.send('Got a POST request')
+})
+app.put('/user', function (req, res) {
+    res.send('Got a PUT request at /user')
+})
+app.delete('/user', function (req, res) {
+    res.send('Got a DELETE request at /user')
+})
+\end{lstlisting}
+\end{KR}
 
 \subsection{Testing mit Jasmine}
 
@@ -481,7 +1111,55 @@ npm install --save-dev jasmine
     ]
 }
 
-// Test ausführen
+// Test ausfuehren
 npx jasmine
+\end{lstlisting}
+\end{KR}
+
+\begin{examplecode}{Beispiel (zugehörige Tests)}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+/* PlayerSpec.js - Auszug */
+describe("when song has been paused", function() {
+    beforeEach(function() {
+        player.play(song)
+        player.pause()
+    })
+    it("should indicate that the song is currently paused", function() {
+        expect(player.isPlaying).toBeFalsy()
+        /* demonstrates use of 'not' with a custom matcher */
+        expect(player).not.toBePlaying(song)
+    })
+    it("should be possible to resume", function() {
+        player.resume()
+        expect(player.isPlaying).toBeTruthy()
+        expect(player.currentlyPlayingSong) .toEqual(song)
+    })
+})
+\end{lstlisting}
+\end{examplecode}
+
+\begin{code}{JASMINE: MATCHER}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+expect([1, 2, 3]).toEqual([1, 2, 3])
+expect(12).toBeTruthy()
+expect("").toBeFalsy()
+expect("Hello planet").not.toContain("world")
+expect(null).toBeNull()
+expect(8).toBeGreaterThan(5)
+expect(12.34).toBeCloseTo(12.3, 1)
+expect("horse_ebooks.jpg") .toMatch(/\w+.(jpg|gif|png|svg)/i)
+\end{lstlisting}
+\end{code}
+
+\begin{KR}{JASMINE: TESTS DURCHFÜHREN}
+\begin{lstlisting}[language=bash, style=basesmol]
+$ npx jasmine
+Randomized with seed 03741
+Started
+......
+5 specs, 0 failures
+Finished in 0.014 seconds
+Randomized with seed 03741 
+    (jasmine --random=true --seed=03741)
 \end{lstlisting}
 \end{KR}

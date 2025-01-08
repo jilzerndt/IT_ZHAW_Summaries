@@ -17,6 +17,39 @@
     \end{itemize}
 \end{definition}
 
+\begin{KR}{document-Objekt}
+Wichtige Methoden des document-Objekts:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Element finden
+document.getElementById("id")  
+document.querySelector("selector") 
+document.querySelectorAll("selector")
+
+// DOM manipulieren
+document.createElement("tag")    
+document.createTextNode("text") 
+document.createAttribute("attr")
+
+// Event Handler
+document.addEventListener("event", handler)
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{window-Objekt}
+Das window-Objekt als globaler Namespace:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Globale Methoden
+window.alert("message")
+window.setTimeout(callback, delay)
+window.requestAnimationFrame(callback)
+
+// Eigenschaften
+window.innerHeight  // Viewport Hoehe
+window.pageYOffset  // Scroll Position
+window.location    // URL Infos
+\end{lstlisting}
+\end{KR}
+
 \subsection{Document Object Model (DOM)}
 
 \begin{concept}{DOM Struktur}
@@ -27,12 +60,107 @@
         \item Attribute werden zu Attribut-Knoten
         \item NodeType Konstanten:
             \begin{itemize}
-                \item 1: Element Node (ELEMENT_NODE)
-                \item 3: Text Node (TEXT_NODE)
-                \item 8: Comment Node (COMMENT_NODE)
+                \item 1: Element Node (ELEMENT\_NODE)
+                \item 3: Text Node (TEXT\_NODE)
+                \item 8: Comment Node (COMMENT\_NODE)
             \end{itemize}
     \end{itemize}
 \end{concept}
+
+\begin{concept}{Document Object Model (DOM)}
+    Das DOM ist eine Baumstruktur, die das HTML-Dokument repräsentiert:
+    \begin{itemize}
+        \item Jeder HTML-Tag wird zu einem Element-Knoten
+        \item Text innerhalb von Tags wird zu Text-Knoten
+        \item Attribute werden zu Attribut-Knoten
+        \item Kommentare werden zu Kommentar-Knoten
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{DOM Manipulation}
+Grundlegende Schritte zur DOM Manipulation:
+
+1. Element(e) finden:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+let element = document.getElementById("id")
+let elements = document.querySelectorAll(".class")
+\end{lstlisting}
+
+2. Elemente erstellen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+let newElem = document.createElement("div")
+let text = document.createTextNode("content")
+newElem.appendChild(text)
+\end{lstlisting}
+
+3. DOM modifizieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Hinzufuegen
+parent.appendChild(newElem)
+parent.insertBefore(newElem, referenceNode)
+
+// Entfernen
+element.remove()
+parent.removeChild(element)
+
+// Ersetzen
+parent.replaceChild(newElem, oldElem)
+\end{lstlisting}
+
+4. Attribute/Style setzen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+element.setAttribute("class", "highlight")
+element.style.backgroundColor = "red"
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{DOM Navigation}
+Zugriff auf DOM-Elemente:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Element ueber ID finden
+const elem = document.getElementById('myId');
+
+// Elemente ueber CSS-Selektor finden
+const elem1 = document.querySelector('.myClass');
+const elems = document.querySelectorAll('div.myClass');
+
+// Navigation im DOM-Baum
+elem.parentNode          // Elternknoten
+elem.childNodes         // Alle Kindknoten
+elem.children           // Nur Element-Kindknoten
+elem.firstChild         // Erster Kindknoten
+elem.lastChild          // Letzter Kindknoten
+elem.nextSibling        // Naechster Geschwisterknoten
+elem.previousSibling    // Vorheriger Geschwisterknoten
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{DOM Manipulation}
+Elemente erstellen und manipulieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Neues Element erstellen
+const newDiv = document.createElement('div');
+const newText = document.createTextNode('Hello');
+newDiv.appendChild(newText);
+
+// Element einfuegen
+parentElem.appendChild(newDiv);
+parentElem.insertBefore(newDiv, referenceElem);
+
+// Element entfernen
+elem.remove();
+parentElem.removeChild(elem);
+
+// Attribute manipulieren
+elem.setAttribute('class', 'myClass');
+elem.getAttribute('class');
+elem.removeAttribute('class');
+
+// HTML/Text Inhalt
+elem.innerHTML = '<span>Text</span>';
+elem.textContent = 'Nur Text';
+\end{lstlisting}
+\end{KR}
 
 \begin{KR}{DOM Navigation}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -92,6 +220,201 @@ elem.textContent = 'Nur Text';
     \end{itemize}
 \end{concept}
 
+\begin{concept}{Event Handling}
+    Events sind Ereignisse, die im Browser auftreten:
+    \begin{itemize}
+        \item Benutzerinteraktionen (Klicks, Tastatureingaben)
+        \item DOM-Änderungen
+        \item Ressourcen laden
+        \item Timer
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Event Handling}
+Ereignisse wie Mausklicks oder Tastatureingaben können mit Event-Handlern behandelt werden:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+let button = document.querySelector("button")
+button.addEventListener("click", () => {
+    console.log("Button geklickt!")
+})
+\end{lstlisting}
+\end{formula}
+
+\begin{code}{Event abonnieren/entfernen}
+  Mit der Methode addEventListener() wird ein Event abonniert. Mit removeEventListener kann das Event entfernt werden.
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<button>Act-once button</button>
+<script>
+  let button = document.querySelector("button")
+  function once () {
+    console.log("Done.")
+    button.removeEventListener("click", once)
+  }
+  button.addEventListener("click", once)
+</script>
+\end{lstlisting}
+\end{code}
+  
+\begin{code}{Event-Objekt}
+
+Wenn ein Parameter zur Methode hinzugefügt wird, wird dieses als das Event-Objekt gesetzt.
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<script>
+    let button = document.querySelector("button")
+    button.addEventListener("click", (e) => {
+        console.log("x="+e.x+", y="+e.y)
+    })
+</script\
+\end{lstlisting}
+\end{code}
+
+\begin{examplecode}{stopPropagation()}
+
+Das Event wird bei allen abonnierten Handlern ausgeführt bis ein Handler stopPropagation() ausführt.
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<script>
+  let button = document.querySelector("button")
+  button.addEventListener("click", (e) => {
+    console.log("x="+e.x+", y="+e.y)
+    e.stopPropagation()
+  })
+</script>
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{preventDefault()}
+
+Viele Ereignisse haben ein Default verhalten. Eigene Handler werden vor Default-Verhalten ausgeführt. Um das Default-Verhalten zu verhindern, muss die Methode preventDefault() ausgeführt werden.
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<a href="https://developer.mozilla.org/">MDN</a>
+<script>
+  let link = document.querySelector("a")
+  link.addEventListener("click", event => {
+    console.log("Nope.")
+      event.preventDefault()
+  })
+,/script>
+\end{lstlisting}
+\end{examplecode}
+
+\begin{definition}{Tastatur-Events}
+\texttt{keydown} (Achtung: kann mehrmals ausgelöst werden) und \texttt{keyup}:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<p>Press Control-Space to continue.</p>
+<script>
+    window.addEventListener("keydown", event => {
+            if (event.key ==" " && event.ctrlKey) {
+                console.log("Continuing!")
+            }
+    })
+</script>
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{Maus-Events}
+  
+  \begin{minipage}{0.45\linewidth}
+  \begin{itemize}
+  \item Mausklicks:
+  \begin{itemize}
+    \item mousedown
+    \item mouseup
+    \item click
+    \item dblclick
+  \end{itemize}
+  \end{itemize}
+  \end{minipage}
+  \begin{minipage}{0.5\linewidth}
+    \begin{itemize}
+    \item Mausbewegung
+    \begin{itemize}
+      \item mousemove
+    \end{itemize}
+    \item Touch-display
+    \begin{itemize}
+      \item touchstart
+      \item touchmove
+      \item touched
+    \end{itemize}
+    \end{itemize}
+    \end{minipage}
+\end{definition}
+
+\begin{definition}{Scroll-Events}
+Das Scrollevent enthält Attribute wie \texttt{pageYOffset} und \texttt{pageXOffset}.
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+window.addEventListener("scroll", () => {
+    let max = document.body.scrollHeight - window.innerHeight;
+    let bar = document.querySelector("#scrollbar");
+    bar.style.width = `${(window.pageYOffset / max) * 100}%`;
+});
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{Focus-Events}
+
+Fokus- und Ladeereignisse
+\begin{itemize}
+  \item Fokus erhalten / verlieren
+  \subitem focus
+  \subitem blur
+  \item Seite wurde geladen (ausgelöst auf window und document.body)
+  \subitem load
+  \subitem beforeunload
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Event Handler}
+Grundlegende Event Handling Schritte:
+
+1. Event Listener registrieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+element.addEventListener("event", handler)
+element.removeEventListener("event", handler)
+\end{lstlisting}
+
+2. Event Handler mit Event-Objekt:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+element.addEventListener("click", (event) => {
+  console.log(event.type)    // Art des Events
+  console.log(event.target)  // Ausloesendes Element
+  event.preventDefault()     // Default verhindern
+  event.stopPropagation()   // Bubbling stoppen
+})
+\end{lstlisting}
+
+Wichtige Event-Typen:
+\begin{itemize}
+  \item Mouse: click, mousedown, mouseup, mousemove
+  \item Keyboard: keydown, keyup, keypress
+  \item Form: submit, change, input
+  \item Document: DOMContentLoaded, load
+  \item Window: resize, scroll
+\end{itemize}
+\end{KR}
+
+\begin{KR}{Event Listener}
+Event Listener registrieren und entfernen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Event Listener hinzufuegen
+element.addEventListener('click', function(event) {
+    console.log('Clicked!', event);
+});
+
+// Mit Arrow Function
+element.addEventListener('click', (event) => {
+    console.log('Clicked!', event);
+});
+
+// Event Listener entfernen
+const handler = (event) => {
+    console.log('Clicked!', event);
+};
+element.addEventListener('click', handler);
+element.removeEventListener('click', handler);
+\end{lstlisting}
+\end{KR}
+
 \begin{KR}{Event Listener}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 // Event Listener hinzufuegen
@@ -125,94 +448,183 @@ element.removeEventListener('click', handler);
     \end{itemize}
 \end{formula}
 
-\subsection{Formulare}
-
-\begin{definition}{HTML-Formulare}
-    Formulare ermöglichen Benutzereingaben und Datenübertragung:
+\begin{formula}{Wichtige Event-Typen}
     \begin{itemize}
-        \item form-Element mit action und method Attributen
-        \item GET: Daten in URL (sichtbar)
-        \item POST: Daten im Request-Body (unsichtbar)
-        \item Verschiedene Input-Typen
+        \item Maus: \texttt{click}, \texttt{dblclick}, \texttt{mousedown}, \texttt{mouseup}, \texttt{mousemove}
+        \item Tastatur: \texttt{keydown}, \texttt{keyup}, \texttt{keypress}
+        \item Formular: \texttt{submit}, \texttt{change}, \texttt{input}, \texttt{focus}, \texttt{blur}
+        \item Dokument: \texttt{DOMContentLoaded}, \texttt{load}, \texttt{unload}
+        \item Fenster: \texttt{resize}, \texttt{scroll}
     \end{itemize}
-\end{definition}
+\end{formula}
 
-\begin{KR}{Formular Handling}
+\begin{code}{Event Bubbling und Capturing}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
-// Formular erstellen
-<form action="/submit" method="POST">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username">
-    
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password">
-    
-    <button type="submit">Login</button>
-</form>
+// Bubbling (default)
+element.addEventListener('click', handler);
 
-// JavaScript Handler
-form.addEventListener('submit', (event) => {
+// Capturing
+element.addEventListener('click', handler, true);
+
+// Event-Ausbreitung stoppen
+element.addEventListener('click', (event) => {
+    event.stopPropagation();
+});
+
+// Default-Verhalten verhindern
+element.addEventListener('click', (event) => {
     event.preventDefault();
-    
-    const formData = new FormData(form);
-    const username = formData.get('username');
-    
-    // Mit Fetch API senden
-    fetch('/submit', {
-        method: 'POST',
-        body: formData
-    });
 });
 \end{lstlisting}
-\end{KR}
+\end{code}
 
-\subsection{Web Storage}
+\subsection{Jquery}
+JQuery ist eine freie JavaScript-Bibliothek, die Funktionen zur DOM-Navigation und -Manipulation zur Verfügung stellt.
 
-\begin{concept}{Storage APIs}
-    Browser bieten verschiedene Speichermöglichkeiten:
-    \begin{itemize}
-        \item localStorage: Permanente Speicherung
-        \item sessionStorage: Temporär für aktuelle Session
-        \item cookies: Kleine Datenpakete, auch für Server
-        \item indexedDB: NoSQL-Datenbank im Browser
-    \end{itemize}
-\end{concept}
-
-\begin{KR}{Local Storage}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
-// Daten speichern
-localStorage.setItem('key', 'value');
-localStorage.setItem('user', JSON.stringify({
-    name: 'John',
-    age: 30
-}));
-
-// Daten abrufen
-const value = localStorage.getItem('key');
-const user = JSON.parse(localStorage.getItem('user'));
-
-// Daten loeschen
-localStorage.removeItem('key');
-localStorage.clear();  // Alles loeschen
+$("button.continue").html("Next Step...")
+var hiddenBox = $("#banner-message")
+$("#button-container button").on("click", function(event) {
+        hiddenBox.show()
+    .})
 \end{lstlisting}
-\end{KR}
 
-\begin{KR}{Cookies}
+\begin{definition}{\$(Funktion)} $\rightarrow$ DOM ready\\
 \begin{lstlisting}[language=JavaScript, style=basesmol]
-// Cookie setzen
-document.cookie = "username=John; expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
-
-// Cookies lesen
-const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-    const [name, value] = cookie.trim().split('=');
-    acc[name] = value;
-    return acc;
-}, {});
-
-// Cookie loeschen
-document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+$(function() { 
+  // Code to run when the DOM is ready
+});
 \end{lstlisting}
-\end{KR}
+\end{definition}
+
+\begin{definition}{\$("CSS Selektor").aktion(...)} $\rightarrow$ Wrapped Set\\
+  Knoten, die Sel. erfüllen, eingepackt in ein jQuery-Objekt
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$(".toggleButton").attr("title");
+// Get the title attribute of elements with class 'toggleButton'
+\end{lstlisting}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$(".toggleButton").attr("title", "click here");
+// Set the title attribute of elements with class 'toggleButton' to 'click here'
+\end{lstlisting}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$(".toggleButton").attr({
+  title: "click here",
+  // other attributes
+});
+// Set multiple attributes of elements with class 'toggleButton'
+\end{lstlisting}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$(".toggleButton").attr("title", function() {
+  // function to set title
+}).css({
+  // CSS properties
+}).text("New Text").on("click", function(event) {
+  // click event handler
+});
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{\$("HTML-Code")}$\rightarrow$ Create new elements (Wrapped Set)
+  neuer Knoten erstellen und in ein jQuery-Objekt einpacken, noch nicht im DOM
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$("<li>...</li>").addClass("new-item").appendTo("ul");
+// Create a new list item, add a class, and append it to a list
+\end{lstlisting}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$("<li>...</li>").length;
+// Get the length of the new list item
+\end{lstlisting}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$("<li>...</li>")[0];
+// Get the raw DOM element of the new list item
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{Wrapped Set from DOM node}
+  dieser Knoten in ein jQuery-Objekt eingepackt
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$(document.body);
+// Wrap the body element in a jQuery object
+\end{lstlisting}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+$(this);
+// Wrap the current element in a jQuery object
+\end{lstlisting}
+\end{definition}
+
+\subsection{Graphics}
+
+\begin{definition}{Web-Grafiken}
+\begin{itemize}
+  \item Einfache Grafiken mit HTML und CSS möglich
+  \item Zum Beispiel: Balkendiagramme
+  \item Alternative für Vektorgrafiken: SVG
+  \item Alternative für Pixelgrafiken: Canvas
+\end{itemize}
+\end{definition}
+
+\subsubsection{SVG und Canvas}
+
+\begin{definition}{SVG}
+Scalable Vector Graphics
+\begin{itemize}
+  \item Basiert wie HTML auf XML
+  \item Elemente repräsentieren grafische Formen
+  \item Ins DOM integriert und durch Scripts anpassbar
+\end{itemize}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+p>Normal HTML here.</p>
+<svg xmlns="http://www.w3.org/2000/svg">
+    <circle r="50" cx="50" cy="50" fill="red"/>
+    <rect x="120" y="5" width="90" height="90" stroke="blue" fill="none"/>
+</svg>
+\end{lstlisting}
+Ausgabe:\\
+Normal HTML here.\\
+\includegraphics[width=\linewidth]{images/2024_12_29_858f09cde51177c71657g-27}
+\end{definition}
+
+\begin{examplecode}{SVG mit JavaScript}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+let circle = document.querySelector("circle")
+circle.setAttribute("fill","cyan")
+\end{lstlisting}
+\end{examplecode}
+
+
+\begin{definition}{Canvas}
+  Das \texttt{<canvas>}-Element bietet eine Zeichenfläche (API) für Pixelgrafiken:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<canvas></canvas>
+<script>
+  Let cx = document.querySelector("canvas").getContext("2d")
+  cx.beginPath()
+  cx.moveTo(50, 10)
+  cx.lineTo(10, 70)
+  cx.lineTo(90, 70)
+  cx.fill()
+  let img = document.createElement("img")
+  img.src = "img/hat.png"
+  img.addEventListener("load" , () => {
+      for (let x = 10; x < 200; x += 30) {
+          cx.drawImage(img, x, 10)
+      }
+  })
+</script>
+\end{lstlisting}
+\end{definition}
+
+
+\begin{code}{Canvas Methoden}
+  \begin{itemize}
+    \item \texttt{scale} - Skalieren
+    \item \texttt{translate} - Koordinatensystem verschieben
+    \item \texttt{rotate} - Koordinatensystem rotieren
+    \item \texttt{save} - Transformationen auf Stack speichern
+    \item \texttt{restore} - Letzten Zustand wiederherstellen
+  \end{itemize}  
+\end{code}
 
 \subsection{Canvas und SVG}
 
@@ -233,6 +645,93 @@ document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             \end{itemize}
     \end{itemize}
 \end{concept}
+
+\begin{KR}{SVG Grafiken}
+1. SVG erstellen:
+\begin{lstlisting}[language=HTML, style=basesmol]
+<svg width="200" height="200">
+  <circle cx="100" cy="100" r="50" fill="red"/>
+  <rect x="20" y="20" width="50" height="50" fill="blue"/>
+</svg>
+\end{lstlisting}
+
+2. SVG mit JavaScript manipulieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const circle = document.querySelector('circle')
+circle.setAttribute('fill', 'green')
+circle.setAttribute('r', '60')
+
+// Event Listener fuer SVG-Elemente
+circle.addEventListener('click', () => {
+  circle.setAttribute('fill', 'yellow')
+})
+\end{lstlisting}
+
+Vorteile SVG:
+\begin{itemize}
+  \item Skalierbar ohne Qualitätsverlust
+  \item Teil des DOM (manipulierbar)
+  \item Gute Browser-Unterstützung
+  \item Event-Handler möglich
+\end{itemize}
+\end{KR}
+
+\begin{KR}{Canvas API}
+1. Canvas erstellen:
+\begin{lstlisting}[language=HTML, style=basesmol]
+<canvas id="myCanvas" width="200" height="200"></canvas>
+\end{lstlisting}
+
+2. Context holen und zeichnen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const canvas = document.getElementById('myCanvas')
+const ctx = canvas.getContext('2d')
+
+// Rechteck zeichnen
+ctx.fillStyle = 'red'
+ctx.fillRect(10, 10, 100, 100)
+
+// Pfad zeichnen
+ctx.beginPath()
+ctx.moveTo(10, 10)
+ctx.lineTo(100, 100)
+ctx.stroke()
+
+// Text zeichnen
+ctx.font = '20px Arial'
+ctx.fillText('Hello', 50, 50)
+
+// Bild zeichnen
+const img = new Image()
+img.onload = () => ctx.drawImage(img, 0, 0)
+img.src = 'image.png'
+\end{lstlisting}
+
+3. Transformationen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Speichern des aktuellen Zustands
+ctx.save()
+
+// Transformationen
+ctx.translate(100, 100)  // Verschieben
+ctx.rotate(Math.PI / 4)  // Rotieren
+ctx.scale(2, 2)         // Skalieren
+
+// Zeichnen...
+
+// Wiederherstellen des gespeicherten Zustands
+ctx.restore()
+\end{lstlisting}
+
+Wichtige Canvas-Methoden:
+\begin{itemize}
+  \item clearRect(): Bereich löschen
+  \item save()/restore(): Kontext speichern/wiederherstellen
+  \item translate()/rotate()/scale(): Transformationen
+  \item drawImage(): Bilder zeichnen
+  \item getImageData()/putImageData(): Pixel-Manipulation
+\end{itemize}
+\end{KR}
 
 \begin{KR}{Canvas API}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -282,7 +781,637 @@ circle.addEventListener('click', () => {
 \end{lstlisting}
 \end{KR}
 
-\subsection{Client-Server Kommunikation}
+\begin{concept}{Grafik im Browser}
+    Zwei Haupttechnologien für Grafiken:
+    \begin{itemize}
+        \item Canvas: Pixel-basierte Grafik
+        \item SVG: Vektor-basierte Grafik
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Canvas Grundlagen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+
+// Rechteck zeichnen
+ctx.fillStyle = 'red';
+ctx.fillRect(10, 10, 100, 50);
+
+// Pfad zeichnen
+ctx.beginPath();
+ctx.moveTo(10, 10);
+ctx.lineTo(50, 50);
+ctx.stroke();
+
+// Text zeichnen
+ctx.font = '20px Arial';
+ctx.fillText('Hello', 10, 50);
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{SVG Manipulation}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// SVG-Element erstellen
+const svg = document.createElementNS(
+    "http://www.w3.org/2000/svg", 
+    "svg"
+);
+svg.setAttribute("width", "100");
+svg.setAttribute("height", "100");
+
+// Kreis hinzufuegen
+const circle = document.createElementNS(
+    "http://www.w3.org/2000/svg", 
+    "circle"
+);
+circle.setAttribute("cx", "50");
+circle.setAttribute("cy", "50");
+circle.setAttribute("r", "40");
+circle.setAttribute("fill", "red");
+
+svg.appendChild(circle);
+\end{lstlisting}
+\end{KR}
+
+\subsection{Browser API}
+
+Web Storage\\
+Web Storage speichert Daten auf der Seite des Client.
+
+\begin{definition}{Local Storage}
+Mit \texttt{localStorage} können Daten auf dem Client gespeichert werden:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+localStorage.setItem("username", "Max")
+console.log(localStorage.getItem("username")) // -> Max
+localStorage.removeItem("username")
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{Local Storage}
+Local Storage wird verwendet, um Daten der Webseite lokal abzuspeichern. Die Daten bleiben nach dem Schliessen des Browsers erhalten. Die Daten sind in Developer Tools einsehbar und änderbar.
+
+Die Daten werden nach Domains abgespeichert. Es können pro Webseite etwa 5MB abgespeichert werden.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+1 localStorage.setItem("username","bkrt")
+2 console.log(localStorage.getItem("username")) // -> bkrt
+3 localStorage.removeItem("username")
+\end{lstlisting}
+\end{definition}
+
+Die Werte werden als Strings gespeichert, daher müssen Objekte mit JSON codiert werden:\\
+1 Let user = \{name: "Hans", highscore: 234\}\\
+2 localStorage.setItem(JSON.stringify(user))
+
+\begin{definition}{Session Storage}
+\texttt{sessionStorage} speichert Daten nur für die Dauer der Sitzung:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+sessionStorage.setItem("sessionID", "abc123")
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{History}
+History gibt zugriff auf den Verlauf des akutellen Fensters/Tab.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+1 function goBack() {
+2 window.history.back();
+3
+    ,}
+\end{lstlisting}
+\end{definition}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+Methoden & Beschreibung \\
+\hline
+length (Attribut) & \begin{tabular}{l}
+Anzahl Einträgte inkl. aktueller Seite. Keine \\
+Methode! \\
+\end{tabular} \\
+\hline
+back & zurück zur letzten Seite \\
+\hline
+\end{tabular}
+\end{center}
+
+GeoLocation\\
+Mit der GeoLocation-API kann der Standort abgefragt werden.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+var options = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+function success(pos) {
+    var crd = pos.coords
+    console.log(`Latitude : ${crd.latitude}`)
+    console.log(`Longitude: ${crd.longitude}`)
+    console.log(`More or less ${crd.accuracy} meters.`)
+}
+function error(err) { ... }
+navigator.geolocation.getCurrentPosition(success, error, options)
+\end{lstlisting}
+
+\begin{definition}{Storage APIs}
+    Browser bieten verschiedene Möglichkeiten zur Datenspeicherung:
+    \begin{itemize}
+        \item \texttt{localStorage}: Permanente Speicherung
+        \item \texttt{sessionStorage}: Temporäre Speicherung (nur für aktuelle Session)
+        \item \texttt{cookies}: Kleine Datenpakete, die auch zum Server gesendet werden
+        \item \texttt{indexedDB}: NoSQL-Datenbank im Browser
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{LocalStorage Verwendung}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Daten speichern
+localStorage.setItem('key', 'value');
+localStorage.setItem('user', JSON.stringify({
+    name: 'John',
+    age: 30
+}));
+
+// Daten abrufen
+const value = localStorage.getItem('key');
+const user = JSON.parse(localStorage.getItem('user'));
+
+// Daten loeschen
+localStorage.removeItem('key');
+localStorage.clear();  // Alles loeschen
+\end{lstlisting}
+\end{KR}
+
+
+
+\subsection{Web Storage}
+
+\begin{concept}{Storage APIs}
+    Browser bieten verschiedene Speichermöglichkeiten:
+    \begin{itemize}
+        \item localStorage: Permanente Speicherung
+        \item sessionStorage: Temporär für aktuelle Session
+        \item cookies: Kleine Datenpakete, auch für Server
+        \item indexedDB: NoSQL-Datenbank im Browser
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Local Storage}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Daten speichern
+localStorage.setItem('key', 'value');
+localStorage.setItem('user', JSON.stringify({
+    name: 'John',
+    age: 30
+}));
+
+// Daten abrufen
+const value = localStorage.getItem('key');
+const user = JSON.parse(localStorage.getItem('user'));
+
+// Daten loeschen
+localStorage.removeItem('key');
+localStorage.clear();  // Alles loeschen
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Local Storage}
+1. Daten speichern:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Speichern
+localStorage.setItem('key', 'value')
+localStorage.setItem('user', JSON.stringify({name: 'Max'}))
+
+// Lesen
+const value = localStorage.getItem('key')
+const user = JSON.parse(localStorage.getItem('user'))
+
+// Loeschen
+localStorage.removeItem('key')
+localStorage.clear()  // Alles loeschen
+\end{lstlisting}
+
+2. Session Storage (nur für aktuelle Session):
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+sessionStorage.setItem('key', 'value')
+sessionStorage.getItem('key')
+sessionStorage.removeItem('key')
+\end{lstlisting}
+
+Wichtig zu beachten:
+\begin{itemize}
+  \item Limit ca. 5-10 MB pro Domain
+  \item Nur Strings speicherbar (JSON für Objekte)
+  \item Synchroner API-Zugriff
+\end{itemize}
+\end{KR}
+
+\subsection{Client-Server-Interaktion (Formulare)}
+
+\begin{definition}{Formulare}
+Formulare ermöglichen Benutzereingaben. Sie gilt als Grundlade für Interaktion mit dem Web.\\
+Input types:
+
+\begin{itemize}
+\item submit, number, text, password, email, url , range , date , search , color
+\end{itemize}
+\end{definition}
+
+\begin{definition}{HTML-Formulare}
+    Formulare ermöglichen Benutzereingaben und Datenübertragung:
+    \begin{itemize}
+        \item form-Element mit action und method Attributen
+        \item GET: Daten in URL (sichtbar)
+        \item POST: Daten im Request-Body (unsichtbar)
+        \item Verschiedene Input-Typen
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{HTML-Formulare}
+    Formulare ermöglichen Benutzereingaben und Datenübertragung:
+    \begin{itemize}
+        \item \texttt{<form>} Element mit \texttt{action} und \texttt{method}
+        \item \texttt{method="GET"}: Daten in URL (sichtbar)
+        \item \texttt{method="POST"}: Daten im Request-Body (unsichtbar)
+        \item Verschiedene Input-Typen: text, password, checkbox, radio, etc.
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Formular Handling}
+1. Formular erstellen:
+\begin{lstlisting}[language=HTML, style=basesmol]
+<form action="/api/submit" method="post">
+  <input type="text" name="username">
+  <input type="password" name="password">
+  <button type="submit">Login</button>
+</form>
+\end{lstlisting}
+
+2. Formular Events abfangen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+form.addEventListener("submit", (e) => {
+  e.preventDefault() 
+  // Eigene Verarbeitung
+})
+\end{lstlisting}
+
+3. Formulardaten verarbeiten:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const formData = new FormData(form)
+fetch("/api/submit", {
+  method: "POST",
+  body: formData
+})
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Formular Handling}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Formular erstellen
+<form action="/submit" method="POST">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username">
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password">
+    
+    <button type="submit">Login</button>
+</form>
+
+// JavaScript Handler
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    
+    const formData = new FormData(form);
+    const username = formData.get('username');
+    
+    // Mit Fetch API senden
+    fetch('/submit', {
+        method: 'POST',
+        body: formData
+    });
+});
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Formular Handling}
+\begin{lstlisting}[language=HTML, style=basesmol]
+<!-- HTML Form -->
+<form action="/submit" method="POST">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username">
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password">
+    
+    <button type="submit">Login</button>
+</form>
+
+<!-- JavaScript Handler -->
+form.addEventListener('submit', (event) => {
+    event.preventDefault(); // Verhindert Standard-Submit
+    
+    const formData = new FormData(form);
+    // Zugriff auf Formular-Daten
+    const username = formData.get('username');
+    const password = formData.get('password');
+});
+\end{lstlisting}
+\end{KR}
+
+\begin{formula}{Formular Events}
+    Wichtige Events bei Formularen:
+    \begin{itemize}
+        \item \texttt{submit}: Formular wird abgeschickt
+        \item \texttt{reset}: Formular wird zurückgesetzt
+        \item \texttt{change}: Wert eines Elements wurde geändert
+        \item \texttt{input}: Wert wird gerade geändert
+        \item \texttt{focus}: Element erhält Fokus
+        \item \texttt{blur}: Element verliert Fokus
+    \end{itemize}
+\end{formula}
+
+\begin{definition}{Formulare}
+Formulare ermöglichen Benutzereingaben. Sie gilt als Grundlade für Interaktion mit dem Web.\\
+Input types:
+
+\begin{itemize}
+\item submit, number, text, password, email, url , range , date , search , color
+\end{itemize}
+\end{definition}
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<form>
+  <fieldset>
+      <legend>General information</legend>
+      <label>Text field <input type="text" value="hi"></label>
+      <label>Password <input type="password" value="hi"></label>
+      <label class="area">Textarea <textarea>hi</textarea></label>
+  </fieldset>
+  <fieldset>
+      <legend>Additional information</legend>
+      <label>Checkbox <input type="checkbox"></label>
+      <label>Radio button <input type="radio" name="demo" checked></label>
+      <label>Another one <input type="radio" name="demo"></label>
+  </fieldset>
+  <form>
+  <label>Button <button>Click me</button></label>
+  <label>Select menu
+  <select name="cars">
+  <option value="volvo">Volvo</option>
+  <option value="saab">Saab</option>
+  <option value="fiat">Fiat</option>
+  <option value="audi">Audi</option>
+  </select>
+  </label>
+  <input type="submit" value="Send">
+</form>
+|'
+\end{lstlisting}
+
+
+
+\begin{center}
+\includegraphics[width=\linewidth]{images/2024_12_29_858f09cde51177c71657g-29}
+\end{center}
+
+Formulare können auch POST/GET Aktionen ausführen:\\
+Action beschreibt das Skript, welches die Daten annimmt. Method ist die Methode die ausgeführt wird.
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<form action="/login" method="post">
+2 ...
+3 </form>
+\end{lstlisting}
+
+\begin{center}
+\includegraphics[width=\linewidth]{images/2024_12_29_858f09cde51177c71657g-29(1)}
+\end{center}
+
+Formular Events\\
+\includegraphics[width=\linewidth]{images/2024_12_29_858f09cde51177c71657g-30}
+
+\subsubsection{Event Handling für Formulare}
+\begin{definition}{Default-Verhalten}
+Das Default-Verhalten von Formularen kann mit \texttt{preventDefault()} unterbunden werden.
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+let form = document.querySelector("form");
+form.addEventListener("submit", event => {
+    event.preventDefault();
+    console.log("Formular abgesendet!");
+});
+\end{lstlisting}
+\end{definition}
+
+\subsection{Cookies und Sessions}
+
+\begin{definition}{Cookies}
+Cookies speichern clientseitig Daten:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+document.cookie = "username=Max; expires=Fri, 31 Dec 2025 23:59:59 GMT";
+console.log(document.cookie);
+\end{lstlisting}
+\end{definition}
+
+
+
+\begin{definition}{Cookies}
+
+\begin{itemize}
+\item HTTP als zustandsloses Protokoll konzipiert
+\item Cookies: Speichern von Informationen auf dem Client
+\item Response: Set-Cookie -Header, Request: Cookie -Header
+\item Zugriff mit JavaScript möglich (ausser HttpOnly ist gesetzt)\\
+\includegraphics[width=\linewidth]{images/2024_12_29_858f09cde51177c71657g-31}
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Cookies}
+    HTTP-Cookies sind kleine Datenpakete:
+    \begin{itemize}
+        \item Werden vom Server gesetzt
+        \item Im Browser gespeichert
+        \item Bei jedem Request mitgesendet
+        \item Haben Name, Wert, Ablaufdatum und Domain
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Cookie Handling}
+1. Cookie setzen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+document.cookie = "username=Max; expires=Fri, 31 Dec 2024 23:59:59 GMT; path=/"
+\end{lstlisting}
+
+2. Cookies lesen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function getCookie(name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+\end{lstlisting}
+
+3. Cookie löschen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/"
+\end{lstlisting}
+
+Wichtige Cookie-Attribute:
+\begin{itemize}
+  \item expires/max-age: Gültigkeitsdauer
+  \item path: Gültigkeitspfad
+  \item secure: Nur über HTTPS
+  \item httpOnly: Kein JavaScript-Zugriff
+  \item samesite: Cross-Site-Cookie-Verhalten
+\end{itemize}
+\end{KR}
+
+\begin{KR}{Cookie Handling}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Cookie setzen
+document.cookie = "username=John Doe; expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
+
+// Cookie lesen
+const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [name, value] = cookie.trim().split('=');
+    acc[name] = value;
+    return acc;
+}, {});
+
+// Cookie loeschen
+document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Sessions}
+    Server-seitige Speicherung von Benutzerdaten:
+    \begin{itemize}
+        \item Session-ID wird in Cookie gespeichert
+        \item Daten bleiben auf dem Server
+        \item Sicherer als Cookies für sensible Daten
+        \item Temporär (bis Browser geschlossen wird)
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Sessions}
+\begin{itemize}
+\item Cookies auf dem Client leicht manipulierbar
+\item Session: Client-spezifische Daten auf dem Server speichern
+\item Identifikation des Clients über Session-ID (Cookie o.a.)
+\item Gefahr: Session-ID gerät in falsche Hände (Session-Hijacking)
+\end{itemize}
+\end{definition}
+Ablauf:\\
+\href{http://www.xyz.com}{http://www.xyz.com}\\
+\includegraphics[width=\linewidth]{images/2024_12_29_858f09cde51177c71657g-31(1)}
+
+\begin{definition}{Sessions}
+Sessions speichern serverseitig Daten und nutzen eine Session-ID für die Zuordnung:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Beispiel: Session-Handling mit Express.js
+req.session.user = "Max";
+console.log(req.session.user);
+\end{lstlisting}
+\end{definition}
+
+\begin{KR}{Cookies}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Cookie setzen
+document.cookie = "username=John; expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
+
+// Cookies lesen
+const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [name, value] = cookie.trim().split('=');
+    acc[name] = value;
+    return acc;
+}, {});
+
+// Cookie loeschen
+document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+\end{lstlisting}
+\end{KR}
+
+\subsection{AJAX und Fetch API}
+
+\begin{concept}{AJAX}
+    Asynchronous JavaScript And XML:
+    \begin{itemize}
+        \item Asynchrone Kommunikation mit dem Server
+        \item Kein vollständiges Neuladen der Seite nötig
+        \item Moderne Alternative: Fetch API
+        \item Datenformate: JSON, XML, Plain Text
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Fetch API}
+Mit der Fetch-API können HTTP-Requests ausgeführt werden:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+fetch("/data.json")
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error("Fehler:", error))
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{Fetch API}
+\begin{itemize}
+\item HTTP-Requests von JavaScripts
+\item Geben Promise zurück
+\item Nach Server-Antwort erfüllt mit Response-Objekt
+\end{itemize}
+\end{definition}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+fetch("example/data.txt")
+.then(response => {
+          console.log(response.status) // -> 200
+  console.log(response.headers.get("Content-Type")) // -> text/plain
+})
+.then(resp => resp.text())
+.then(text => console.log(text))
+// -> This is the content of data.txt
+\end{lstlisting}
+
+Response Objekt
+
+\begin{itemize}
+\item headers : Zugriff auf HTTP-Header-Daten Methoden get, keys, forEach , ...
+\item status: Status-Code
+\item json() : liefert Promise mit Resultat der JSON-Verarbeitung
+\item text() : liefert Promise mit Inhalt der Server-Antwort
+\end{itemize}
+
+\begin{KR}{Fetch API Grundlagen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// GET Request
+fetch('https://api.example.com/data')
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error('Error:', error));
+
+// POST Request
+fetch('https://api.example.com/data', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        key: 'value'
+    })
+})
+    .then(response => response.json())
+    .then(data => console.log(data));
+
+// Mit async/await
+async function fetchData() {
+    try {
+        const response = await fetch('https://api.example.com/data');
+        const data = await response.json();
+        console.log(data);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+\end{lstlisting}
+\end{KR}
 
 \begin{concept}{XMLHttpRequest und Fetch}
     Moderne Ansätze für HTTP-Requests:
@@ -360,6 +1489,40 @@ async function fetchData() {
     \end{center}
 \end{theorem}
 
+\begin{KR}{HTTP Requests mit Fetch}
+1. GET Request:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+fetch("/api/data")
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error(error))
+\end{lstlisting}
+
+2. POST Request:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+fetch("/api/create", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(data)
+})
+\end{lstlisting}
+
+3. Mit async/await:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+async function getData() {
+  try {
+    const response = await fetch("/api/data")
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error(error)
+  }
+}
+\end{lstlisting}
+\end{KR}
+
 \begin{KR}{REST API Implementierung}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 // GET - Daten abrufen
@@ -390,7 +1553,7 @@ fetch('/api/users/123', {
     })
 });
 
-// DELETE - Ressource löschen
+// DELETE - Ressource loeschen
 fetch('/api/users/123', {
     method: 'DELETE'
 });
@@ -421,7 +1584,7 @@ async function login(username, password) {
         headers: {
             'Content-Type': 'application/json',
         },
-        credentials: 'include',  // Für Cookies
+        credentials: 'include',  // Fuer Cookies
         body: JSON.stringify({
             username,
             password
@@ -474,3 +1637,213 @@ ws.addEventListener('close', () => {
 });
 \end{lstlisting}
 \end{concept}
+
+\subsection{REST APIs}
+
+\begin{definition}{REST Prinzipien}
+    Representational State Transfer:
+    \begin{itemize}
+        \item Zustandslos (Stateless)
+        \item Ressourcen-orientiert
+        \item Einheitliche Schnittstelle
+        \item Standard HTTP-Methoden
+    \end{itemize}
+\end{definition}
+
+\begin{theorem}{HTTP-Methoden}
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \hline
+    Methode & Verwendung \\
+    \hline
+    GET & Daten abrufen \\
+    \hline
+    POST & Neue Daten erstellen \\
+    \hline
+    PUT & Daten aktualisieren (komplett) \\
+    \hline
+    PATCH & Daten aktualisieren (teilweise) \\
+    \hline
+    DELETE & Daten löschen \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{theorem}
+
+\begin{KR}{REST API Implementierung mit Express}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+// GET - Alle Benutzer abrufen
+app.get('/api/users', (req, res) => {
+    res.json(users);
+});
+
+// GET - Einzelnen Benutzer abrufen
+app.get('/api/users/:id', (req, res) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    if (!user) return res.status(404).send('User not found');
+    res.json(user);
+});
+
+// POST - Neuen Benutzer erstellen
+app.post('/api/users', (req, res) => {
+    const user = {
+        id: users.length + 1,
+        name: req.body.name
+    };
+    users.push(user);
+    res.status(201).json(user);
+});
+
+// PUT - Benutzer aktualisieren
+app.put('/api/users/:id', (req, res) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    if (!user) return res.status(404).send('User not found');
+    
+    user.name = req.body.name;
+    res.json(user);
+});
+
+// DELETE - Benutzer loeschen
+app.delete('/api/users/:id', (req, res) => {
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    if (!user) return res.status(404).send('User not found');
+    
+    const index = users.indexOf(user);
+    users.splice(index, 1);
+    res.json(user);
+});
+\end{lstlisting}
+\end{KR}
+
+\begin{corollary}{HTTP Status Codes}
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \hline
+    Code & Bedeutung \\
+    \hline
+    200 & OK - Erfolgreich \\
+    \hline
+    201 & Created - Ressource erstellt \\
+    \hline
+    400 & Bad Request - Fehlerhafte Anfrage \\
+    \hline
+    401 & Unauthorized - Nicht authentifiziert \\
+    \hline
+    403 & Forbidden - Keine Berechtigung \\
+    \hline
+    404 & Not Found - Ressource nicht gefunden \\
+    \hline
+    500 & Internal Server Error - Serverfehler \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{corollary}
+
+\subsection{Browser APIs}
+
+\begin{KR}{Geolocation API}
+1. Einmalige Position abfragen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+navigator.geolocation.getCurrentPosition(
+  (position) => {
+    console.log(position.coords.latitude)
+    console.log(position.coords.longitude)
+    console.log(position.coords.accuracy)
+  },
+  (error) => {
+    console.error(error.message)
+  },
+  {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+  }
+)
+\end{lstlisting}
+
+2. Position kontinuierlich überwachen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const watchId = navigator.geolocation.watchPosition(
+  positionCallback,
+  errorCallback,
+  options
+)
+
+// Ueberwachung beenden
+navigator.geolocation.clearWatch(watchId)
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{History API}
+1. Navigation:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Navigation
+history.back()      // Eine Seite zurueck
+history.forward()   // Eine Seite vor
+history.go(-2)      // 2 Seiten zurueck
+\end{lstlisting}
+
+2. History Manipulation:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Neuen Eintrag hinzufuegen
+history.pushState(
+  {page: 1},           // State-Objekt
+  '',                  // Title (meist ignoriert)
+  '/neue-url'          // URL
+)
+
+// Aktuellen Eintrag ersetzen
+history.replaceState(
+  {page: 2},
+  '',
+  '/andere-url'
+)
+\end{lstlisting}
+
+3. Auf Änderungen reagieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+window.addEventListener('popstate', (event) => {
+  console.log(event.state)    // State-Objekt
+  console.log(location.href)  // Aktuelle URL
+})
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Web Workers}
+1. Worker erstellen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// main.js
+const worker = new Worker('worker.js')
+
+worker.postMessage({data: someData})
+
+worker.onmessage = (e) => {
+  console.log('Nachricht vom Worker:', e.data)
+}
+
+// worker.js
+self.onmessage = (e) => {
+  // Daten verarbeiten
+  const result = doSomeHeavyComputation(e.data)
+  self.postMessage(result)
+}
+\end{lstlisting}
+
+2. Worker beenden:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+worker.terminate()  // Im Hauptthread
+self.close()       // Im Worker
+\end{lstlisting}
+
+Wichtig:
+\begin{itemize}
+  \item Worker laufen in separatem Thread
+  \item Kein Zugriff auf DOM
+  \item Kommunikation nur über Nachrichten
+  \item Gut für rechenintensive Aufgaben
+\end{itemize}
+\end{KR}

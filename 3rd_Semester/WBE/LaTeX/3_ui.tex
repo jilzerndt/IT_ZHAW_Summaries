@@ -1,5 +1,13 @@
 \section{UI-Bibliotheken und Komponenten}
 
+\section*{ÜBERSICHT}
+\begin{itemize}
+  \item Frameworks und Bibliotheken
+  \item DOM-Scripting und Abstraktionen
+  \item JSX und SJDON
+  \item Eigene Bibliothek: SuiWeb
+\end{itemize}
+
 \subsection{Frameworks und Bibliotheken}
 
 \begin{definition}{Framework vs. Bibliothek}
@@ -10,14 +18,70 @@
                 \item Funktionen werden nach Bedarf verwendet
                 \item Beispiel: jQuery
             \end{itemize}
+            \includegraphics[width=\linewidth]{images/2025_01_02_22162ee5453ad0230328g-04}
         \item \textbf{Framework}: 
             \begin{itemize}
                 \item Rahmen für die Anwendung
                 \item Kontrolle liegt beim Framework
                 \item "Hollywood-Prinzip": don't call us, we'll call you
             \end{itemize}
+            \includegraphics[width=\linewidth]{images/2025_01_02_22162ee5453ad0230328g-05}
     \end{itemize}
 \end{definition}
+
+\section*{ANSÄTZE IM LAUF DER ZEIT}
+\begin{itemize}
+  \item Statische Webseiten
+  \item Inhalte dynamisch generiert (CGI z.B. Shell Scripts, Perl)
+  \item Serverseitig eingebettete Scriptsprachen (PHP)
+  \item Client Scripting oder Applets (JavaScript, Java Applets, Flash)
+  \item Enterprise Application Server (Java, Java EE)
+  \item MVC Server-Applikationen (Rails, Django)
+  \item JavaScript Server (Node.js)
+  \item Single Page Applikationen (SPAs)
+\end{itemize}
+
+\section*{SERVERSEITE}
+\begin{itemize}
+  \item Verschiedene Technologien möglich
+  \item Zahlreiche Bibliotheken und Frameworks
+  \item Verschiedene Architekturmuster
+  \item Häufig: Model-View-Controller (MVC)
+  \item Beispiel: Ruby on Rails
+\end{itemize}
+
+\begin{concept}{Architektur}
+\begin{itemize}
+    \item \textbf{MVC (Model-View-Controller)}:
+        \begin{itemize}
+            \item Model: Repräsentiert Daten und Geschäftslogik, können Observer über Zustandsänderungen informieren
+            \item View: Bildet UI (z.B. HTML/CSS), kommuniziert mit Controller
+            \item Controller: Verarbeitet Eingaben (z.B. Clicks), aktualisiert Model
+        \end{itemize}
+    \item \textbf{Single Page Apps (SPAs)}:
+        \begin{itemize}
+            \item Vermeidet Neuladen von Seiten
+            \item Inhalte dynamisch nachgeladen (Ajax, REST)
+            \item Bessere Usability durch schnellere UI-Reaktion
+        \end{itemize}
+\end{itemize}
+\end{concept}
+
+\section*{RUBY ON RAILS}
+\begin{itemize}
+  \item Serverseitiges Framework, basierend auf MVC
+  \item Programmiersprache: Ruby\\
+\includegraphics[width=\linewidth]{images/2025_01_02_22162ee5453ad0230328g-09}
+\end{itemize}
+
+\section*{FOKUS AUF DIE CLIENT-SEITE}
+\begin{itemize}
+  \item Programmlogik Richtung Client verschoben
+  \item Zunehmend komplexe User Interfaces
+  \item Asynchrone Serveranfragen, z.B. mit Fetch
+  \item Gute Architektur der Client-App wesentlich
+  \item Diverse Frameworks und Bibliotheken zu diesem Zweck
+\end{itemize}
 
 \begin{concept}{Komponentenbasierte Entwicklung}
     Grundprinzipien:
@@ -30,6 +94,158 @@
         \item Container vs. Präsentations-Komponenten
     \end{itemize}
 \end{concept}
+
+\subsection{DOM-Scripting und Abstraktionen}
+
+\section*{DOM-SCRIPTING}
+\begin{itemize}
+  \item Zahlreiche Funktionen und Attribute verfügbar
+  \item Programme werden schnell unübersichtlich
+  \item Gesucht: geeignete Abstraktionen
+\end{itemize}
+
+\section*{AUFGABE}
+\begin{itemize}
+  \item Zum Vergleich der verschiedenen Ansätze
+  \item Liste aus einem Array erzeugen
+\end{itemize}
+
+\begin{verbatim}
+/* gegeben: */
+let data = ["Maria", "Hans", "Eva", "Peter"]
+<!-- DOM-Struktur entsprechend folgendem Markup aufzubauen: -->
+<ul>
+    <li>Maria</li>
+    <li>Hans</li>
+    <li>Eva</li>
+    <li>Peter</li>
+</ul>
+\end{verbatim}
+
+\section*{DOM-SCRIPTING}
+\begin{verbatim}
+function List (data) {
+    let node = document.createElement("ul")
+    for (let item of data) {
+        let elem = document.createElement("li")
+        let elemText = document.createTextNode(item)
+        elem.appendChild(elemText)
+        node.appendChild(elem)
+    }
+    return node
+}
+\end{verbatim}
+
+\begin{itemize}
+  \item Erste Abstraktion: Listen-Komponente
+  \item Basierend auf DOM-Funktionen
+\end{itemize}
+
+\section*{DOM-SCRIPTING}
+\begin{verbatim}
+function init () {
+    let app = document.querySelector(".app")
+    let data = ["Maria", "Hans", "Eva", "Peter"]
+    render(List(data), app)
+}
+function render (tree, elem) {
+    while (elem.firstChild) { elem.removeChild(elem.firstChild) }
+    elem.appendChild(tree)
+}
+\end{verbatim}
+
+\section*{DOM-SCRIPTING VERBESSERT}
+\begin{verbatim}
+function elt (type, attrs, ...children) {
+    let node = document.createElement(type)
+    Object.keys(attrs).forEach(key => {
+        node.setAttribute(key, attrs[key])
+    })
+    for (let child of children) {
+        if (typeof child != "string") node.appendChild(child)
+        else node.appendChild(document.createTextNode(child))
+    }
+    return node
+}
+\end{verbatim}
+
+\section*{DOM-SCRIPTING VERBESSERT}
+\begin{itemize}
+  \item Damit vereinfachte List-Komponente möglich
+  \item DOM-Funktionen in einer Funktion elt gekappselt
+\end{itemize}
+
+\begin{verbatim}
+function List (data) {
+    return elt("ul", {}, ...data.map(item => elt("li", {}, item)))
+}
+\end{verbatim}
+
+\subsection{JQUERY}
+
+\begin{verbatim}
+function List (data) {
+    return $("<ul>").append(...data.map(item => $("<li>").text(item)))
+}
+function render (tree, elem) {
+    while (elem.firstChild) { elem.removeChild(elem.firstChild) }
+    $(elem).append(tree)
+}
+\end{verbatim}
+
+\begin{itemize}
+  \item List gibt nun ein jQuery-Objekt zurück
+  \item Daher ist eine kleine Anpassung an render erforderlich
+\end{itemize}
+
+\section*{WEB COMPONENTS}
+\begin{itemize}
+  \item Möglichkeit, eigene Elemente zu definieren
+  \item Implementiert mit HTML, CSS und JavaScript
+  \item Implementierung im Shadow DOM verstecken
+\end{itemize}
+
+\begin{verbatim}
+<custom-progress-bar class="size">
+<custom-progress-bar value="25">
+<script>
+    document.querySelector('.size').progress = 75;
+
+\section*{REACT.JS}
+\end{verbatim}
+
+const List = (\{data\}) => (\\
+\\
+\{ data.map(item => (\{item\})) \}\\
+\\
+)\\
+const root = createRoot(document.getElementById('app'))\\
+root.render(\\[0pt]
+<List data=\{["Maria", "Hans", "Eva", "Peter"]\} />\\
+)
+
+\begin{verbatim}
+- XML-Syntax in JavaScript: JSX
+- Muss zu JavaScript übersetzt werden
+- https://reactjs.org
+
+\section*{VUE.JS}
+\end{verbatim}
+
+\begin{verbatim}
+https://vuejs.org
+\end{verbatim}
+
+var app4 = new Vue(\{\\
+el: '\#app',\\
+data: \{\\
+items: [\\
+\{ text: 'Learn JavaScript' \},\\
+\{ text: 'Learn Vue' \},\\
+\{ text: 'Build something awesome' \}\\[0pt]
+]\\
+\}\\
+\})
 
 \subsection{JSX und SJDON}
 
@@ -112,7 +328,19 @@ const element = [
     \end{itemize}
 \end{concept}
 
+
+
 \subsection{State Management}
+
+\begin{formula}{State Management}
+    Zustandsverwaltung in SuiWeb:
+    \begin{itemize}
+        \item \texttt{useState} Hook für lokalen Zustand
+        \item State Updates lösen Re-Rendering aus
+        \item Asynchrone Updates werden gequeued
+        \item Props sind read-only
+    \end{itemize}
+\end{formula}
 
 \begin{concept}{State Hook}
     \begin{itemize}
@@ -219,7 +447,7 @@ const TodoContainer = () => {
         ));
     };
     
-    // Render Präsentationskomponente
+    // Render Praesentationskomponente
     return [TodoList, {
         todos,
         onToggle: toggleTodo,
@@ -227,7 +455,7 @@ const TodoContainer = () => {
     }];
 };
 
-// Präsentationskomponente
+// Praesentationskomponente
 const TodoList = ({todos, onToggle, onAdd}) => [
     "div",
     [TodoForm, {onAdd}],
@@ -255,7 +483,156 @@ const TodoList = ({todos, onToggle, onAdd}) => [
     \end{itemize}
 \end{formula}
 
+\begin{KR}{Komponenten in SuiWeb}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Einfache Komponente
+const MyButton = ({onClick, children}) => [
+    "button",
+    {
+        onclick: onClick,
+        style: "background: khaki"
+    },
+    ...children
+];
+
+// Komponente mit State
+const Counter = () => {
+    const [count, setCount] = useState(0);
+    
+    return [
+        "div",
+        ["button", 
+            {onclick: () => setCount(count + 1)},
+            `Count: ${count}`
+        ]
+    ];
+};
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Container Komponenten}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const MyContainer = () => {
+    let initialState = { items: ["Loading..."] };
+    let [state, setState] = useState(initialState);
+    
+    if (state === initialState) {
+        fetchData()
+            .then(items => setState({items}));
+    }
+    
+    return [
+        MyList, 
+        {items: state.items}
+    ];
+};
+\end{lstlisting}
+\end{KR}
+
+\subsection{Komponenten-Design}
+
+\begin{theorem}{Best Practices}
+    Grundprinzipien für gutes Komponenten-Design:
+    \begin{itemize}
+        \item Single Responsibility Principle
+        \item Trennung von Container und Präsentation
+        \item Vermeidung von tiefer Verschachtelung
+        \item Wiederverwendbarkeit fördern
+        \item Klare Props-Schnittstelle
+    \end{itemize}
+\end{theorem}
+
+\begin{KR}{Komponenten-Struktur}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Container Komponente
+const UserContainer = () => {
+    const [user, setUser] = useState(null);
+    
+    useEffect(() => {
+        fetchUser().then(setUser);
+    }, []);
+    
+    return [UserProfile, {user}];
+};
+
+// Praesentations-Komponente
+const UserProfile = ({user}) => {
+    if (!user) return ["div", "Loading..."];
+    
+    return [
+        "div",
+        ["h2", user.name],
+        ["p", user.email],
+        [UserDetails, {details: user.details}]
+    ];
+};
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Event Handling}
+    Behandlung von Benutzerinteraktionen:
+    \begin{itemize}
+        \item Events als Props übergeben
+        \item Callback-Funktionen für Events
+        \item State Updates in Event Handlern
+        \item Vermeidung von direkter DOM-Manipulation
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Event Handling Beispiel}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const TodoList = () => {
+    const [todos, setTodos] = useState([]);
+    
+    const addTodo = (text) => {
+        setTodos([...todos, {
+            id: Date.now(),
+            text,
+            completed: false
+        }]);
+    };
+    
+    const toggleTodo = (id) => {
+        setTodos(todos.map(todo =>
+            todo.id === id
+                ? {...todo, completed: !todo.completed}
+                : todo
+        ));
+    };
+    
+    return [
+        "div",
+        [TodoForm, {onSubmit: addTodo}],
+        [TodoItems, {
+            items: todos,
+            onToggle: toggleTodo
+        }]
+    ];
+};
+\end{lstlisting}
+\end{KR}
+
+\begin{corollary}{Optimierungen}
+    Möglichkeiten zur Performanzverbesserung:
+    \begin{itemize}
+        \item Virtuelles DOM für effizientes Re-Rendering
+        \item Batching von State Updates
+        \item Memoization von Komponenten
+        \item Lazy Loading von Komponenten
+    \end{itemize}
+\end{corollary}
+
 \subsection{Styling in SuiWeb}
+
+\begin{concept}{Styling in SuiWeb}
+    Verschiedene Möglichkeiten für Styles:
+    \begin{itemize}
+        \item Inline Styles als Strings
+        \item Style-Objekte
+        \item Arrays von Style-Objekten
+        \item Externe CSS-Klassen
+    \end{itemize}
+\end{concept}
 
 \begin{KR}{Style Optionen}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -313,7 +690,7 @@ const List = ({items}) => [
     "ul",
     ...items.map(item => [
         "li",
-        {key: item.id},  // Wichtig für Performance
+        {key: item.id},  // Wichtig fuer Performance
         item.text
     ])
 ];
