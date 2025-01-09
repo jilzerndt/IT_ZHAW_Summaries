@@ -2,7 +2,7 @@
 
 \subsection{Vordefinierte Browser-Objekte}
 
-\begin{definition}{Browser-Objekte}
+\begin{definition}{Browser-Objekte}\\
     Im Browser stehen spezielle globale Objekte zur Verfügung:
     \begin{itemize}
         \item \texttt{window}: Browserfenster und globaler Scope
@@ -14,35 +14,31 @@
         \item \texttt{document}: Das aktuelle HTML-Dokument
         \item \texttt{navigator}: Browser-Informationen
         \item \texttt{history}: Browser-Verlauf
+        \item \texttt{location}: URL-Informationen
     \end{itemize}
 \end{definition}
 
-\begin{KR}{document-Objekt}
-Wichtige Methoden des document-Objekts:
+\begin{KR}{document-Objekt} repräsentiert das aktuelle HTML-Dokument:
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 // Element finden
 document.getElementById("id")  
 document.querySelector("selector") 
 document.querySelectorAll("selector")
-
 // DOM manipulieren
-document.createElement("tag")    
-document.createTextNode("text") 
-document.createAttribute("attr")
-
+document.createElement("tag")       // Element erstellen  
+document.createTextNode("text")     // Textknoten erstellen
+document.createAttribute("attr")    // Attribut erstellen
 // Event Handler
 document.addEventListener("event", handler)
 \end{lstlisting}
 \end{KR}
 
-\begin{KR}{window-Objekt}
-Das window-Objekt als globaler Namespace:
+\begin{KR}{window-Objekt} als globaler Namespace:
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 // Globale Methoden
 window.alert("message")
 window.setTimeout(callback, delay)
 window.requestAnimationFrame(callback)
-
 // Eigenschaften
 window.innerHeight  // Viewport Hoehe
 window.pageYOffset  // Scroll Position
@@ -50,7 +46,42 @@ window.location    // URL Infos
 \end{lstlisting}
 \end{KR}
 
+\begin{KR}{navigator-Objekt} für Browser-Informationen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+navigator.userAgent  // Browser User-Agent
+navigator.language   // Browser Sprache
+navigator.onLine     // Online-Status
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{history-Objekt}für Browser-Verlauf:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+history.length  // Anzahl Eintraege
+history.back()  // Zurueck zur letzten Seite
+history.forward()  // Vorwaerts zur naechsten Seite
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{location-Objekt} für URL-Informationen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+location.href  // URL der Seite
+location.hostname  // Hostname
+location.pathname  // Pfad
+location.search  // Query-Parameter
+location.hash  // Anker
+\end{lstlisting}
+\end{KR} 
+
 \subsection{Document Object Model (DOM)}
+
+structure:
+\begin{itemize}
+    \item element auffinden
+    \item textknoten erzeugen
+    \item elementknoten erzeugen
+    \item attribute setzen
+    \item style anpassen
+\end{itemize}
 
 \begin{concept}{DOM Struktur}
     Das DOM ist eine Baumstruktur des HTML-Dokuments:
@@ -136,51 +167,6 @@ elem.previousSibling    // Vorheriger Geschwisterknoten
 \end{KR}
 
 \begin{KR}{DOM Manipulation}
-Elemente erstellen und manipulieren:
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// Neues Element erstellen
-const newDiv = document.createElement('div');
-const newText = document.createTextNode('Hello');
-newDiv.appendChild(newText);
-
-// Element einfuegen
-parentElem.appendChild(newDiv);
-parentElem.insertBefore(newDiv, referenceElem);
-
-// Element entfernen
-elem.remove();
-parentElem.removeChild(elem);
-
-// Attribute manipulieren
-elem.setAttribute('class', 'myClass');
-elem.getAttribute('class');
-elem.removeAttribute('class');
-
-// HTML/Text Inhalt
-elem.innerHTML = '<span>Text</span>';
-elem.textContent = 'Nur Text';
-\end{lstlisting}
-\end{KR}
-
-\begin{KR}{DOM Navigation}
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// Element finden
-const elem = document.getElementById('myId');
-const elements = document.querySelectorAll('.myClass');
-const firstMatch = document.querySelector('div.myClass');
-
-// Navigation im DOM-Baum
-elem.parentNode          // Elternknoten
-elem.childNodes         // Alle Kindknoten
-elem.children           // Nur Element-Kindknoten
-elem.firstChild         // Erster Kindknoten
-elem.lastChild          // Letzter Kindknoten
-elem.nextSibling        // Naechster Geschwisterknoten
-elem.previousSibling    // Vorheriger Geschwisterknoten
-\end{lstlisting}
-\end{KR}
-
-\begin{KR}{DOM Manipulation}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 // Element erstellen
 const newDiv = document.createElement('div');
@@ -207,7 +193,38 @@ elem.textContent = 'Nur Text';
 \end{lstlisting}
 \end{KR}
 
-\subsection{Events}
+\begin{KR}{DOM Navigation}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Element finden
+const elem = document.getElementById('myId');
+const elements = document.querySelectorAll('.myClass');
+const firstMatch = document.querySelector('div.myClass');
+
+// Navigation im DOM-Baum
+elem.parentNode          // Elternknoten
+elem.childNodes         // Alle Kindknoten
+elem.children           // Nur Element-Kindknoten
+elem.firstChild         // Erster Kindknoten
+elem.lastChild          // Letzter Kindknoten
+elem.nextSibling        // Naechster Geschwisterknoten
+elem.previousSibling    // Vorheriger Geschwisterknoten
+\end{lstlisting}
+\end{KR}
+
+
+
+\pagebreak
+
+\subsection{Event Handling}
+
+structure:
+\begin{itemize}
+    \item event abonnieren/entfernen
+    \item Tastatur-Events
+    \item Maus-Events
+    \item Scroll-Events
+    \item Focus-Events und Ladeereignisse
+\end{itemize}
 
 \begin{concept}{Event Handling}
     Events sind Ereignisse, die im Browser auftreten:
@@ -478,6 +495,8 @@ element.addEventListener('click', (event) => {
 \end{lstlisting}
 \end{code}
 
+\columnbreak
+
 \subsection{Jquery}
 JQuery ist eine freie JavaScript-Bibliothek, die Funktionen zur DOM-Navigation und -Manipulation zur Verfügung stellt.
 
@@ -553,6 +572,8 @@ $(this);
 \end{lstlisting}
 \end{definition}
 
+\pagebreak
+
 \subsection{Graphics}
 
 \begin{definition}{Web-Grafiken}
@@ -626,7 +647,7 @@ circle.setAttribute("fill","cyan")
   \end{itemize}  
 \end{code}
 
-\subsection{Canvas und SVG}
+\subsubsection{Canvas und SVG}
 
 \begin{concept}{Grafik im Browser}
     Zwei Haupttechnologien für Grafiken:
@@ -834,7 +855,17 @@ svg.appendChild(circle);
 \end{lstlisting}
 \end{KR}
 
+\pagebreak
+
 \subsection{Browser API}
+
+structure:
+\begin{itemize}
+    \item Web Storage
+    \item Local Storage
+    \item History
+    \item GeoLocation
+\end{itemize}
 
 Web Storage\\
 Web Storage speichert Daten auf der Seite des Client.
@@ -897,7 +928,7 @@ back & zurück zur letzten Seite \\
 \end{tabular}
 \end{center}
 
-GeoLocation\\
+\begin{code}{GeoLocation}\\
 Mit der GeoLocation-API kann der Standort abgefragt werden.
 
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -911,6 +942,7 @@ function success(pos) {
 function error(err) { ... }
 navigator.geolocation.getCurrentPosition(success, error, options)
 \end{lstlisting}
+\end{code}
 
 \begin{definition}{Storage APIs}
     Browser bieten verschiedene Möglichkeiten zur Datenspeicherung:
@@ -943,7 +975,7 @@ localStorage.clear();  // Alles loeschen
 
 
 
-\subsection{Web Storage}
+\subsubsection{Web Storage}
 
 \begin{concept}{Storage APIs}
     Browser bieten verschiedene Speichermöglichkeiten:
@@ -1005,7 +1037,114 @@ Wichtig zu beachten:
 \end{itemize}
 \end{KR}
 
+\begin{KR}{Geolocation API}
+1. Einmalige Position abfragen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+navigator.geolocation.getCurrentPosition(
+  (position) => {
+    console.log(position.coords.latitude)
+    console.log(position.coords.longitude)
+    console.log(position.coords.accuracy)
+  },
+  (error) => {
+    console.error(error.message)
+  },
+  {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+  }
+)
+\end{lstlisting}
+
+2. Position kontinuierlich überwachen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const watchId = navigator.geolocation.watchPosition(
+  positionCallback,
+  errorCallback,
+  options
+)
+
+// Ueberwachung beenden
+navigator.geolocation.clearWatch(watchId)
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{History API}
+1. Navigation:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Navigation
+history.back()      // Eine Seite zurueck
+history.forward()   // Eine Seite vor
+history.go(-2)      // 2 Seiten zurueck
+\end{lstlisting}
+
+2. History Manipulation:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Neuen Eintrag hinzufuegen
+history.pushState(
+  {page: 1},           // State-Objekt
+  '',                  // Title (meist ignoriert)
+  '/neue-url'          // URL
+)
+
+// Aktuellen Eintrag ersetzen
+history.replaceState(
+  {page: 2},
+  '',
+  '/andere-url'
+)
+\end{lstlisting}
+
+3. Auf Änderungen reagieren:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+window.addEventListener('popstate', (event) => {
+  console.log(event.state)    // State-Objekt
+  console.log(location.href)  // Aktuelle URL
+})
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Web Workers}
+1. Worker erstellen:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// main.js
+const worker = new Worker('worker.js')
+
+worker.postMessage({data: someData})
+
+worker.onmessage = (e) => {
+  console.log('Nachricht vom Worker:', e.data)
+}
+
+// worker.js
+self.onmessage = (e) => {
+  // Daten verarbeiten
+  const result = doSomeHeavyComputation(e.data)
+  self.postMessage(result)
+}
+\end{lstlisting}
+
+2. Worker beenden:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+worker.terminate()  // Im Hauptthread
+self.close()       // Im Worker
+\end{lstlisting}
+
+Wichtig:
+\begin{itemize}
+  \item Worker laufen in separatem Thread
+  \item Kein Zugriff auf DOM
+  \item Kommunikation nur über Nachrichten
+  \item Gut für rechenintensive Aufgaben
+\end{itemize}
+\end{KR}
+
+\columnbreak
+
 \subsection{Client-Server-Interaktion (Formulare)}
+
+\subsubsection{Formular Events}
 
 \begin{definition}{Formulare}
 Formulare ermöglichen Benutzereingaben. Sie gilt als Grundlade für Interaktion mit dem Web.\\
@@ -1171,8 +1310,10 @@ Input types:
 
 
 \begin{center}
-\includegraphics[width=\linewidth]{images/2024_12_29_858f09cde51177c71657g-29}
+\includegraphics[width=0.5\linewidth]{images/2024_12_29_858f09cde51177c71657g-29}
 \end{center}
+
+\subsubsection{GET/POST Methode}
 
 Formulare können auch POST/GET Aktionen ausführen:\\
 Action beschreibt das Skript, welches die Daten annimmt. Method ist die Methode die ausgeführt wird.
@@ -1201,6 +1342,8 @@ form.addEventListener("submit", event => {
 });
 \end{lstlisting}
 \end{definition}
+
+\pagebreak
 
 \subsection{Cookies und Sessions}
 
@@ -1330,6 +1473,8 @@ document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 \end{lstlisting}
 \end{KR}
 
+\pagebreak
+
 \subsection{AJAX und Fetch API}
 
 \begin{concept}{AJAX}
@@ -1370,7 +1515,7 @@ fetch("example/data.txt")
 // -> This is the content of data.txt
 \end{lstlisting}
 
-Response Objekt
+\subsubsection{Response Objekt}
 
 \begin{itemize}
 \item headers : Zugriff auf HTTP-Header-Daten Methoden get, keys, forEach , ...
@@ -1650,25 +1795,7 @@ ws.addEventListener('close', () => {
     \end{itemize}
 \end{definition}
 
-\begin{theorem}{HTTP-Methoden}
-    \begin{center}
-    \begin{tabular}{|l|l|}
-    \hline
-    Methode & Verwendung \\
-    \hline
-    GET & Daten abrufen \\
-    \hline
-    POST & Neue Daten erstellen \\
-    \hline
-    PUT & Daten aktualisieren (komplett) \\
-    \hline
-    PATCH & Daten aktualisieren (teilweise) \\
-    \hline
-    DELETE & Daten löschen \\
-    \hline
-    \end{tabular}
-    \end{center}
-\end{theorem}
+
 
 \begin{KR}{REST API Implementierung mit Express}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -1719,131 +1846,5 @@ app.delete('/api/users/:id', (req, res) => {
 \end{lstlisting}
 \end{KR}
 
-\begin{corollary}{HTTP Status Codes}
-    \begin{center}
-    \begin{tabular}{|l|l|}
-    \hline
-    Code & Bedeutung \\
-    \hline
-    200 & OK - Erfolgreich \\
-    \hline
-    201 & Created - Ressource erstellt \\
-    \hline
-    400 & Bad Request - Fehlerhafte Anfrage \\
-    \hline
-    401 & Unauthorized - Nicht authentifiziert \\
-    \hline
-    403 & Forbidden - Keine Berechtigung \\
-    \hline
-    404 & Not Found - Ressource nicht gefunden \\
-    \hline
-    500 & Internal Server Error - Serverfehler \\
-    \hline
-    \end{tabular}
-    \end{center}
-\end{corollary}
 
-\subsection{Browser APIs}
 
-\begin{KR}{Geolocation API}
-1. Einmalige Position abfragen:
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-navigator.geolocation.getCurrentPosition(
-  (position) => {
-    console.log(position.coords.latitude)
-    console.log(position.coords.longitude)
-    console.log(position.coords.accuracy)
-  },
-  (error) => {
-    console.error(error.message)
-  },
-  {
-    enableHighAccuracy: true,
-    timeout: 5000,
-    maximumAge: 0
-  }
-)
-\end{lstlisting}
-
-2. Position kontinuierlich überwachen:
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-const watchId = navigator.geolocation.watchPosition(
-  positionCallback,
-  errorCallback,
-  options
-)
-
-// Ueberwachung beenden
-navigator.geolocation.clearWatch(watchId)
-\end{lstlisting}
-\end{KR}
-
-\begin{KR}{History API}
-1. Navigation:
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// Navigation
-history.back()      // Eine Seite zurueck
-history.forward()   // Eine Seite vor
-history.go(-2)      // 2 Seiten zurueck
-\end{lstlisting}
-
-2. History Manipulation:
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// Neuen Eintrag hinzufuegen
-history.pushState(
-  {page: 1},           // State-Objekt
-  '',                  // Title (meist ignoriert)
-  '/neue-url'          // URL
-)
-
-// Aktuellen Eintrag ersetzen
-history.replaceState(
-  {page: 2},
-  '',
-  '/andere-url'
-)
-\end{lstlisting}
-
-3. Auf Änderungen reagieren:
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-window.addEventListener('popstate', (event) => {
-  console.log(event.state)    // State-Objekt
-  console.log(location.href)  // Aktuelle URL
-})
-\end{lstlisting}
-\end{KR}
-
-\begin{KR}{Web Workers}
-1. Worker erstellen:
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// main.js
-const worker = new Worker('worker.js')
-
-worker.postMessage({data: someData})
-
-worker.onmessage = (e) => {
-  console.log('Nachricht vom Worker:', e.data)
-}
-
-// worker.js
-self.onmessage = (e) => {
-  // Daten verarbeiten
-  const result = doSomeHeavyComputation(e.data)
-  self.postMessage(result)
-}
-\end{lstlisting}
-
-2. Worker beenden:
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-worker.terminate()  // Im Hauptthread
-self.close()       // Im Worker
-\end{lstlisting}
-
-Wichtig:
-\begin{itemize}
-  \item Worker laufen in separatem Thread
-  \item Kein Zugriff auf DOM
-  \item Kommunikation nur über Nachrichten
-  \item Gut für rechenintensive Aufgaben
-\end{itemize}
-\end{KR}

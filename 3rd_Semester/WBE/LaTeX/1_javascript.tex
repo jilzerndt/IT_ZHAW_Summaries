@@ -1,5 +1,7 @@
 \section{JavaScript}
 
+\subsection{Grundlagen und Datentypen}
+
 \begin{concept}{JavaScript Grundlagen}
     \begin{itemize}
         \item Veröffentlicht 1995 für Netscape Navigator 2.0
@@ -10,8 +12,6 @@
         \item Läuft im Browser und serverseitig (Node.js)
     \end{itemize}
 \end{concept}
-
-\subsection{Grundlagen und Datentypen}
 
 \begin{formula}{Web-Konsole}
     JavaScript Console im Browser und Node.js:
@@ -212,6 +212,8 @@ let {name, job} = person;
     \includegraphics[width=0.5\linewidth]{images/array_cheatsheet.png}
 \end{formula}
 
+\subsubsection{JSON}
+
 \begin{concept}{JSON}
     JavaScript Object Notation:
     \begin{itemize}
@@ -343,6 +345,8 @@ myCounter.decrement(); // 1
 \end{lstlisting}
 \end{KR}
 
+\subsubsection{Modulsystem - EVTL ANDERER ORT IN ZSMF}
+
 \begin{concept}{Modulsystem in JavaScript}
     \begin{itemize}
         \item \texttt{import} und \texttt{export} für Module
@@ -445,7 +449,18 @@ console.log(e18.salary) /* \ 4500 */
 \end{lstlisting}
 \end{examplecode}
 
-\subsubsection{Filesystem}
+\columnbreak
+
+
+
+\subsection{Asynchrone Programmierung}
+
+\subsubsection{File API}
+
+\begin{definition}{File API}
+    Mit require('fs') wird auf die File-Api zugegriffen.
+    Die File-Api bietet Funktionen zum Lesen und Schreiben von Dateien.
+\end{definition}
 
 \begin{code}{Pfade der Datei}
 Um Pfad-informationen einer Datei zu ermitteln muss man dies mit require('path') machen.
@@ -458,11 +473,6 @@ path.extname(notes) /* .txt */
 path.basename(notes, path.extname(notes)) /* notes */
 \end{lstlisting}
 \end{code}
-
-\begin{definition}{File API}
-    Mit require('fs') wird auf die File-Api zugegriffen.
-    Die File-Api bietet Funktionen zum Lesen und Schreiben von Dateien.
-\end{definition}
 
 \begin{formula}{FS Funktionen}
 \begin{itemize}
@@ -480,7 +490,20 @@ path.basename(notes, path.extname(notes)) /* notes */
 \end{itemize}
 \end{formula}
 
-\begin{code}{Datei-Informationen}
+\begin{KR}{Asynchrone Dateioperationen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const fs = require('fs')
+fs.access('test.txt', fs.constants.R_OK | fs.constants.W_OK, (err) => {
+    if (err) {
+        console.error('no access!')
+        return
+    }
+    console.log('can read/write')
+})
+\end{lstlisting}
+\end{KR}
+
+\begin{examplecode}{Datei-Informationen}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
 const fs = require('fs')
 fs.stat('test.txt' , (err, stats) => {
@@ -494,7 +517,7 @@ fs.stat('test.txt' , (err, stats) => {
 stats.size /* 1024000 = ca 1MB */
 })
 \end{lstlisting}
-\end{code}
+\end{examplecode}
 
 \begin{examplecode}{Dateien lesen und schreiben}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -514,7 +537,17 @@ fs.writeFile('/Users/bkrt/test.txt', content, (err) => {
 \end{lstlisting}
 \end{examplecode}
 
-\subsection{Asynchrone Programmierung}
+\begin{definition}{Streams}
+    Streams sind Sequenzen von Daten, die in Teilen verarbeitet werden.
+    \begin{itemize}
+        \item \texttt{Readable}: Datenquelle
+        \item \texttt{Writable}: Datenziel
+        \item \texttt{Duplex}: Beides
+        \item \texttt{Transform}: Daten umwandeln
+    \end{itemize}
+\end{definition}
+
+\subsubsection{Event Loop, Callbacks und Timer}
 
 \begin{concept}{Asynchrone Programmierung}\\
     JavaScript verwendet verschiedene Mechanismen für asynchrone Operationen:
@@ -525,7 +558,7 @@ fs.writeFile('/Users/bkrt/test.txt', content, (err) => {
     \end{itemize}
 \end{concept}
 
-\begin{concept}{Event Loop}
+\begin{concept}{Event Loop und Threads}
     \begin{itemize}
         \item JavaScript ist single-threaded
         \item Event Loop verarbeitet asynchrone Operationen
@@ -690,6 +723,44 @@ Promise.race([promise1, promise2])
 \end{lstlisting}
 \end{KR}
 
+\begin{KR}{Promise Erstellung und Verwendung}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Promise erstellen
+const myPromise = new Promise((resolve, reject) => {
+    // Asynchrone Operation
+    setTimeout(() => {
+        if (/* erfolg */) {
+            resolve(result);
+        } else {
+            reject(error);
+        }
+    }, 1000);
+});
+
+// Promise verwenden
+myPromise
+    .then(result => {
+        // Erfolgsfall
+    })
+    .catch(error => {
+        // Fehlerfall
+    })
+    .finally(() => {
+        // Wird immer ausgefuhrt
+    });
+
+// Async/Await Syntax
+async function myAsync() {
+    try {
+        const result = await myPromise;
+        // Erfolgsfall
+    } catch (error) {
+        // Fehlerfall
+    }
+}
+\end{lstlisting}
+\end{KR}
+
 \begin{concept}{Promise-Konstruktor erhält resolver-Funktion}
 
 Rückgabe einer Promise: potentieller Wert kann später erfüllt oder zurückgewiesen werden
@@ -805,45 +876,63 @@ add1(10).then(console.log)
 \end{lstlisting}
 \end{code}
 
-\begin{KR}{Promise Erstellung und Verwendung}
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// Promise erstellen
-const myPromise = new Promise((resolve, reject) => {
-    // Asynchrone Operation
-    setTimeout(() => {
-        if (/* erfolg */) {
-            resolve(result);
-        } else {
-            reject(error);
-        }
-    }, 1000);
-});
 
-// Promise verwenden
-myPromise
-    .then(result => {
-        // Erfolgsfall
-    })
-    .catch(error => {
-        // Fehlerfall
-    })
-    .finally(() => {
-        // Wird immer ausgefuhrt
-    });
 
-// Async/Await Syntax
-async function myAsync() {
-    try {
-        const result = await myPromise;
-        // Erfolgsfall
-    } catch (error) {
-        // Fehlerfall
-    }
-}
-\end{lstlisting}
-\end{KR}
+\pagebreak
 
-\subsection{Node.js und Module}
+\subsection{Webserver}
+
+\subsubsection{Server im Internet}
+
+\subsubsection{File-Transfer (File Server)}
+
+\subsubsection{HTTP-Server}
+
+\begin{theorem}{HTTP-Methoden}
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \hline
+    Methode & Verwendung \\
+    \hline
+    GET & Daten abrufen \\
+    \hline
+    POST & Neue Daten erstellen \\
+    \hline
+    PUT & Daten aktualisieren (komplett) \\
+    \hline
+    PATCH & Daten aktualisieren (teilweise) \\
+    \hline
+    DELETE & Daten löschen \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{theorem}
+
+\begin{corollary}{HTTP Status Codes}
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \hline
+    Code & Bedeutung \\
+    \hline
+    200 & OK - Erfolgreich \\
+    \hline
+    201 & Created - Ressource erstellt \\
+    \hline
+    400 & Bad Request - Fehlerhafte Anfrage \\
+    \hline
+    401 & Unauthorized - Nicht authentifiziert \\
+    \hline
+    403 & Forbidden - Keine Berechtigung \\
+    \hline
+    404 & Not Found - Ressource nicht gefunden \\
+    \hline
+    500 & Internal Server Error - Serverfehler \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{corollary}
+
+\subsubsection{Node.js und Module}
 
 \begin{concept}{Node.js}
     \begin{itemize}
@@ -925,7 +1014,7 @@ export default class MyClass { /* ... */ }
     \end{itemize}
 \end{formula}
 
-\subsection{Einfacher Webserver (Node.js)}
+\paragraph{Einfacher Webserver (Node.js)}
 
 \begin{concept}{Node.js Webserver}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -984,6 +1073,10 @@ rq.write("And good bye\n")
 rq.end()
 \end{lstlisting}
 \end{examplecode}
+
+\columnbreak
+
+\subsubsection{REST API und Express.js}
 
 \begin{definition}{REST API}
 \begin{itemize}
@@ -1048,7 +1141,9 @@ app.delete('/user', function (req, res) {
 \end{lstlisting}
 \end{KR}
 
-\subsection{Testing mit Jasmine}
+\columnbreak
+
+\subsection{Jasmine (Testing)}
 
 \begin{concept}{Test-Driven Development}
     \begin{itemize}
