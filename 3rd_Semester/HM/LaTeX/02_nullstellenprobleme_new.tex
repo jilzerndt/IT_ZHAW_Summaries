@@ -425,12 +425,89 @@ def secant_safe(f, x0, x1, tol=1e-6, max_iter=100):
 \end{lstlisting}
 \end{examplecode}
 
-\begin{examplecode}{Fehlerabschätzung}
-    %TODO: für verschiedene Abbruchkriterien    
-    \begin{lstlisting}[language=Python, style=basesmol]
+
+\begin{examplecode}{Fehlerabschätzung und Abbruchkriterien}
+\begin{lstlisting}[language=Python, style=basesmol]
 def error_estimate(f, x, eps=1e-5):
-    if f(x - eps) * f(x + eps) < 0:
-        return eps
+    """
+    Schaetzt den Fehler durch Vorzeichenwechsel-Test
+    Returns: Fehlerschranke eps wenn Vorzeichenwechsel, sonst None
+    """
+    fx_left = f(x - eps)
+    fx_right = f(x + eps)
+    
+    if fx_left * fx_right < 0:
+        return eps  # Nullstelle liegt in (x-eps, x+eps)
     return None
-    \end{lstlisting}
+
+def convergence_criteria(x_new, x_old, f_new, f_old, tol=1e-6):
+    """
+    Prueft verschiedene Abbruchkriterien
+    Returns: (bool, str) - (konvergiert?, grund)
+    """
+    # Absoluter Fehler im Funktionswert
+    if abs(f_new) < tol:
+        return True, "Funktionswert < tol"
+        
+    # Relative Aenderung der x-Werte
+    if abs(x_new - x_old) < tol * (1 + abs(x_new)):
+        return True, "Relative Aenderung < tol"
+        
+    # Relative Aenderung der Funktionswerte
+    if abs(f_new - f_old) < tol * (1 + abs(f_new)):
+        return True, "Funktionsaenderung < tol"
+        
+    # Divergenzcheck
+    if abs(f_new) > 2 * abs(f_old):
+        return False, "Divergenz detektiert"
+        
+    return False, "Noch nicht konvergiert"
+
+def root_finder_with_error(f, x0, tol=1e-6, max_iter=100):
+    """
+    Nullstellensuche mit verschiedenen Konvergenzkriterien
+    und Fehlerabschaetzung
+    """
+    x_old = x0
+    f_old = f(x_old)
+    
+    for i in range(max_iter):
+        # Iterationsschritt (hier Newton als Beispiel)
+        x_new = x_old - f_old/derivative(f, x_old)
+        f_new = f(x_new)
+        
+        # Pruefe Konvergenzkriterien
+        converged, reason = convergence_criteria(
+            x_new, x_old, f_new, f_old, tol)
+            
+        if converged:
+            # Schaetze finalen Fehler
+            error = error_estimate(f, x_new, tol)
+            return {
+                'root': x_new,
+                'iterations': i+1,
+                'error_bound': error,
+                'convergence_reason': reason
+            }
+            
+        x_old, f_old = x_new, f_new
+        
+    raise ValueError(f"Keine Konvergenz nach {max_iter} Iterationen")
+
+# Beispielnutzung
+def example_function(x):
+    return x**2 - 2
+
+result = root_finder_with_error(example_function, 1.0)
+print(f"Nullstelle: {result['root']:.10f}")
+print(f"Iterationen: {result['iterations']}")
+print(f"Fehlerschranke: {result['error_bound']:.10f}")
+print(f"Konvergenzgrund: {result['convergence_reason']}")
+
+# Ausgabe etwa:
+# Nullstelle: 1.4142135624
+# Iterationen: 5
+# Fehlerschranke: 1e-06
+# Konvergenzgrund: Funktionswert < tol
+\end{lstlisting}
 \end{examplecode}
