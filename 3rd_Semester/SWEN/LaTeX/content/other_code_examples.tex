@@ -1,0 +1,393 @@
+\begin{example}{Extract Method Refactoring}\\
+\textbf{Vorher:}
+\begin{lstlisting}[language=Java, style=base]
+void printOwing() {
+    printBanner();
+    
+    // calculate outstanding
+    double outstanding = 0.0;
+    for (Order order : orders) {
+        outstanding += order.getAmount();
+    }
+    
+    // print details
+    System.out.println("name: " + name);
+    System.out.println("amount: " + outstanding);
+}
+\end{lstlisting}
+
+\textbf{Nachher:}
+\begin{lstlisting}[language=Java, style=base]
+void printOwing() {
+    printBanner();
+    double outstanding = calculateOutstanding();
+    printDetails(outstanding);
+}
+
+double calculateOutstanding() {
+    double result = 0.0;
+    for (Order order : orders) {
+        result += order.getAmount();
+    }
+    return result;
+}
+
+void printDetails(double outstanding) {
+    System.out.println("name: " + name);
+    System.out.println("amount: " + outstanding);
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Unit Test}\\
+\textbf{Zu testende Klasse:}
+\begin{lstlisting}[language=Java, style=base]
+public class Calculator {
+    public int add(int a, int b) {
+        return a + b;
+    }
+}
+\end{lstlisting}
+
+\textbf{Test:}
+\begin{lstlisting}[language=Java, style=base]
+@Test
+public class CalculatorTest {
+    private Calculator calc;
+    
+    @Before
+    public void setup() {
+        calc = new Calculator();
+    }
+    
+    @Test
+    public void testAdd() {
+        assertEquals(4, calc.add(2, 2));
+        assertEquals(0, calc.add(-2, 2));
+        assertEquals(-4, calc.add(-2, -2));
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{BDD Test}\\
+\textbf{Feature File:}
+\begin{lstlisting}[style=basesmol]
+Feature: Calculator Addition
+  Scenario: Add two positive numbers
+    Given I have a calculator
+    When I add 2 and 2
+    Then the result should be 4
+    
+  Scenario: Add positive and negative numbers
+    Given I have a calculator
+    When I add -2 and 2
+    Then the result should be 0
+\end{lstlisting}
+
+\textbf{Step Definitions:}
+\begin{lstlisting}[language=Java, style=base]
+public class CalculatorSteps {
+    private Calculator calc;
+    private int result;
+    
+    @Given("I have a calculator")
+    public void createCalculator() {
+        calc = new Calculator();
+    }
+    
+    @When("I add {int} and {int}")
+    public void addNumbers(int a, int b) {
+        result = calc.add(a, b);
+    }
+    
+    @Then("the result should be {int}")
+    public void checkResult(int expected) {
+        assertEquals(expected, result);
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Client-Server Implementation}\\
+\textbf{Aufgabe:} Implementieren Sie einen einfachen Echo-Server mit Java.
+
+\textbf{Lösung:}
+\begin{lstlisting}[language=Java, style=base]
+// Server
+public class EchoServer {
+    public static void main(String[] args) {
+        try (ServerSocket server = new ServerSocket(8080)) {
+            while (true) {
+                Socket client = server.accept();
+                new Thread(() -> handleClient(client)).start();
+            }
+        }
+    }
+    
+    private static void handleClient(Socket client) {
+        try (
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(client.getInputStream()));
+            PrintWriter out = new PrintWriter(
+                client.getOutputStream(), true)
+        ) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                out.println("Echo: " + line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+// Client
+public class EchoClient {
+    public static void main(String[] args) {
+        try (
+            Socket socket = new Socket("localhost", 8080);
+            PrintWriter out = new PrintWriter(
+                socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream()))
+        ) {
+            out.println("Hello Server!");
+            System.out.println(in.readLine());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Publish-Subscribe Pattern}\\
+\textbf{Aufgabe:} Implementieren Sie ein einfaches Event-System.
+
+\textbf{Lösung:}
+\begin{lstlisting}[language=Java, style=base]
+public class EventBus {
+    private Map<String, List<EventHandler>> handlers = new HashMap<>();
+    
+    public void subscribe(String event, EventHandler handler) {
+        handlers.computeIfAbsent(event, k -> new ArrayList<>())
+               .add(handler);
+    }
+    
+    public void publish(String event, String data) {
+        if (handlers.containsKey(event)) {
+            handlers.get(event)
+                   .forEach(handler -> handler.handle(data));
+        }
+    }
+}
+
+interface EventHandler {
+    void handle(String data);
+}
+
+// Verwendung
+EventBus bus = new EventBus();
+bus.subscribe("userLogin", data -> 
+    System.out.println("User logged in: " + data));
+bus.publish("userLogin", "john_doe");
+\end{lstlisting}
+\end{example}
+
+\begin{example}{JDBC Basisbeispiel}
+\begin{lstlisting}[language=Java, style=base]
+import java.sql.*;
+
+public class DbTest {
+    public static void main(String[] args) 
+            throws SQLException {
+        // Verbindung aufbauen
+        Connection con = DriverManager.getConnection(
+            "jdbc:postgresql://test.zhaw.ch/testdb",
+            "user", "password");
+            
+        // Statement erstellen und ausfuehren
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery(
+            "SELECT * FROM test ORDER BY name");
+            
+        // Ergebnisse verarbeiten
+        while (rs.next()) {
+            System.out.println(
+                "Name: " + rs.getString("name"));
+        }
+        
+        // Aufraeumen
+        rs.close();
+        stmt.close();
+        con.close();
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example2}{DAO Implementation}
+\begin{lstlisting}[language=Java, style=base]
+public interface ArticleDAO {
+    void insert(Article item);
+    void update(Article item);
+    void delete(Article item);
+    Article findById(int id);
+    Collection<Article> findAll();
+    Collection<Article> findByName(String name);
+}
+
+public class Article {
+    private long id;
+    private String name;
+    private float price;
+    
+    // Getter/Setter
+}
+
+public class JdbcArticleDAO implements ArticleDAO {
+    private Connection conn;
+    
+    public void insert(Article item) {
+        PreparedStatement stmt = conn.prepareStatement(
+            "INSERT INTO articles (name, price) VALUES (?, ?)");
+        stmt.setString(1, item.getName());
+        stmt.setFloat(2, item.getPrice());
+        stmt.executeUpdate();
+    }
+    // weitere Implementierungen
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{example}{Parent-Child Beziehung mit JPA}
+\begin{lstlisting}[language=Java, style=base]
+@Entity
+public class Department {
+    @Id @GeneratedValue
+    private Long id;
+    
+    private String name;
+    
+    @OneToMany(mappedBy = "department")
+    private List<Employee> employees;
+}
+
+@Entity
+public class Employee {
+    @Id @GeneratedValue
+    private Long id;
+    
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+    
+    private String name;
+    private double salary;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Spring Data Repository}
+\begin{lstlisting}[language=Java, style=base]
+@Repository
+public interface SaleRepository 
+        extends CrudRepository<Sale, String> {
+    
+    List<Sale> findOrderByDateTime();
+    
+    List<Sale> findByDateTime(
+        final LocalDateTime dateTime);
+}
+
+@Service
+public class ProcessSaleHandler {
+    private final ProductDescriptionRepository catalog;
+    private final SaleRepository saleRepository;
+    
+    @Transactional
+    public void endSale() {
+        assert(currentSale != null 
+            && !currentSale.isComplete());
+        this.currentSale.becomeComplete();
+        this.saleRepository.save(currentSale);
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Abstract Factory: POS Terminal}
+\begin{lstlisting}[language=Java, style=base]
+public interface IJavaPOSDevicesFactory {
+    CashDrawer getNewCashDrawer();
+    CoinDispenser getNewCoinDispenser();
+    // weitere Methoden
+}
+
+public class IBMJavaPOSDevicesFactory 
+        implements IJavaPOSDevicesFactory {
+    public CashDrawer getNewCashDrawer() {
+        return new com.ibm.pos.jpos.CashDrawer();
+    }
+    // weitere Implementierungen
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Command: Persistenz}
+\begin{lstlisting}[language=Java, style=base]
+public interface ICommand {
+    void execute();
+    void undo();
+}
+
+public class DBUpdateCommand implements ICommand {
+    private PersistentObject object;
+    
+    public void execute() {
+        // Update in Datenbank
+    }
+    
+    public void undo() {
+        // Aenderung rueckgaengig machen
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Template Method: GUI Framework}
+\begin{lstlisting}[language=Java, style=base]
+public abstract class GUIComponent {
+    // Template Method
+    public final void update() {
+        clearBackground();
+        repaint(); // Hook Method
+    }
+    
+    protected abstract void repaint();
+}
+
+public class MyButton extends GUIComponent {
+    protected void repaint() {
+        // Button-spezifische Implementation
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Spring Data Repository}
+\begin{lstlisting}[language=Java, style=base]
+@Repository
+public interface UserRepository 
+        extends JpaRepository<User, Long> {
+    // Methode wird automatisch implementiert
+    List<User> findByLastNameOrderByFirstNameAsc(
+        String lastName);
+    
+    // SQL-Query via Annotation
+    @Query("SELECT u FROM User u WHERE u.active = true")
+    List<User> findActiveUsers();
+}
+\end{lstlisting}
+\end{example}

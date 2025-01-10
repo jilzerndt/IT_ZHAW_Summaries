@@ -63,37 +63,7 @@ Grundlegende Schritte für Datenbankzugriff:
 \end{enumerate}
 \end{KR}
 
-\begin{example}{JDBC Basisbeispiel}
-\begin{lstlisting}[language=Java, style=base]
-import java.sql.*;
 
-public class DbTest {
-    public static void main(String[] args) 
-            throws SQLException {
-        // Verbindung aufbauen
-        Connection con = DriverManager.getConnection(
-            "jdbc:postgresql://test.zhaw.ch/testdb",
-            "user", "password");
-            
-        // Statement erstellen und ausfuehren
-        Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery(
-            "SELECT * FROM test ORDER BY name");
-            
-        // Ergebnisse verarbeiten
-        while (rs.next()) {
-            System.out.println(
-                "Name: " + rs.getString("name"));
-        }
-        
-        // Aufraeumen
-        rs.close();
-        stmt.close();
-        con.close();
-    }
-}
-\end{lstlisting}
-\end{example}
 
 \subsection{Design Patterns für Persistenz}
 
@@ -143,39 +113,7 @@ Schritte zur Implementierung eines DAOs:
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{DAO Implementation}
-\begin{lstlisting}[language=Java, style=base]
-public interface ArticleDAO {
-    void insert(Article item);
-    void update(Article item);
-    void delete(Article item);
-    Article findById(int id);
-    Collection<Article> findAll();
-    Collection<Article> findByName(String name);
-}
 
-public class Article {
-    private long id;
-    private String name;
-    private float price;
-    
-    // Getter/Setter
-}
-
-public class JdbcArticleDAO implements ArticleDAO {
-    private Connection conn;
-    
-    public void insert(Article item) {
-        PreparedStatement stmt = conn.prepareStatement(
-            "INSERT INTO articles (name, price) VALUES (?, ?)");
-        stmt.setString(1, item.getName());
-        stmt.setFloat(2, item.getPrice());
-        stmt.executeUpdate();
-    }
-    // weitere Implementierungen
-}
-\end{lstlisting}
-\end{example2}
 
 \subsection{Java Persistence API (JPA)}
 
@@ -233,33 +171,7 @@ JPA ist der Java-Standard für O/R-Mapping:
 \end{enumerate}
 \end{KR}
 
-\begin{example}{Parent-Child Beziehung mit JPA}
-\begin{lstlisting}[language=Java, style=base]
-@Entity
-public class Department {
-    @Id @GeneratedValue
-    private Long id;
-    
-    private String name;
-    
-    @OneToMany(mappedBy = "department")
-    private List<Employee> employees;
-}
 
-@Entity
-public class Employee {
-    @Id @GeneratedValue
-    private Long id;
-    
-    @ManyToOne
-    @JoinColumn(name = "department_id")
-    private Department department;
-    
-    private String name;
-    private double salary;
-}
-\end{lstlisting}
-\end{example}
 
 \subsection{Repository Pattern}
 
@@ -273,33 +185,7 @@ Das Repository Pattern bietet eine zusätzliche Abstraktionsschicht über der Da
 \end{itemize}
 \end{concept}
 
-\begin{example}{Spring Data Repository}
-\begin{lstlisting}[language=Java, style=base]
-@Repository
-public interface SaleRepository 
-        extends CrudRepository<Sale, String> {
-    
-    List<Sale> findOrderByDateTime();
-    
-    List<Sale> findByDateTime(
-        final LocalDateTime dateTime);
-}
 
-@Service
-public class ProcessSaleHandler {
-    private final ProductDescriptionRepository catalog;
-    private final SaleRepository saleRepository;
-    
-    @Transactional
-    public void endSale() {
-        assert(currentSale != null 
-            && !currentSale.isComplete());
-        this.currentSale.becomeComplete();
-        this.saleRepository.save(currentSale);
-    }
-}
-\end{lstlisting}
-\end{example}
 
 \begin{remark}
 Spring Data unterstützt die automatische Generierung von Repository-Implementierungen basierend auf Methodennamen. Dies reduziert den Implementierungsaufwand erheblich.

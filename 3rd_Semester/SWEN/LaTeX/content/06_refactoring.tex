@@ -1,0 +1,259 @@
+\section{Implementation, Refactoring und Testing}
+
+\subsection{Von Design zu Code}
+
+\begin{concept}{Implementierungsstrategien}
+\textbf{1. Bottom-Up Entwicklung:}
+\begin{itemize}
+    \item Implementierung beginnt mit Basisbausteinen
+    \item Schrittweise Integration zu größeren Komponenten
+    \item \textbf{Vorteile:} Gründlich, solide Basis
+    \item \textbf{Nachteile:} Spätes Feedback
+\end{itemize}
+
+\textbf{2. Agile Entwicklung:}
+\begin{itemize}
+    \item Inkrementelle Entwicklung in Sprints
+    \item Kontinuierliche Integration und Auslieferung
+    \item \textbf{Vorteile:} Flexibilität, schnelles Feedback
+    \item \textbf{Nachteile:} Mögliche Restrukturierung nötig
+\end{itemize}
+\end{concept}
+
+\begin{example}{Bottom-Up vs. Agile Entwicklung}
+\textbf{Szenario: Entwicklung eines Onlineshops}
+
+\begin{lstlisting}[language=Java]
+// Bottom-Up Ansatz
+// 1. Basisklassen
+public class Product {
+    private String id;
+    private String name;
+    private BigDecimal price;
+}
+
+public class OrderItem {
+    private Product product;
+    private int quantity;
+}
+
+// 2. Zusammengesetzte Klassen
+public class Order {
+    private List<OrderItem> items;
+    private Customer customer;
+}
+
+// Agiler Ansatz
+// 1. Minimales funktionierendes System
+public class SimpleOrder {
+    public void addProduct(String productId) {
+        // Minimale Implementation
+    }
+}
+
+// 2. Inkrementelle Erweiterung
+public class EnhancedOrder {
+    public void addProduct(String productId, int qty) {
+        // Erweiterte Funktionalitaet
+    }
+    
+    public BigDecimal calculateTotal() {
+        // Neue Funktion
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{KR}{Test-Driven Development (TDD)}
+\textbf{Red-Green-Refactor Zyklus:}
+\begin{lstlisting}[language=Java]
+// 1. Red: Test schreiben
+@Test
+void calculatesOrderTotal() {
+    Order order = new Order();
+    order.addItem(new Product("p1", new Money(10)));
+    order.addItem(new Product("p2", new Money(20)));
+    
+    Money total = order.getTotal();
+    
+    assertEquals(new Money(30), total);
+}
+
+// 2. Green: Minimale Implementation
+public class Order {
+    private List<Product> items = new ArrayList<>();
+    
+    public void addItem(Product p) {
+        items.add(p);
+    }
+    
+    public Money getTotal() {
+        return items.stream()
+            .map(Product::getPrice)
+            .reduce(Money.ZERO, Money::add);
+    }
+}
+
+// 3. Refactor: Code verbessern
+public class Order {
+    private List<OrderItem> items = new ArrayList<>();
+    
+    public void addItem(Product p) {
+        addItem(p, 1);
+    }
+    
+    public void addItem(Product p, int quantity) {
+        items.add(new OrderItem(p, quantity));
+    }
+    
+    public Money getTotal() {
+        return items.stream()
+            .map(OrderItem::getSubtotal)
+            .reduce(Money.ZERO, Money::add);
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{example}{Behavior-Driven Development (BDD)}
+\begin{lstlisting}[style=basesmol]
+Feature: Order Calculation
+  As a customer
+  I want to see my order total
+  So that I know how much I need to pay
+
+  Scenario: Calculate order with multiple items
+    Given I have an empty shopping cart
+    When I add 2 units of product "P1" at $10 each
+    And I add 1 unit of product "P2" at $20
+    Then my order total should be $40
+
+@Test
+void calculatesOrderWithMultipleItems() {
+    // Given
+    ShoppingCart cart = new ShoppingCart();
+    
+    // When
+    cart.addItem(new Product("P1", 10.00), 2);
+    cart.addItem(new Product("P2", 20.00), 1);
+    
+    // Then
+    assertEquals(40.00, cart.getTotal());
+}
+\end{lstlisting}
+\end{example}
+
+\begin{KR}{Effektives Refactoring}
+\textbf{1. Code Smell: Lange Methode}
+\begin{lstlisting}[language=Java]
+// Vor Refactoring
+public class OrderProcessor {
+    public void processOrder(Order order) {
+        // Validierung
+        if (order == null) throw new IllegalArgumentException();
+        if (order.getItems().isEmpty()) 
+            throw new EmptyOrderException();
+        
+        // Lagerpruefung
+        for (OrderItem item : order.getItems()) {
+            if (!inventory.hasStock(item.getProduct(), 
+                                  item.getQuantity())) {
+                throw new OutOfStockException();
+            }
+        }
+        
+        // Bezahlung
+        PaymentResult result = 
+            paymentService.process(order.getTotal());
+        if (!result.isSuccessful()) {
+            throw new PaymentFailedException();
+        }
+        
+        // Versand
+        shippingService.schedule(order);
+    }
+}
+
+// Nach Refactoring
+public class OrderProcessor {
+    public void processOrder(Order order) {
+        validateOrder(order);
+        checkInventory(order);
+        processPayment(order);
+        scheduleShipping(order);
+    }
+    
+    private void validateOrder(Order order) {
+        if (order == null) 
+            throw new IllegalArgumentException();
+        if (order.getItems().isEmpty()) 
+            throw new EmptyOrderException();
+    }
+    
+    private void checkInventory(Order order) {
+        order.getItems().forEach(this::checkItemStock);
+    }
+    
+    private void checkItemStock(OrderItem item) {
+        if (!inventory.hasStock(item.getProduct(), 
+                              item.getQuantity())) {
+            throw new OutOfStockException();
+        }
+    }
+    
+    private void processPayment(Order order) {
+        PaymentResult result = 
+            paymentService.process(order.getTotal());
+        if (!result.isSuccessful()) {
+            throw new PaymentFailedException();
+        }
+    }
+    
+    private void scheduleShipping(Order order) {
+        shippingService.schedule(order);
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+[Continue with Testing section examples...]
+
+\begin{example}{Unit Testing Best Practices}
+\begin{lstlisting}[language=Java]
+public class OrderTest {
+    private Order order;
+    private Product product;
+    
+    @BeforeEach
+    void setUp() {
+        order = new Order();
+        product = new Product("test", new Money(10));
+    }
+    
+    @Test
+    void newOrderHasNoItems() {
+        assertTrue(order.isEmpty());
+    }
+    
+    @Test
+    void addingItemIncreasesTotal() {
+        order.addItem(product, 2);
+        assertEquals(new Money(20), order.getTotal());
+    }
+    
+    @Test
+    void throwsExceptionForNegativeQuantity() {
+        assertThrows(IllegalArgumentException.class, 
+            () -> order.addItem(product, -1));
+    }
+    
+    @Test
+    void appliesDiscountCorrectly() {
+        order.addItem(product, 10); // $100 total
+        order.applyDiscount(0.1);   // 10% discount
+        assertEquals(new Money(90), order.getTotal());
+    }
+}
+\end{lstlisting}
+\end{example}
+

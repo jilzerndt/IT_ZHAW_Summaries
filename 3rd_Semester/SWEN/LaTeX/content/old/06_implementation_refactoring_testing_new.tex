@@ -115,46 +115,7 @@ Strukturierte Verbesserung des Codes ohne Änderung des externen Verhaltens:
 \end{itemize}
 \end{KR}
 
-\begin{example}{Extract Method Refactoring}\\
-\textbf{Vorher:}
-\begin{lstlisting}[language=Java, style=base]
-void printOwing() {
-    printBanner();
-    
-    // calculate outstanding
-    double outstanding = 0.0;
-    for (Order order : orders) {
-        outstanding += order.getAmount();
-    }
-    
-    // print details
-    System.out.println("name: " + name);
-    System.out.println("amount: " + outstanding);
-}
-\end{lstlisting}
 
-\textbf{Nachher:}
-\begin{lstlisting}[language=Java, style=base]
-void printOwing() {
-    printBanner();
-    double outstanding = calculateOutstanding();
-    printDetails(outstanding);
-}
-
-double calculateOutstanding() {
-    double result = 0.0;
-    for (Order order : orders) {
-        result += order.getAmount();
-    }
-    return result;
-}
-
-void printDetails(double outstanding) {
-    System.out.println("name: " + name);
-    System.out.println("amount: " + outstanding);
-}
-\end{lstlisting}
-\end{example}
 
 \subsection{Testing}
 
@@ -197,72 +158,4 @@ void printDetails(double outstanding) {
 \end{itemize}
 \end{KR}
 
-\begin{example}{Unit Test}\\
-\textbf{Zu testende Klasse:}
-\begin{lstlisting}[language=Java, style=base]
-public class Calculator {
-    public int add(int a, int b) {
-        return a + b;
-    }
-}
-\end{lstlisting}
 
-\textbf{Test:}
-\begin{lstlisting}[language=Java, style=base]
-@Test
-public class CalculatorTest {
-    private Calculator calc;
-    
-    @Before
-    public void setup() {
-        calc = new Calculator();
-    }
-    
-    @Test
-    public void testAdd() {
-        assertEquals(4, calc.add(2, 2));
-        assertEquals(0, calc.add(-2, 2));
-        assertEquals(-4, calc.add(-2, -2));
-    }
-}
-\end{lstlisting}
-\end{example}
-
-\begin{example}{BDD Test}\\
-\textbf{Feature File:}
-\begin{lstlisting}[style=basesmol]
-Feature: Calculator Addition
-  Scenario: Add two positive numbers
-    Given I have a calculator
-    When I add 2 and 2
-    Then the result should be 4
-    
-  Scenario: Add positive and negative numbers
-    Given I have a calculator
-    When I add -2 and 2
-    Then the result should be 0
-\end{lstlisting}
-
-\textbf{Step Definitions:}
-\begin{lstlisting}[language=Java, style=base]
-public class CalculatorSteps {
-    private Calculator calc;
-    private int result;
-    
-    @Given("I have a calculator")
-    public void createCalculator() {
-        calc = new Calculator();
-    }
-    
-    @When("I add {int} and {int}")
-    public void addNumbers(int a, int b) {
-        result = calc.add(a, b);
-    }
-    
-    @Then("the result should be {int}")
-    public void checkResult(int expected) {
-        assertEquals(expected, result);
-    }
-}
-\end{lstlisting}
-\end{example}

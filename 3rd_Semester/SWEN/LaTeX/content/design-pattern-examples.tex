@@ -406,3 +406,73 @@ class MacFactory implements GUIFactory {
 }
 \end{lstlisting}
 \end{example}
+
+\begin{example}{Factory Method Implementation}\\
+\textbf{Aufgabe:} Implementieren Sie eine Factory für verschiedene Dokumenttypen (PDF, Word, Text)
+
+\textbf{Lösung:}
+\begin{lstlisting}[language=Java, style=base]
+// Interface fuer Produkte
+interface Document {
+    void open();
+    void save();
+}
+
+// Konkrete Produkte
+class PdfDocument implements Document {
+    public void open() { /* ... */ }
+    public void save() { /* ... */ }
+}
+
+// Factory Method Pattern
+abstract class DocumentCreator {
+    abstract Document createDocument();
+    
+    // Template Method
+    final void processDocument() {
+        Document doc = createDocument();
+        doc.open();
+        doc.save();
+    }
+}
+
+// Konkrete Factory
+class PdfDocumentCreator extends DocumentCreator {
+    Document createDocument() {
+        return new PdfDocument();
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Observer Pattern Implementation}\\
+\textbf{Aufgabe:} Implementieren Sie ein Benachrichtigungssystem für Aktienkurse
+
+\textbf{Lösung:}
+\begin{lstlisting}[language=Java, style=base]
+interface StockObserver {
+    void update(String stock, double price);
+}
+
+class StockMarket {
+    private List<StockObserver> observers = new ArrayList<>();
+    
+    public void attach(StockObserver observer) {
+        observers.add(observer);
+    }
+    
+    public void notifyObservers(String stock, double price) {
+        for(StockObserver observer : observers) {
+            observer.update(stock, price);
+        }
+    }
+}
+
+class StockDisplay implements StockObserver {
+    public void update(String stock, double price) {
+        System.out.println("Stock: " + stock + 
+                         " updated to " + price);
+    }
+}
+\end{lstlisting}
+\end{example}

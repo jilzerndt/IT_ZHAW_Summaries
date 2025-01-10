@@ -1,0 +1,187 @@
+\section{Verteilte Systeme}
+
+\begin{definition}{Verteiltes System}
+Ein Netzwerk aus autonomen Computern und Softwarekomponenten, die als einheitliches System erscheinen:
+\begin{itemize}
+    \item Autonome Knoten und Komponenten
+    \item Netzwerkverbindung
+    \item Erscheint als ein System
+    \item Gemeinsame Ressourcennutzung
+    \item Transparente Verteilung
+\end{itemize}
+\end{definition}
+
+\begin{example}{Verteiltes System in der Praxis}
+\begin{lstlisting}[language=Java]
+// Microservice-Architektur Beispiel
+@RestController
+public class OrderService {
+    private final ProductService productService;
+    private final PaymentService paymentService;
+    
+    @PostMapping("/orders")
+    public OrderResponse createOrder(
+            @RequestBody OrderRequest request) {
+        // Synchrone Kommunikation mit Product-Service
+        ProductInfo product = 
+            productService.getProduct(request.getProductId());
+            
+        // Asynchrone Kommunikation via Message Broker
+        paymentService.processPaymentAsync(
+            new PaymentRequest(request.getPaymentDetails()));
+            
+        return new OrderResponse(/* ... */);
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{KR}{Fehlerbehandlung in verteilten Systemen}
+\begin{lstlisting}[language=Java]
+public class ResilientServiceCaller {
+    private final CircuitBreaker circuitBreaker;
+    private final RetryTemplate retryTemplate;
+    
+    public <T> T callService(ServiceCall<T> serviceCall) {
+        return circuitBreaker.run(() -> 
+            retryTemplate.execute(context -> {
+                try {
+                    return serviceCall.execute();
+                } catch (NetworkException e) {
+                    // Exponential Backoff
+                    long waitTime = 
+                        Math.pow(2, context.getRetryCount());
+                    Thread.sleep(waitTime * 1000);
+                    throw e;
+                }
+            })
+        );
+    }
+}
+
+// Verwendung
+OrderInfo order = resilientCaller.callService(() ->
+    orderService.getOrder(orderId));
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Kommunikationsmuster}
+\textbf{1. Synchrone Kommunikation:}
+\begin{lstlisting}[language=Java]
+// REST-Client mit synchronem Aufruf
+@FeignClient("product-service")
+public interface ProductClient {
+    @GetMapping("/products/{id}")
+    ProductDTO getProduct(@PathVariable String id);
+}
+
+// Synchroner Service-Aufruf
+ProductDTO product = productClient.getProduct(id);
+\end{lstlisting}
+
+\textbf{2. Asynchrone Kommunikation:}
+\begin{lstlisting}[language=Java]
+// Message Producer
+@Service
+public class OrderEventPublisher {
+    private final KafkaTemplate<String, OrderEvent> kafka;
+    
+    public void publishOrderCreated(Order order) {
+        OrderEvent event = new OrderEvent(order);
+        kafka.send("order-events", event);
+    }
+}
+
+// Message Consumer
+@KafkaListener(topics = "order-events")
+public void handleOrderEvent(OrderEvent event) {
+    // Asynchrone Verarbeitung
+}
+\end{lstlisting}
+\end{concept}
+
+\begin{example}{Implementierung von Konsistenzstrategien}
+\begin{lstlisting}[language=Java]
+@Entity
+public class Product {
+    @Version
+    private Long version;
+    
+    @Lock(LockModeType.OPTIMISTIC)
+    public void updateStock(int quantity) {
+        // Optimistic Locking durch @Version
+        this.stockQuantity += quantity;
+    }
+}
+
+// Verwendung mit Retry bei Konflikt
+@Transactional
+public void processOrder(Order order) {
+    try {
+        Product product = productRepo.findById(
+            order.getProductId());
+        product.updateStock(-order.getQuantity());
+        productRepo.save(product);
+    } catch (OptimisticLockException e) {
+        // Retry mit neuem Versuch
+        retryTemplate.execute(context -> {
+            // Wiederhole Operation
+            return null;
+        });
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{KR}{Service Discovery und Load Balancing}
+\begin{lstlisting}[language=Java]
+// Service Registration
+@SpringBootApplication
+@EnableEurekaClient
+public class ProductService {
+    public static void main(String[] args) {
+        SpringApplication.run(ProductService.class, args);
+    }
+}
+
+// Load Balancer Configuration
+@Configuration
+public class LoadBalancerConfig {
+    @Bean
+    @LoadBalanced
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+
+// Service Discovery verwendung
+@Service
+public class ProductServiceClient {
+    private final RestTemplate restTemplate;
+    
+    public ProductInfo getProduct(String id) {
+        return restTemplate.getForObject(
+            "http://product-service/products/" + id,
+            ProductInfo.class
+        );
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{CAP-Theorem in der Praxis}
+\begin{itemize}
+    \item \textbf{Consistency (C):} Alle Knoten sehen dieselben Daten
+    \item \textbf{Availability (A):} Jede Anfrage erhält eine Antwort
+    \item \textbf{Partition Tolerance (P):} System funktioniert trotz Netzwerkausfällen
+\end{itemize}
+
+\textbf{Beispiel-Implementierungen:}
+\begin{itemize}
+    \item \textbf{CP-System:} Distributed Database (z.B. MongoDB)
+    \item \textbf{AP-System:} Content Delivery Network (CDN)
+    \item \textbf{CA-System:} Traditional RDBMS (z.B. PostgreSQL)
+\end{itemize}
+\end{concept}
+
+[Previous content about Middleware Technologies and Error Sources remains...]
