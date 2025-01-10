@@ -1,0 +1,929 @@
+\section{Python Implementationen}
+
+\subsection{Hilfsfunktionen}
+
+\begin{examplecode}{Matrixoperationen}
+\begin{lstlisting}[language=Python, style=basesmol]
+def matrix_vector_mult(A, v):
+    """Matrix-Vektor Multiplikation"""
+    n = len(A)
+    result = [0] * n
+    for i in range(n):
+        result[i] = sum(A[i][j] * v[j] for j in range(n))
+    return result
+
+def matrix_mult(A, B):
+    """Matrix-Matrix Multiplikation"""
+    m, n = len(A), len(B[0])
+    p = len(B)
+    C = [[0.0] * n for _ in range(m)]
+    for i in range(m):
+        for j in range(n):
+            C[i][j] = sum(A[i][k] * B[k][j] for k in range(p))
+    return C
+
+def transpose(A):
+    """Matrix transponieren"""
+    n = len(A)
+    return [[A[j][i] for j in range(n)] for i in range(n)]
+
+def vector_norm(v):
+    """Euklidische Norm eines Vektors"""
+    return sum(x*x for x in v) ** 0.5
+
+def normalize_vector(v):
+    """Vektor auf Laenge 1 normieren"""
+    norm = vector_norm(v)
+    return [x/norm for x in v] if norm > 0 else v
+
+def copy_matrix(A):
+    """Tiefe Kopie einer Matrix"""
+    return [[A[i][j] for j in range(len(A[0]))] 
+            for i in range(len(A))]
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Konvergenzkriterien und Fehleranalyse}
+\begin{lstlisting}[language=Python, style=basesmol]
+def convergence_check(x_new, x_old, f_new, f_old, tol=1e-6):
+    """Prueft verschiedene Konvergenzkriterien"""
+    # Absoluter Fehler im Funktionswert
+    if abs(f_new) < tol:
+        return True, "Funktionswert < tol"
+        
+    # Relative Aenderung der x-Werte 
+    if abs(x_new - x_old) < tol * (1 + abs(x_new)):
+        return True, "Relative Aenderung < tol"
+        
+    # Relative Aenderung der Funktionswerte
+    if abs(f_new - f_old) < tol * (1 + abs(f_new)):
+        return True, "Funktionsaenderung < tol"
+        
+    # Divergenzcheck
+    if abs(f_new) > 2 * abs(f_old):
+        return False, "Divergenz detektiert"
+        
+    return False, "Noch nicht konvergiert"
+
+def error_estimate(f, x, eps=1e-5):
+    """Schaetzt Fehler durch Vorzeichenwechsel"""
+    fx_left = f(x - eps)
+    fx_right = f(x + eps)
+    
+    if fx_left * fx_right < 0:
+        return eps  # Nullstelle liegt in (x-eps, x+eps)
+    return None
+
+def is_diagonally_dominant(A):
+    """Prueft Matrix auf Diagonaldominanz"""
+    n = len(A)
+    for i in range(n):
+        if abs(A[i][i]) <= sum(abs(A[i][j]) 
+                              for j in range(n) if j != i):
+            return False
+    return True
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Struktur der Implementationen}
+\begin{enumerate}
+    \item Hilfsfunktionen verwenden wo möglich
+    \item Konsistente Fehlerbehandlung
+    \item Klare Dokumentation der Parameter
+    \item Rückgabewerte als Dictionary mit zusätzlichen Informationen
+\end{enumerate}
+\end{KR}
+
+\subsection{Numerische Lösung von Nullstellenproblemen}
+
+\begin{examplecode}{Fehlerabschätzung und Vorzeichenwechsel}
+\begin{lstlisting}[language=Python, style=basesmol]
+def root_finder_with_error(f, x0, tol=1e-6, max_iter=100):
+    """Nullstellensuche mit Fehlerabschaetzung"""
+    x_old = x0
+    f_old = f(x_old)
+    
+    for i in range(max_iter):
+        # Iterationsschritt (hier Newton als Beispiel)
+        x_new = x_old - f_old/derivative(f, x_old)
+        f_new = f(x_new)
+        
+        # Pruefe Konvergenzkriterien
+        converged, reason = convergence_check(
+            x_new, x_old, f_new, f_old, tol)
+            
+        if converged:
+            # Schaetze finalen Fehler
+            error = error_estimate(f, x_new, tol)
+            return {
+                'root': x_new,
+                'iterations': i+1,
+                'error_bound': error,
+                'convergence_reason': reason
+            }
+            
+        x_old, f_old = x_new, f_new
+        
+    raise ValueError(f"Keine Konvergenz nach {max_iter} Iterationen")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Fixpunktiteration}
+\begin{lstlisting}[language=Python, style=basesmol]
+def fixed_point_it(f, x0, tol=1e-6, max_iter=100):
+    """Einfache Fixpunktiteration"""
+    x = x0
+    for i in range(max_iter):
+        x_new = f(x)
+        if abs(x_new - x) < tol:
+            return x_new, i+1
+        x = x_new
+    raise ValueError("Keine Konvergenz")
+
+def fixed_point_it_opt(f, x0, tol=1e-6, max_iter=100):
+    """Optimierte Fixpunktiteration mit Konvergenzanalyse"""
+    x = x0
+    alpha = None  # Schaetzung fuer Lipschitz-Konstante
+    dx_old = None
+    
+    for i in range(max_iter):
+        x_new = f(x)
+        dx = abs(x_new - x)
+        
+        # Lipschitz-Konstante schaetzen
+        if dx_old is not None and dx > 0:
+            alpha_new = dx / dx_old
+            if alpha is None or alpha_new > alpha:
+                alpha = alpha_new
+                
+        # A-posteriori Fehlerabschaetzung
+        if alpha is not None and alpha < 1:
+            error = alpha * dx / (1 - alpha)
+            if error < tol:
+                return {
+                    'root': x_new,
+                    'iterations': i+1,
+                    'alpha': alpha,
+                    'error_estimate': error
+                }
+        
+        x = x_new
+        dx_old = dx
+        
+    raise ValueError("Keine Konvergenz")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Newton-Verfahren}
+\begin{lstlisting}[language=Python, style=basesmol]
+def newton(f, df, x0, tol=1e-6, max_iter=100):
+    """Klassisches Newton-Verfahren"""
+    x = x0
+    for i in range(max_iter):
+        fx = f(x)
+        if abs(fx) < tol:
+            return x, i+1
+            
+        dfx = df(x)
+        if abs(dfx) < 1e-10:
+            raise ValueError("Ableitung nahe Null")
+            
+        x = x - fx/dfx
+        
+    raise ValueError("Keine Konvergenz")
+
+def newton_safe(f, df, x0, tol=1e-6, max_iter=100):
+    """Newton-Verfahren mit Konvergenzpruefung"""
+    x = x0
+    fx = f(x)
+    
+    for i in range(max_iter):
+        dfx = df(x)
+        if abs(dfx) < 1e-10:
+            raise ValueError("Ableitung nahe Null")
+            
+        dx = fx/dfx
+        x_new = x - dx
+        fx_new = f(x_new)
+        
+        # Konvergenzpruefung
+        converged, reason = convergence_check(
+            x_new, x, fx_new, fx, tol)
+            
+        if converged:
+            return {
+                'root': x_new,
+                'iterations': i+1,
+                'residual': abs(fx_new),
+                'convergence_reason': reason
+            }
+            
+        if abs(fx_new) >= abs(fx):
+            raise ValueError("Divergenz detektiert")
+            
+        x, fx = x_new, fx_new
+        
+    raise ValueError("Keine Konvergenz")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Sekantenverfahren}
+\begin{lstlisting}[language=Python, style=basesmol]
+def secant(f, x0, x1, tol=1e-6, max_iter=100):
+    """Sekantenverfahren mit Konvergenzpruefung"""
+    fx0 = f(x0)
+    fx1 = f(x1)
+    
+    # Stelle mit kleinerem f-Wert als x1
+    if abs(fx0) < abs(fx1):
+        x0, x1 = x1, x0
+        fx0, fx1 = fx1, fx0
+    
+    for i in range(max_iter):
+        if abs(fx1) < tol:
+            return x1, i+1
+            
+        if fx1 == fx0:
+            raise ValueError("Division durch Null")
+            
+        # Sekanten-Schritt
+        d = fx1 * (x1 - x0)/(fx1 - fx0)
+        x2 = x1 - d
+        
+        # Konvergenzpruefungen
+        if abs(d) < tol * (1 + abs(x1)):
+            return {
+                'root': x2,
+                'iterations': i+1,
+                'residual': abs(f(x2))
+            }
+            
+        fx2 = f(x2)
+        if abs(fx2) >= abs(fx1):
+            if i == 0:
+                raise ValueError("Schlechte Startwerte")
+            return {
+                'root': x1,
+                'iterations': i+1,
+                'residual': abs(fx1)
+            }
+            
+        x0, x1 = x1, x2
+        fx0, fx1 = fx1, fx2
+        
+    raise ValueError("Keine Konvergenz")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Nullstellenverfahren - Praktisches Vorgehen}
+\begin{enumerate}
+    \item Voraussetzungen prüfen:
+    \begin{itemize}
+        \item Existiert Nullstelle? (z.B. Vorzeichenwechsel)
+        \item Sind Startwerte geeignet?
+        \item Ist Funktion ausreichend glatt? (für Newton)
+    \end{itemize}
+    
+    \item Verfahren wählen:
+    \begin{itemize}
+        \item Newton: Wenn Ableitung verfügbar und Startwert nahe Lösung
+        \item Sekanten: Wenn keine Ableitung aber zwei Startwerte nahe Lösung
+        \item Fixpunkt: Wenn Funktion kontraktiv
+    \end{itemize}
+    
+    \item Implementierung:
+    \begin{itemize}
+        \item Konvergenzkriterien definieren
+        \item Maximale Iterationszahl festlegen
+        \item Fehlerabschätzung einbauen
+        \item Divergenzschutz implementieren
+    \end{itemize}
+    
+    \item Auswertung:
+    \begin{itemize}
+        \item Konvergenzverhalten prüfen
+        \item Fehler abschätzen
+        \item Ergebnis validieren
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\subsection{Numerische Lösung linearer Gleichungssysteme}
+
+\begin{examplecode}{Gauss-Elimination mit Spaltenpivotisierung}
+\begin{lstlisting}[language=Python, style=basesmol]
+def gauss_elimination(A, b, tol=1e-10):
+    """Gauss-Elimination mit Spaltenpivotisierung"""
+    n = len(A)
+    # Tiefe Kopie von A und b
+    M = copy_matrix(A)
+    x = [0] * n
+    b = b.copy()
+
+    # Vorwaertselimination mit Pivotisierung
+    for i in range(n):
+        # Pivotisierung
+        pivot_row = i
+        for j in range(i+1, n):
+            if abs(M[j][i]) > abs(M[pivot_row][i]):
+                pivot_row = j
+                
+        if pivot_row != i:
+            M[i], M[pivot_row] = M[pivot_row], M[i]
+            b[i], b[pivot_row] = b[pivot_row], b[i]
+
+        # Pruefe auf singulaere Matrix
+        if abs(M[i][i]) < tol:
+            raise ValueError("Matrix (fast) singulaer")
+
+        # Elimination
+        for j in range(i+1, n):
+            factor = M[j][i] / M[i][i]
+            for k in range(i, n):
+                M[j][k] -= factor * M[i][k]
+            b[j] -= factor * b[i]
+
+    # Rueckwaertssubstitution
+    for i in range(n-1, -1, -1):
+        x[i] = (b[i] - sum(M[i][j] * x[j] 
+                for j in range(i+1, n))) / M[i][i]
+
+    return {
+        'solution': x,
+        'matrix': M,
+        'condition': estimate_condition(A)
+    }
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{LR-Zerlegung}
+\begin{lstlisting}[language=Python, style=basesmol]
+def lr_decomposition(A, tol=1e-10):
+    """LR-Zerlegung mit Zeilenvertauschung"""
+    n = len(A)
+    # Initialisiere L, R und P
+    R = copy_matrix(A)
+    L = [[1.0 if i == j else 0.0 for j in range(n)] 
+         for i in range(n)]
+    P = [[1.0 if i == j else 0.0 for j in range(n)] 
+         for i in range(n)]
+    
+    for k in range(n-1):
+        # Pivotisierung
+        pivot = k
+        for i in range(k+1, n):
+            if abs(R[i][k]) > abs(R[pivot][k]):
+                pivot = i
+
+        if abs(R[pivot][k]) < tol:
+            raise ValueError("Matrix (fast) singulaer")
+
+        # Zeilenvertauschung falls noetig
+        if pivot != k:
+            R[k], R[pivot] = R[pivot], R[k]
+            for j in range(k):
+                L[k][j], L[pivot][j] = L[pivot][j], L[k][j]
+            P[k], P[pivot] = P[pivot], P[k]
+
+        # Elimination
+        for i in range(k+1, n):
+            factor = R[i][k] / R[k][k]
+            L[i][k] = factor
+            for j in range(k, n):
+                R[i][j] -= factor * R[k][j]
+    
+    return {
+        'L': L,
+        'R': R,
+        'P': P
+    }
+
+def solve_lr(L, R, P, b):
+    """Loest LRx = Pb mittels Vor- und Rueckwaertseinsetzen"""
+    n = len(L)
+    # Pb berechnen
+    pb = matrix_vector_mult(P, b)
+    
+    # Vorwaertseinsetzen Ly = Pb
+    y = [0] * n
+    for i in range(n):
+        y[i] = pb[i] - sum(L[i][j] * y[j] for j in range(i))
+
+    # Rueckwaertseinsetzen Rx = y
+    x = [0] * n
+    for i in range(n-1, -1, -1):
+        x[i] = (y[i] - sum(R[i][j] * x[j] 
+                for j in range(i+1, n))) / R[i][i]
+                
+    return x
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{QR-Zerlegung}
+\begin{lstlisting}[language=Python, style=basesmol]
+def householder_vector(x):
+    """Berechnet Householder-Vektor zu x"""
+    n = len(x)
+    v = x.copy()
+    sigma = sum(v[i]*v[i] for i in range(1, n))
+    
+    if sigma == 0 and x[0] >= 0:
+        return [0] * n, 0
+    elif sigma == 0 and x[0] < 0:
+        return [2] + [0]*(n-1), -2
+        
+    mu = (x[0]*x[0] + sigma)**0.5
+    if x[0] <= 0:
+        v[0] = x[0] - mu
+    else:
+        v[0] = -sigma/(x[0] + mu)
+        
+    beta = 2*v[0]*v[0]/(sigma + v[0]*v[0])
+    return normalize_vector(v), beta
+
+def qr_decomposition(A):
+    """QR-Zerlegung mittels Householder-Transformationen"""
+    m = len(A)
+    n = len(A[0])
+    R = copy_matrix(A)
+    Q = [[1.0 if i == j else 0.0 for j in range(m)] 
+         for i in range(m)]
+    
+    for k in range(min(m-1, n)):
+        # Extrahiere k-te Spalte ab k-ter Zeile
+        x = [R[i][k] for i in range(k, m)]
+        
+        # Berechne Householder-Transformation
+        v, beta = householder_vector(x)
+        
+        # Wende Householder auf R an
+        for j in range(k, n):
+            # w = beta * (v^T * R_j)
+            w = beta * sum(v[i-k]*R[i][j] 
+                         for i in range(k, m))
+            # Update R
+            for i in range(k, m):
+                R[i][j] -= v[i-k] * w
+                
+        # Update Q
+        for j in range(m):
+            w = beta * sum(v[i-k]*Q[j][i+k] 
+                         for i in range(len(v)))
+            for i in range(len(v)):
+                Q[j][k+i] -= v[i] * w
+                
+    # Transponiere Q am Ende
+    Q = transpose(Q)
+    
+    return {
+        'Q': Q,
+        'R': R
+    }
+
+def solve_qr(Q, R, b):
+    """Loest QRx = b"""
+    # Berechne Q^T * b
+    y = matrix_vector_mult(transpose(Q), b)
+    
+    # Rueckwaertseinsetzen
+    n = len(R)
+    x = [0] * n
+    for i in range(n-1, -1, -1):
+        x[i] = (y[i] - sum(R[i][j] * x[j] 
+                for j in range(i+1, n))) / R[i][i]
+    return x
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Zerlegungsverfahren - Vergleich und Anwendung}
+\begin{enumerate}
+    \item LR-Zerlegung
+    \begin{itemize}
+        \item Vorteil: Effizient für mehrere rechte Seiten
+        \item Nachteil: Numerisch weniger stabil
+        \item Aufwand: $\frac{2}{3}n^3$ Operationen
+    \end{itemize}
+    
+    \item QR-Zerlegung
+    \begin{itemize}
+        \item Vorteil: Numerisch stabiler
+        \item Nachteil: Höherer Rechenaufwand
+        \item Aufwand: $\frac{4}{3}n^3$ Operationen
+    \end{itemize}
+    
+    \item Wann welches Verfahren?
+    \begin{itemize}
+        \item LR: Für gut konditionierte Systeme
+        \item QR: Für schlecht konditionierte Systeme
+        \item Gauss: Wenn nur eine Lösung benötigt wird
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\subsection{Iterative Löser für lineare Gleichungssysteme}
+
+\begin{examplecode}{Jacobi-Verfahren}
+\begin{lstlisting}[language=Python, style=basesmol]
+def jacobi_method(A, b, tol=1e-6, max_iter=100):
+    """Jacobi-Iterationsverfahren"""
+    n = len(A)
+    
+    # Pruefe Diagonaldominanz
+    if not is_diagonally_dominant(A):
+        print("Warnung: Matrix nicht diagonaldominant")
+    
+    # Initialisiere mit Nullvektor
+    x = [0.0] * n
+    iterations = []
+    residuals = []
+    
+    for iter in range(max_iter):
+        x_new = [0.0] * n
+        # Jacobi-Iteration
+        for i in range(n):
+            sum_term = sum(A[i][j] * x[j] 
+                         for j in range(n) if j != i)
+            x_new[i] = (b[i] - sum_term) / A[i][i]
+            
+        # Berechne Residuum
+        res = max(abs(sum(A[i][j] * x_new[j] 
+                 for j in range(n)) - b[i]) 
+                 for i in range(n))
+                 
+        # Konvergenzcheck
+        diff = max(abs(x_new[i] - x[i]) for i in range(n))
+        
+        iterations.append(x_new.copy())
+        residuals.append(res)
+        
+        if diff < tol:
+            return {
+                'solution': x_new,
+                'iterations': iterations,
+                'residuals': residuals,
+                'iteration_count': iter + 1
+            }
+            
+        x = x_new.copy()
+        
+    raise ValueError(f"Keine Konvergenz nach {max_iter} "
+                    f"Iterationen\nLetztes Residuum: {res}")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Gauss-Seidel-Verfahren}
+\begin{lstlisting}[language=Python, style=basesmol]
+def gauss_seidel_method(A, b, tol=1e-6, max_iter=100):
+    """Gauss-Seidel-Iterationsverfahren"""
+    n = len(A)
+    
+    # Pruefe Diagonaldominanz
+    if not is_diagonally_dominant(A):
+        print("Warnung: Matrix nicht diagonaldominant")
+    
+    x = [0.0] * n
+    iterations = []
+    residuals = []
+    
+    for iter in range(max_iter):
+        x_old = x.copy()
+        
+        # Gauss-Seidel-Iteration
+        for i in range(n):
+            sum1 = sum(A[i][j] * x[j] for j in range(i))
+            sum2 = sum(A[i][j] * x_old[j] 
+                      for j in range(i+1, n))
+            x[i] = (b[i] - sum1 - sum2) / A[i][i]
+            
+        # Berechne Residuum und relative Aenderung
+        res = max(abs(sum(A[i][j] * x[j] 
+                 for j in range(n)) - b[i]) 
+                 for i in range(n))
+        diff = max(abs(x[i] - x_old[i]) for i in range(n))
+        
+        iterations.append(x.copy())
+        residuals.append(res)
+        
+        if diff < tol:
+            return {
+                'solution': x,
+                'iterations': iterations,
+                'residuals': residuals,
+                'iteration_count': iter + 1
+            }
+            
+    raise ValueError(f"Keine Konvergenz nach {max_iter} "
+                    f"Iterationen\nLetztes Residuum: {res}")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{SOR-Verfahren (Relaxationsverfahren)}
+\begin{lstlisting}[language=Python, style=basesmol]
+def sor_method(A, b, omega=1.5, tol=1e-6, max_iter=100):
+    """Successive Over-Relaxation Verfahren"""
+    n = len(A)
+    x = [0.0] * n
+    iterations = []
+    residuals = []
+    
+    for iter in range(max_iter):
+        x_old = x.copy()
+        
+        for i in range(n):
+            sum1 = sum(A[i][j] * x[j] for j in range(i))
+            sum2 = sum(A[i][j] * x_old[j] 
+                      for j in range(i+1, n))
+            
+            x_new = (b[i] - sum1 - sum2) / A[i][i]
+            # Relaxation
+            x[i] = (1 - omega) * x_old[i] + omega * x_new
+            
+        res = max(abs(sum(A[i][j] * x[j] 
+                 for j in range(n)) - b[i]) 
+                 for i in range(n))
+        diff = max(abs(x[i] - x_old[i]) for i in range(n))
+        
+        iterations.append(x.copy())
+        residuals.append(res)
+        
+        if diff < tol:
+            return {
+                'solution': x,
+                'iterations': iterations,
+                'residuals': residuals,
+                'iteration_count': iter + 1
+            }
+            
+    raise ValueError(f"Keine Konvergenz nach {max_iter} "
+                    f"Iterationen\nLetztes Residuum: {res}")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Konvergenzanalyse}
+\begin{lstlisting}[language=Python, style=basesmol]
+def analyze_convergence(method_name, iterations, residuals):
+    """Analysiert Konvergenzverhalten eines iterativen Verfahrens"""
+    n = len(residuals)
+    if n < 2:
+        return {
+            'method': method_name,
+            'converged': False,
+            'reason': 'Zu wenige Iterationen'
+        }
+        
+    # Schaetze Konvergenzrate
+    rates = [abs(residuals[i]/residuals[i-1]) 
+             for i in range(1, n)]
+    avg_rate = sum(rates) / len(rates)
+    
+    # Schaetze asymptotische Konvergenzrate
+    asymp_rate = rates[-1] if rates else None
+    
+    # Berechne empirische Konvergenzordnung
+    if n > 2:
+        q = [abs(log(residuals[i+1]/residuals[i]) / 
+                 log(residuals[i]/residuals[i-1])) 
+             for i in range(n-2)]
+        avg_order = sum(q) / len(q) if q else None
+    else:
+        avg_order = None
+        
+    return {
+        'method': method_name,
+        'converged': residuals[-1] < residuals[0],
+        'iterations': n,
+        'final_residual': residuals[-1],
+        'avg_rate': avg_rate,
+        'asymp_rate': asymp_rate,
+        'conv_order': avg_order
+    }
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Iterative Verfahren - Praktisches Vorgehen}
+\begin{enumerate}
+    \item Vorbereitung
+    \begin{itemize}
+        \item Matrix auf Diagonaldominanz prüfen
+        \item Geeignete Startlösung wählen
+        \item Konvergenzkriterien festlegen
+    \end{itemize}
+    
+    \item Verfahrenswahl
+    \begin{itemize}
+        \item Jacobi: Einfach zu parallelisieren
+        \item Gauss-Seidel: Schnellere Konvergenz
+        \item SOR: Bei bekanntem optimalem $\omega$
+    \end{itemize}
+    
+    \item Durchführung
+    \begin{itemize}
+        \item Residuen überwachen
+        \item Konvergenzrate beobachten
+        \item Abbruchkriterien prüfen
+    \end{itemize}
+    
+    \item Nachbereitung
+    \begin{itemize}
+        \item Qualität der Lösung prüfen
+        \item Konvergenzverhalten analysieren
+        \item Verfahren ggf. anpassen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\subsection{Eigenwerte und Eigenvektoren}
+
+\begin{examplecode}{Basisoperationen}
+\begin{lstlisting}[language=Python, style=basesmol]
+def characteristic_polynomial(A):
+    """Charakteristisches Polynom einer 2x2 oder 3x3 Matrix"""
+    n = len(A)
+    if n == 2:
+        a, b = A[0][0], A[0][1]
+        c, d = A[1][0], A[1][1]
+        # det(A - lambda*I) = lambda^2 - tr(A)*lambda + det(A)
+        return [1, -(a + d), a*d - b*c]
+    elif n == 3:
+        # Hier nur Koeffizienten, keine Polynomauswertung
+        trace = sum(A[i][i] for i in range(3))
+        det = (A[0][0]*A[1][1]*A[2][2] + A[0][1]*A[1][2]*A[2][0] + 
+               A[0][2]*A[1][0]*A[2][1] - A[0][2]*A[1][1]*A[2][0] - 
+               A[0][1]*A[1][0]*A[2][2] - A[0][0]*A[1][2]*A[2][1])
+        return [1, -trace, None, det]  # Mittlerer Koeff. kompliziert
+    else:
+        raise ValueError("Nur fuer 2x2 oder 3x3 Matrizen")
+
+def find_eigenvalues_2x2(A, tol=1e-10):
+    """Eigenwerte einer 2x2 Matrix"""
+    coeff = characteristic_polynomial(A)
+    # Quadratische Formel
+    p, q = -coeff[1], coeff[2]
+    disc = p*p/4 - q
+    if abs(disc) < tol:  # Doppelte Eigenwerte
+        return [-p/2, -p/2]
+    elif disc > 0:  # Reelle Eigenwerte
+        root = disc**0.5
+        return [-p/2 + root, -p/2 - root]
+    else:  # Komplexe Eigenwerte
+        root = (-disc)**0.5
+        return [-p/2 + 1j*root, -p/2 - 1j*root]
+
+def find_eigenvector(A, eigenval, tol=1e-10):
+    """Eigenvektor zu gegebenem Eigenwert"""
+    n = len(A)
+    # A - lambda*I
+    M = [[A[i][j] - (eigenval if i==j else 0) 
+          for j in range(n)] for i in range(n)]
+    
+    # Loese homogenes System (A - lambda*I)x = 0
+    # Nehme eine Komponente als 1 an
+    for i in range(n):
+        if abs(M[i][i]) > tol:
+            vec = [0] * n
+            vec[i] = 1
+            for j in range(n):
+                if j != i:
+                    s = sum(-M[j][k]*vec[k] for k in range(n) if k != j)
+                    if abs(M[j][j]) > tol:
+                        vec[j] = s/M[j][j]
+            return normalize_vector(vec)
+            
+    raise ValueError("Kein Eigenvektor gefunden")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Vektoriteration und inverse Iteration}
+\begin{lstlisting}[language=Python, style=basesmol]
+def power_iteration(A, tol=1e-10, max_iter=100):
+    """Von-Mises-Iteration fuer groessten Eigenwert"""
+    n = len(A)
+    # Starte mit Einheitsvektor
+    v = normalize_vector([1] + [0]*(n-1))
+    lambda_old = 0
+    
+    for _ in range(max_iter):
+        # Matrix-Vektor-Multiplikation
+        w = matrix_vector_mult(A, v)
+        # Normiere neuen Vektor
+        v = normalize_vector(w)
+        
+        # Rayleigh-Quotient
+        lambda_k = sum(v[i] * A[i][j] * v[j] 
+                      for i in range(n) 
+                      for j in range(n))
+        
+        if abs(lambda_k - lambda_old) < tol:
+            return {
+                'eigenvalue': lambda_k,
+                'eigenvector': v
+            }
+            
+        lambda_old = lambda_k
+        
+    raise ValueError("Keine Konvergenz")
+
+def inverse_iteration(A, mu, tol=1e-10, max_iter=100):
+    """Inverse Iteration fuer Eigenwert nahe mu"""
+    n = len(A)
+    # Starte mit Einheitsvektor
+    v = normalize_vector([1] + [0]*(n-1))
+    lambda_old = 0
+    
+    # (A - mu*I) berechnen
+    M = [[A[i][j] - (mu if i==j else 0) 
+          for j in range(n)] for i in range(n)]
+    
+    for _ in range(max_iter):
+        # Loese (A - mu*I)w = v
+        w = gauss_elimination(M, v)['solution']
+        # Normiere neuen Vektor
+        v = normalize_vector(w)
+        
+        # Rayleigh-Quotient
+        lambda_k = sum(v[i] * A[i][j] * v[j] 
+                      for i in range(n) 
+                      for j in range(n))
+        
+        if abs(lambda_k - lambda_old) < tol:
+            return {
+                'eigenvalue': lambda_k,
+                'eigenvector': v
+            }
+            
+        lambda_old = lambda_k
+        
+    raise ValueError("Keine Konvergenz")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{QR-Iteration}
+\begin{lstlisting}[language=Python, style=basesmol]
+def qr_algorithm(A, tol=1e-10, max_iter=100):
+    """QR-Algorithmus fuer alle Eigenwerte"""
+    n = len(A)
+    A_k = copy_matrix(A)
+    
+    for k in range(max_iter):
+        # QR-Zerlegung
+        qr = qr_decomposition(A_k)
+        Q, R = qr['Q'], qr['R']
+        
+        # Neue Iteration A_(k+1) = RQ
+        A_k = matrix_mult(R, Q)
+        
+        # Pruefe ob Diagonalelemente konvergiert sind
+        if all(abs(A_k[i][j]) < tol 
+               for i in range(1, n) 
+               for j in range(i)):
+            return {
+                'eigenvalues': [A_k[i][i] for i in range(n)],
+                'iterations': k+1,
+                'final_matrix': A_k
+            }
+    
+    raise ValueError("Keine Konvergenz")
+
+def deflation(A, eigenval, eigenvec):
+    """Deflation nach Hotelling"""
+    n = len(A)
+    v = normalize_vector(eigenvec)
+    
+    # Berechne A - lambda*vv^T
+    vvt = [[v[i]*v[j] for j in range(n)] for i in range(n)]
+    return [[A[i][j] - eigenval*vvt[i][j] 
+             for j in range(n)] for i in range(n)]
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Eigenwertberechnung - Praktisches Vorgehen}
+\begin{enumerate}
+    \item Voranalyse
+    \begin{itemize}
+        \item Matrix auf spezielle Struktur prüfen (symmetrisch, etc.)
+        \item Grobe Eigenwertabschätzung durch Gerschgorin-Kreise
+        \item Kondition der Matrix prüfen
+    \end{itemize}
+    
+    \item Verfahrenswahl
+    \begin{itemize}
+        \item QR: Für alle Eigenwerte
+        \item Vektoriteration: Für größten Eigenwert
+        \item Inverse Iteration: Für bekannte Näherung
+    \end{itemize}
+    
+    \item Durchführung
+    \begin{itemize}
+        \item Geeignete Toleranz wählen
+        \item Konvergenz überwachen
+        \item Bei Bedarf Shifts einsetzen
+    \end{itemize}
+    
+    \item Validation
+    \begin{itemize}
+        \item Residuen prüfen: $(A-\lambda I)v$
+        \item Orthogonalität der Eigenvektoren testen
+        \item Ergebnisse physikalisch interpretieren
+    \end{itemize}
+\end{enumerate}
+\end{KR}
