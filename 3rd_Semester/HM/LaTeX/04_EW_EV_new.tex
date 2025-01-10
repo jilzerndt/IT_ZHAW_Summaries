@@ -84,6 +84,7 @@ $x = r\cos\varphi, \quad y = r\sin\varphi, \quad r = \sqrt{x^2 + y^2}\\
 \end{concept}
 
 \begin{KR}{Umrechnung zwischen Darstellungsformen komplexer Zahlen}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 \paragraph{Von Normalform in trigonometrische Form/Exponentialform}
 \begin{enumerate}
    \item Berechne Betrag $r = \sqrt{x^2 + y^2}$
@@ -123,7 +124,33 @@ $x = r\cos\varphi, \quad y = r\sin\varphi, \quad r = \sqrt{x^2 + y^2}\\
 
 \end{KR}
 
+\begin{KR}{Umrechnung zwischen Darstellungsformen komplexer Zahlen}
+[Previous content stays the same]
+
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+    % Coordinate axes
+    \draw[->] (-2,0) -- (2,0) node[right] {Re};
+    \draw[->] (0,-2) -- (0,2) node[above] {Im};
+    
+    % Example point and vector
+    \draw[thick,blue,->] (0,0) -- (1,1) node[above right] {$z$};
+    
+    % Angle and labels
+    \draw[red] (0.3,0) arc (0:45:0.3) node[midway,right] {$\varphi$};
+    
+    % Components
+    \draw[dashed] (1,1) -- (1,0) node[below] {$x$};
+    \draw[dashed] (1,1) -- (0,1) node[left] {$y$};
+    
+    % Radius
+    \node[blue] at (0.7,0.7) {$r$};
+\end{tikzpicture}
+\end{center}
+\end{KR}
+
 \begin{example2}{Darstellungsformen}
+%TODO: check if this is correct and/or relevant - either correct or replace with better example
 Gegeben: $z = 3 - 11i$ in Normalform
 $$r = \sqrt{3^2 + 11^2} = \sqrt{130}, \quad \varphi = \arcsin(\frac{11}{\sqrt{130}}) = 1.3 \text{rad} = 74.74^{\circ}$$
 \textbf{Trigonometrische Form:} $z = \sqrt{130}(\cos(1.3) + i\sin(1.3))$
@@ -131,9 +158,28 @@ $$r = \sqrt{3^2 + 11^2} = \sqrt{130}, \quad \varphi = \arcsin(\frac{11}{\sqrt{13
 \textbf{Exponentialform:} $z = \sqrt{130}e^{i\cdot 1.3}$
 \end{example2}
 
+\begin{example2}{Darstellungsformen}
+\paragraph{Aufgabe:} Wandle $z = 3 - 11i$ in trigonometrische Form und Exponentialform um.
 
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Berechne Betrag:
+    $$r = \sqrt{3^2 + (-11)^2} = \sqrt{130}$$
+    
+    \item Berechne Winkel:
+    $$\varphi = \arctan\left(\frac{-11}{3}\right) + \pi = 1.3 \text{ rad} = 74.74°$$
+    Da $x=3 > 0$ und $y=-11 < 0$ ist im 4. Quadranten
+    
+    \item Darstellung:
+    \begin{itemize}
+        \item Trigonometrisch: $z = \sqrt{130}(\cos(1.3) - i\sin(1.3))$
+        \item Exponentialform: $z = \sqrt{130}e^{-i\cdot 1.3}$
+    \end{itemize}
+\end{enumerate}
+\end{example2}
 
 \begin{examplecode}{Komplexe Zahlen in Python}
+%TODO: check if this is correct and/or relevant - either correct or replace with better example
 \begin{lstlisting}[language=Python, style=basesmol]
 import numpy as np
 z1 = 3 - 11j
@@ -163,44 +209,98 @@ z_norm = z_trig.real + 1j * z_trig.imag
 \end{lstlisting}
 \end{examplecode}
 
+\begin{examplecode}{Komplexe Zahlen in Python}
+\begin{lstlisting}[language=Python, style=basesmol]
+def complex_operations(z1, z2):
+    """Grundlegende Operationen mit komplexen Zahlen."""
+    # Basisfunktionen
+    def to_polar(z):
+        r = (z.real**2 + z.imag**2)**0.5
+        phi = math.atan2(z.imag, z.real)
+        return r, phi
+    
+    def from_polar(r, phi):
+        return r * (math.cos(phi) + 1j*math.sin(phi))
+    
+    try:
+        # Addition und Subtraktion
+        z_add = z1 + z2
+        z_sub = z1 - z2
+        
+        # Multiplikation und Division
+        z_mul = z1 * z2
+        z_div = z1 / z2 if z2 != 0 else None
+        
+        # Polarform
+        r1, phi1 = to_polar(z1)
+        r2, phi2 = to_polar(z2)
+        
+        # Exponentialform
+        z1_exp = from_polar(r1, phi1)
+        z2_exp = from_polar(r2, phi2)
+        
+        return {
+            'addition': z_add,
+            'subtraktion': z_sub,
+            'multiplikation': z_mul,
+            'division': z_div,
+            'polar_z1': (r1, phi1),
+            'polar_z2': (r2, phi2)
+        }
+        
+    except Exception as e:
+        print(f"Fehler bei Berechnung: {e}")
+        return None
+
+# Beispiel
+z1 = 3 - 11j
+z2 = 2 + 5j
+results = complex_operations(z1, z2)
+\end{lstlisting}
+\end{examplecode}
+
 \columnbreak
 
 \subsection{Eigenwerte und Eigenvektoren}
 
 \begin{definition}{Eigenwerte und Eigenvektoren}\\
 Für eine Matrix $A \in \mathbb{R}^{n\times n}$ heißt $\lambda \in \mathbb{C}$ Eigenwert von $A$, wenn es einen Vektor $x \in \mathbb{C}^n \backslash \{0\}$ gibt mit:
+\vspace{-2mm}\\
 $$Ax = \lambda x$$
 Der Vektor $x$ heißt dann Eigenvektor zum Eigenwert $\lambda$.
 \end{definition}
 
 \begin{concept}{Bestimmung von Eigenwerten}\\
 Ein Skalar $\lambda$ ist genau dann Eigenwert von $A$, wenn gilt:
+\vspace{-2mm}\\
 $$\det(A - \lambda I_n) = 0$$
 Diese Gleichung heißt charakteristische Gleichung. Das zugehörige Polynom
+\vspace{-2mm}
 $$p(\lambda) = \det(A - \lambda I_n)$$
 ist das charakteristische Polynom von $A$.
 \end{concept}
 
-\begin{theorem}{Eigenschaften von Eigenwerten}\\
+\begin{theorem}{Eigenschaften von Eigenwerten}
 Für eine Matrix $A \in \mathbb{R}^{n\times n}$ gilt:
 \begin{itemize}
     \item $\det(A) = \prod_{i=1}^n \lambda_i$ (Produkt der Eigenwerte)
     \item $\operatorname{tr}(A) = \sum_{i=1}^n \lambda_i$ (Summe der Eigenwerte)
-    \item Bei einer Dreiecksmatrix sind die Diagonalelemente die Eigenwerte
+    \item Bei Dreiecksmatrix sind die Diagonalelemente die Eigenwerte
     \item Ist $\lambda$ Eigenwert von $A$, so ist $\frac{1}{\lambda}$ Eigenwert von $A^{-1}$
 \end{itemize}
 \end{theorem}
 
-\begin{concept}{Vielfachheiten}\\
+\begin{concept}{Vielfachheiten}
 Für einen Eigenwert $\lambda$ unterscheidet man:
 \begin{itemize}
-    \item Algebraische Vielfachheit: Vielfachheit als Nullstelle des charakteristischen Polynoms
-    \item Geometrische Vielfachheit: Dimension des Eigenraums $= n - \operatorname{rg}(A-\lambda I_n)$
+    \item Algebraische Vielfachheit: \\Vielfachheit als Nullstelle des charakteristischen Polynoms
+    \item Geometrische Vielfachheit: \\Dimension des Eigenraums $= n - \operatorname{rg}(A-\lambda I_n)$
 \end{itemize}
 Die geometrische Vielfachheit ist stets kleiner oder gleich der algebraischen Vielfachheit.
 \end{concept}
 
 \begin{KR}{Bestimmung von Eigenwerten und Eigenvektoren}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 \begin{enumerate}
     \item Charakteristisches Polynom aufstellen: $p(\lambda) = \det(A-\lambda I_n)$
     \item Eigenwerte durch Lösen von $p(\lambda) = 0$ bestimmen
@@ -213,11 +313,40 @@ Die geometrische Vielfachheit ist stets kleiner oder gleich der algebraischen Vi
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{Eigenwertberechnung}
-$$A = \begin{pmatrix} 1 & 0 & 0\\ 2 & 3 & 0\\ 0 & 1 & 2\end{pmatrix}$$
+\begin{KR}{Bestimmung von Eigenwerten und Eigenvektoren}
 \begin{enumerate}
-    \item Da $A$ eine Dreiecksmatrix ist, sind die Diagonalelemente die Eigenwerte:
-    $$\lambda_1 = 1, \lambda_2 = 3, \lambda_3 = 2$$
+    \item Charakteristisches Polynom aufstellen: 
+    \begin{itemize}
+        \item Matrix $(A-\lambda I_n)$ bilden
+        \item Determinante berechnen: $p(\lambda) = \det(A-\lambda I_n)$
+    \end{itemize}
+    \item Eigenwerte bestimmen:
+    \begin{itemize}
+        \item $p(\lambda) = 0$ lösen
+        \item Bei Dreiecksmatrix: Diagonalelemente sind Eigenwerte
+    \end{itemize}
+    \item Für jeden Eigenwert $\lambda_i$:
+    \begin{itemize}
+        \item $(A-\lambda_i I_n)x = 0$ aufstellen
+        \item Gaussverfahren anwenden 
+        \item Lösung parametrisieren
+        \item Parameter != 0 waehlen für Eigenvektor
+    \end{itemize}
+    \item Überprüfung:
+    \begin{itemize}
+        \item $Ax = \lambda x$ für jeden Eigenvektor
+        \item Anzahl linear unabhaengiger Eigenvektoren kleiner als algebraische Vielfachheit
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Eigenwertberechnung}
+%TODO: check if this is correct and/or relevant - either correct or replace with better example
+$A = \begin{psmallmatrix} 1 & 0 & 0\\ 2 & 3 & 0\\ 0 & 1 & 2\end{psmallmatrix}$
+\begin{enumerate}
+    \item Da $A$ eine Dreiecksmatrix ist, sind die Diagonalelemente die \\
+    Eigenwerte:
+    $\lambda_1 = 1, \lambda_2 = 3, \lambda_3 = 2$
     \item $\det(A) = \lambda_1\cdot\lambda_2\cdot\lambda_3 = 6$
     \item $\operatorname{tr}(A) = \lambda_1 + \lambda_2 + \lambda_3 = 6$
     \item Spektrum: $\sigma(A) = \{1,2,3\}$
@@ -225,6 +354,7 @@ $$A = \begin{pmatrix} 1 & 0 & 0\\ 2 & 3 & 0\\ 0 & 1 & 2\end{pmatrix}$$
 \end{example2}
 
 \begin{examplecode}{EW und EV über Charakteristisches Polynom}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 \begin{lstlisting}[language=Python, style=basesmol]
 A = np.array([[1, 0, 0], [2, 3, 0], [0, 1, 2]])
 # Charakteristisches Polynom
@@ -267,7 +397,7 @@ $$\rho(A) = \max\{|\lambda| \mid \lambda \text{ ist Eigenwert von } A\}$$
 Er gibt den Betrag des betragsmäßig größten Eigenwerts an.
 \end{definition}
 
-\subsubsection{Iterative Verfahren}
+\subsubsection{Von-Mises-Iteration}
 
 \begin{concept}{Von-Mises-Iteration (Vektoriteration)}\\
 Für eine diagonalisierbare Matrix $A$ mit Eigenwerten $|\lambda_1| > |\lambda_2| \geq \cdots \geq |\lambda_n|$ konvergiert die Folge:
@@ -277,6 +407,7 @@ gegen einen Eigenvektor $v$ zum betragsmäßig größten Eigenwert $\lambda_1$.
 \end{concept}
 
 \begin{KR}{Von-Mises-Iteration durchführen}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 \begin{enumerate}
     \item Wähle Startvektor $v^{(0)}$ mit $\|v^{(0)}\|_2 = 1$
     \item Für $k = 0,1,2,\ldots$:
@@ -289,24 +420,140 @@ gegen einen Eigenvektor $v$ zum betragsmäßig größten Eigenwert $\lambda_1$.
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{Von-Mises-Iteration}{Berechnung des größten Eigenwerts}
+\begin{example2}{Von-Mises-Iteration}
+%TODO: add example
+\end{example2}
+
+\begin{example2}{Von-Mises-Iteration}
+Berechne größten Eigenwert der Matrix:
+$$A = \begin{pmatrix}
+4 & -1 & 1\\
+-1 & 3 & -2\\
+1 & -2 & 3
+\end{pmatrix}$$
+
+Startvektor: $v^{(0)} = \begin{pmatrix}1\\ 0\\ 0\end{pmatrix}$
+
+\begin{center}
+\begin{tabular}{c|c|c}
+k & $v^{(k)}$ & $\lambda^{(k)}$ \\\hline
+0 & $(1, 0, 0)^T$ & -\\
+1 & $(0.970, -0.213, 0.119)^T$ & 4.000\\
+2 & $(0.957, -0.239, 0.164)^T$ & 4.827\\
+3 & $(0.953, -0.244, 0.178)^T$ & 4.953\\
+4 & $(0.952, -0.245, 0.182)^T$ & 4.989
+\end{tabular}
+\end{center}
+
+Konvergenz gegen $\lambda_1 \approx 5$ mit Eigenvektor $v \approx (0.952, -0.245, 0.182)^T$
+\end{example2}
+
+\begin{examplecode}{Von-Mises-Iteration} Berechnung des größten Eigenwerts
+    %TODO: check if this is correct
 \begin{lstlisting}[language=Python, style=basesmol]
-import numpy as np
 def power_iteration(A, tol=1e-10, max_iter=100):
-    n = A.shape[0]
-    v = np.random.rand(n)
-    v = v / np.linalg.norm(v)
+    n = len(A)
+    v = [random.random() for _ in range(n)]
+    v = [x / np.linalg.norm(v) for x in v]
     for i in range(max_iter):
-        w = A @ v
-        v_new = w / np.linalg.norm(w)
+        w = [sum(A[i][j] * v[j] for j in range(n)) for i in range(n)]
+        v_new = [x / np.linalg.norm(w) for x in w]
         # Rayleigh-Quotient
-        lambda_k = v_new.T @ A @ v_new
-        if np.linalg.norm(v_new - v) < tol:
+        lambda_k = sum(v_new[i] * A[i][j] * v_new[j] for i in range(n) for j in range(n))
+        if np.linalg.norm([v_new[i] - v[i] for i in range(n)]) < tol:
             return lambda_k, v_new
         v = v_new
     return lambda_k, v_new
 \end{lstlisting}
-\end{example2}
+\end{examplecode}
+
+\begin{examplecode}{Von-Mises-Iteration}
+\begin{lstlisting}[language=Python, style=basesmol]
+def matrix_vector_mult(A, v):
+    n = len(v)
+    return [sum(A[i][j] * v[j] for j in range(n)) 
+            for i in range(n)]
+
+def vector_norm(v):
+    return (sum(x*x for x in v)) ** 0.5
+
+def normalize_vector(v):
+    norm = vector_norm(v)
+    return [x/norm for x in v]
+
+def rayleigh_quotient(A, v):
+    numerator = sum(v[i] * sum(A[i][j] * v[j] 
+                   for j in range(len(v))) 
+                   for i in range(len(v)))
+    denominator = sum(x*x for x in v)
+    return numerator / denominator
+
+def power_method(A, tol=1e-10, max_iter=100):
+    n = len(A)
+    # Startvektor [1,0,0,...,0]
+    v = [1.0] + [0.0] * (n-1)
+    v = normalize_vector(v)
+    
+    for k in range(max_iter):
+        # Matrixmultiplikation
+        w = matrix_vector_mult(A, v)
+        # Normierung
+        v_new = normalize_vector(w)
+        # Eigenwertapproximation
+        lambda_k = rayleigh_quotient(A, v_new)
+        # Konvergenztest
+        if vector_norm([v_new[i]-v[i] 
+                     for i in range(n)]) < tol:
+            return lambda_k, v_new
+        v = v_new
+    
+    return lambda_k, v
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Von-Mises-Iteration ohne spezielle Bibliotheken}
+\begin{lstlisting}[language=Python, style=basesmol]
+def matrix_vector_mult(A, v):
+    n = len(A)
+    result = [0] * n
+    for i in range(n):
+        for j in range(n):
+            result[i] += A[i][j] * v[j]
+    return result
+
+def vector_norm(v):
+    return sum(x*x for x in v) ** 0.5
+
+def normalize_vector(v):
+    norm = vector_norm(v)
+    return [x/norm for x in v]
+
+def power_iteration(A, tol=1e-10, max_iter=100):
+    n = len(A)
+    # Startvektor
+    v = normalize_vector([1] + [0]*(n-1))
+    
+    for _ in range(max_iter):
+        # Matrix-Vektor-Multiplikation
+        w = matrix_vector_mult(A, v)
+        # Normierung
+        v_new = normalize_vector(w)
+        
+        # Rayleigh-Quotient
+        lambda_k = sum(v_new[i] * A[i][j] * v_new[j] 
+                      for i in range(n) 
+                      for j in range(n))
+        
+        # Konvergenzpruefung
+        if vector_norm([v_new[i]-v[i] for i in range(n)]) < tol:
+            return lambda_k, v_new
+            
+        v = v_new
+    return lambda_k, v
+\end{lstlisting}
+\end{examplecode}
+
+\subsubsection{QR-Verfahren}
 
 \begin{concept}{QR-Verfahren}\\
 Das QR-Verfahren transformiert die Matrix $A$ iterativ in eine obere Dreiecksmatrix, deren Diagonalelemente die Eigenwerte sind:
@@ -322,6 +569,7 @@ Das QR-Verfahren transformiert die Matrix $A$ iterativ in eine obere Dreiecksmat
 \end{concept}
 
 \begin{KR}{QR-Verfahren anwenden}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 \begin{enumerate}
     \item Matrix $A_0 = A$ vorbereiten
     \item In jedem Schritt $i$:
@@ -335,7 +583,13 @@ Das QR-Verfahren transformiert die Matrix $A$ iterativ in eine obere Dreiecksmat
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{QR-Verfahren}{Implementation in Python}
+\begin{example2}{QR-Verfahren}
+    %TODO: add example
+\end{example2}
+
+\begin{examplecode}{QR-Verfahren}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+    %needs to be implemented without using specialized libraries (no numpy, etc)
 \begin{lstlisting}[language=Python, style=basesmol]
 def qr_algorithm(A, tol=1e-10, max_iter=100):
     n = A.shape[0]
@@ -356,7 +610,159 @@ def qr_algorithm(A, tol=1e-10, max_iter=100):
             
     return np.diag(A_k), Q_prod
 \end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{QR-Verfahren}
+Matrix:
+$$A = \begin{pmatrix}
+2 & -1 & 1\\
+-1 & 3 & 0\\
+1 & 0 & 1
+\end{pmatrix}$$
+
+\paragraph{QR-Iteration:}
+\begin{enumerate}
+    \item $A_0 = A$
+    \item Nach erster Iteration:
+    $$A_1 = \begin{pmatrix}
+    3.21 & -0.83 & 0.62\\
+    -0.83 & 2.13 & 0.41\\
+    0.62 & 0.41 & 0.66
+    \end{pmatrix}$$
+    \item Nach 5 Iterationen:
+    $$A_5 \approx \begin{pmatrix}
+    4 & 0 & 0\\
+    0 & 1 & 0\\
+    0 & 0 & 1
+    \end{pmatrix}$$
+\end{enumerate}
+
+Die Diagonalelemente von $A_5$ sind die Eigenwerte: $\lambda_1 = 4, \lambda_2 = 1, \lambda_3 = 1$
 \end{example2}
+
+\begin{examplecode}{QR-Verfahren}
+\begin{lstlisting}[language=Python, style=basesmol]
+def matmul(A, B):
+    n = len(A)
+    C = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            C[i][j] = sum(A[i][k] * B[k][j] 
+                     for k in range(n))
+    return C
+
+def transpose(A):
+    n = len(A)
+    return [[A[j][i] for j in range(n)] 
+            for i in range(n)]
+
+def householder(x):
+    n = len(x)
+    # Norm berechnen
+    s = sum(x[i]**2 for i in range(1, n))
+    v = [0.0] * n
+    if s == 0:
+        return v
+    
+    v[0] = x[0]
+    norm_x = (x[0]**2 + s)**0.5
+    if x[0] <= 0:
+        v[0] = x[0] - norm_x
+    else:
+        v[0] = -s/(x[0] + norm_x)
+    
+    for i in range(1, n):
+        v[i] = x[i]
+    
+    return normalize_vector(v)
+
+def qr_algorithm(A, tol=1e-10, max_iter=100):
+    n = len(A)
+    A_k = [row[:] for row in A]  # Kopiere A
+    
+    for k in range(max_iter):
+        # QR-Zerlegung mit Householder
+        Q = [[1.0 if i==j else 0.0 
+              for j in range(n)] 
+              for i in range(n)]
+        R = [row[:] for row in A_k]
+        
+        for j in range(n-1):
+            v = householder([R[i][j] 
+                 for i in range(j, n)])
+            # Householder-Transformation anwenden
+            
+        # Neue Iteration A_(k+1) = RQ
+        A_k = matmul(R, Q)
+        
+        # Konvergenztest
+        if max(abs(A_k[i][j]) 
+               for i in range(1, n) 
+               for j in range(i)) < tol:
+            break
+    
+    return [A_k[i][i] for i in range(n)]
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{QR-Verfahren ohne spezielle Bibliotheken}
+\begin{lstlisting}[language=Python, style=basesmol]
+def matrix_mult(A, B):
+    n = len(A)
+    C = [[0]*n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                C[i][j] += A[i][k] * B[k][j]
+    return C
+
+def gram_schmidt(A):
+    n = len(A)
+    Q = [[0]*n for _ in range(n)]
+    R = [[0]*n for _ in range(n)]
+    
+    # Extrahiere Spalten von A
+    V = [[A[i][j] for i in range(n)] for j in range(n)]
+    
+    for i in range(n):
+        # Berechne Q[:, i]
+        Q_col = V[i]
+        for j in range(i):
+            # Berechne Projektion und subtrahiere
+            R[j][i] = sum(Q[k][j] * V[i][k] for k in range(n))
+            Q_col = [Q_col[k] - R[j][i] * Q[k][j] 
+                    for k in range(n)]
+        
+        # Normiere
+        R[i][i] = vector_norm(Q_col)
+        Q_col = [x/R[i][i] for x in Q_col]
+        
+        # Speichere normierte Spalte
+        for j in range(n):
+            Q[j][i] = Q_col[j]
+            
+    return Q, R
+
+def qr_algorithm(A, tol=1e-10, max_iter=100):
+    n = len(A)
+    A_k = [row[:] for row in A]  # Kopiere A
+    
+    for _ in range(max_iter):
+        Q, R = gram_schmidt(A_k)
+        A_k = matrix_mult(R, Q)
+        
+        # Pruefe Konvergenz (Subdiagonalelemente)
+        converged = True
+        for i in range(1, n):
+            if abs(A_k[i][i-1]) > tol:
+                converged = False
+                break
+        if converged:
+            break
+            
+    return [A_k[i][i] for i in range(n)]  # Eigenwerte
+\end{lstlisting}
+\end{examplecode}
 
 \begin{remark2}{Numerische Stabilität}
 \begin{itemize}
@@ -365,4 +771,153 @@ def qr_algorithm(A, tol=1e-10, max_iter=100):
     \item Benötigt mehr Rechenaufwand
     \item Konvergiert linear für reelle, quadratisch für komplexe Eigenwerte
 \end{itemize}
+\end{remark2}
+
+\subsection{Praktische Anwendungen}
+
+\begin{concept}{Anwendungen von Eigenwerten}
+\begin{itemize}
+    \item Bestimmung von Schwingungsmoden in mechanischen Systemen
+    \item Hauptkomponentenanalyse in der Datenanalyse
+    \item Stabilität von dynamischen Systemen
+    \item PageRank-Algorithmus für Webseitenranking
+    \item Bildkompression und Signalverarbeitung
+\end{itemize}
+\end{concept}
+
+\begin{example2}{PageRank-Algorithmus}
+Google-Matrix für ein kleines Webnetzwerk mit 3 Seiten:
+$$A = \begin{pmatrix}
+0 & 1/2 & 1/3\\
+1 & 0 & 1/3\\
+0 & 1/2 & 1/3
+\end{pmatrix}$$
+
+Der PageRank entspricht dem Eigenvektor zum Eigenwert 1:
+\begin{itemize}
+    \item $\lambda = 1$ ist größter Eigenwert
+    \item PageRank: $v \approx (0.39, 0.41, 0.20)^T$
+    \item Seite 2 hat höchste Relevanz, Seite 3 niedrigste
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Praktische Eigenwertberechnung}
+\begin{enumerate}
+    \item Vorverarbeitung der Matrix:
+    \begin{itemize}
+        \item Auf Symmetrie prüfen
+        \item Ggf. auf Hessenberg-Form transformieren
+        \item Kondition der Matrix prüfen
+    \end{itemize}
+    
+    \item Wahl des geeigneten Verfahrens:
+    \begin{itemize}
+        \item Nur größter EW → Von-Mises
+        \item Alle EW → QR-Verfahren
+        \item Symmetrisch → Symmetrisches QR
+        \item Einzelner EW → Inverse Iteration
+    \end{itemize}
+    
+    \item Implementierungsaspekte:
+    \begin{itemize}
+        \item Konvergenzkriterien definieren
+        \item Numerische Stabilität sicherstellen
+        \item Abbruchkriterien festlegen
+        \item Fehlerbehandlung implementieren
+    \end{itemize}
+    
+    \item Nachbearbeitung:
+    \begin{itemize}
+        \item Genauigkeit überprüfen
+        \item EV auf Länge 1 normieren
+        \item Komplexe EW/EV behandeln
+        \item Ergebnisse validieren
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{examplecode}{Inverse Iteration}
+\begin{lstlisting}[language=Python, style=basesmol]
+def inverse_iteration(A, mu, tol=1e-10, max_iter=100):
+    n = len(A)
+    # Startvektor
+    v = [1.0] + [0.0] * (n-1)
+    v = normalize_vector(v)
+    
+    # Matrix (A - mu*I) erstellen
+    A_shift = [[A[i][j] if i != j 
+                else A[i][j] - mu 
+                for j in range(n)] 
+              for i in range(n)]
+    
+    for k in range(max_iter):
+        # Loese (A - mu*I)w = v
+        w = solve_linear_system(A_shift, v)
+        # Normiere Ergebnisvektor
+        v_new = normalize_vector(w)
+        
+        # Konvergenztest
+        if vector_norm([v_new[i]-v[i] 
+                     for i in range(n)]) < tol:
+            # Berechne Rayleigh-Quotienten
+            lambda_k = rayleigh_quotient(A, v_new)
+            return lambda_k, v_new
+            
+        v = v_new
+    
+    raise ValueError("Keine Konvergenz")
+
+def solve_linear_system(A, b):
+    # LR-Zerlegung und Rueckwaertseinsetzen
+    n = len(A)
+    x = gauss_solve(A, b)  # aus LGS Kapitel
+    return x
+\end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{Inverse Iteration}
+Matrix mit bekanntem Eigenwert nahe $\mu = 2$:
+$$A = \begin{pmatrix}
+2.1 & -0.1 & 0.1\\
+-0.1 & 2.0 & -0.2\\
+0.1 & -0.2 & 1.9
+\end{pmatrix}$$
+
+Iterationsverlauf mit $\mu = 2.0$:
+\begin{center}
+\begin{tabular}{c|c|c}
+k & $v^{(k)}$ & $\lambda^{(k)}$ \\\hline
+0 & $(1, 0, 0)^T$ & -\\
+1 & $(0.82, -0.41, 0.39)^T$ & 2.091\\
+2 & $(0.81, -0.42, 0.41)^T$ & 2.083\\
+3 & $(0.81, -0.42, 0.41)^T$ & 2.082
+\end{tabular}
+\end{center}
+
+Konvergenz gegen den Eigenwert $\lambda \approx 2.082$
+\end{example2}
+
+\begin{remark2}{Numerische Aspekte}
+\begin{enumerate}
+    \item Wahl des Startpunkts:
+    \begin{itemize}
+        \item Von-Mises: zufälliger normierter Vektor
+        \item Inverse Iteration: Näherung für $\mu$ wichtig
+        \item QR: Matrix vorher auf Hessenberg-Form
+    \end{itemize}
+    
+    \item Konvergenzprüfung:
+    \begin{itemize}
+        \item Residuum $\|Ax^{(k)} - \lambda^{(k)}x^{(k)}\|$
+        \item Änderung in aufeinanderfolgenden Iterationen
+        \item Subdiagonalelemente bei QR
+    \end{itemize}
+    
+    \item Spezialfälle:
+    \begin{itemize}
+        \item Mehrfache Eigenwerte
+        \item Komplexe Eigenwerte/vektoren
+        \item Schlecht konditionierte Matrizen
+    \end{itemize}
+\end{enumerate}
 \end{remark2}

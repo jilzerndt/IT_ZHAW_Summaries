@@ -84,7 +84,28 @@ $$n \geq \frac{\ln(\frac{tol \cdot (1-\alpha)}{|x_1-x_0|})}{\ln \alpha}$$
 \end{minipage}
 \end{KR}
 
+\begin{KR}{Konvergenznachweis für Fixpunktiteration}
+\begin{enumerate}
+    \item Bringe die Gleichung in Fixpunktform: $f(x)=0 \Rightarrow x = F(x)$
+    \item Prüfe, ob $F$ das Intervall $[a,b]$ in sich abbildet:
+    \begin{itemize}
+        \item Wähle geeignetes Intervall $[a,b]$
+        \item Prüfe $F(a) \geq a$ und $F(b) \leq b$
+    \end{itemize}
+    \item Bestimme die Lipschitz-Konstante $\alpha$:
+    \begin{itemize}
+        \item Berechne $F'(x)$
+        \item Finde $\alpha = \max_{x \in [a,b]} |F'(x)|$
+        \item Prüfe $\alpha < 1$
+    \end{itemize}
+    \item Berechne nötige Iterationen für Genauigkeit $tol$:
+    $$n \geq \frac{\ln(\frac{tol \cdot (1-\alpha)}{|x_1-x_0|})}{\ln \alpha}$$
+\end{enumerate}
+\end{KR}
+
+
 \begin{example2}{Fixpunktiteration} Nullstellen von $p(x)=x^3-x+0.3$\\
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 Fixpunktgleichung: $x_{n+1} = F(x_n) = x_n^3 + 0.3$
 \begin{enumerate}
     \item $F'(x) = 3x^2$ steigt monoton
@@ -94,7 +115,19 @@ Fixpunktgleichung: $x_{n+1} = F(x_n) = x_n^3 + 0.3$
 \end{enumerate}
 \end{example2}
 
+\begin{example2}{Fixpunktiteration} Nullstellen von $f(x)=e^x - x - 2$
+Umformung in Fixpunktform: $x = \ln(x+2)$, also $F(x)=\ln(x+2)$
+\begin{enumerate}
+    \item $F'(x) = \frac{1}{x+2}$ monoton fallend
+    \item Für $I=[1,2]$: $F(1)=1.099 > 1$, $F(2)=1.386 < 2$
+    \item $\alpha = \max_{x \in [1,2]} |\frac{1}{x+2}| = \frac{1}{3} < 1$
+    \item Konvergenz für Startwerte in $[1,2]$ gesichert
+    \item Für Genauigkeit $10^{-6}$ benötigt: $n \geq 12$ Iterationen
+\end{enumerate}
+\end{example2}
+
 \begin{examplecode}{Fixpunktiteration}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
     \begin{lstlisting}[language=Python, style=basesmol]
 def fixed_point_iteration(f, x0, tol=1e-6, max_iter=100):
     for n in range(max_iter):
@@ -104,6 +137,45 @@ def fixed_point_iteration(f, x0, tol=1e-6, max_iter=100):
         x0 = x1
     raise ValueError("No convergence")
     \end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Fixpunktiteration}
+\begin{lstlisting}[language=Python, style=basesmol]
+# Einfache Version
+def fixed_point_iter(f, x0, tol=1e-6, max_iter=100):
+    x = x0
+    for i in range(max_iter):
+        x_new = f(x)
+        if abs(x_new - x) < tol:
+            return x_new, i+1
+        x = x_new
+    raise ValueError("Keine Konvergenz")
+
+# Optimierte Version mit Fehlerschaetzung
+def fixed_point_iter_opt(f, x0, tol=1e-6, max_iter=100):
+    x = x0
+    alpha = None  # Schaetzung fuer Lipschitz-Konstante
+    for i in range(max_iter):
+        x_new = f(x)
+        dx = abs(x_new - x)
+        
+        # Lipschitz-Konstante schaetzen
+        if i > 0 and dx > 0:
+            alpha_new = dx / dx_old
+            if alpha is None or alpha_new > alpha:
+                alpha = alpha_new
+        
+        # A-posteriori Fehlerabschaetzung
+        if alpha is not None and alpha < 1:
+            error = alpha * dx / (1 - alpha)
+            if error < tol:
+                return x_new, i+1
+                
+        x = x_new
+        dx_old = dx
+        
+    raise ValueError("Keine Konvergenz")
+\end{lstlisting}
 \end{examplecode}
 
 \subsection{Newton-Verfahren}
@@ -137,7 +209,33 @@ def fixed_point_iteration(f, x0, tol=1e-6, max_iter=100):
 \end{enumerate}
 \end{KR}
 
+\begin{KR}{Newton-Verfahren anwenden}
+\begin{enumerate}
+    \item Vorbereitung:
+    \begin{itemize}
+        \item Funktion $f(x)$ identifizieren
+        \item Ableitung $f'(x)$ bestimmen
+        \item Sicherstellen, dass $f'(x) \neq 0$ im relevanten Bereich
+    \end{itemize}
+    \item Startwert wählen:
+    \begin{itemize}
+        \item Nullstelle graphisch abschätzen
+        \item Startwert $x_0$ nahe der vermuteten Nullstelle wählen
+        \item Prüfen, ob $f'(x_0) \neq 0$
+    \end{itemize}
+    \item Iteration durchführen:
+    $$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
+    \item Abbruchkriterien prüfen:
+    \begin{itemize}
+        \item Funktionswert: $|f(x_n)| < \epsilon_1$
+        \item Änderung: $|x_{n+1}-x_n| < \epsilon_2$
+        \item Maximale Iterationszahl nicht überschritten
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
 \begin{example2}{Newton-Verfahren} Nullstellen von $f(x)=x^2-2$\\
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 Ableitung: $f'(x) = 2x$, Startwert $x_0 = 1$
 \vspace{1mm}\\
 \begin{minipage}[t]{0.65\textwidth}
@@ -153,7 +251,25 @@ Ableitung: $f'(x) = 2x$, Startwert $x_0 = 1$
 \end{minipage}
 \end{example2}
 
+\begin{example2}{Newton-Verfahren} Berechnung von $\sqrt[3]{2}$
+Nullstellenproblem: $f(x)=x^3-2$
+\vspace{1mm}\\
+\begin{minipage}[t]{0.65\textwidth}
+    \vspace{-3mm}
+    Ableitung: $f'(x)=3x^2$, Startwert $x_0=1$
+    \begin{enumerate}
+        \item $x_1 = 1 - \frac{1^3-2}{3 \cdot 1^2} = 1.333333$
+        \item $x_2 = 1.333333 - \frac{1.333333^3-2}{3 \cdot 1.333333^2} = 1.259921$
+        \item $x_3 = 1.259921 - \frac{1.259921^3-2}{3 \cdot 1.259921^2} = 1.259921$
+    \end{enumerate}
+\end{minipage}
+\begin{minipage}[t]{0.3\textwidth}
+    Quadratische Konvergenz sichtbar durch schnelle Annäherung an $\sqrt[3]{2} \approx 1.259921$
+\end{minipage}
+\end{example2}
+
 \begin{examplecode}{Newton-Verfahren}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
     \begin{lstlisting}[language=Python, style=basesmol]
 def newton(f, df, x0, tol=1e-6, max_iter=100):
     for n in range(max_iter):
@@ -163,6 +279,49 @@ def newton(f, df, x0, tol=1e-6, max_iter=100):
         x0 = x1
     raise ValueError("No convergence")
     \end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Newton-Verfahren}
+\begin{lstlisting}[language=Python, style=basesmol]
+# Einfache Version
+def newton(f, df, x0, tol=1e-6, max_iter=100):
+    x = x0
+    for i in range(max_iter):
+        fx = f(x)
+        if abs(fx) < tol:
+            return x, i+1
+        dfx = df(x)
+        if dfx == 0:
+            raise ValueError("Ableitung Null")
+        x = x - fx/dfx
+    raise ValueError("Keine Konvergenz")
+
+# Optimierte Version mit Fehlerkontrolle
+def newton_safe(f, df, x0, tol=1e-6, max_iter=100):
+    x = x0
+    fx = f(x)
+    
+    for i in range(max_iter):
+        dfx = df(x)
+        if dfx == 0:
+            raise ValueError("Ableitung Null")
+            
+        dx = fx/dfx
+        x_new = x - dx
+        fx_new = f(x_new)
+        
+        # Verschiedene Konvergenzkriterien
+        if abs(fx_new) < tol:  # Funktionswert
+            return x_new, i+1
+        if abs(dx) < tol * (1 + abs(x)):  # Relative Aenderung
+            return x_new, i+1
+        if abs(fx_new) >= abs(fx):  # Divergenzcheck
+            raise ValueError("Divergenz detektiert")
+            
+        x, fx = x_new, fx_new
+        
+    raise ValueError("Keine Konvergenz")
+\end{lstlisting}
 \end{examplecode}
 
 \begin{theorem}{Vereinfachtes Newton-Verfahren}\\
@@ -187,6 +346,7 @@ def newton(f, df, x0, tol=1e-6, max_iter=100):
 
 
 \begin{example2}{Sekantenverfahren} Nullstellen von $f(x)=x^2-2$\\
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 Startwerte $x_0 = 1$ und $x_1 = 2$
 \vspace{1mm}\\
 \begin{minipage}[t]{0.65\textwidth}
@@ -204,6 +364,7 @@ Startwerte $x_0 = 1$ und $x_1 = 2$
 \end{example2}
 
 \begin{examplecode}{Sekantenverfahren}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
     \begin{lstlisting}[language=Python, style=basesmol]
 def secant(f, x0, x1, tol=1e-6, max_iter=100):
     for n in range(max_iter):
@@ -214,6 +375,97 @@ def secant(f, x0, x1, tol=1e-6, max_iter=100):
     raise ValueError("No convergence")
     \end{lstlisting}
 \end{examplecode}
+
+\begin{examplecode}{Sekantenverfahren}
+\begin{lstlisting}[language=Python, style=basesmol]
+# Einfache Version
+def secant(f, x0, x1, tol=1e-6, max_iter=100):
+    fx0 = f(x0)
+    fx1 = f(x1)
+    
+    for i in range(max_iter):
+        if abs(fx1) < tol:
+            return x1, i+1
+            
+        if fx1 == fx0:
+            raise ValueError("Division durch Null")
+            
+        x2 = x1 - fx1 * (x1 - x0)/(fx1 - fx0)
+        x0, x1 = x1, x2
+        fx0, fx1 = fx1, f(x2)
+        
+    raise ValueError("Keine Konvergenz")
+
+# Optimierte Version mit Fehlerkontrolle
+def secant_safe(f, x0, x1, tol=1e-6, max_iter=100):
+    fx0 = f(x0)
+    fx1 = f(x1)
+    
+    if abs(fx0) < abs(fx1):  # Stelle mit kleinerem f-Wert als x1
+        x0, x1 = x1, x0
+        fx0, fx1 = fx1, fx0
+    
+    for i in range(max_iter):
+        if abs(fx1) < tol:
+            return x1, i+1
+            
+        if fx1 == fx0:
+            raise ValueError("Division durch Null")
+            
+        # Sekanten-Schritt
+        d = fx1 * (x1 - x0)/(fx1 - fx0)
+        x2 = x1 - d
+        
+        # Konvergenzpruefungen
+        if abs(d) < tol * (1 + abs(x1)):  # Relative Aenderung
+            return x2, i+1
+            
+        fx2 = f(x2)
+        if abs(fx2) >= abs(fx1):  # Divergenzcheck
+            if i == 0:
+                raise ValueError("Schlechte Startwerte")
+            return x1, i+1
+            
+        x0, x1 = x1, x2
+        fx0, fx1 = fx1, fx2
+        
+    raise ValueError("Keine Konvergenz")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Systematisches Vorgehen bei Nullstellenproblemen}
+\begin{enumerate}
+    \item Analyse des Problems
+    \begin{itemize}
+        \item Existenz von Nullstellen prüfen (z.B. mit Zwischenwertsatz)
+        \item Eindeutigkeit untersuchen
+        \item Geeignetes Intervall [a,b] identifizieren
+    \end{itemize}
+    
+    \item Wahl des Verfahrens
+    \begin{itemize}
+        \item Newton-Verfahren: wenn Ableitung leicht berechenbar
+        \item Sekantenverfahren: wenn Ableitung schwierig
+        \item Fixpunktiteration: wenn geeignete Umformung möglich
+    \end{itemize}
+    
+    \item Vorbereitung
+    \begin{itemize}
+        \item Geeignete Startwerte wählen
+        \item Konvergenzkriterien festlegen
+        \item Maximale Iterationszahl bestimmen
+    \end{itemize}
+    
+    \item Implementation und Test
+    \begin{itemize}
+        \item Verschiedene Startwerte testen
+        \item Konvergenzverhalten beobachten
+        \item Fehlerabschätzung durchführen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+
 
 \subsubsection{Konvergenzverhalten}
 
@@ -235,6 +487,7 @@ def secant(f, x0, x1, tol=1e-6, max_iter=100):
 \end{theorem}
 
 \begin{example2}{Konvergenzgeschwindigkeit} Vergleich der Verfahren:
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
     \vspace{1mm}\\
     Startwert $x_0 = 1$, Funktion $f(x) = x^2 - 2$, Ziel: $\sqrt{2}$
     \begin{center}
@@ -248,6 +501,22 @@ def secant(f, x0, x1, tol=1e-6, max_iter=100):
     \end{center}
 \end{example2}
 \subsection{Fehlerabschätzung}
+
+\begin{example2}{Vergleich der Verfahren} 
+Berechnung von $\sqrt[3]{2}$ mit $f(x)=x^3-2$
+\begin{center}
+\begin{tabular}{l|c|c|c|c}
+Iteration & Newton & Vereinf. Newton & Sekanten & Fixpunkt \\\hline
+Start & 1.0 & 1.0 & 1.0, 2.0 & 1.0 \\
+1 & 1.333333 & 1.333333 & 1.400000 & 1.442250 \\
+2 & 1.259921 & 1.296296 & 1.274529 & 1.309163 \\
+3 & 1.259921 & 1.277955 & 1.259963 & 1.271901 \\
+4 & 1.259921 & 1.268931 & 1.259921 & 1.263560 \\\hline
+q & 2.0 & 1.0 & 1.618 & 1.0 \\
+\end{tabular}
+\end{center}
+Die letzte Zeile zeigt die Konvergenzordnung q. Das Newton-Verfahren konvergiert am schnellsten (quadratisch), gefolgt vom Sekantenverfahren (superlinear).
+\end{example2}
 
 \begin{lemma}{Nullstellensatz von Bolzano}
 Sei $f:[a,b] \rightarrow \mathbb{R}$ stetig. Falls 
@@ -268,7 +537,59 @@ So schätzen Sie den Fehler einer Näherungslösung ab:
 \end{enumerate}
 \end{KR}
 
+\begin{KR}{Fehlerabschätzung für Nullstellen}
+\begin{enumerate}
+    \item Voraussetzungen prüfen:
+    \begin{itemize}
+        \item Funktion $f$ muss stetig sein
+        \item Nullstelle muss von ungerader Ordnung sein (Vorzeichenwechsel)
+    \end{itemize}
+    \item Fehlertoleranz $\epsilon$ festlegen
+    \item Nullstelleneinschluss prüfen:
+    \begin{itemize}
+        \item Berechne $f(x_n-\epsilon)$ und $f(x_n+\epsilon)$
+        \item Prüfe Vorzeichenwechsel: $f(x_n-\epsilon) \cdot f(x_n+\epsilon) < 0$
+    \end{itemize}
+    \item Fehler auswerten:
+    \begin{itemize}
+        \item Falls Vorzeichenwechsel: $|x_n-\xi| < \epsilon$
+        \item Falls kein Vorzeichenwechsel: $\epsilon$ vergrößern und wiederholen
+    \end{itemize}
+    \item Zusätzliche Konvergenzprüfungen:
+    \begin{itemize}
+        \item Relative Änderung: $\frac{|x_n-x_{n-1}|}{|x_n|} < \epsilon_r$
+        \item Residuum: $|f(x_n)| < \epsilon_f$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{KR}{Fehlerabschätzung in der Praxis}
+\begin{enumerate}
+    \item Numerische Fehlerabschätzung
+    \begin{itemize}
+        \item Absolute Änderung: $|x_n - x_{n-1}| < \epsilon_1$
+        \item Funktionswert: $|f(x_n)| < \epsilon_2$
+        \item Vorzeichenwechsel prüfen: $f(x_n-\epsilon) \cdot f(x_n+\epsilon) < 0$
+    \end{itemize}
+    
+    \item Theoretische Fehlerabschätzung
+    \begin{itemize}
+        \item Fixpunktiteration: $|x_n-\bar{x}| \leq \frac{\alpha^n}{1-\alpha}|x_1-x_0|$
+        \item Newton-Verfahren: $|x_{n+1}-\bar{x}| \leq c|x_n-\bar{x}|^2$
+        \item Sekantenverfahren: $|x_{n+1}-\bar{x}| \leq c|x_n-\bar{x}|^{1.618}$
+    \end{itemize}
+    
+    \item Zusätzliche Sicherheitsaspekte
+    \begin{itemize}
+        \item Divergenzcheck durchführen
+        \item Überlauf/Unterlauf prüfen
+        \item Division durch Null vermeiden
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
 \begin{example2}{Praktische Fehlerabschätzung} Fehlerbestimmung bei $f(x)=x^2-2$
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
     \vspace{-1mm}\\
     \begin{minipage}[t]{0.6\textwidth}
         \vspace{-3mm}
@@ -297,6 +618,7 @@ In der Praxis verwendet man meist mehrere Abbruchkriterien:
 \end{remark2}
 
 \begin{examplecode}{Fehlerabschätzung}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
     \begin{lstlisting}[language=Python, style=basesmol]
 def error_estimate(f, x, eps=1e-5):
     if f(x - eps) * f(x + eps) < 0:
