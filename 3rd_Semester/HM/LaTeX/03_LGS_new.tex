@@ -603,7 +603,47 @@ k & \multicolumn{2}{c|}{Residuum} & \multicolumn{2}{c}{Rel. Fehler}\\
 
 
 
+\begin{KR}{Implementierung von Jacobi- und Gauss-Seidel-Verfahren}
+\begin{enumerate}
+    \item Vorbereitungsphase:
+    \begin{itemize}
+        \item Matrix zerlegen in $A = L + D + R$
+        \item Diagonaldominanz prüfen: $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
+        \item Sinnvolle Startwerte wählen (z.B. $x^{(0)}=0$ oder $x^{(0)}=b$)
+        \item Toleranz $\epsilon$ und max. Iterationszahl $n_{max}$ festlegen
+    \end{itemize}
 
+    \item Jacobi-Verfahren:
+    \begin{itemize}
+        \item Allgemeine Form: $x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$
+        \item Komponentenweise für $i=1,\ldots,n$:
+        $$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$$
+        \item Alle Komponenten parallel berechnen
+    \end{itemize}
+
+    \item Gauss-Seidel-Verfahren:
+    \begin{itemize}
+        \item Allgemeine Form: $x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$
+        \item Komponentenweise für $i=1,\ldots,n$:
+        $$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$$
+        \item Komponenten sequentiell berechnen
+    \end{itemize}
+
+    \item Konvergenzprüfung:
+    \begin{itemize}
+        \item Absolute Änderung: $\|x^{(k+1)} - x^{(k)}\| < \epsilon$
+        \item Relatives Residuum: $\frac{\|Ax^{(k)} - b\|}{\|b\|} < \epsilon$
+        \item Maximale Iterationszahl: $k < n_{max}$
+    \end{itemize}
+
+    \item A-priori Fehlerabschätzung:
+    \begin{itemize}
+        \item Spektralradius $\rho$ der Iterationsmatrix bestimmen
+        \item Benötigte Iterationen $n$ für Genauigkeit $\epsilon$:
+        $$n \geq \frac{\ln(\epsilon(1-\rho)/\|x^{(1)}-x^{(0)}\|)}{\ln(\rho)}$$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
 
 
 
