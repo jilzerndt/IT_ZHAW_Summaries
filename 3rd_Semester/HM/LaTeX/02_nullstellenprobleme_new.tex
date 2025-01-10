@@ -282,14 +282,52 @@ So schätzen Sie den Fehler einer Näherungslösung ab:
     \end{center}
 \end{example2}
 
-\subsection{Implementationen}
+\subsubsection{Implementationen}
+
+\begin{examplecode}{Fehlerabschätzung durch Vorzeichenwechsel}
+\begin{lstlisting}[language=Python, style=basesmol]
+def error_estimate(f, x, eps=1e-5):
+    fx_left = f(x - eps)
+    fx_right = f(x + eps)
+    
+    if fx_left * fx_right < 0:
+        return eps  # Nullstelle liegt in (x-eps, x+eps)
+    return None
+
+    #Returns: Fehlerschranke eps wenn Vorzeichenwechsel, sonst None
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Verschiedene Abbruchkriterien prüfen} Konvergenzkriterien
+\begin{lstlisting}[language=Python, style=basesmol]
+def convergence_criteria(x_new, x_old, f_new, f_old, tol=1e-6):
+    # Absoluter Fehler im Funktionswert
+    if abs(f_new) < tol:
+        return True, "Funktionswert < tol"
+        
+    # Relative Aenderung der x-Werte
+    if abs(x_new - x_old) < tol * (1 + abs(x_new)):
+        return True, "Relative Aenderung < tol"
+        
+    # Relative Aenderung der Funktionswerte
+    if abs(f_new - f_old) < tol * (1 + abs(f_new)):
+        return True, "Funktionsaenderung < tol"
+        
+    # Divergenzcheck
+    if abs(f_new) > 2 * abs(f_old):
+        return False, "Divergenz detektiert"
+        
+    return False, "Noch nicht konvergiert"
+
+    #Returns: (konvergiert?, grund)
+\end{lstlisting}
+\end{examplecode}
 
 \begin{examplecode}{Fixpunktiteration}
 \begin{lstlisting}[language=Python, style=basesmol]
-# Einfache Version
-def fixed_point_iter(f, x0, tol=1e-6, max_iter=100):
+def fixed_point_it(f, x0, tol=1e-6, max_it=100):
     x = x0
-    for i in range(max_iter):
+    for i in range(max_it):
         x_new = f(x)
         if abs(x_new - x) < tol:
             return x_new, i+1
@@ -297,35 +335,30 @@ def fixed_point_iter(f, x0, tol=1e-6, max_iter=100):
     raise ValueError("Keine Konvergenz")
 
 # Optimierte Version mit Fehlerschaetzung
-def fixed_point_iter_opt(f, x0, tol=1e-6, max_iter=100):
+def fixed_point_it_opt(f, x0, tol=1e-6, max_it=100):
     x = x0
     alpha = None  # Schaetzung fuer Lipschitz-Konstante
     for i in range(max_iter):
         x_new = f(x)
         dx = abs(x_new - x)
-        
         # Lipschitz-Konstante schaetzen
         if i > 0 and dx > 0:
             alpha_new = dx / dx_old
             if alpha is None or alpha_new > alpha:
                 alpha = alpha_new
-        
         # A-posteriori Fehlerabschaetzung
         if alpha is not None and alpha < 1:
             error = alpha * dx / (1 - alpha)
             if error < tol:
                 return x_new, i+1
-                
         x = x_new
         dx_old = dx
-        
     raise ValueError("Keine Konvergenz")
 \end{lstlisting}
 \end{examplecode}
 
 \begin{examplecode}{Newton-Verfahren}
 \begin{lstlisting}[language=Python, style=basesmol]
-# Einfache Version
 def newton(f, df, x0, tol=1e-6, max_iter=100):
     x = x0
     for i in range(max_iter):
@@ -339,19 +372,16 @@ def newton(f, df, x0, tol=1e-6, max_iter=100):
     raise ValueError("Keine Konvergenz")
 
 # Optimierte Version mit Fehlerkontrolle
-def newton_safe(f, df, x0, tol=1e-6, max_iter=100):
+def newton_safe(f, df, x0, tol=1e-6, max_it=100):
     x = x0
     fx = f(x)
-    
-    for i in range(max_iter):
+    for i in range(max_it):
         dfx = df(x)
         if dfx == 0:
             raise ValueError("Ableitung Null")
-            
         dx = fx/dfx
         x_new = x - dx
         fx_new = f(x_new)
-        
         # Verschiedene Konvergenzkriterien
         if abs(fx_new) < tol:  # Funktionswert
             return x_new, i+1
@@ -359,9 +389,7 @@ def newton_safe(f, df, x0, tol=1e-6, max_iter=100):
             return x_new, i+1
         if abs(fx_new) >= abs(fx):  # Divergenzcheck
             raise ValueError("Divergenz detektiert")
-            
         x, fx = x_new, fx_new
-        
     raise ValueError("Keine Konvergenz")
 \end{lstlisting}
 \end{examplecode}
@@ -426,48 +454,11 @@ def secant_safe(f, x0, x1, tol=1e-6, max_iter=100):
 \end{examplecode}
 
 
-\begin{examplecode}{Fehlerabschätzung und Abbruchkriterien}
+
+
+\begin{examplecode}{Nullstellensuche mit Fehlerabschätzung} Praktische Implementierung
 \begin{lstlisting}[language=Python, style=basesmol]
-def error_estimate(f, x, eps=1e-5):
-    """
-    Schaetzt den Fehler durch Vorzeichenwechsel-Test
-    Returns: Fehlerschranke eps wenn Vorzeichenwechsel, sonst None
-    """
-    fx_left = f(x - eps)
-    fx_right = f(x + eps)
-    
-    if fx_left * fx_right < 0:
-        return eps  # Nullstelle liegt in (x-eps, x+eps)
-    return None
-
-def convergence_criteria(x_new, x_old, f_new, f_old, tol=1e-6):
-    """
-    Prueft verschiedene Abbruchkriterien
-    Returns: (bool, str) - (konvergiert?, grund)
-    """
-    # Absoluter Fehler im Funktionswert
-    if abs(f_new) < tol:
-        return True, "Funktionswert < tol"
-        
-    # Relative Aenderung der x-Werte
-    if abs(x_new - x_old) < tol * (1 + abs(x_new)):
-        return True, "Relative Aenderung < tol"
-        
-    # Relative Aenderung der Funktionswerte
-    if abs(f_new - f_old) < tol * (1 + abs(f_new)):
-        return True, "Funktionsaenderung < tol"
-        
-    # Divergenzcheck
-    if abs(f_new) > 2 * abs(f_old):
-        return False, "Divergenz detektiert"
-        
-    return False, "Noch nicht konvergiert"
-
 def root_finder_with_error(f, x0, tol=1e-6, max_iter=100):
-    """
-    Nullstellensuche mit verschiedenen Konvergenzkriterien
-    und Fehlerabschaetzung
-    """
     x_old = x0
     f_old = f(x_old)
     
@@ -494,20 +485,11 @@ def root_finder_with_error(f, x0, tol=1e-6, max_iter=100):
         
     raise ValueError(f"Keine Konvergenz nach {max_iter} Iterationen")
 
-# Beispielnutzung
-def example_function(x):
-    return x**2 - 2
+    # Returns: Dictionary mit Ergebnissen
 
-result = root_finder_with_error(example_function, 1.0)
-print(f"Nullstelle: {result['root']:.10f}")
-print(f"Iterationen: {result['iterations']}")
-print(f"Fehlerschranke: {result['error_bound']:.10f}")
-print(f"Konvergenzgrund: {result['convergence_reason']}")
+# Beispielaufruf
+result = root_finder_with_error(lambda x: x**2 - 2, 1)
+print(result)
 
-# Ausgabe etwa:
-# Nullstelle: 1.4142135624
-# Iterationen: 5
-# Fehlerschranke: 1e-06
-# Konvergenzgrund: Funktionswert < tol
 \end{lstlisting}
 \end{examplecode}
