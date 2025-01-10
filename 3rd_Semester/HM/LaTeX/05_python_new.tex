@@ -294,6 +294,161 @@ def root_finder_with_error(f, x0, tol=1e-6, max_iter=100):
 
 \subsubsection{Numerische Lösung linearer Gleichungssysteme}
 
+\begin{examplecode}{Erweiterte Gauss-Elimination}
+\begin{lstlisting}[language=Python, style=basesmol]
+def gauss_elimination(A, b, tol=1e-10):
+    """Gauss-Elimination mit Behandlung freier Variablen
+    
+    Returns: Dictionary mit
+        'solution': Basisloesung
+        'free_vars': Liste der freien Variablen
+        'general_solution': Lambda-Funktion fuer allg. Loesung
+        'rank': Rang der Matrix
+        'consistent': System loesbar
+    """
+    n = len(A)
+    # Erweiterte Matrix erstellen
+    M = copy_matrix(A)
+    b = b.copy()
+    
+    # Speichere Zeilenoperationen fuer Rueckwaertsphase
+    row_ops = []
+    # Markiere freie Variablen
+    free_vars = []
+    rank = 0
+    
+    # Vorwaertselimination mit Pivotisierung
+    for i in range(n):
+        # Finde maximales Element in Spalte i
+        pivot_row = i
+        for j in range(i+1, n):
+            if abs(M[j][i]) > abs(M[pivot_row][i]):
+                pivot_row = j
+                
+        # Zeilen tauschen falls noetig
+        if pivot_row != i:
+            M[i], M[pivot_row] = M[pivot_row], M[i]
+            b[i], b[pivot_row] = b[pivot_row], b[i]
+            
+        # Pruefe auf freie Variable
+        if abs(M[i][i]) < tol:
+            free_vars.append(i)
+            continue
+            
+        rank += 1
+        # Speichere Operationen
+        row_ops.append((i, [(j, -M[j][i]/M[i][i]) 
+                           for j in range(i+1, n)]))
+                           
+        # Elimination durchfuehren
+        for j in range(i+1, n):
+            factor = M[j][i] / M[i][i]
+            for k in range(i, n):
+                M[j][k] -= factor * M[i][k]
+            b[j] -= factor * b[i]
+    
+    # Pruefe Loesbarkeit
+    consistent = True
+    for i in range(rank, n):
+        if abs(b[i]) > tol:
+            consistent = False
+            break
+            
+    if not consistent:
+        return {
+            'solution': None,
+            'free_vars': [],
+            'general_solution': None,
+            'rank': rank,
+            'consistent': False
+        }
+    
+    # Berechne Basisloesung
+    x = [0] * n
+    # Rueckwaertssubstitution
+    for i in range(n-1, -1, -1):
+        if i not in free_vars:
+            sum_val = sum(M[i][j] * x[j] 
+                         for j in range(i+1, n))
+            x[i] = (b[i] - sum_val) / M[i][i]
+    
+    # Erstelle Funktion fuer allgemeine Loesung
+    def general_solution(*params):
+        if len(params) != len(free_vars):
+            raise ValueError(
+                f"Benoetigt {len(free_vars)} Parameter")
+        solution = x.copy()
+        for var, param in zip(free_vars, params):
+            solution[var] = param
+            # Update abhaengige Variablen
+            for op in row_ops:
+                row, factors = op
+                if row < var:
+                    continue
+                solution[row] -= param * sum(
+                    f * solution[j] 
+                    for j, f in factors if j > var)
+        return solution
+    
+    return {
+        'solution': x,
+        'free_vars': free_vars,
+        'general_solution': general_solution,
+        'rank': rank,
+        'consistent': True,
+        'matrix': M
+    }
+
+# Beispielnutzung:
+"""
+A = [
+    [1, 2, 1],
+    [2, 4, 2],
+    [3, 6, 3]
+]
+b = [2, 4, 6]
+
+result = gauss_elimination(A, b)
+if result['consistent']:
+    print(f"Basisloesung: {result['solution']}")
+    print(f"Freie Variablen: {result['free_vars']}")
+    if result['free_vars']:
+        # Erzeuge spezielle Loesung
+        print("Spezielle Loesung mit t=1:")
+        print(result['general_solution'](1))
+else:
+    print("System nicht loesbar")
+"""
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Umgang mit Systemen mit freien Variablen}
+\begin{enumerate}
+    \item Vorgehensweise
+    \begin{itemize}
+        \item Matrix auf Stufenform bringen
+        \item Freie Variablen identifizieren (Nullspalten)
+        \item Basislösung berechnen
+        \item Allgemeine Lösung parametrisch aufstellen
+    \end{itemize}
+    
+    \item Interpretation
+    \begin{itemize}
+        \item Rang der Matrix bestimmen
+        \item Lösbarkeit prüfen
+        \item Dimension des Lösungsraums bestimmen
+        \item Spezielle Lösungen generieren
+    \end{itemize}
+    
+    \item Sonderfälle beachten
+    \begin{itemize}
+        \item Unlösbare Systeme erkennen
+        \item Abhängige Gleichungen identifizieren
+        \item Numerische Genauigkeit berücksichtigen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
 \begin{examplecode}{gauss\_elimination} Gauss-Elimination mit Spaltenpivotisierung
 \begin{lstlisting}[language=Python, style=basesmol]
 def gauss_elimination(A, b, tol=1e-10):
