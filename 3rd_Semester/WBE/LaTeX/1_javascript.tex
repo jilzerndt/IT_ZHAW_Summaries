@@ -94,7 +94,7 @@ typeof 'number'    // 'string'
     \end{itemize}
 \end{corollary}
 
-\begin{formula}{Vergleichsoperatoren}
+\begin{formula}{Vergleichsoperatoren}\\
     JavaScript unterscheidet zwei Arten von Gleichheit:
     \begin{itemize}
         \item \texttt{==} und \texttt{!=}: Mit Typumwandlung
@@ -135,19 +135,24 @@ switch(value) {
     case 1:
         // code
         break;
-    case 2:
-        // code
-        break;
     default:
         // code
 }
 
 // Loops
-for (let i = 0; i < n; i++) { }
-while (condition) { }
-do { } while (condition);
-for (let item of array) { }
-for (let key in object) { }
+for (let i = 0; i < n; i++) { /* code */ }
+
+while (condition) { /* code */ }
+
+do { /* code */ } while (condition);
+
+for (let item of array) { 
+    doSomething(item);
+}
+
+for (let key in object) { 
+    doSomething(object[key]);
+}
 \end{lstlisting}
 \end{examplecode}
 
@@ -162,57 +167,77 @@ for (let key in object) { }
         \hline
         Literalnotation & werte = \{a: 1, b: 2\} & liste = [1,2,3] \\
         \hline
-        Ohne Inhalt & werte = \{\} & liste = [] \\
+        Ohne Inhalt & werte = \{ \} & liste = [ ] \\
         \hline
         Elementzugriff & werte[''a''] oder werte.a & liste[0] \\
         \hline
     \end{tabular}
 \end{theorem}
 
-\begin{KR}{Objekt-Manipulation}
+\begin{definition}{JS-Objekte}
+    sind Sammlungen von Schlüssel-Wert-Paaren:
+    \begin{itemize}
+        \item Eigenschaften können dynamisch hinzugefügt/entfernt werden
+        \item Werte können beliebige Typen sein (auch Funktionen)
+        \item Schlüssel sind immer Strings oder Symbols
+    \end{itemize}
+
 \begin{lstlisting}[language=JavaScript, style=basesmol]
-// Objekt erstellen
 let person = {
     name: "John",
     age: 30,
     greet() {
-        return `Hello, I'm ${this.name}`;
+        return "Hello, I'm" + this.name;
     }
 };
-
-// Eigenschaften manipulieren
+// Eigenschaften manipulieren/abfragen
 person.job = "Developer";    // hinzufuegen
 delete person.age;          // loeschen
 "name" in person;           // true
-
 // Objekte zusammenfuehren
 Object.assign(person, {city: "Berlin"});
-
 // Spread Syntax
 let clone = {...person};
-
 // Destrukturierung
 let {name, job} = person;
 \end{lstlisting}
-\end{KR}
+\end{definition}
 
-\begin{formula}{Array-Methoden}
-    Wichtige Array-Operationen:
-    \begin{itemize}
-        \item \texttt{push()}, \texttt{pop()}: Ende hinzufügen/entfernen
-        \item \texttt{unshift()}, \texttt{shift()}: Anfang hinzufügen/entfernen
-        \item \texttt{splice()}: Elemente einfügen/entfernen
-        \item \texttt{slice()}: Teilarray erstellen
-        \item \texttt{map()}, \texttt{filter()}, \texttt{reduce()}: Funktional
-        \item \texttt{forEach()}: Iteration über Elemente
-        \item \texttt{join()}, \texttt{concat()}: Arrays verbinden
-        \item \texttt{sort()}, \texttt{reverse()}: Sortieren/Umkehren
-    \end{itemize}
-
-    \includegraphics[width=0.5\linewidth]{images/array_cheatsheet.png}
+\begin{formula}{JS Arrays}
+    spezielle Objekte: dynamische Grösse und Typen
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+let arr = [1, 2, 3, 4, 5];
+// Elemente hinzufuegen/entfernen
+arr.push(6);    // [1, 2, 3, 4, 5, 6]
+arr.pop();      // [1, 2, 3, 4, 5]
+// Elemente am Anfang hinzufuegen/entfernen
+arr.unshift(0); // [0, 1, 2, 3, 4, 5]
+arr.shift();    // [1, 2, 3, 4, 5]
+// Elemente einfuegen/entfernen
+arr.splice(2, 0, 2.5); // [1, 2, 2.5, 3, 4, 5]
+arr.splice(2, 2);      // [1, 2, 4, 5]
+// Teilarray erstellen
+arr.slice(1, 3); // [2, 4]
+// Funktional
+arr.map(x => x * 2); // [2, 4, 8, 10]
+arr.filter(x => x > 3); // [4, 5]
+arr.reduce((acc, x) => acc + x, 0); // 15
+arr.copyWithin(0, 3, 5); // [4, 5, 8, 10, 5]
+// Suchen und Testen
+arr.every(x => x > 0); // true
+arr.some(x => x > 5); // true
+arr.find(x => x > 3); // 4
+arr.findIndex(x => x > 3); // 3
+// Iteration
+arr.forEach(x => console.log(x));
+// Arrays verbinden
+arr.join(', '); // '1, 2, 3, 4, 5'
+arr.concat([6, 7]); // [1, 2, 3, 4, 5, 6, 7]
+// Sortieren/Umkehren
+arr.sort(); // [1, 2, 3, 4, 5]
+arr.reverse(); // [5, 4, 3, 2, 1]
+\end{lstlisting}
 \end{formula}
-
-\subsubsection{JSON}
 
 \begin{concept}{JSON}
     JavaScript Object Notation:
@@ -231,32 +256,9 @@ let parsed = JSON.parse(json);
 \end{lstlisting}
 \end{concept}
 
-\begin{definition}{JS-Objekte}
-    sind Sammlungen von Schlüssel-Wert-Paaren:
-    \begin{itemize}
-        \item Eigenschaften können dynamisch hinzugefügt/entfernt werden
-        \item Werte können beliebige Typen sein (auch Funktionen)
-        \item Schlüssel sind immer Strings oder Symbols
-    \end{itemize}
-\end{definition}
 
-\begin{examplecode}{Objekte erstellen und manipulieren}
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// Objekt-Literal
-const person = {
-    name: "Alice",
-    age: 30,
-    greet() {
-        return "Hello, I am" + this.name;
-    }
-};
 
-// Eigenschaften manipulieren
-person.job = "Developer";    // hinzufuegen
-delete person.age;          // loeschen
-"name" in person;           // true
-\end{lstlisting}
-\end{examplecode}
+
 
 \subsection{Funktionen}
 
@@ -886,7 +888,51 @@ add1(10).then(console.log)
 
 \subsubsection{File-Transfer (File Server)}
 
+
+\begin{definition}{Web-Transfer-Protokolle}\\
+    \textbf{File-Transfer:}
+    \begin{itemize}
+        \item FTP (File Transfer Protocol)
+        \item SFTP (SSH File Transfer Protocol)
+        \item Anwendungen mit GUI und Kommandozeile
+    \end{itemize}
+
+    \textbf{HTTP/HTTPS:}
+    \begin{itemize}
+        \item Standard-Ports: 80/443
+        \item Request-Response Modell
+        \item Stateless Protokoll
+        \item HTTPS: Verschlüsselte Übertragung mittels SSL/TLS
+    \end{itemize}
+\end{definition}
+
 \subsubsection{HTTP-Server}
+
+\begin{corollary}{Ports}
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \hline
+    Port & Service \\
+    \hline
+    $\mathbf{20}$ & FTP - Data \\
+    \hline
+    $\mathbf{21}$ & FTP - Control \\
+    \hline
+    $\mathbf{22}$ & SSH Remote Login Protocol \\
+    \hline
+    $\mathbf{23}$ & Telnet \\
+    \hline
+    $\mathbf{25}$ & Simple Mail Transfer Protocol (SMTP) \\
+    \hline
+    $\mathbf{53}$ & Domain Name System (DNS) \\
+    \hline
+    $\mathbf{80}$ & HTTP \\
+    \hline
+    $\mathbf{443}$ & HTTPS \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{corollary}
 
 \begin{theorem}{HTTP-Methoden}
     \begin{center}
