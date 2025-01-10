@@ -1,0 +1,231 @@
+\section{Design Patterns}
+
+\begin{concept}{Grundlagen Design Patterns}
+Bewährte Lösungsmuster für wiederkehrende Probleme:
+\begin{itemize}
+    \item Beschleunigen Entwicklung durch vorgefertigte Lösungen
+    \item Verbessern Kommunikation im Team
+    \item Bieten Balance zwischen Flexibilität und Komplexität
+    \item \textbf{Wichtig:} Design Patterns sind kein Selbstzweck
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Pattern-Auswahl und Anwendung}
+\begin{enumerate}
+    \item Problem identifizieren
+    \begin{itemize}
+        \item Kernproblem isolieren
+        \item Anforderungen analysieren
+        \item Randbedingungen beachten
+    \end{itemize}
+    
+    \item Patterns vergleichen
+    \begin{itemize}
+        \item Ähnliche Probleme suchen
+        \item Lösungsansätze evaluieren
+        \item Komplexität vs. Nutzen abwägen
+    \end{itemize}
+    
+    \item Pattern anwenden
+    \begin{itemize}
+        \item An Kontext anpassen
+        \item Minimale Implementation wählen
+        \item Testbarkeit sicherstellen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\subsection{Grundlegende Design Patterns}
+
+\begin{example}{Adapter Pattern}
+\begin{lstlisting}[language=Java]
+// Externes Interface
+interface LegacyPaymentProvider {
+    boolean doPayment(double amount, String currency);
+}
+
+// Gewünschtes Interface
+interface PaymentService {
+    PaymentResult processPayment(Money money);
+}
+
+// Adapter
+class PaymentAdapter implements PaymentService {
+    private LegacyPaymentProvider legacy;
+    
+    @Override
+    public PaymentResult processPayment(Money money) {
+        boolean success = legacy.doPayment(
+            money.getAmount().doubleValue(),
+            money.getCurrency().getCode()
+        );
+        return new PaymentResult(success);
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Simple Factory}
+\begin{lstlisting}[language=Java]
+// Product Interface
+interface Document {
+    void open();
+    void save();
+}
+
+// Concrete Products
+class PDFDocument implements Document { /*...*/ }
+class WordDocument implements Document { /*...*/ }
+
+// Factory
+class DocumentFactory {
+    public Document createDocument(String type) {
+        switch(type.toLowerCase()) {
+            case "pdf": 
+                return new PDFDocument();
+            case "word": 
+                return new WordDocument();
+            default:
+                throw new IllegalArgumentException(
+                    "Unknown type: " + type);
+        }
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Singleton with Double-Checked Locking}
+\begin{lstlisting}[language=Java]
+public class DatabaseConnection {
+    private static volatile DatabaseConnection instance;
+    private final Connection connection;
+    
+    private DatabaseConnection() {
+        // Private constructor
+        connection = createConnection();
+    }
+    
+    public static DatabaseConnection getInstance() {
+        if (instance == null) {
+            synchronized (DatabaseConnection.class) {
+                if (instance == null) {
+                    instance = new DatabaseConnection();
+                }
+            }
+        }
+        return instance;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Dependency Injection}
+\begin{lstlisting}[language=Java]
+// Service interfaces
+interface MessageService {
+    void sendMessage(String msg);
+}
+
+interface UserService {
+    User findUser(String id);
+}
+
+// Service implementation with DI
+class NotificationService {
+    private final MessageService messageService;
+    private final UserService userService;
+    
+    // Constructor injection
+    public NotificationService(
+            MessageService messageService,
+            UserService userService) {
+        this.messageService = messageService;
+        this.userService = userService;
+    }
+    
+    public void notifyUser(String userId, String message) {
+        User user = userService.findUser(userId);
+        messageService.sendMessage(
+            String.format("To %s: %s", 
+                user.getEmail(), message));
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Chain of Responsibility}
+\begin{lstlisting}[language=Java]
+abstract class AuthenticationHandler {
+    private AuthenticationHandler next;
+    
+    public void setNext(AuthenticationHandler next) {
+        this.next = next;
+    }
+    
+    public abstract boolean handle(String username, 
+                                 String password);
+    
+    protected boolean handleNext(String username, 
+                               String password) {
+        if (next == null) {
+            return false;
+        }
+        return next.handle(username, password);
+    }
+}
+
+class DatabaseAuthHandler extends AuthenticationHandler {
+    @Override
+    public boolean handle(String username, 
+                        String password) {
+        // Check database
+        boolean success = checkDatabase(username, 
+                                      password);
+        if (success) {
+            return true;
+        }
+        return handleNext(username, password);
+    }
+}
+
+class LDAPAuthHandler extends AuthenticationHandler {
+    @Override
+    public boolean handle(String username, 
+                        String password) {
+        // Check LDAP
+        boolean success = checkLDAP(username, password);
+        if (success) {
+            return true;
+        }
+        return handleNext(username, password);
+    }
+}
+\end{lstlisting}
+\end{example}
+
+[Continue with the rest of your original content, but with similar detailed examples for each pattern...]
+
+\begin{KR}{Pattern Implementation Best Practices}
+\begin{enumerate}
+    \item \textbf{Interface Design}
+    \begin{itemize}
+        \item Klar und minimalistisch
+        \item Erweiterbar gestalten
+        \item Semantik dokumentieren
+    \end{itemize}
+    
+    \item \textbf{Testbarkeit}
+    \begin{itemize}
+        \item Abhängigkeiten isolieren
+        \item Mocking ermöglichen
+        \item Verhalten verifizierbar
+    \end{itemize}
+    
+    \item \textbf{Wartbarkeit}
+    \begin{itemize}
+        \item SOLID Prinzipien befolgen
+        \item Dokumentation pflegen
+        \item Komplexität minimieren
+    \end{itemize}
+\end{enumerate}
+\end{KR}

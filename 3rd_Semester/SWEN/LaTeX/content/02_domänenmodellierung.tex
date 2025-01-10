@@ -1,0 +1,208 @@
+\section{Domänenmodellierung}
+
+\begin{definition}{Domänenmodellierung}
+Die Domänenmodellierung ist ein essentieller Schritt zwischen Anforderungsanalyse und Software-Design:
+\begin{itemize}
+    \item Abbildung der Fachdomäne in strukturierter Form
+    \item Basis für späteres Objektdesign
+    \item Kommunikationsmittel mit Stakeholdern
+    \item Dokumentation des Problemverständnisses
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Domänenmodell}
+Ein Domänenmodell ist ein vereinfachtes UML-Klassendiagramm zur Darstellung der Fachdomäne:
+\begin{itemize}
+    \item Konzepte als Klassen
+    \item Eigenschaften als Attribute (ohne Typangabe)
+    \item Beziehungen als Assoziationen mit Multiplizitäten
+    \item Optional: Aggregationen/Kompositionen
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Vorgehen bei der Domänenmodellierung}
+\begin{enumerate}
+    \item \textbf{Analyse der Dokumentation}
+    \begin{itemize}
+        \item Use Cases durcharbeiten
+        \item Glossar berücksichtigen
+        \item Stakeholder-Interviews auswerten
+    \end{itemize}
+
+    \item \textbf{Konzepte identifizieren}
+    \begin{itemize}
+        \item Substantive markieren
+        \item Kategorisieren (siehe Checkliste)
+        \item Redundanzen eliminieren
+    \end{itemize}
+
+    \item \textbf{Beziehungen analysieren}
+    \begin{itemize}
+        \item Verben zwischen Konzepten suchen
+        \item Art der Beziehung bestimmen
+        \item Multiplizitäten festlegen
+    \end{itemize}
+
+    \item \textbf{Attribute hinzufügen}
+    \begin{itemize}
+        \item Relevante Eigenschaften identifizieren
+        \item Vermeidung von Redundanz
+        \item Angemessene Detailtiefe wählen
+    \end{itemize}
+
+    \item \textbf{Review und Verfeinerung}
+    \begin{itemize}
+        \item Mit Stakeholdern abstimmen
+        \item Konsistenz prüfen
+        \item Analysemuster anwenden
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+[Previous content for Analysemuster remains...]
+
+\begin{example}{Beschreibungsklassen}
+\textbf{Problem:} Modellierung eines Bibliothekssystems
+
+\begin{lstlisting}[language=Java]
+// Schlechte Lösung: Redundante Daten
+public class Book {
+    private String title;
+    private String author;
+    private String isbn;
+    private String description;
+    private boolean isLent;
+    private Date dueDate;
+}
+
+// Bessere Lösung: Beschreibungsklasse
+public class BookDescription {
+    private String title;
+    private String author;
+    private String isbn;
+    private String description;
+}
+
+public class BookCopy {
+    private BookDescription description;
+    private boolean isLent;
+    private Date dueDate;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{Wertobjekte}
+\textbf{Problem:} Modellierung von Geldbeträgen
+
+\begin{lstlisting}[language=Java]
+// Schlechte Lösung: Primitive Obsession
+public class Order {
+    private double amount;  // Problematisch!
+    private String currency;
+}
+
+// Bessere Lösung: Money Value Object
+public class Money {
+    private BigDecimal amount;
+    private Currency currency;
+    
+    public Money add(Money other) {
+        if (!this.currency.equals(other.currency)) {
+            throw new IllegalArgumentException("Different currencies");
+        }
+        return new Money(amount.add(other.amount), currency);
+    }
+}
+
+public class Order {
+    private Money price;  // Besser!
+}
+\end{lstlisting}
+\end{example}
+
+\begin{KR}{Validierung des Domänenmodells}
+\textbf{Checkliste für die Qualitätssicherung:}
+\begin{enumerate}
+    \item \textbf{Vollständigkeit}
+    \begin{itemize}
+        \item Alle wichtigen Konzepte vorhanden?
+        \item Alle relevanten Beziehungen modelliert?
+        \item Wichtige Attribute berücksichtigt?
+    \end{itemize}
+
+    \item \textbf{Korrektheit}
+    \begin{itemize}
+        \item Konzepte richtig kategorisiert?
+        \item Beziehungen korrekt typisiert?
+        \item Multiplizitäten stimmen?
+    \end{itemize}
+
+    \item \textbf{Angemessenheit}
+    \begin{itemize}
+        \item Abstraktionsniveau passend?
+        \item Detaillierungsgrad einheitlich?
+        \item Komplexität handhabbar?
+    \end{itemize}
+
+    \item \textbf{Verständlichkeit}
+    \begin{itemize}
+        \item Eindeutige Bezeichnungen?
+        \item Klare Strukturierung?
+        \item Nachvollziehbare Beziehungen?
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example}{Komplettes Domänenmodell: E-Commerce System}
+\textbf{Identifizierte Konzepte:}
+\begin{itemize}
+    \item \textbf{Beschreibungsklassen:}
+    \begin{itemize}
+        \item ProductCatalog
+        \item ProductDescription
+    \end{itemize}
+    
+    \item \textbf{Wertobjekte:}
+    \begin{itemize}
+        \item Money
+        \item Address
+    \end{itemize}
+    
+    \item \textbf{Entitäten:}
+    \begin{itemize}
+        \item Customer
+        \item Order
+        \item OrderLine
+    \end{itemize}
+    
+    \item \textbf{Zustände:}
+    \begin{itemize}
+        \item OrderStatus
+        \item PaymentStatus
+    \end{itemize}
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+// Beispielhafte Implementierung der Kernkonzepte
+public class Order {
+    private OrderId id;
+    private Customer customer;
+    private List<OrderLine> lines;
+    private Money total;
+    private OrderStatus status;
+    private Address shippingAddress;
+}
+
+public enum OrderStatus {
+    CREATED, CONFIRMED, PAID, SHIPPED, DELIVERED
+}
+
+public class OrderLine {
+    private ProductDescription product;
+    private int quantity;
+    private Money lineTotal;
+}
+\end{lstlisting}
+\end{example}
+
+[Your previous content for avoiding modeling errors remains...]

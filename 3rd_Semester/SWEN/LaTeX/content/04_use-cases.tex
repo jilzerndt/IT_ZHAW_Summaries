@@ -1,0 +1,191 @@
+\section{Use Case Realisation}
+
+\begin{concept}{Use Case Realization}
+Die Umsetzung von Use Cases erfolgt durch:
+\begin{itemize}
+    \item Detaillierte Szenarien aus den Use Cases
+    \item Systemantworten müssen realisiert werden
+    \item UI statt System im SSD (System Sequence Diagram)
+    \item Systemoperationen sind die zu implementierenden Elemente
+    \item Berücksichtigung der Softwarearchitektur
+\end{itemize}
+\end{concept}
+
+\begin{definition}{UML im Implementierungsprozess}
+UML dient als:
+\begin{itemize}
+    \item Zwischenschritt bei wenig Erfahrung
+    \item Kompakter Ersatz für Programmiercode
+    \item Kommunikationsmittel (auch für Nicht-Techniker)
+    \item Dokumentation von Design-Entscheidungen
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Vorgehen bei der Use Case Realization}
+\textbf{1. Vorbereitung und Analyse:}
+\begin{lstlisting}[language=Java]
+// Beispiel: Systemoperation aus SSD
+public interface POSSystem {
+    // Use Case: Process Sale
+    void makeNewSale();
+    void enterItem(String itemId, int quantity);
+    void endSale();
+    void makePayment(BigDecimal amount);
+}
+\end{lstlisting}
+
+\textbf{2. Design der Controller-Klasse:}
+\begin{lstlisting}[language=Java]
+// Fassaden-Controller nach GRASP
+public class Register implements POSSystem {
+    private Sale currentSale;
+    private ProductCatalog catalog;
+    
+    @Override
+    public void makeNewSale() {
+        currentSale = new Sale();
+    }
+    
+    @Override
+    public void enterItem(String itemId, int quantity) {
+        ProductDescription desc = 
+            catalog.getProductDescription(itemId);
+        currentSale.makeLineItem(desc, quantity);
+    }
+}
+\end{lstlisting}
+
+\textbf{3. Implementierung der Domänenklassen:}
+\begin{lstlisting}[language=Java]
+public class Sale {
+    private List<SaleLineItem> items = new ArrayList<>();
+    private boolean isComplete = false;
+    
+    public void makeLineItem(ProductDescription desc, 
+                           int quantity) {
+        SaleLineItem item = new SaleLineItem(desc, quantity);
+        items.add(item);
+    }
+    
+    public BigDecimal getTotal() {
+        return items.stream()
+            .map(SaleLineItem::getSubtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{example}{Komplette Use Case Realization: Bestellung aufgeben}
+\textbf{1. System Sequence Diagram (SSD):}
+\begin{lstlisting}[language=Java]
+// Systemoperationen aus SSD
+public interface OrderSystem {
+    String startOrder(String customerId);
+    void addItem(String orderId, String productId, int qty);
+    OrderSummary submitOrder(String orderId);
+}
+\end{lstlisting}
+
+\textbf{2. Controller Implementation:}
+\begin{lstlisting}[language=Java]
+@Service // Beispiel mit Spring Framework
+public class OrderController implements OrderSystem {
+    private final OrderRepository orders;
+    private final CustomerService customers;
+    private final ProductService products;
+    
+    @Override
+    public String startOrder(String customerId) {
+        Customer customer = customers.findById(customerId);
+        Order order = new Order(customer);
+        return orders.save(order).getId();
+    }
+    
+    @Override
+    public void addItem(String orderId, 
+                       String productId, 
+                       int qty) {
+        Order order = orders.findById(orderId);
+        Product product = products.findById(productId);
+        order.addItem(product, qty);
+        orders.save(order);
+    }
+}
+\end{lstlisting}
+
+\textbf{3. Domänenklassen:}
+\begin{lstlisting}[language=Java]
+public class Order {
+    private String id;
+    private Customer customer;
+    private List<OrderItem> items = new ArrayList<>();
+    private OrderStatus status = OrderStatus.NEW;
+    
+    public void addItem(Product product, int quantity) {
+        OrderItem item = new OrderItem(product, quantity);
+        items.add(item);
+    }
+    
+    public OrderSummary createSummary() {
+        return new OrderSummary(
+            id,
+            customer.getName(),
+            calculateTotal(),
+            items.size()
+        );
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{KR}{GRASP-konforme Implementierung}
+\begin{enumerate}
+    \item \textbf{Information Expert}
+    \begin{lstlisting}[language=Java]
+    // Sale ist Expert für Preisberechnung
+    public class Sale {
+        private List<SaleLineItem> items;
+        
+        public BigDecimal getTotal() {
+            // Sale kennt seine Items
+            return items.stream()
+                .map(SaleLineItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, 
+                       BigDecimal::add);
+        }
+    }
+    \end{lstlisting}
+
+    \item \textbf{Creator}
+    \begin{lstlisting}[language=Java]
+    // Sale erstellt SaleLineItems
+    public class Sale {
+        public void makeLineItem(ProductDescription desc, 
+                               int quantity) {
+            // Sale erstellt und enthält SaleLineItems
+            SaleLineItem item = 
+                new SaleLineItem(desc, quantity);
+            items.add(item);
+        }
+    }
+    \end{lstlisting}
+
+    \item \textbf{Low Coupling}
+    \begin{lstlisting}[language=Java]
+    // Verwendung von Interfaces
+    public class Register {
+        private ProductCatalog catalog;
+        // Kopplung nur über Interface
+        private PaymentProcessor paymentProcessor;
+        
+        public void makePayment(BigDecimal amount) {
+            // Lose Kopplung durch Interface
+            paymentProcessor.process(amount);
+        }
+    }
+    \end{lstlisting}
+\end{enumerate}
+\end{KR}
+
+[Your previous content for avoiding implementation errors remains...]

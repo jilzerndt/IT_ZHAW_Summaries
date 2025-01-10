@@ -1,0 +1,284 @@
+\section{Persistenz}
+
+\begin{concept}{Persistenz Grundlagen}
+[Previous content remains the same...]
+\end{concept}
+
+\begin{example}{O/R-Mapping Probleme und Lösungen}
+\begin{lstlisting}[language=Java]
+// Problem 1: Vererbung
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Payment {
+    @Id private Long id;
+    private BigDecimal amount;
+}
+
+@Entity
+public class CreditCardPayment extends Payment {
+    private String cardNumber;
+    private String expiryDate;
+}
+
+// Problem 2: Beziehungen
+@Entity
+public class Order {
+    @ManyToOne
+    private Customer customer;
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> items;
+}
+
+// Problem 3: Value Objects
+@Embeddable
+public class Money {
+    private BigDecimal amount;
+    private Currency currency;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{KR}{JDBC Best Practices}
+\begin{lstlisting}[language=Java]
+public class DatabaseUtils {
+    // 1. Connection Pool verwenden
+    private final DataSource dataSource;
+    
+    // 2. Try-with-resources für automatisches Schließen
+    public List<Customer> findCustomers(String name) {
+        String sql = "SELECT * FROM customers WHERE name = ?";
+        
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            // 3. Prepared Statements gegen SQL-Injection
+            stmt.setString(1, name);
+            
+            // 4. ResultSet verarbeiten
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<Customer> customers = new ArrayList<>();
+                while (rs.next()) {
+                    customers.add(mapCustomer(rs));
+                }
+                return customers;
+            }
+        }
+    }
+    
+    // 5. Mapping in separate Methode
+    private Customer mapCustomer(ResultSet rs) 
+            throws SQLException {
+        Customer customer = new Customer();
+        customer.setId(rs.getLong("id"));
+        customer.setName(rs.getString("name"));
+        return customer;
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{example}{DAO Pattern Implementation}
+\begin{lstlisting}[language=Java]
+// 1. DAO Interface
+public interface CustomerDao {
+    Customer findById(Long id);
+    List<Customer> findByName(String name);
+    void save(Customer customer);
+    void delete(Customer customer);
+}
+
+// 2. JDBC Implementation
+public class JdbcCustomerDao implements CustomerDao {
+    private final DataSource dataSource;
+    
+    @Override
+    public Customer findById(Long id) {
+        String sql = "SELECT * FROM customers WHERE id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = 
+                 conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapCustomer(rs);
+                }
+                return null;
+            }
+        }
+    }
+    
+    @Override
+    public void save(Customer customer) {
+        if (customer.getId() == null) {
+            insert(customer);
+        } else {
+            update(customer);
+        }
+    }
+}
+
+// 3. JPA Implementation
+@Repository
+public class JpaCustomerDao implements CustomerDao {
+    @PersistenceContext
+    private EntityManager em;
+    
+    @Override
+    public Customer findById(Long id) {
+        return em.find(Customer.class, id);
+    }
+    
+    @Override
+    @Transactional
+    public void save(Customer customer) {
+        if (customer.getId() == null) {
+            em.persist(customer);
+        } else {
+            em.merge(customer);
+        }
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{example}{JPA Entity mit Beziehungen}
+\begin{lstlisting}[language=Java]
+@Entity
+@Table(name = "orders")
+public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+    
+    @OneToMany(mappedBy = "order", 
+               cascade = CascadeType.ALL,
+               orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>();
+    
+    @Embedded
+    private Address shippingAddress;
+    
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+    
+    @Version
+    private Long version;
+    
+    // Hilfsmethoden für Beziehungsverwaltung
+    public void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
+    }
+    
+    public void removeItem(OrderItem item) {
+        items.remove(item);
+        item.setOrder(null);
+    }
+}
+
+@Entity
+public class OrderItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+    
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+    
+    private int quantity;
+    
+    @Embedded
+    private Money price;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{KR}{Repository Pattern mit Spring Data JPA}
+\begin{lstlisting}[language=Java]
+// 1. Repository Interface
+public interface OrderRepository 
+        extends JpaRepository<Order, Long> {
+    
+    // Automatisch generierte Query
+    List<Order> findByCustomerName(String name);
+    
+    // Custom Query mit JPQL
+    @Query("SELECT o FROM Order o WHERE o.total > ?1")
+    List<Order> findLargeOrders(Money threshold);
+    
+    // Native SQL Query
+    @Query(value = "SELECT * FROM orders o " +
+           "WHERE DATE(o.created_at) = CURDATE()", 
+           nativeQuery = true)
+    List<Order> findTodaysOrders();
+}
+
+// 2. Service-Klasse mit Repository
+@Service
+@Transactional
+public class OrderService {
+    private final OrderRepository orderRepository;
+    private final CustomerRepository customerRepository;
+    
+    public Order createOrder(Long customerId, 
+                           OrderRequest request) {
+        Customer customer = customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> 
+                new CustomerNotFoundException(customerId));
+            
+        Order order = new Order(customer);
+        request.getItems().forEach(item -> 
+            order.addItem(new OrderItem(
+                item.getProductId(),
+                item.getQuantity()
+            )));
+            
+        return orderRepository.save(order);
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Order> findCustomerOrders(String customerName) {
+        return orderRepository
+            .findByCustomerName(customerName);
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+[Previous content about Repository Pattern remains...]
+
+\begin{example}{Spring Data Repository Features}
+\begin{lstlisting}[language=Java]
+public interface ProductRepository 
+        extends JpaRepository<Product, Long> {
+    // Verschiedene Abfragemethoden
+    Optional<Product> findBySku(String sku);
+    List<Product> findByPriceGreaterThan(Money price);
+    
+    // Paging und Sorting
+    Page<Product> findByCategory(
+        String category, Pageable pageable);
+    
+    // Spezifikationen für komplexe Queries
+    List<Product> findAll(Specification<Product> spec);
+    
+    // Projections für optimierte Abfragen
+    interface ProductSummary {
+        String getName();
+        Money getPrice();
+    }
+    List<ProductSummary> findAllProjectedBy();
+}
+\end{lstlisting}
+\end{example}
