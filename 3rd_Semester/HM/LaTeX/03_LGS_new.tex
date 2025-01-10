@@ -395,6 +395,7 @@ R = \begin{psmallmatrix}
 \end{psmallmatrix}$
 
 \paragraph{Probe}
+\small
 \begin{enumerate}
     \item $QR = A$ (bis auf Rundungsfehler)
     \item $Q^TQ = QQ^T = I$ (Orthogonalität)
@@ -414,7 +415,7 @@ R = \begin{psmallmatrix}
 
 
 
-\subsection{Fehleranalyse}
+\subsubsection{Fehleranalyse}
 
 \begin{definition}{Matrix- und Vektornormen}\\
 Eine Vektornorm $\|\cdot\|$ erfüllt für alle $x,y \in \mathbb{R}^n, \lambda \in \mathbb{R}$:
@@ -445,6 +446,7 @@ Sei $\|\cdot\|$ eine Norm, $A \in \mathbb{R}^{n\times n}$ regulär und $Ax = b$,
 \vspace{1mm}\\
 \begin{minipage}[t]{0.47\textwidth}
     \textbf{Absoluter Fehler:}
+    \vspace{-5mm}\\
     \begin{center}
         $\|x - \tilde{x}\| \leq \|A^{-1}\| \cdot \|b - \tilde{b}\|$
     \end{center}
@@ -452,6 +454,7 @@ Sei $\|\cdot\|$ eine Norm, $A \in \mathbb{R}^{n\times n}$ regulär und $Ax = b$,
 \hspace{2mm}
 \begin{minipage}[t]{0.47\textwidth}
     \textbf{Relativer Fehler:}
+    \vspace{-5mm}\\
     \begin{center}
         $\frac{\|x - \tilde{x}\|}{\|x\|} \leq \text{cond}(A) \cdot \frac{\|b - \tilde{b}\|}{\|b\|}$
     \end{center}
@@ -495,14 +498,11 @@ $A = \begin{psmallmatrix}
 3
 \end{psmallmatrix}$
 
-\paragraph{1. Systemanalyse}
+\small
 \begin{itemize}
-    \item Matrix ist symmetrisch
-    \item Nicht streng diagonaldominant
+    \item Matrix ist symmetrisch und nicht streng diagonaldominant
     \item $\text{cond}_\infty(A) \approx 12.5$
 \end{itemize}
-
-\paragraph{2. Verschiedene Lösungsansätze}
 \begin{center}
 \begin{tabular}{l|ccc}
 Verfahren & Iterationen & Residuum & Zeit\\
@@ -513,8 +513,7 @@ Jacobi & 12 & $1.0\cdot10^{-6}$ & 1.8\\
 Gauss-Seidel & 7 & $1.0\cdot10^{-6}$ & 1.4\\
 \end{tabular}
 \end{center}
-
-\paragraph{3. Interpretation}
+\vspace{-2mm}
 \begin{itemize}
     \item Direkte Verfahren erreichen höhere Genauigkeit
     \item Iterative Verfahren brauchen mehrere Schritte
@@ -526,6 +525,7 @@ Gauss-Seidel & 7 & $1.0\cdot10^{-6}$ & 1.4\\
 \subsubsection{Iterative Verfahren}
 
 \begin{definition}{Zerlegung der Systemmatrix} $A$ zerlegt in: $A = L + D + R$
+    \small
 \begin{itemize}
     \item $L$: streng untere Dreiecksmatrix
     \item $D$: Diagonalmatrix
@@ -534,22 +534,52 @@ Gauss-Seidel & 7 & $1.0\cdot10^{-6}$ & 1.4\\
 \end{definition}
 
 \begin{concept}{Jacobi-Verfahren}
-Gesamtschrittverfahren mit der Iteration:
-\vspace{-1mm}\\
-$$x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$$
-\vspace{-1mm}
+Gesamtschrittverfahren 
+\vspace{1mm}\\
+Iteration: $x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$
+\vspace{1mm}\\
 Komponentenweise:
 $x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$
 \end{concept}
 
 \begin{concept}{Gauss-Seidel-Verfahren}
-Einzelschrittverfahren mit der Iteration:
-\vspace{-1mm}\\
-$$x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$$
+Einzelschrittverfahren 
+\vspace{1mm}\\
+Iteration: $x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$
+\vspace{1mm}\\
 Komponentenweise:\\
 $x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$
-
 \end{concept}
+
+\begin{KR}{Implementierung von Jacobi- und Gauss-Seidel-Verfahren}
+    \paragraph{Vorbereitungsphase}
+    \begin{itemize}
+        \item Matrix zerlegen in $A = L + D + R$
+        \item Diagonaldominanz prüfen: $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
+        \item Sinnvolle Startwerte wählen (z.B. $x^{(0)}=0$ oder $x^{(0)}=b$)
+        \item Toleranz $\epsilon$ und max. Iterationszahl $n_{max}$ festlegen
+    \end{itemize}
+
+    \paragraph{Verfahren durchführen}
+    \begin{itemize}
+        \item \textbf{Jacobi}: Komponentenweise parallel berechnen 
+        \item \textbf{Gauss-Seidel}: Komponentenweise sequentiell berechnen 
+    \end{itemize}
+
+    \paragraph{Konvergenzprüfung}
+    \begin{itemize}
+        \item Absolute Änderung: $\|x^{(k+1)} - x^{(k)}\| < \epsilon$
+        \item Relatives Residuum: $\frac{\|Ax^{(k)} - b\|}{\|b\|} < \epsilon$
+        \item Maximale Iterationszahl: $k < n_{max}$
+    \end{itemize}
+
+    \paragraph{A-priori Fehlerabschätzung}
+    \begin{itemize}
+        \item Spektralradius $\rho$ der Iterationsmatrix bestimmen
+        \item Benötigte Iterationen $n$ für Genauigkeit $\epsilon$:\\
+        $n \geq \frac{\ln(\epsilon(1-\rho)/\|x^{(1)}-x^{(0)}\|)}{\ln(\rho)}$
+    \end{itemize}
+\end{KR}
 
 \begin{theorem}{Konvergenzkriterien}
 Ein iteratives Verfahren konvergiert, wenn:
@@ -578,6 +608,7 @@ x_3
 3
 \end{psmallmatrix}$
 \vspace{1mm}\\
+\small
 Die Matrix ist diagonaldominant:
 $|a_{ii}| = 4 > 1 = \sum_{j\neq i} |a_{ij}|$
 \vspace{1mm}\\
@@ -603,47 +634,7 @@ k & \multicolumn{2}{c|}{Residuum} & \multicolumn{2}{c}{Rel. Fehler}\\
 
 
 
-\begin{KR}{Implementierung von Jacobi- und Gauss-Seidel-Verfahren}
-\begin{enumerate}
-    \item Vorbereitungsphase:
-    \begin{itemize}
-        \item Matrix zerlegen in $A = L + D + R$
-        \item Diagonaldominanz prüfen: $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
-        \item Sinnvolle Startwerte wählen (z.B. $x^{(0)}=0$ oder $x^{(0)}=b$)
-        \item Toleranz $\epsilon$ und max. Iterationszahl $n_{max}$ festlegen
-    \end{itemize}
 
-    \item Jacobi-Verfahren:
-    \begin{itemize}
-        \item Allgemeine Form: $x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$
-        \item Komponentenweise für $i=1,\ldots,n$:
-        $$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$$
-        \item Alle Komponenten parallel berechnen
-    \end{itemize}
-
-    \item Gauss-Seidel-Verfahren:
-    \begin{itemize}
-        \item Allgemeine Form: $x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$
-        \item Komponentenweise für $i=1,\ldots,n$:
-        $$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$$
-        \item Komponenten sequentiell berechnen
-    \end{itemize}
-
-    \item Konvergenzprüfung:
-    \begin{itemize}
-        \item Absolute Änderung: $\|x^{(k+1)} - x^{(k)}\| < \epsilon$
-        \item Relatives Residuum: $\frac{\|Ax^{(k)} - b\|}{\|b\|} < \epsilon$
-        \item Maximale Iterationszahl: $k < n_{max}$
-    \end{itemize}
-
-    \item A-priori Fehlerabschätzung:
-    \begin{itemize}
-        \item Spektralradius $\rho$ der Iterationsmatrix bestimmen
-        \item Benötigte Iterationen $n$ für Genauigkeit $\epsilon$:
-        $$n \geq \frac{\ln(\epsilon(1-\rho)/\|x^{(1)}-x^{(0)}\|)}{\ln(\rho)}$$
-    \end{itemize}
-\end{enumerate}
-\end{KR}
 
 
 
