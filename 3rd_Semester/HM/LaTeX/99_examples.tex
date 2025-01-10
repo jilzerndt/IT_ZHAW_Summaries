@@ -70,18 +70,6 @@ Fixpunktgleichung: $x_{n+1} = F(x_n) = x_n^3 + 0.3$
 \end{enumerate}
 \end{example2}
 
-\begin{examplecode}{Fixpunktiteration}
-    \begin{lstlisting}[language=Python, style=basesmol]
-def fixed_point_iteration(f, x0, tol=1e-6, max_iter=100):
-    for n in range(max_iter):
-        x1 = f(x0)
-        if abs(x1 - x0) < tol:
-            return x1
-        x0 = x1
-    raise ValueError("No convergence")
-    \end{lstlisting}
-\end{examplecode}
-
 
 
 \begin{example2}{Newton-Verfahren} Berechnung von $\sqrt[3]{2}$
@@ -101,3 +89,243 @@ Nullstellenproblem: $f(x)=x^3-2$
 \end{minipage}
 \end{example2}
 
+\section{Numerische Lösung von LGS}
+
+\begin{example2}{Pivotisierung in der Praxis}
+Betrachten Sie das System:
+$$\begin{psmallmatrix}
+0.001 & 1\\
+1 & 1
+\end{psmallmatrix}
+\begin{psmallmatrix}
+x_1\\
+x_2
+\end{psmallmatrix} = 
+\begin{psmallmatrix}
+1\\
+2
+\end{psmallmatrix}$$
+
+\paragraph{Ohne Pivotisierung:}
+Division durch 0.001 führt zu großen Rundungsfehlern:
+$$x_1 \approx 1000 \cdot (1 - x_2)$$
+
+\paragraph{Mit Pivotisierung:}
+Nach Zeilenvertauschung:
+$$\begin{psmallmatrix}
+1 & 1\\
+0.001 & 1
+\end{psmallmatrix}
+\begin{psmallmatrix}
+x_1\\
+x_2
+\end{psmallmatrix} = 
+\begin{psmallmatrix}
+2\\
+1
+\end{psmallmatrix}$$
+Liefert stabile Lösung: $x_1 = 1$, $x_2 = 1$
+\end{example2}
+
+\begin{example2}{LR-Zerlegung mit Pivotisierung}
+Gegeben sei das System:
+$$A = \begin{psmallmatrix}
+1 & 2 & 1\\
+3 & 8 & 1\\
+0 & 4 & 1
+\end{psmallmatrix}, \quad b = \begin{psmallmatrix}
+2\\
+3\\
+5
+\end{psmallmatrix}$$
+
+\paragraph{1. Erste Spalte}
+Max Element in 1. Spalte: $|a_{21}| = 3$, tausche Z1 und Z2:
+$$P_1 = \begin{psmallmatrix}
+0 & 1 & 0\\
+1 & 0 & 0\\
+0 & 0 & 1
+\end{psmallmatrix}, \quad 
+A^{(1)} = \begin{psmallmatrix}
+3 & 8 & 1\\
+1 & 2 & 1\\
+0 & 4 & 1
+\end{psmallmatrix}$$
+
+Eliminationsfaktoren: $l_{21} = \frac{1}{3}$, $l_{31} = 0$\\
+Nach Elimination:
+$$A^{(2)} = \begin{psmallmatrix}
+3 & 8 & 1\\
+0 & -\frac{2}{3} & \frac{2}{3}\\
+0 & 4 & 1
+\end{psmallmatrix}$$
+
+\paragraph{2. Zweite Spalte}
+Max Element: $|a_{32}| = 4$, tausche Z2 und Z3:
+$$P_2 = \begin{psmallmatrix}
+1 & 0 & 0\\
+0 & 0 & 1\\
+0 & 1 & 0
+\end{psmallmatrix}$$
+
+Eliminationsfaktor: $l_{32} = -\frac{1}{6}$\\
+Nach Elimination:
+$$R = \begin{psmallmatrix}
+3 & 8 & 1\\
+0 & 4 & 1\\
+0 & 0 & \frac{5}{6}
+\end{psmallmatrix}$$
+
+\paragraph{Endergebnis}
+$$P = P_2P_1 = \begin{psmallmatrix}
+0 & 1 & 0\\
+0 & 0 & 1\\
+1 & 0 & 0
+\end{psmallmatrix}, \quad
+L = \begin{psmallmatrix}
+1 & 0 & 0\\
+\frac{1}{3} & 1 & 0\\
+0 & -\frac{1}{6} & 1
+\end{psmallmatrix}$$
+
+\paragraph{Lösung des Systems}
+\begin{enumerate}
+    \item $Pb = \begin{psmallmatrix} 3\\ 5\\ 2 \end{psmallmatrix}$
+    \item $Ly = Pb$: $y = \begin{psmallmatrix} 3\\ 4\\ 1 \end{psmallmatrix}$
+    \item $Rx = y$: $x = \begin{psmallmatrix} 1\\ 0\\ \frac{6}{5} \end{psmallmatrix}$
+\end{enumerate}
+\end{example2}
+
+\begin{example2}{QR-Zerlegung}
+Gegeben sei die Matrix:
+$$A = \begin{psmallmatrix}
+1 & 1\\
+1 & 0\\
+0 & 1
+\end{psmallmatrix}$$
+
+\paragraph{1. Erste Spalte}
+$v_1 = \begin{psmallmatrix} 1\\ 1\\ 0 \end{psmallmatrix}$, 
+$\|v_1\| = \sqrt{2}$
+
+Householder-Vektor:
+$w_1 = v_1 + \sqrt{2}\begin{psmallmatrix} 1\\ 0\\ 0 \end{psmallmatrix} = 
+\begin{psmallmatrix} 1+\sqrt{2}\\ 1\\ 0 \end{psmallmatrix}$
+
+Normierung:
+$u_1 = \frac{1}{\sqrt{4+2\sqrt{2}}}
+\begin{psmallmatrix} 1+\sqrt{2}\\ 1\\ 0 \end{psmallmatrix}$
+
+Erste Householder-Matrix:
+$$H_1 = I - 2u_1u_1^T = 
+\begin{psmallmatrix}
+-\frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}} & 0\\
+-\frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} & 0\\
+0 & 0 & 1
+\end{psmallmatrix}$$
+
+\paragraph{2. Zweite Spalte}
+Nach Anwendung von $H_1$:
+$$H_1A = \begin{psmallmatrix}
+-\sqrt{2} & -\frac{1}{\sqrt{2}}\\
+0 & \frac{1}{\sqrt{2}}\\
+0 & 1
+\end{psmallmatrix}$$
+
+Untervektor für zweite Transformation:
+$v_2 = \begin{psmallmatrix} \frac{1}{\sqrt{2}}\\ 1 \end{psmallmatrix}$
+
+Analog zur ersten Transformation erhält man:
+$$H_2 = \begin{psmallmatrix}
+1 & 0 & 0\\
+0 & -\frac{1}{\sqrt{5}} & -\frac{2}{\sqrt{5}}\\
+0 & -\frac{2}{\sqrt{5}} & \frac{1}{\sqrt{5}}
+\end{psmallmatrix}$$
+
+\paragraph{Endergebnis}
+$$Q = H_1^TH_2^T = \begin{psmallmatrix}
+\frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} & 0\\
+\frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}} & 0\\
+0 & 0 & 1
+\end{psmallmatrix}$$
+
+$$R = H_2H_1A = \begin{psmallmatrix}
+\sqrt{2} & 1\\
+0 & \sqrt{2}\\
+0 & 0
+\end{psmallmatrix}$$
+
+\paragraph{Verifikation}
+\begin{itemize}
+    \item $Q^TQ = QQ^T = I$ (Orthogonalität)
+    \item $QR = A$ (bis auf Rundungsfehler)
+    \item R ist obere Dreiecksmatrix
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Iterative Verfahren}{Vergleich Jacobi und Gauss-Seidel}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+System:
+$$\begin{psmallmatrix}
+4 & -1 & 0\\
+-1 & 4 & -1\\
+0 & -1 & 4
+\end{psmallmatrix}x = \begin{psmallmatrix}
+1\\
+5\\
+0
+\end{psmallmatrix}$$
+
+\begin{center}
+\begin{tabular}{c|cc|cc}
+k & \multicolumn{2}{c|}{Jacobi} & \multicolumn{2}{c}{Gauss-Seidel}\\
+\hline
+0 & $(0,0,0)^T$ & & $(0,0,0)^T$ &\\
+1 & $(0.25,1.25,0)^T$ & 1.25 & $(0.25,1.31,0.08)^T$ & 1.31\\
+2 & $(0.31,1.31,0.31)^T$ & 0.31 & $(0.33,1.33,0.33)^T$ & 0.02\\
+3 & $(0.33,1.33,0.33)^T$ & 0.02 & $(0.33,1.33,0.33)^T$ & 0.00
+\end{tabular}
+\end{center}
+\end{example2}
+
+\begin{example2}{Konvergenzverhalten}
+Betrachten Sie das System:
+$$\begin{psmallmatrix}
+4 & 1 & 0\\
+1 & 4 & 1\\
+0 & 1 & 4
+\end{psmallmatrix}
+\begin{psmallmatrix}
+x_1\\
+x_2\\
+x_3
+\end{psmallmatrix} =
+\begin{psmallmatrix}
+1\\
+2\\
+3
+\end{psmallmatrix}$$
+
+Die Matrix ist diagonaldominant:
+$|a_{ii}| = 4 > 1 = \sum_{j\neq i} |a_{ij}|$
+
+\begin{center}
+\begin{tabular}{c|cc|cc}
+k & \multicolumn{2}{c|}{Residuum} & \multicolumn{2}{c}{Rel. Fehler}\\
+& Jacobi & G-S & Jacobi & G-S\\
+\hline
+0 & 3.74 & 3.74 & - & -\\
+1 & 0.94 & 0.47 & 0.935 & 0.468\\
+2 & 0.23 & 0.06 & 0.246 & 0.125\\
+3 & 0.06 & 0.01 & 0.065 & 0.017\\
+4 & 0.01 & 0.001 & 0.016 & 0.002
+\end{tabular}
+\end{center}
+
+\textbf{Beobachtungen:}
+\begin{itemize}
+    \item Gauss-Seidel konvergiert etwa doppelt so schnell wie Jacobi
+    \item Das Residuum fällt linear (geometrische Folge)
+    \item Die Konvergenz ist gleichmäßig (keine Oszillationen)
+\end{itemize}
+\end{example2}

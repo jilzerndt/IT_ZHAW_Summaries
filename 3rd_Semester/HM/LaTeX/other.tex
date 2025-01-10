@@ -48,3 +48,104 @@
     \end{itemize}
 \end{enumerate}
 \end{KR}
+
+\begin{KR}{Auswahl des Lösungsverfahrens}
+\begin{enumerate}
+    \item Analyse der Matrix:
+    \begin{itemize}
+        \item Dimensionen (n × n)
+        \item Struktur (dicht/dünn besetzt)
+        \item Konditionszahl (falls berechenbar)
+    \end{itemize}
+    
+    \item Direkte Verfahren wenn:
+    \begin{itemize}
+        \item Matrix dicht besetzt und n < 1000
+        \item Hohe Genauigkeit gefordert
+        \item Mehrere rechte Seiten zu lösen
+    \end{itemize}
+    
+    \item Iterative Verfahren wenn:
+    \begin{itemize}
+        \item Matrix dünn besetzt
+        \item Matrix sehr groß (n > 1000)
+        \item Moderate Genauigkeit ausreichend
+        \item Matrix diagonaldominant
+    \end{itemize}
+    
+    \item Empfohlene Methoden:
+    \begin{itemize}
+        \item Standard: LR mit Pivotisierung
+        \item Symmetrisch positiv definit: QR
+        \item Große dünn besetzte Systeme: Gauss-Seidel
+        \item Schlecht konditioniert: QR
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{KR}{LR-Zerlegung - Praktisches Vorgehen}
+\begin{enumerate}
+    \item Voraussetzungen prüfen
+    \begin{itemize}
+        \item Matrix regulär?
+        \item Diagonalelemente ungleich Null?
+        \item Pivotisierung nötig?
+    \end{itemize}
+
+    \item Zerlegung durchführen
+    \begin{itemize}
+        \item Matrix kopieren für R
+        \item L als Einheitsmatrix initialisieren
+        \item P als Einheitsmatrix initialisieren (falls Pivotisierung)
+    \end{itemize}
+
+    \item Für jede Spalte k = 1,...,n-1:
+    \begin{itemize}
+        \item Falls Pivotisierung: Größtes Element in Spalte k finden
+        \item Zeilenvertauschung in R und P dokumentieren
+        \item Eliminationsfaktoren $l_{ik} = \frac{r_{ik}}{r_{kk}}$ berechnen
+        \item Zeile i von Zeile k subtrahieren: $r_{ij} := r_{ij} - l_{ik}r_{kj}$
+        \item Eliminationsfaktoren in L speichern
+    \end{itemize}
+
+    \item System lösen durch
+    \begin{itemize}
+        \item Vorwärtseinsetzen: $Ly = Pb$
+        \item Rückwärtseinsetzen: $Rx = y$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{KR}{Fehleranalyse in der Praxis}
+\begin{enumerate}
+    \item Analyse der Eingangsdaten
+    \begin{itemize}
+        \item Konditionszahl der Matrix bestimmen
+        \item Struktur der Matrix untersuchen
+        \item Größenordnung der Einträge prüfen
+    \end{itemize}
+    
+    \item Fehlerquellen identifizieren
+    \begin{itemize}
+        \item Rundungsfehler bei der Eingabe
+        \item Fehler bei der Elimination
+        \item Akkumulation von Rundungsfehlern
+        \item Instabilitäten durch schlechte Kondition
+    \end{itemize}
+    
+    \item Fehlerabschätzungen berechnen
+    \begin{itemize}
+        \item A-priori: $\frac{\|\Delta x\|}{\|x\|} \leq \text{cond}(A) \cdot \frac{\|\Delta b\|}{\|b\|}$
+        \item A-posteriori: $\|Ax-b\|$ (Residuum)
+        \item Iterative Verfahren: Konvergenzrate
+    \end{itemize}
+    
+    \item Maßnahmen zur Fehlerreduktion
+    \begin{itemize}
+        \item Pivotisierung verwenden
+        \item Skalierung der Matrix
+        \item Höhere Genauigkeit verwenden
+        \item Alternatives Lösungsverfahren wählen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
