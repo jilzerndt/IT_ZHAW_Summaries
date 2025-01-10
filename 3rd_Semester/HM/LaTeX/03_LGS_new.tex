@@ -147,76 +147,6 @@ $
 \end{enumerate}
 \end{KR}
 
-\begin{examplecode}{Gauss-Elimination mit Pivotisierung}
-\begin{lstlisting}[language=Python, style=basesmol]
-def gauss_elimination(A, b):
-    n = len(A)
-    # Erweiterte Matrix erstellen
-    M = [[A[i][j] for j in range(n)] + [b[i]] for i in range(n)]
-
-    # Vorwaertselimination
-    for i in range(n):
-        pivot = M[i][i]
-        if abs(pivot) < 1e-10:
-            continue
-        for j in range(i+1, n):
-            factor = M[j][i] / pivot
-            for k in range(i, n+1):
-                M[j][k] -= factor * M[i][k]
-
-    # Rueckwaertssubstitution
-    x = [0] * n
-    for i in range(n-1, -1, -1):
-        if abs(M[i][i]) < 1e-10:
-            x[i] = 1  # Freie Variable
-            continue
-        sum_val = sum(M[i][j] * x[j] for j in range(i+1, n))
-        x[i] = (M[i][n] - sum_val) / M[i][i]
-    
-    return x
-\end{lstlisting}    
-\end{examplecode}
-
-
-
-
-
-\begin{examplecode}{LR-Zerlegung Implementation}
-\begin{lstlisting}[language=Python, style=basesmol]
-def lr_decomposition(A):
-    n = len(A)
-    # Kopiere A um Original nicht zu veraendern
-    R = [[A[i][j] for j in range(n)] for i in range(n)]
-    L = [[1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
-    P = [[1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
-    
-    for k in range(n-1):
-        # Pivotisierung
-        pivot = k
-        for i in range(k+1, n):
-            if abs(R[i][k]) > abs(R[pivot][k]):
-                pivot = i
-        if abs(R[pivot][k]) < 1e-10:  # Numerische Null
-            raise ValueError("Matrix ist (fast) singulaer")
-        # Zeilenvertauschung falls noetig
-        if pivot != k:
-            R[k], R[pivot] = R[pivot], R[k]
-            # L und P anpassen fuer Zeilen < k
-            for j in range(k):
-                L[k][j], L[pivot][j] = L[pivot][j], L[k][j]
-            P[k], P[pivot] = P[pivot], P[k]
-
-        # Elimination
-        for i in range(k+1, n):
-            factor = R[i][k] / R[k][k]
-            L[i][k] = factor
-            for j in range(k, n):
-                R[i][j] -= factor * R[k][j]
-               
-    return P, L, R
-\end{lstlisting}
-\end{examplecode}
-
 \subsection{Matrix-Zerlegungen}
 
 \begin{definition}{Dreieckszerlegung}
@@ -481,140 +411,6 @@ R = \begin{psmallmatrix}
 \end{itemize}
 \end{example2}
 
-\begin{examplecode}{QR-Zerlegung Implementation}
-\begin{lstlisting}[language=Python, style=basesmol]
-def qr_decomposition(A):
-    m = len(A)
-    n = len(A[0])
-    # Kopiere A nach R (deep copy)
-    R = [[A[i][j] for j in range(n)] for i in range(m)]
-    # Initialisiere Q als Einheitsmatrix
-    Q = [[1.0 if i == j else 0.0 for j in range(m)] 
-         for i in range(m)]
-    
-    def vector_norm(v): # Norm eines Vektors
-        return (sum(x*x for x in v)) ** 0.5
-    
-    def matrix_mult(A, B): # Matrixmultiplikation
-        m, n = len(A), len(B[0])
-        p = len(B)
-        C = [[0.0] * n for _ in range(m)]
-
-        for i in range(m):
-            for j in range(n):
-                C[i][j] = sum(A[i][k] * B[k][j] 
-                             for k in range(p))
-
-        return C
-    
-    def householder_reflection(x):
-        n = len(x)
-        v = [xi for xi in x]  # Kopiere x
-
-        # Berechne Norm des Teilvektors
-        sigma = sum(v[i]*v[i] for i in range(1, n))
-        if sigma == 0 and x[0] >= 0:
-            beta = 0
-        elif sigma == 0 and x[0] < 0:
-            beta = -2
-        else:
-            mu = (x[0]*x[0] + sigma)**0.5
-            if x[0] <= 0:
-                v[0] = x[0] - mu
-            else:
-                v[0] = -sigma/(x[0] + mu)
-
-            beta = 2*v[0]*v[0]/(sigma + v[0]*v[0])
-
-            # Normiere v
-            temp = v[0]
-            for i in range(n):
-                v[i] /= temp
-
-        return v, beta
-\end{lstlisting}
-\end{examplecode}
-
-\begin{examplecode}{QR-Zerlegung Implementation (Fortsetzung)}
-\begin{lstlisting}[language=Python, style=basesmol]
-    # Hauptschleife der QR-Zerlegung
-    for k in range(n):
-        # Extrahiere k-te Spalte ab k-ter Zeile
-        x = [R[i][k] for i in range(k, m)]
-        if len(x) > 1:  # wenn noch Untermatrix existiert
-            # Berechne Householder-Transformation
-            v, beta = householder_reflection(x)
-            # Wende Householder auf R an
-            for j in range(k, n):
-                # Berechne w = beta * (v^T * R_j)
-                w = beta * sum(v[i-k]*R[i][j] 
-                             for i in range(k, m))
-                # Update R
-                for i in range(k, m):
-                    R[i][j] -= v[i-k] * w
-            # Update Q
-            for j in range(m):
-                w = beta * sum(v[i-k]*Q[j][i+k] 
-                             for i in range(len(v)))
-                for i in range(len(v)):
-                    Q[j][k+i] -= v[i] * w
-    # Transponiere Q am Ende
-    Q = [[Q[j][i] for j in range(m)] for i in range(m)]
-    
-    return Q, R # Q (orthogonal) und R (obere Dreiecksmatrix)
-
-# Beispiel fuer Verwendung
-def solve_qr(A, b): # Loest Ax = b mittels QR-Zerlegung
-    Q, R = qr_decomposition(A)
-    # Berechne Q^T * b
-    y = [sum(Q[i][j] * b[j] 
-             for j in range(len(b))) 
-         for i in range(len(b))]
-    # Rueckwaertseinsetzen
-    n = len(R)
-    x = [0] * n
-    for i in range(n-1, -1, -1):
-        s = sum(R[i][j] * x[j] for j in range(i+1, n))
-        if abs(R[i][i]) < 1e-10:
-            raise ValueError("Matrix (fast) singulaer")
-        x[i] = (y[i] - s) / R[i][i]
-    return x
-\end{lstlisting}
-\end{examplecode}
-
-\begin{KR}{QR-Zerlegung - Praktisches Vorgehen}
-\begin{enumerate}
-    \item Vorbereitungen
-    \begin{itemize}
-        \item Matrix A kopieren für R
-        \item Q als Einheitsmatrix initialisieren
-        \item Householder-Vektoren speichern
-    \end{itemize}
-
-    \item Für jede Spalte k = 1,...,n-1:
-    \begin{itemize}
-        \item Untervektor $v_k$ aus k-ter Spalte extrahieren
-        \item Householder-Vektor berechnen:
-            \begin{itemize}
-                \item $w_k = v_k + \text{sign}(v_{k1})\|v_k\|e_1$
-                \item $u_k = \frac{w_k}{\|w_k\|}$
-            \end{itemize}
-        \item Householder-Matrix auf Untermatrix anwenden:
-            \begin{itemize}
-                \item $H_k = I - 2u_ku_k^T$
-                \item $R_{k:n,k:n} = H_k \cdot R_{k:n,k:n}$
-            \end{itemize}
-        \item Q aktualisieren: $Q = Q \cdot H_k^T$
-    \end{itemize}
-
-    \item System lösen durch
-    \begin{itemize}
-        \item $y = Q^Tb$ berechnen
-        \item Rückwärtseinsetzen: $Rx = y$
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
 
 
 
@@ -688,36 +484,44 @@ $\text{Absoluter Fehler: }\|x - \tilde{x}\| \leq 400 \cdot 0.01 = 4$ \\
 $\text{Relativer Fehler: }\frac{\|x - \tilde{x}\|}{\|x\|} \leq 400 \cdot \frac{0.01}{2} = 2$
 \end{example2}
 
-\begin{examplecode}{Analyse der Genauigkeit einer Näherungslösung}
-\begin{lstlisting}[language=Python, style=basesmol]
-def error_analysis(A, x, b, x_approx):
-    n = len(A)
-    # Residuum berechnen
-    r = [b[i] - sum(A[i][j] * x_approx[j] 
-                   for j in range(n)) 
-         for i in range(n)]
-    res_norm = max(abs(ri) for ri in r)
-    # Relativer Fehler (falls exakte Loesung bekannt)
-    if x is not None:
-        rel_error = max(abs(x[i] - x_approx[i]) 
-                       for i in range(n)) / \
-                   max(abs(x[i]) for i in range(n))
-    else:
-        rel_error = None
-    # Absoluter Fehler (falls exakte Loesung bekannt)
-    if x is not None:
-        abs_error = max(abs(x[i] - x_approx[i]) 
-                       for i in range(n))
-    else:
-        abs_error = None
-    
-    return {
-        'residual_norm': res_norm,
-        'relative_error': rel_error,
-        'residual': r
-    }
-\end{lstlisting}
-\end{examplecode}
+\begin{KR}{Vergleich Lösungsverfahren}
+$A = \begin{psmallmatrix}
+1 & 2 & 0\\
+2 & 1 & 2\\
+0 & 2 & 1
+\end{psmallmatrix}, \quad b = \begin{psmallmatrix}
+1\\
+2\\
+3
+\end{psmallmatrix}$
+
+\paragraph{1. Systemanalyse}
+\begin{itemize}
+    \item Matrix ist symmetrisch
+    \item Nicht streng diagonaldominant
+    \item $\text{cond}_\infty(A) \approx 12.5$
+\end{itemize}
+
+\paragraph{2. Verschiedene Lösungsansätze}
+\begin{center}
+\begin{tabular}{l|ccc}
+Verfahren & Iterationen & Residuum & Zeit\\
+\hline
+LR mit Pivot & 1 & $2.2\cdot10^{-16}$ & 1.0\\
+QR & 1 & $2.2\cdot10^{-16}$ & 2.3\\
+Jacobi & 12 & $1.0\cdot10^{-6}$ & 1.8\\
+Gauss-Seidel & 7 & $1.0\cdot10^{-6}$ & 1.4\\
+\end{tabular}
+\end{center}
+
+\paragraph{3. Interpretation}
+\begin{itemize}
+    \item Direkte Verfahren erreichen höhere Genauigkeit
+    \item Iterative Verfahren brauchen mehrere Schritte
+\end{itemize}
+\end{KR}
+
+\columnbreak
 
 \subsubsection{Iterative Verfahren}
 
@@ -756,10 +560,6 @@ Ein iteratives Verfahren konvergiert, wenn:
     $\rho(B) < 1$ mit $B$ als jeweilige Iterationsmatrix
 \end{enumerate}
 \end{theorem}
-
-
-
-
 
 \begin{example2}{Konvergenzverhalten}
 $\begin{psmallmatrix}
@@ -800,239 +600,12 @@ k & \multicolumn{2}{c|}{Residuum} & \multicolumn{2}{c}{Rel. Fehler}\\
 \end{itemize}
 \end{example2}
 
-\begin{KR}{Vergleich Lösungsverfahren}
-$A = \begin{psmallmatrix}
-1 & 2 & 0\\
-2 & 1 & 2\\
-0 & 2 & 1
-\end{psmallmatrix}, \quad b = \begin{psmallmatrix}
-1\\
-2\\
-3
-\end{psmallmatrix}$
-
-\paragraph{1. Systemanalyse}
-\begin{itemize}
-    \item Matrix ist symmetrisch
-    \item Nicht streng diagonaldominant
-    \item $\text{cond}_\infty(A) \approx 12.5$
-\end{itemize}
-
-\paragraph{2. Verschiedene Lösungsansätze}
-\begin{center}
-\begin{tabular}{l|ccc}
-Verfahren & Iterationen & Residuum & Zeit\\
-\hline
-LR mit Pivot & 1 & $2.2\cdot10^{-16}$ & 1.0\\
-QR & 1 & $2.2\cdot10^{-16}$ & 2.3\\
-Jacobi & 12 & $1.0\cdot10^{-6}$ & 1.8\\
-Gauss-Seidel & 7 & $1.0\cdot10^{-6}$ & 1.4\\
-\end{tabular}
-\end{center}
-
-\paragraph{3. Interpretation}
-\begin{itemize}
-    \item Direkte Verfahren erreichen höhere Genauigkeit
-    \item Iterative Verfahren brauchen mehrere Schritte
-\end{itemize}
-\end{KR}
-
-\begin{KR}{Implementation iterativer Verfahren}
-\begin{enumerate}
-    \item Wählen Sie Startvektor $x^{(0)}$
-    \item Wählen Sie Abbruchkriterien:
-        \begin{itemize}
-            \item Maximale Iterationszahl $k_{max}$
-            \item Toleranz $\epsilon$ für Änderung $\|x^{(k+1)} - x^{(k)}\|$
-            \item Toleranz für Residuum $\|Ax^{(k)} - b\|$
-        \end{itemize}
-    \item Führen Sie Iteration durch bis Kriterien erfüllt
-\end{enumerate}
-\end{KR}
-
-\begin{examplecode}{Jacobi-Verfahren Implementation}
-\begin{lstlisting}[language=Python, style=basesmol]
-def jacobi_method(A, b, x0, tol=1e-6, max_iter=100):
-
-    n = len(A)
-    x = x0.copy()
-    x_new = [0.0] * n
-    
-    for iter in range(max_iter):
-
-        # Jacobi-Iteration
-        for i in range(n):
-            sum1 = sum(A[i][j] * x[j] for j in range(i))
-            sum2 = sum(A[i][j] * x[j] for j in range(i+1, n))
-            x_new[i] = (b[i] - sum1 - sum2) / A[i][i]
-            
-        # Konvergenzpruefung
-        diff = max(abs(x_new[i] - x[i]) for i in range(n))
-
-        if diff < tol:
-            return x_new, iter + 1
-
-        x = x_new.copy()
-        
-    raise ValueError(f"Keine Konvergenz nach {max_iter} Iterationen")
-\end{lstlisting}
-\end{examplecode}
 
 
 
-\begin{examplecode}{Gauss-Seidel-Verfahren Implementation}
-\begin{lstlisting}[language=Python, style=basesmol]
-def gauss_seidel_method(A, b, x0, tol=1e-6, max_iter=100):
 
-    n = len(A)
-    x = x0.copy()
-    
-    for iter in range(max_iter):
-        x_old = x.copy()
 
-        # Gauss-Seidel-Iteration
-        for i in range(n):
-            sum1 = sum(A[i][j] * x[j] for j in range(i))
-            sum2 = sum(A[i][j] * x_old[j] for j in range(i+1, n))
-            x[i] = (b[i] - sum1 - sum2) / A[i][i]
-            
-        # Konvergenzpruefung
-        diff = max(abs(x[i] - x_old[i]) for i in range(n))
 
-        if diff < tol:
-            return x, iter + 1
-            
-    raise ValueError(f"Keine Konvergenz nach {max_iter} Iterationen")
-\end{lstlisting}
-\end{examplecode}
-
-\begin{examplecode}{Analyse von LGS auf numerische Stabilität}
-\begin{lstlisting}[language=Python, style=basesmol]
-def analyze_matrix(A, b):
-    n = len(A)
-    # 1. Grundlegende Eigenschaften
-    diag_dom = is_diagonally_dominant(A)
-    scaling = max(abs(A[i][j]) for i in range(n) 
-                 for j in range(n))
-    # 2. Konditionszahl schaetzen 
-    def matrix_norm_inf(M):
-        return max(sum(abs(M[i][j]) for j in range(len(M))) 
-                  for i in range(len(M)))
-
-    def inverse_power_iteration(M, max_iter=100):
-        x = [1.0] * n
-        for _ in range(max_iter):
-            y = solve_triangular(M, x)
-            norm = max(abs(yi) for yi in y)
-            x = [yi/norm for yi in y]
-        return 1.0/norm
-
-    norm_A = matrix_norm_inf(A)
-    try:
-        norm_Ainv = inverse_power_iteration(A)
-        cond = norm_A * norm_Ainv
-    except:
-        cond = float('inf')
-    # 3. Analyse der Diagonalelemente
-    min_diag = min(abs(A[i][i]) for i in range(n))
-    max_offdiag = max(abs(A[i][j]) for i in range(n) 
-                     for j in range(n) if i != j)
-    # 4. Empfehlungen generieren
-    recommendations = []
-    if not diag_dom:
-        recommendations.append(
-            "Matrix nicht diagonaldominant - "
-            "Iterative Verfahren koennten divergieren")
-    if cond > 1e4:
-        recommendations.append(
-            f"Hohe Konditionszahl ({cond:.1e}) - "
-            "Ergebnisse koennten ungenau sein")
-    if min_diag < max_offdiag/100:
-        recommendations.append(
-            "Kleine Diagonalelemente - "
-            "Pivotisierung empfohlen")
-    if scaling > 1e8:
-        recommendations.append(
-            "Grosse Zahlenunterschiede - "
-            "Skalierung empfohlen")
-    return {
-        "recommandations": recommendations, 
-        "results": cond, diag_dom, scaling, min_diag, max_offdiag
-    }
-\end{lstlisting}
-\end{examplecode}
-
-\begin{examplecode}{Hilfsfunktion für Optimiere iterative Verfahren}
-\begin{lstlisting}[language=Python, style=basesmol]
-def is_diagonally_dominant(A): # Matrix diagonaldominant?
-    n = len(A)
-    for i in range(n):
-        if abs(A[i][i]) <= sum(abs(A[i][j]) for j in range(n) if j != i):
-            return False
-    return True
-\end{lstlisting}
-\end{examplecode}
-
-\begin{examplecode}{Optimierte iterative Verfahren Implementation}
-    \begin{itemize}
-        \item Optimierte Version mit Konvergenzanalyse
-        \item Löst $Ax = b$ mit verschiedenen iterativen Verfahren
-        \item \texttt{method}: 'jacobi' oder 'gauss-seidel'
-        \item \texttt{omega}: Relaxationsparameter (1.0 = Standard)
-    \end{itemize}
-\begin{lstlisting}[language=Python, style=basesmol]
-def iterative_solver(A, b, method='gauss_seidel', tol=1e-6, max_iter=100, omega=1.0):
-
-    n = len(A)
-    x = [0.0] * n  # Startvektor
-    D = [[A[i][j] if i == j else 0 for j in range(n)] 
-         for i in range(n)]  # Diagonalmatrix
-    L = [[A[i][j] if i > j else 0 for j in range(n)] 
-         for i in range(n)]  # Untere Dreiecksmatrix
-    U = [[A[i][j] if i < j else 0 for j in range(n)] 
-         for i in range(n)]  # Obere Dreiecksmatrix
-    
-    # Konvergenzcheck
-    if not is_diagonally_dominant(A):
-        print("Warnung: Matrix nicht diagonaldominant")
-    
-    iterations = []
-    residuals = []
-    
-    for iter in range(max_iter):
-        x_old = x.copy()
-        if method == 'jacobi':
-            for i in range(n):
-                sum_term = sum(A[i][j] * x_old[j] 
-                             for j in range(n) if j != i)
-                x[i] = (1-omega) * x_old[i] + \
-                       (omega/A[i][i]) * (b[i] - sum_term)
-        else:  # gauss_seidel
-            for i in range(n):
-                sum1 = sum(A[i][j] * x[j] for j in range(i))
-                sum2 = sum(A[i][j] * x_old[j] 
-                          for j in range(i+1, n))
-                x[i] = (1-omega) * x_old[i] + \ (omega/A[i][i]) * (b[i] - sum1 - sum2)
-
-        # Berechne Residuum und relative Aenderung
-        res = max(abs(sum(A[i][j] * x[j] for j in range(n)) - b[i]) for i in range(n))
-        diff = max(abs(x[i] - x_old[i]) for i in range(n))
-        
-        iterations.append(x.copy())
-        residuals.append(res)
-        
-        if diff < tol:
-            return {
-                'solution': x,
-                'iterations': iterations,
-                'residuals': residuals,
-                'iteration_count': iter + 1
-            }
-            
-    raise ValueError(f"Keine Konvergenz nach {max_iter} " + 
-                    f"Iterationen\nLetztes Residuum: {res}")
-\end{lstlisting}
-\end{examplecode}
 
 
 
