@@ -36,6 +36,33 @@ ACHTUNG: darf an der Prüfung höchstwahrscheinlich nicht verwendet werden!
 aber falls doch, hier die einfachen Implementationen von allem :D
 \end{remark2}
 
+\begin{examplecode}{Gauss-Algorithmus mit Pivotisierung}
+\begin{lstlisting}[language=Python, style=basesmol]
+def gauss_elimination(A, b):
+    n = len(b)
+    for i in range(n-1):
+
+        # Pivotisierung
+        k = np.argmax(abs(A[i:, i])) + i
+        if A[k, i] == 0:
+            raise ValueError("Matrix ist singulaer")
+        A[[i, k]] = A[[k, i]]
+        b[[i, k]] = b[[k, i]]
+        # Elimination
+        for j in range(i+1, n):
+            factor = A[j, i] / A[i, i]
+            A[j, i:] -= factor * A[i, i:]
+            b[j] -= factor * b[i]
+
+    # Rueckwaertseinsetzen
+    x = np.zeros(n)
+    for i in range(n-1, -1, -1):
+        x[i] = (b[i] - np.dot(A[i, i+1:], x[i+1:])) / A[i, i]
+
+    return x
+\end{lstlisting}
+\end{examplecode}
+
 \begin{examplecode}{LR-Zerlegung Implementation}
 \begin{lstlisting}[language=Python, style=basesmol]
 # Optimierte Version mit NumPy
@@ -90,6 +117,25 @@ def power_iteration(A, tol=1e-10, max_iter=100):
         # Rayleigh-Quotient
         lambda_k = v_new.T @ A @ v_new
         if np.linalg.norm(v_new - v) < tol:
+            return lambda_k, v_new
+        v = v_new
+    return lambda_k, v_new
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Von-Mises-Iteration} Berechnung des größten Eigenwerts
+    %TODO: check if this is correct
+\begin{lstlisting}[language=Python, style=basesmol]
+def power_iteration(A, tol=1e-10, max_iter=100):
+    n = len(A)
+    v = [random.random() for _ in range(n)]
+    v = [x / np.linalg.norm(v) for x in v]
+    for i in range(max_iter):
+        w = [sum(A[i][j] * v[j] for j in range(n)) for i in range(n)]
+        v_new = [x / np.linalg.norm(w) for x in w]
+        # Rayleigh-Quotient
+        lambda_k = sum(v_new[i] * A[i][j] * v_new[j] for i in range(n) for j in range(n))
+        if np.linalg.norm([v_new[i] - v[i] for i in range(n)]) < tol:
             return lambda_k, v_new
         v = v_new
     return lambda_k, v_new
@@ -169,5 +215,30 @@ eigenvalues = np.roots(p)
 eigenvectors = []
 for l in eigenvalues:
     eigenvectors.append(np.linalg.solve(A - l * np.eye(A.shape[0]), np.zeros(A.shape[0])))
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{QR-Verfahren}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+    %needs to be implemented without using specialized libraries (no numpy, etc)
+\begin{lstlisting}[language=Python, style=basesmol]
+def qr_algorithm(A, tol=1e-10, max_iter=100):
+    n = A.shape[0]
+    Q_prod = np.eye(n)
+    A_k = A.copy()
+    
+    for k in range(max_iter):
+        # QR decomposition
+        Q, R = np.linalg.qr(A_k)
+        # New iteration
+        A_k = R @ Q
+        # Update transformation matrix
+        Q_prod = Q_prod @ Q
+        
+        # Check convergence
+        if np.abs(np.tril(A_k, -1)).max() < tol:
+            break
+            
+    return np.diag(A_k), Q_prod
 \end{lstlisting}
 \end{examplecode}

@@ -147,38 +147,42 @@ $
 \end{enumerate}
 \end{KR}
 
-\begin{examplecode}{Gauss-Algorithmus mit Pivotisierung}
+\begin{examplecode}{Gauss-Elimination mit Pivotisierung}
 \begin{lstlisting}[language=Python, style=basesmol]
 def gauss_elimination(A, b):
-    n = len(b)
-    for i in range(n-1):
+    n = len(A)
+    # Erweiterte Matrix erstellen
+    M = [[A[i][j] for j in range(n)] + [b[i]] for i in range(n)]
 
-        # Pivotisierung
-        k = np.argmax(abs(A[i:, i])) + i
-        if A[k, i] == 0:
-            raise ValueError("Matrix ist singulaer")
-        A[[i, k]] = A[[k, i]]
-        b[[i, k]] = b[[k, i]]
-        # Elimination
+    # Vorwaertselimination
+    for i in range(n):
+        pivot = M[i][i]
+        if abs(pivot) < 1e-10:
+            continue
         for j in range(i+1, n):
-            factor = A[j, i] / A[i, i]
-            A[j, i:] -= factor * A[i, i:]
-            b[j] -= factor * b[i]
+            factor = M[j][i] / pivot
+            for k in range(i, n+1):
+                M[j][k] -= factor * M[i][k]
 
-    # Rueckwaertseinsetzen
-    x = np.zeros(n)
+    # Rueckwaertssubstitution
+    x = [0] * n
     for i in range(n-1, -1, -1):
-        x[i] = (b[i] - np.dot(A[i, i+1:], x[i+1:])) / A[i, i]
-
+        if abs(M[i][i]) < 1e-10:
+            x[i] = 1  # Freie Variable
+            continue
+        sum_val = sum(M[i][j] * x[j] for j in range(i+1, n))
+        x[i] = (M[i][n] - sum_val) / M[i][i]
+    
     return x
-\end{lstlisting}
+\end{lstlisting}    
 \end{examplecode}
+
+
 
 
 
 \begin{examplecode}{LR-Zerlegung Implementation}
 \begin{lstlisting}[language=Python, style=basesmol]
-# Einfache Version ohne externe Bibliotheken
 def lr_decomposition(A):
     n = len(A)
     # Kopiere A um Original nicht zu veraendern
@@ -192,10 +196,8 @@ def lr_decomposition(A):
         for i in range(k+1, n):
             if abs(R[i][k]) > abs(R[pivot][k]):
                 pivot = i
-        
         if abs(R[pivot][k]) < 1e-10:  # Numerische Null
             raise ValueError("Matrix ist (fast) singulaer")
-            
         # Zeilenvertauschung falls noetig
         if pivot != k:
             R[k], R[pivot] = R[pivot], R[k]
@@ -203,7 +205,7 @@ def lr_decomposition(A):
             for j in range(k):
                 L[k][j], L[pivot][j] = L[pivot][j], L[k][j]
             P[k], P[pivot] = P[pivot], P[k]
-            
+
         # Elimination
         for i in range(k+1, n):
             factor = R[i][k] / R[k][k]
