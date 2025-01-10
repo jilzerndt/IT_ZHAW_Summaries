@@ -303,6 +303,137 @@ $A = \begin{psmallmatrix} 1 & 0 & 0\\ 2 & 3 & 0\\ 0 & 1 & 2\end{psmallmatrix}$
 \end{enumerate}
 \end{example2}
 
+\begin{example2}{Eigenwertberechnung}
+Gegeben ist die Matrix
+$A = \begin{pmatrix} 
+2 & 1 & 0 \\
+1 & 2 & 1 \\
+0 & 1 & 2
+\end{pmatrix}$
+
+1. Charakteristisches Polynom aufstellen:
+   $\det(A - \lambda I) = \begin{vmatrix} 
+   2-\lambda & 1 & 0 \\
+   1 & 2-\lambda & 1 \\
+   0 & 1 & 2-\lambda
+   \end{vmatrix}$
+
+2. Entwicklung nach 1. Zeile:
+   $p(\lambda) = (2-\lambda)\begin{vmatrix}
+   2-\lambda & 1 \\
+   1 & 2-\lambda
+   \end{vmatrix} - 1\begin{vmatrix}
+   1 & 1 \\
+   1 & 2-\lambda
+   \end{vmatrix}$
+   
+3. Ausrechnen:
+   $p(\lambda) = (2-\lambda)((2-\lambda)^2 - 1) - ((2-\lambda) - 1)$
+   $= -\lambda^3 + 6\lambda^2 - 11\lambda + 6$
+
+4. Nullstellen bestimmen:
+   $\lambda_1 = 1, \lambda_2 = 2, \lambda_3 = 3$
+
+5. Eigenvektoren bestimmen für $\lambda_1 = 1$:
+   $(A - I)x = 0$ führt zu $x_1 = \begin{pmatrix} 1 \\ -2 \\ 1 \end{pmatrix}$
+\end{example2}
+
+\begin{examplecode}{Charakteristisches Polynom und Eigenwerte}
+\begin{lstlisting}[language=Python, style=basesmol]
+def det_2x2(matrix):
+    return matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0]
+
+def det_3x3(matrix):
+    det = 0
+    # Entwicklung nach erster Zeile
+    for i in range(3):
+        minor = []
+        for j in range(1,3):
+            row = []
+            for k in range(3):
+                if k != i:
+                    row.append(matrix[j][k])
+            minor.append(row)
+        det += ((-1)**i) * matrix[0][i] * det_2x2(minor)
+    return det
+
+def char_poly_coeff(matrix):
+    """Berechnet Koeffizienten des charakteristischen Polynoms"""
+    n = len(matrix)
+    coeffs = [0] * (n+1)
+    
+    # Lambda^n Koeffizient
+    coeffs[n] = (-1)**n
+    
+    # Spur (Lambda^(n-1) Koeffizient)
+    trace = sum(matrix[i][i] for i in range(n))
+    coeffs[n-1] = (-1)**(n-1) * trace
+    
+    # Determinante (konstanter Term)
+    coeffs[0] = det_3x3(matrix)
+    
+    return coeffs
+
+# Beispielmatrix
+A = [[2, 1, 0],
+     [1, 2, 1],
+     [0, 1, 2]]
+
+# Charakteristisches Polynom berechnen
+poly = char_poly_coeff(A)
+print("Charakteristisches Polynom:")
+print(f"p(lambda) = lambda^3 {poly[2]:+}lambda^2 {poly[1]:+}lambda {poly[0]:+}")
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Eigenvektoren berechnen}
+\begin{lstlisting}[language=Python, style=basesmol]
+def gauss_elimination(A, b):
+    """Loest Ax=b mit Gauss-Elimination"""
+    n = len(A)
+    # Erweiterte Matrix erstellen
+    M = [[A[i][j] for j in range(n)] + [b[i]] for i in range(n)]
+    
+    # Vorwaertselimination
+    for i in range(n):
+        pivot = M[i][i]
+        if abs(pivot) < 1e-10:
+            continue
+        for j in range(i+1, n):
+            factor = M[j][i] / pivot
+            for k in range(i, n+1):
+                M[j][k] -= factor * M[i][k]
+    
+    # Rueckwaertssubstitution
+    x = [0] * n
+    for i in range(n-1, -1, -1):
+        if abs(M[i][i]) < 1e-10:
+            x[i] = 1  # Freie Variable
+            continue
+        sum_val = sum(M[i][j] * x[j] for j in range(i+1, n))
+        x[i] = (M[i][n] - sum_val) / M[i][i]
+    
+    return x
+
+def find_eigenvector(A, eigenvalue):
+    """Findet Eigenvektor zum Eigenwert"""
+    n = len(A)
+    # A - lambda*I
+    A_lambda = [[A[i][j] - (eigenvalue if i==j else 0) 
+                for j in range(n)] for i in range(n)]
+    
+    # Loese (A - lambda*I)x = 0
+    b = [0] * n
+    return gauss_elimination(A_lambda, b)
+
+# Eigenvektoren fuer lambda = 1,2,3 berechnen
+eigenvalues = [1, 2, 3]
+for ev in eigenvalues:
+    vec = find_eigenvector(A, ev)
+    print(f"Eigenvektor fuer lambda={ev}:", vec)
+\end{lstlisting}
+\end{examplecode}
+
 
 
 \subsubsection{Numerische Berechnung von Eigenwerten}
