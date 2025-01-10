@@ -224,4 +224,85 @@ $$
     \end{itemize}
 \end{remark2}
 
+\subsubsection{Analyse von Algorithmen}
 
+\begin{formula}{Fehlerakkumulation}
+Bei $n$ aufeinanderfolgenden Operationen mit relativen Fehlern $\leq \varepsilon$ gilt für den Gesamtfehler:
+\begin{itemize}
+    \item Best case: $\mathcal{O}(n\varepsilon)$ bei gleichverteilten Fehlern
+    \item Worst case: $\mathcal{O}(2^n\varepsilon)$ bei systematischen Fehlern
+\end{itemize}
+\end{formula}
+
+\begin{concept}{Numerische Stabilität eines Algorithmus}
+\begin{itemize}
+    \item Kleine Eingabefehler führen zu kleinen Ausgabefehlern
+    \item Rundungsfehler akkumulieren sich nicht übermäßig 
+    \item Konditionszahl des Problems wird nicht künstlich verschlechtert
+\end{itemize}
+\end{concept}
+
+\begin{examplecode}{Numerische Stabilität} Fibonacci-Zahlen:
+\begin{lstlisting}[language=Python, style=basesmol]
+def fib_unstable(n): # Instabile rekursive Version
+    if n <= 1:
+        return n
+    return fib_unstable(n-1) + fib_unstable(n-2)
+
+def fib_stable(n): # Stabile iterative Version
+    if n <= 1:
+        return n
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Stabilitätsanalyse}
+Schritte zur Analyse der numerischen Stabilität:
+\begin{enumerate}
+    \item Bestimmen Sie kritische Operationen
+    \item Schätzen Sie Rundungsfehler pro Operation ab
+    \item Analysieren Sie die Fehlerfortpflanzung
+    \item Berechnen Sie die worst-case Fehlerschranke
+    \item Vergleichen Sie alternative Implementierungen
+\end{enumerate}
+\end{KR}
+
+\begin{definition}{Implementierungsgenauigkeit eines Algorithmus}
+\begin{itemize}
+    \item Relative Genauigkeit der Ausgabe
+    \item Maximale Anzahl korrekter Dezimalstellen
+    \item Stabilität gegenüber Eingabefehlern
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Robuste Implementierung von Algorithmen}
+\begin{enumerate}
+    \item Verwenden Sie stabile Grundoperationen
+    \item Vermeiden Sie Differenzen ähnlich großer Zahlen
+    \item Prüfen Sie auf Über- und Unterlauf
+    \item Implementieren Sie Fehlerkontrollen
+    \item Dokumentieren Sie numerische Einschränkungen
+\end{enumerate}
+\end{KR}
+
+\begin{examplecode}{Robuste Implementation} Quadratische Gleichung:
+\begin{lstlisting}[language=Python, style=basesmol]
+# Numerisch stabile Implementation
+def solve_quadratic_stable(a, b, c):
+    if a == 0:
+        return [-c/b] if b != 0 else []
+    d = b**2 - 4*a*c
+    if d < 0:
+        return []
+    if b >= 0:
+        q = -0.5*(b + d**0.5)
+    else:
+        q = -0.5*(b - d**0.5)
+    x1 = q/a
+    x2 = c/q
+    return sorted([x1, x2])
+\end{lstlisting}
+\end{examplecode}
