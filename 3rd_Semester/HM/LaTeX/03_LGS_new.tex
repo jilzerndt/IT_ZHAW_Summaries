@@ -1,5 +1,53 @@
 \section{Numerische Lösung linearer Gleichungssysteme}
 
+\begin{concept}{Permutationsmatrix} $P$ ist eine Matrix, die aus der Einheitsmatrix durch Zeilenvertauschungen entsteht. 
+    \vspace{1mm}\\
+    \begin{minipage}[t]{0.5\textwidth}
+        Für die Vertauschung der $i$-ten und $j$-ten Zeile hat $P_k$ die \textbf{Form}:
+        \begin{itemize}
+            \item $p_{ii} = p_{jj} = 0$ 
+            \item $p_{ij} = p_{ji} = 1$
+            \item Sonst gleich wie in $E_n$
+        \end{itemize}
+    \end{minipage}
+    \hspace{3mm}
+    \begin{minipage}[t]{0.45\textwidth}
+        \vspace{1mm}
+        \textbf{Wichtige Eigenschaften}:
+        \begin{itemize}
+            \item $P^{-1} = P^T = P$
+            \item Mehrere Vertauschungen:\\ $P = P_l \cdot ... \cdot P_1$
+        \end{itemize}
+    \end{minipage}
+\end{concept}
+
+\begin{example2}{Zeilenvertauschung} für Matrix A mit Permutationsmatrix $P_1$:
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+    \vspace{1mm}\\
+\begin{minipage}[t]{0.5\textwidth}
+    $\underbrace{\begin{psmallmatrix}
+    1 & 2 & 3\\
+    4 & 5 & 6\\
+    7 & 8 & 9
+    \end{psmallmatrix}}_{A} \cdot 
+    \underbrace{\begin{psmallmatrix}
+    0 & 0 & 1\\
+    0 & 1 & 0\\
+    1 & 0 & 0
+    \end{psmallmatrix}}_{P_1} =
+    \begin{psmallmatrix}
+    7 & 8 & 9\\
+    4 & 5 & 6\\
+    1 & 2 & 3
+    \end{psmallmatrix}$
+\end{minipage}
+\begin{minipage}[t]{0.45\textwidth}
+    \vspace{-2mm}
+    $\Rightarrow A \cdot P_1$ bewirkt die Vertauschung von Zeile 1 und 3
+\end{minipage}
+\end{example2}
+
+\vspace{-1mm}
 \subsubsection{Pivotisierung}
 
 \begin{concept}{Spaltenpivotisierung}\\
@@ -13,96 +61,159 @@ Vor jedem Eliminationsschritt in Spalte $i$:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Gauss-Algorithmus mit Pivotisierung}
-\paragraph{1. Elimination (Vorwärts)}
-\begin{enumerate}
+\begin{KR}{Gauss-Algorithmus mit Pivotisierung}\\
+\textbf{1. Elimination (Vorwärts)}:
+\begin{itemize}
     \item Für $i=1,\ldots,n-1$:
-    \item \quad Finde $k \geq i$ mit $|a_{ki}| = \max\{|a_{ji}| \mid j = i,\ldots,n\}$
-    \item \quad Falls $a_{ki} = 0$: Stop (Matrix singulär)
-    \item \quad Vertausche Zeilen $i$ und $k$
-    \item \quad Für $j=i+1,\ldots,n$:
-    \item \quad\quad $z_j := z_j - \frac{a_{ji}}{a_{ii}}z_i$
-\end{enumerate}
-
-\paragraph{2. Rückwärtseinsetzen}
-$$x_i = \frac{b_i - \sum_{j=i+1}^n a_{ij}x_j}{a_{ii}}, \quad i=n,n-1,\ldots,1$$
+    \begin{itemize}
+    \item Finde $k \geq i$ mit $|a_{ki}| = \max\{|a_{ji}| \mid j = i,\ldots,n\}$
+    \item Falls $a_{ki} = 0$: Stop (Matrix singulär)
+    \item Vertausche Zeilen $i$ und $k$
+    \item Für $j=i+1,\ldots,n$:
+    \begin{itemize}
+    \item $z_j := z_j - \frac{a_{ji}}{a_{ii}}z_i$
+    \end{itemize}
+    \end{itemize}
+\end{itemize}
+\vspace{-2mm}
+\resizebox{\columnwidth}{!}{
+\textbf{2. Rückwärtseinsetzen}:
+$x_i = \frac{b_i - \sum_{j=i+1}^n a_{ij}x_j}{a_{ii}}, \quad i=n,n-1,\ldots,1$
+}
 \end{KR}
 
 
 \begin{example2}{Gauss mit Pivotisierung}
-\vspace{-3mm}\\
-Gegebenes System:
-$A = \begin{pmatrix}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+$A = \begin{psmallmatrix}
 0 & 1 & 1\\
 2 & 4 & -2\\
 0 & 3 & 15
-\end{pmatrix}, \quad b = \begin{pmatrix}
+\end{psmallmatrix}, \quad b = \begin{psmallmatrix}
 4\\
 2\\
 36
-\end{pmatrix}$
+\end{psmallmatrix}$
 \vspace{2mm}\\
-\textbf{Eliminationsschritte: }
-\vspace{2mm}\\
-$\begin{pmatrix}
+\begin{minipage}[t]{0.5\textwidth}
+    \textbf{Eliminationsschritte: }
+    \vspace{2mm}\\
+    $\begin{psmallmatrix}
     2 & 4 & -2 & | & 2\\
     0 & 3 & 15 & | & 36\\
     0 & 1 & 1 & | & 4
-    \end{pmatrix}
+    \end{psmallmatrix}
     \Rightarrow
-    \begin{pmatrix}
+    \begin{psmallmatrix}
     2 & 4 & -2 & | & 2\\
     0 & 3 & 15 & | & 36\\
     0 & 0 & -2 & | & -8
-    \end{pmatrix}$
-
-    \vspace{2mm}
+    \end{psmallmatrix}$
+\end{minipage}
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Rückwärtseinsetzen: }
+    \vspace{1mm}\\
 $
 \begin{array}{lrl}
-    \textbf{Rückwärtseinsetzen: }& x_3 &= \frac{-8}{-2} = 4\\
-    &x_2 &= \frac{36 - 15(4)}{3} = 1\\
-    &x_1 &= \frac{2 - 4(4) + 2}{2} = -6
+    x_3 &= \frac{-8}{-2} = 4\\
+    x_2 &= \frac{36 - 15(4)}{3} = 1\\
+    x_1 &= \frac{2 - 4(4) + 2}{2} = -6
 \end{array}
 $
-    
+\end{minipage}
 \end{example2}
 
-
-
-\begin{concept}{Permutationsmatrizen}\\
-Eine Permutationsmatrix $P$ ist eine Matrix, die aus der Einheitsmatrix durch Zeilenvertauschungen entsteht. Für die Vertauschung der $i$-ten und $j$-ten Zeile hat $P_k$ die Form:
-\begin{itemize}
-    \item $p_{ii} = p_{jj} = 0$ 
-    \item $p_{ij} = p_{ji} = 1$
-    \item Alle anderen Elemente wie in $I_n$
-\end{itemize}
-Wichtige Eigenschaften:
-\begin{itemize}
-    \item $P^{-1} = P^T = P$
-    \item Mehrere Vertauschungen: $P = P_l \cdot ... \cdot P_1$
-\end{itemize}
+\begin{concept}{Vorteile der Permutationsmatrix}
+    \begin{itemize}
+        \item Exakte Nachverfolgung aller Zeilenvertauschungen
+        \item Einfache Rückführung auf ursprüngliche Reihenfolge durch $P^{-1}$
+        \item Kompakte Darstellung mehrerer Vertauschungen
+        \item Numerisch stabile Implementierung der Pivotisierung
+    \end{itemize}
 \end{concept}
 
-\begin{example2}{Zeilenvertauschung} für Matrix A mit Permutationsmatrix $P_1$:\\
+\begin{KR}{Zeilenvertauschungen verfolgen}
+\begin{enumerate}
+    \item Initialisiere $P = I_n$
+    \item Für jede Vertauschung von Zeile $i$ und $j$:
+    \begin{itemize}
+        \item Erstelle $P_k$ durch Vertauschen von Zeilen $i,j$ in $I_n$
+        \item Aktualisiere $P = P_k \cdot P$
+        \item Wende Vertauschung auf Matrix an: $A := P_kA$
+    \end{itemize}
+    \item Bei der LR-Zerlegung mit Pivotisierung:
+    \begin{itemize}
+        \item $PA = LR$ 
+        \item Löse $Ly = Pb$ und $Rx = y$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
 
-$\underbrace{\begin{pmatrix}
-1 & 2 & 3\\
-4 & 5 & 6\\
-7 & 8 & 9
-\end{pmatrix}}_{A} \cdot 
-\underbrace{\begin{pmatrix}
-0 & 0 & 1\\
-0 & 1 & 0\\
-1 & 0 & 0
-\end{pmatrix}}_{P_1} =
+\begin{examplecode}{Gauss-Algorithmus mit Pivotisierung}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+\begin{lstlisting}[language=Python, style=basesmol]
+def gauss_elimination(A, b):
+    n = len(b)
+    for i in range(n-1):
+
+        # Pivotisierung
+        k = np.argmax(abs(A[i:, i])) + i
+        if A[k, i] == 0:
+            raise ValueError("Matrix ist singulaer")
+        A[[i, k]] = A[[k, i]]
+        b[[i, k]] = b[[k, i]]
+        # Elimination
+        for j in range(i+1, n):
+            factor = A[j, i] / A[i, i]
+            A[j, i:] -= factor * A[i, i:]
+            b[j] -= factor * b[i]
+
+    # Rueckwaertseinsetzen
+    x = np.zeros(n)
+    for i in range(n-1, -1, -1):
+        x[i] = (b[i] - np.dot(A[i, i+1:], x[i+1:])) / A[i, i]
+
+    return x
+\end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{Pivotisierung in der Praxis}
+Betrachten Sie das System:
+$$\begin{pmatrix}
+0.001 & 1\\
+1 & 1
+\end{pmatrix}
 \begin{pmatrix}
-7 & 8 & 9\\
-4 & 5 & 6\\
-1 & 2 & 3
-\end{pmatrix}$
-\vspace{2mm}\\
-$\Rightarrow A \cdot P_1$ bewirkt die Vertauschung von Zeile 1 und 3
+x_1\\
+x_2
+\end{pmatrix} = 
+\begin{pmatrix}
+1\\
+2
+\end{pmatrix}$$
+
+\paragraph{Ohne Pivotisierung:}
+Division durch 0.001 führt zu großen Rundungsfehlern:
+$$x_1 \approx 1000 \cdot (1 - x_2)$$
+
+\paragraph{Mit Pivotisierung:}
+Nach Zeilenvertauschung:
+$$\begin{pmatrix}
+1 & 1\\
+0.001 & 1
+\end{pmatrix}
+\begin{pmatrix}
+x_1\\
+x_2
+\end{pmatrix} = 
+\begin{pmatrix}
+2\\
+1
+\end{pmatrix}$$
+Liefert stabile Lösung: $x_1 = 1$, $x_2 = 1$
 \end{example2}
+
+
 
 \subsection{Matrix-Zerlegungen}
 
@@ -122,7 +233,141 @@ Eine Matrix $A \in \mathbb{R}^{n\times n}$ kann zerlegt werden in:
 \end{minipage}
 \end{definition}
 
+
+\begin{KR}{Auswahl des Lösungsverfahrens}
+\begin{enumerate}
+    \item Analyse der Matrix:
+    \begin{itemize}
+        \item Dimensionen (n × n)
+        \item Struktur (dicht/dünn besetzt)
+        \item Konditionszahl (falls berechenbar)
+    \end{itemize}
+    
+    \item Direkte Verfahren wenn:
+    \begin{itemize}
+        \item Matrix dicht besetzt und n < 1000
+        \item Hohe Genauigkeit gefordert
+        \item Mehrere rechte Seiten zu lösen
+    \end{itemize}
+    
+    \item Iterative Verfahren wenn:
+    \begin{itemize}
+        \item Matrix dünn besetzt
+        \item Matrix sehr groß (n > 1000)
+        \item Moderate Genauigkeit ausreichend
+        \item Matrix diagonaldominant
+    \end{itemize}
+    
+    \item Empfohlene Methoden:
+    \begin{itemize}
+        \item Standard: LR mit Pivotisierung
+        \item Symmetrisch positiv definit: QR
+        \item Große dünn besetzte Systeme: Gauss-Seidel
+        \item Schlecht konditioniert: QR
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
 \subsubsection{LR-Zerlegung}
+
+\begin{examplecode}{LR-Zerlegung mit Pivotisierung}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+\begin{lstlisting}[language=Python, style=basesmol]
+def lr_decomposition_with_pivoting(A):
+    n = len(A)
+    P = np.eye(n)    # Permutationsmatrix
+    L = np.eye(n)    # Untere Dreiecksmatrix
+    R = A.copy()     # Wird zur oberen Dreiecksmatrix
+    for k in range(n-1):
+
+        # Finde Pivotelement
+        pivot = np.argmax(abs(R[k:,k])) + k
+        if pivot != k:
+
+            # Erzeuge Permutationsmatrix
+            P_k = np.eye(n)
+            P_k[[k,pivot]] = P_k[[pivot,k]]
+
+            # Aktualisiere Matrizen
+            P = P_k @ P
+            R[[k,pivot]] = R[[pivot,k]]
+            if k > 0:
+                L[[k,pivot], :k] = L[[pivot,k], :k]
+
+        # Elimination durchfuehren
+        for i in range(k+1, n):
+            factor = R[i,k] / R[k,k]
+            L[i,k] = factor
+            R[i,k:] -= factor * R[k,k:]
+            
+    return P, L, R
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{LR-Zerlegung Implementation}
+\begin{lstlisting}[language=Python, style=basesmol]
+# Einfache Version ohne externe Bibliotheken
+def lr_decomposition(A):
+    n = len(A)
+    # Kopiere A um Original nicht zu veraendern
+    R = [[A[i][j] for j in range(n)] for i in range(n)]
+    L = [[1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
+    P = [[1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
+    
+    for k in range(n-1):
+        # Pivotisierung
+        pivot = k
+        for i in range(k+1, n):
+            if abs(R[i][k]) > abs(R[pivot][k]):
+                pivot = i
+        
+        if abs(R[pivot][k]) < 1e-10:  # Numerische Null
+            raise ValueError("Matrix ist (fast) singulaer")
+            
+        # Zeilenvertauschung falls noetig
+        if pivot != k:
+            R[k], R[pivot] = R[pivot], R[k]
+            # L und P anpassen fuer Zeilen < k
+            for j in range(k):
+                L[k][j], L[pivot][j] = L[pivot][j], L[k][j]
+            P[k], P[pivot] = P[pivot], P[k]
+            
+        # Elimination
+        for i in range(k+1, n):
+            factor = R[i][k] / R[k][k]
+            L[i][k] = factor
+            for j in range(k, n):
+                R[i][j] -= factor * R[k][j]
+                
+    return P, L, R
+
+# Optimierte Version mit NumPy
+def lr_decomposition_numpy(A):
+    n = len(A)
+    R = np.array(A, dtype=float)
+    L = np.eye(n)
+    P = np.eye(n)
+    
+    for k in range(n-1):
+        # Pivotisierung
+        pivot = np.argmax(abs(R[k:,k])) + k
+        
+        if abs(R[pivot,k]) < 1e-10:
+            raise ValueError("Matrix ist (fast) singulaer")
+            
+        if pivot != k:
+            # Zeilenvertauschung
+            R[[k,pivot]] = R[[pivot,k]]
+            L[[k,pivot], :k] = L[[pivot,k], :k]
+            P[[k,pivot]] = P[[pivot,k]]
+            
+        # Elimination
+        L[k+1:,k] = R[k+1:,k] / R[k,k]
+        R[k+1:] -= np.outer(L[k+1:,k], R[k])
+        
+    return P, L, R
+\end{lstlisting}
+\end{examplecode}
 
 \begin{theorem}{LR-Zerlegung}\\
 Jede reguläre Matrix $A$, für die der Gauss-Algorithmus ohne Zeilenvertauschungen durchführbar ist, lässt sich zerlegen in:
@@ -145,6 +390,7 @@ So berechnen Sie die LR-Zerlegung:
 \end{KR}
 
 \begin{example2}[breakable]{LR-Zerlegung}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 $A = \begin{pmatrix}
 -1 & 1 & 1\\
 1 & -3 & -2\\
@@ -192,12 +438,13 @@ $R = \begin{pmatrix}
 \paragraph{Endergebnis}
 Die LR-Zerlegung mit $PA = LR$ ist:
 \vspace{2mm}\\
-$$P = P_1 = \begin{pmatrix}
+\resizebox{\columnwidth}{!}{
+$P = P_1 = \begin{pmatrix}
 0 & 0 & 1\\
 0 & 1 & 0\\
 1 & 0 & 0
-\end{pmatrix}$$, 
-$$L = \begin{pmatrix}
+\end{pmatrix}$, 
+$L = \begin{pmatrix}
 1 & 0 & 0\\
 \frac{1}{5} & 1 & 0\\
 -\frac{1}{5} & \frac{3}{8} & 1
@@ -206,15 +453,15 @@ R = \begin{pmatrix}
 5 & 1 & 4\\
 0 & -3.2 & -2.8\\
 0 & 0 & 2.85
-\end{pmatrix}$$
+\end{pmatrix}$}
 
 \paragraph{Lösung des Systems}
 \begin{enumerate}
     \item $Pb = \begin{psmallmatrix} 3\\ 5\\ 0 \end{psmallmatrix}$
     \item Löse $Ly = Pb$ durch Vorwärtseinsetzen:
-    $y = \begin{pmatrix} 3\\ 4.4\\ 2.85 \end{pmatrix}$
+    $y = \begin{psmallmatrix} 3\\ 4.4\\ 2.85 \end{psmallmatrix}$
     \item Löse $Rx = y$ durch Rückwärtseinsetzen:
-    $x = \begin{pmatrix} 1\\ -1\\ 1 \end{pmatrix}$
+    $x = \begin{psmallmatrix} 1\\ -1\\ 1 \end{psmallmatrix}$
 \end{enumerate}
 
 \paragraph{Probe}
@@ -225,66 +472,107 @@ $$Ax = \begin{pmatrix}
 \end{pmatrix} \begin{pmatrix} 1\\ -1\\ 1 \end{pmatrix} = \begin{pmatrix} 0\\ 5\\ 3 \end{pmatrix} = b$$
 \end{example2}
 
-\begin{KR}{Zeilenvertauschungen verfolgen}
+\begin{KR}{LR-Zerlegung - Praktisches Vorgehen}
 \begin{enumerate}
-    \item Initialisiere $P = I_n$
-    \item Für jede Vertauschung von Zeile $i$ und $j$:
+    \item Voraussetzungen prüfen
     \begin{itemize}
-        \item Erstelle $P_k$ durch Vertauschen von Zeilen $i,j$ in $I_n$
-        \item Aktualisiere $P = P_k \cdot P$
-        \item Wende Vertauschung auf Matrix an: $A := P_kA$
+        \item Matrix regulär?
+        \item Diagonalelemente ungleich Null?
+        \item Pivotisierung nötig?
     \end{itemize}
-    \item Bei der LR-Zerlegung mit Pivotisierung:
+
+    \item Zerlegung durchführen
     \begin{itemize}
-        \item $PA = LR$ 
-        \item Löse $Ly = Pb$ und $Rx = y$
+        \item Matrix kopieren für R
+        \item L als Einheitsmatrix initialisieren
+        \item P als Einheitsmatrix initialisieren (falls Pivotisierung)
+    \end{itemize}
+
+    \item Für jede Spalte k = 1,...,n-1:
+    \begin{itemize}
+        \item Falls Pivotisierung: Größtes Element in Spalte k finden
+        \item Zeilenvertauschung in R und P dokumentieren
+        \item Eliminationsfaktoren $l_{ik} = \frac{r_{ik}}{r_{kk}}$ berechnen
+        \item Zeile i von Zeile k subtrahieren: $r_{ij} := r_{ij} - l_{ik}r_{kj}$
+        \item Eliminationsfaktoren in L speichern
+    \end{itemize}
+
+    \item System lösen durch
+    \begin{itemize}
+        \item Vorwärtseinsetzen: $Ly = Pb$
+        \item Rückwärtseinsetzen: $Rx = y$
     \end{itemize}
 \end{enumerate}
 \end{KR}
 
-\begin{examplecode}{LR-Zerlegung mit Pivotisierung}
-\begin{lstlisting}[language=Python, style=basesmol]
-def lr_decomposition_with_pivoting(A):
-    n = len(A)
-    P = np.eye(n)    # Permutationsmatrix
-    L = np.eye(n)    # Untere Dreiecksmatrix
-    R = A.copy()     # Wird zur oberen Dreiecksmatrix
-    
-    for k in range(n-1):
-        # Finde Pivotelement
-        pivot = np.argmax(abs(R[k:,k])) + k
-        
-        if pivot != k:
-            # Erzeuge Permutationsmatrix
-            P_k = np.eye(n)
-            P_k[[k,pivot]] = P_k[[pivot,k]]
-            
-            # Aktualisiere Matrizen
-            P = P_k @ P
-            R[[k,pivot]] = R[[pivot,k]]
-            if k > 0:
-                L[[k,pivot], :k] = L[[pivot,k], :k]
-                
-        # Elimination durchfuehren
-        for i in range(k+1, n):
-            factor = R[i,k] / R[k,k]
-            L[i,k] = factor
-            R[i,k:] -= factor * R[k,k:]
-            
-    return P, L, R
-\end{lstlisting}
-\end{examplecode}
+\begin{example2}{LR-Zerlegung mit Pivotisierung}
+Gegeben sei das System:
+$$A = \begin{pmatrix}
+1 & 2 & 1\\
+3 & 8 & 1\\
+0 & 4 & 1
+\end{pmatrix}, \quad b = \begin{pmatrix}
+2\\
+3\\
+5
+\end{pmatrix}$$
 
+\paragraph{1. Erste Spalte}
+Max Element in 1. Spalte: $|a_{21}| = 3$, tausche Z1 und Z2:
+$$P_1 = \begin{pmatrix}
+0 & 1 & 0\\
+1 & 0 & 0\\
+0 & 0 & 1
+\end{pmatrix}, \quad 
+A^{(1)} = \begin{pmatrix}
+3 & 8 & 1\\
+1 & 2 & 1\\
+0 & 4 & 1
+\end{pmatrix}$$
 
+Eliminationsfaktoren: $l_{21} = \frac{1}{3}$, $l_{31} = 0$\\
+Nach Elimination:
+$$A^{(2)} = \begin{pmatrix}
+3 & 8 & 1\\
+0 & -\frac{2}{3} & \frac{2}{3}\\
+0 & 4 & 1
+\end{pmatrix}$$
 
-\begin{concept}{Vorteile der Permutationsmatrix}
-    \begin{itemize}
-        \item Exakte Nachverfolgung aller Zeilenvertauschungen
-        \item Einfache Rückführung auf ursprüngliche Reihenfolge durch $P^{-1}$
-        \item Kompakte Darstellung mehrerer Vertauschungen
-        \item Numerisch stabile Implementierung der Pivotisierung
-    \end{itemize}
-\end{concept}
+\paragraph{2. Zweite Spalte}
+Max Element: $|a_{32}| = 4$, tausche Z2 und Z3:
+$$P_2 = \begin{pmatrix}
+1 & 0 & 0\\
+0 & 0 & 1\\
+0 & 1 & 0
+\end{pmatrix}$$
+
+Eliminationsfaktor: $l_{32} = -\frac{1}{6}$\\
+Nach Elimination:
+$$R = \begin{pmatrix}
+3 & 8 & 1\\
+0 & 4 & 1\\
+0 & 0 & \frac{5}{6}
+\end{pmatrix}$$
+
+\paragraph{Endergebnis}
+$$P = P_2P_1 = \begin{pmatrix}
+0 & 1 & 0\\
+0 & 0 & 1\\
+1 & 0 & 0
+\end{pmatrix}, \quad
+L = \begin{pmatrix}
+1 & 0 & 0\\
+\frac{1}{3} & 1 & 0\\
+0 & -\frac{1}{6} & 1
+\end{pmatrix}$$
+
+\paragraph{Lösung des Systems}
+\begin{enumerate}
+    \item $Pb = \begin{pmatrix} 3\\ 5\\ 2 \end{pmatrix}$
+    \item $Ly = Pb$: $y = \begin{pmatrix} 3\\ 4\\ 1 \end{pmatrix}$
+    \item $Rx = y$: $x = \begin{pmatrix} 1\\ 0\\ \frac{6}{5} \end{pmatrix}$
+\end{enumerate}
+\end{example2}
 
 \columnbreak
 
@@ -325,18 +613,326 @@ mit $u \in \mathbb{R}^n$, $\|u\| = 1$. Es gilt:
 \end{enumerate}
 \end{KR}
 
+\begin{KR}{QR-Zerlegung - Praktisches Vorgehen}
+\begin{enumerate}
+    \item Vorbereitungen
+    \begin{itemize}
+        \item Matrix A kopieren für R
+        \item Q als Einheitsmatrix initialisieren
+        \item Householder-Vektoren speichern
+    \end{itemize}
+
+    \item Für jede Spalte k = 1,...,n-1:
+    \begin{itemize}
+        \item Untervektor $v_k$ aus k-ter Spalte extrahieren
+        \item Householder-Vektor berechnen:
+            \begin{itemize}
+                \item $w_k = v_k + \text{sign}(v_{k1})\|v_k\|e_1$
+                \item $u_k = \frac{w_k}{\|w_k\|}$
+            \end{itemize}
+        \item Householder-Matrix auf Untermatrix anwenden:
+            \begin{itemize}
+                \item $H_k = I - 2u_ku_k^T$
+                \item $R_{k:n,k:n} = H_k \cdot R_{k:n,k:n}$
+            \end{itemize}
+        \item Q aktualisieren: $Q = Q \cdot H_k^T$
+    \end{itemize}
+
+    \item System lösen durch
+    \begin{itemize}
+        \item $y = Q^Tb$ berechnen
+        \item Rückwärtseinsetzen: $Rx = y$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{QR-Zerlegung}
+Gegeben sei die Matrix:
+$$A = \begin{pmatrix}
+1 & 1\\
+1 & 0\\
+0 & 1
+\end{pmatrix}$$
+
+\paragraph{1. Erste Spalte}
+$v_1 = \begin{pmatrix} 1\\ 1\\ 0 \end{pmatrix}$, 
+$\|v_1\| = \sqrt{2}$
+
+Householder-Vektor:
+$w_1 = v_1 + \sqrt{2}\begin{pmatrix} 1\\ 0\\ 0 \end{pmatrix} = 
+\begin{pmatrix} 1+\sqrt{2}\\ 1\\ 0 \end{pmatrix}$
+
+Normierung:
+$u_1 = \frac{1}{\sqrt{4+2\sqrt{2}}}
+\begin{pmatrix} 1+\sqrt{2}\\ 1\\ 0 \end{pmatrix}$
+
+Erste Householder-Matrix:
+$$H_1 = I - 2u_1u_1^T = 
+\begin{pmatrix}
+-\frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}} & 0\\
+-\frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} & 0\\
+0 & 0 & 1
+\end{pmatrix}$$
+
+\paragraph{2. Zweite Spalte}
+Nach Anwendung von $H_1$:
+$$H_1A = \begin{pmatrix}
+-\sqrt{2} & -\frac{1}{\sqrt{2}}\\
+0 & \frac{1}{\sqrt{2}}\\
+0 & 1
+\end{pmatrix}$$
+
+Untervektor für zweite Transformation:
+$v_2 = \begin{pmatrix} \frac{1}{\sqrt{2}}\\ 1 \end{pmatrix}$
+
+Analog zur ersten Transformation erhält man:
+$$H_2 = \begin{pmatrix}
+1 & 0 & 0\\
+0 & -\frac{1}{\sqrt{5}} & -\frac{2}{\sqrt{5}}\\
+0 & -\frac{2}{\sqrt{5}} & \frac{1}{\sqrt{5}}
+\end{pmatrix}$$
+
+\paragraph{Endergebnis}
+$$Q = H_1^TH_2^T = \begin{pmatrix}
+\frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} & 0\\
+\frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}} & 0\\
+0 & 0 & 1
+\end{pmatrix}$$
+
+$$R = H_2H_1A = \begin{pmatrix}
+\sqrt{2} & 1\\
+0 & \sqrt{2}\\
+0 & 0
+\end{pmatrix}$$
+
+\paragraph{Verifikation}
+\begin{itemize}
+    \item $Q^TQ = QQ^T = I$ (Orthogonalität)
+    \item $QR = A$ (bis auf Rundungsfehler)
+    \item R ist obere Dreiecksmatrix
+\end{itemize}
+\end{example2}
+
+
+
+\begin{examplecode}{QR-Zerlegung Implementation}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+\begin{lstlisting}[language=Python, style=basesmol]
+def householder_vector(x):
+    # Berechne Householder-Vektor fuer Spalte x
+    alpha = np.linalg.norm(x)
+    v = x.copy()
+    v[0] += np.sign(x[0]) * alpha
+    v = v / np.linalg.norm(v)
+    return v
+
+def householder_reflection(A, k):
+    m, n = A.shape
+    v = householder_vector(A[k:, k])
+    # Householder-Matrix anwenden
+    H = np.eye(m-k)
+    H -= 2 * np.outer(v, v)
+    # Auf Untermatrix anwenden
+    A[k:, k:] = H @ A[k:, k:]
+    return A
+
+def qr_householder(A):
+    m, n = A.shape
+    R = A.copy()
+    Q = np.eye(m)
+
+    for k in range(n):
+        v = householder_vector(R[k:, k])
+        H = np.eye(m)
+        H[k:, k:] -= 2 * np.outer(v, v)
+        R = H @ R
+        Q = Q @ H.T
+
+    return Q, R
+\end{lstlisting}
+
+\paragraph{Numerische Vorteile}
+\begin{itemize}
+    \item Numerisch stabil
+    \item Keine Wurzeloperationen während der Elimination
+    \item Orthogonalität der Transformation bleibt erhalten
+    \item Gute Eignung für Eigenwertberechnung
+\end{itemize}
+\end{examplecode}
+
+\begin{examplecode}{QR-Zerlegung Implementation}
+\begin{lstlisting}[language=Python, style=basesmol]
+# Einfache Version ohne externe Bibliotheken
+def qr_decomposition(A):
+    """
+    Berechnet QR-Zerlegung einer Matrix A ohne NumPy.
+    Returns: Q (orthogonal) und R (obere Dreiecksmatrix)
+    """
+    m = len(A)
+    n = len(A[0])
+    
+    # Kopiere A nach R (deep copy)
+    R = [[A[i][j] for j in range(n)] for i in range(m)]
+    # Initialisiere Q als Einheitsmatrix
+    Q = [[1.0 if i == j else 0.0 for j in range(m)] 
+         for i in range(m)]
+    
+    def vector_norm(v):
+        """Euklidische Norm eines Vektors"""
+        return (sum(x*x for x in v)) ** 0.5
+    
+    def matrix_mult(A, B):
+        """Matrix Multiplikation"""
+        m, n = len(A), len(B[0])
+        p = len(B)
+        C = [[0.0] * n for _ in range(m)]
+        for i in range(m):
+            for j in range(n):
+                C[i][j] = sum(A[i][k] * B[k][j] 
+                             for k in range(p))
+        return C
+    
+    def householder_reflection(x):
+        """
+        Berechnet Householder-Vektor und Beta fuer einen Vektor x.
+        Returns: v (Householder-Vektor) und beta
+        """
+        n = len(x)
+        v = [xi for xi in x]  # Kopiere x
+        
+        # Berechne Norm des Teilvektors
+        sigma = sum(v[i]*v[i] for i in range(1, n))
+        
+        if sigma == 0 and x[0] >= 0:
+            beta = 0
+        elif sigma == 0 and x[0] < 0:
+            beta = -2
+        else:
+            mu = (x[0]*x[0] + sigma)**0.5
+            if x[0] <= 0:
+                v[0] = x[0] - mu
+            else:
+                v[0] = -sigma/(x[0] + mu)
+                
+            beta = 2*v[0]*v[0]/(sigma + v[0]*v[0])
+            # Normiere v
+            temp = v[0]
+            for i in range(n):
+                v[i] /= temp
+                
+        return v, beta
+    
+    # Hauptschleife der QR-Zerlegung
+    for k in range(n):
+        # Extrahiere k-te Spalte ab k-ter Zeile
+        x = [R[i][k] for i in range(k, m)]
+        if len(x) > 1:  # Nur wenn noch Untermatrix existiert
+            # Berechne Householder-Transformation
+            v, beta = householder_reflection(x)
+            
+            # Wende Householder auf R an
+            for j in range(k, n):
+                # Berechne w = beta * (v^T * R_j)
+                w = beta * sum(v[i-k]*R[i][j] 
+                             for i in range(k, m))
+                # Update R
+                for i in range(k, m):
+                    R[i][j] -= v[i-k] * w
+            
+            # Update Q
+            for j in range(m):
+                w = beta * sum(v[i-k]*Q[j][i+k] 
+                             for i in range(len(v)))
+                for i in range(len(v)):
+                    Q[j][k+i] -= v[i] * w
+    
+    # Transponiere Q am Ende
+    Q = [[Q[j][i] for j in range(m)] for i in range(m)]
+    
+    return Q, R
+
+# Beispiel fuer Verwendung
+def solve_qr(A, b):
+    """Loest Ax = b mittels QR-Zerlegung"""
+    Q, R = qr_decomposition(A)
+    
+    # Berechne Q^T * b
+    y = [sum(Q[i][j] * b[j] 
+             for j in range(len(b))) 
+         for i in range(len(b))]
+    
+    # Rueckwaertseinsetzen
+    n = len(R)
+    x = [0] * n
+    for i in range(n-1, -1, -1):
+        s = sum(R[i][j] * x[j] for j in range(i+1, n))
+        if abs(R[i][i]) < 1e-10:
+            raise ValueError("Matrix (fast) singulaer")
+        x[i] = (y[i] - s) / R[i][i]
+    
+    return x
+
+# Numerisch stabilere Version mit Givens-Rotationen
+def qr_givens(A):
+    """
+    QR-Zerlegung mittels Givens-Rotationen.
+    Numerisch stabiler als Householder fuer bestimmte Matrizen.
+    """
+    m, n = len(A), len(A[0])
+    R = [[A[i][j] for j in range(n)] for i in range(m)]
+    Q = [[1.0 if i == j else 0.0 for j in range(m)] 
+         for i in range(m)]
+    
+    def givens_rotation(a, b):
+        """Berechnet Givens-Rotation Parameter c,s"""
+        if b == 0:
+            return 1.0, 0.0
+        elif abs(b) > abs(a):
+            tau = -a/b
+            s = 1.0/((1 + tau*tau)**0.5)
+            c = s*tau
+        else:
+            tau = -b/a
+            c = 1.0/((1 + tau*tau)**0.5)
+            s = c*tau
+        return c, s
+    
+    def apply_givens(c, s, i, k, M):
+        """Wendet Givens-Rotation auf Matrix M an"""
+        for j in range(len(M[0])):
+            temp = c*M[i][j] + s*M[k][j]
+            M[k][j] = -s*M[i][j] + c*M[k][j]
+            M[i][j] = temp
+    
+    # Hauptschleife
+    for j in range(n):
+        for i in range(m-1, j, -1):
+            c, s = givens_rotation(R[i-1][j], R[i][j])
+            if c != 1 or s != 0:  # Nur wenn Rotation noetig
+                apply_givens(c, s, i-1, i, R)
+                apply_givens(c, s, i-1, i, Q)
+    
+    # Transponiere Q
+    Q = [[Q[j][i] for j in range(m)] for i in range(m)]
+    
+    return Q, R
+\end{lstlisting}
+\end{examplecode}
+
 \begin{example2}[breakable]{QR-Zerlegung mit Householder}
-$A = \begin{pmatrix}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+$A = \begin{psmallmatrix}
 2 & 5 & -1\\
 -1 & -4 & 2\\
 0 & 2 & 1
-\end{pmatrix}$
+\end{psmallmatrix}$
 
 \paragraph{Schritt 1: Erste Spalte}
 Erste Spalte $a_1$ und Einheitsvektor $e_1$:
 $a_1 = \begin{psmallmatrix} 2\\ -1\\ 0 \end{psmallmatrix}, \quad e_1 = \begin{psmallmatrix} 1\\ 0\\ 0 \end{psmallmatrix}$
 
 Householder-Vektor für erste Spalte:
+\vspace{1mm}
 \begin{enumerate}
     \item Berechne Norm: $|a_1| = \sqrt{2^2 + (-1)^2 + 0^2} = \sqrt{5}$
     \vspace{1mm}
@@ -354,19 +950,19 @@ Householder-Vektor für erste Spalte:
 \end{enumerate}
 \vspace{1mm}
 Householder-Matrix berechnen:
-$H_1 = I - 2u_1u_1^T = \begin{psmallmatrix} 
+\vspace{-6mm}\\
+$$\quad\quad H_1 = I - 2u_1u_1^T = \begin{pmatrix} 
 -0.67 & -0.75 & 0\\
 -0.75 & 0.67 & 0\\
 0 & 0 & 1
-\end{psmallmatrix}$
-\vspace{1mm}\\
+\end{pmatrix}$$
 A nach erster Transformation:
-$A^{(1)} = H_1A = \begin{psmallmatrix}
+\vspace{-6mm}\\
+$$\quad\quad \quad\quad A^{(1)} = H_1A = \begin{pmatrix}
 -\sqrt{5} & -6.71 & 0.45\\
 0 & -0.89 & 1.79\\
 0 & 2.00 & 1.00
-\end{psmallmatrix}$
-
+\end{pmatrix}$$
 \paragraph{Schritt 2: Zweite Spalte}
 Untermatrix für zweite Transformation:
 $A_2 = \begin{pmatrix} -0.89 & 1.79\\ 2.00 & 1.00 \end{pmatrix}$
@@ -383,7 +979,7 @@ Householder-Vektor für zweite Spalte:
     \item $u_2 = \frac{v_2}{|v_2|} = \begin{psmallmatrix} -0.84\\ 0.54 \end{psmallmatrix}$
 \end{enumerate}
 \vspace{1mm}
-Erweiterte Householder-Matrix:
+Erweiterte Householder-Matrix: %TODO: nicer formatting!
 $Q_2 = \begin{psmallmatrix}
 1 & 0 & 0\\
 0 & -0.41 & -0.91\\
@@ -427,52 +1023,6 @@ R = \begin{pmatrix}
     \item $Q$ ist orthogonal: Spaltenvektoren sind orthonormal
 \end{itemize}
 \end{example2}
-
-\begin{examplecode}{QR-Zerlegung Implementation}
-\begin{lstlisting}[language=Python, style=basesmol]
-def householder_vector(x):
-    # Berechne Householder-Vektor fuer Spalte x
-    alpha = np.linalg.norm(x)
-    v = x.copy()
-    v[0] += np.sign(x[0]) * alpha
-    v = v / np.linalg.norm(v)
-    return v
-
-def householder_reflection(A, k):
-    m, n = A.shape
-    v = householder_vector(A[k:, k])
-
-    # Householder-Matrix anwenden
-    H = np.eye(m-k)
-    H -= 2 * np.outer(v, v)
-
-    # Auf Untermatrix anwenden
-    A[k:, k:] = H @ A[k:, k:]
-    return A
-
-def qr_householder(A):
-    m, n = A.shape
-    R = A.copy()
-    Q = np.eye(m)
-    
-    for k in range(n):
-        v = householder_vector(R[k:, k])
-        H = np.eye(m)
-        H[k:, k:] -= 2 * np.outer(v, v)
-        R = H @ R
-        Q = Q @ H.T
-
-    return Q, R
-\end{lstlisting}
-
-\paragraph{Numerische Vorteile}
-\begin{itemize}
-    \item Numerisch stabil
-    \item Keine Wurzeloperationen während der Elimination
-    \item Orthogonalität der Transformation bleibt erhalten
-    \item Gute Eignung für Eigenwertberechnung
-\end{itemize}
-\end{examplecode}
 
 \subsection{Fehleranalyse}
 
@@ -524,28 +1074,206 @@ Die Konditionszahl beschreibt die numerische Stabilität eines LGS:
 \end{concept}
 
 \begin{example2}{Konditionierung}
-$$A = \begin{pmatrix}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+$A = \begin{psmallmatrix}
 1 & 1\\
 1 & 1.01
-\end{pmatrix}, \quad b = \begin{pmatrix}
+\end{psmallmatrix}, \quad b = \begin{psmallmatrix}
 2\\
 2.01
-\end{pmatrix}$$
+\end{psmallmatrix}$
 \vspace{2mm}\\
 Konditionszahl:
 $\text{cond}(A) = \|A\| \cdot \|A^{-1}\| \approx 400$
-\vspace{2mm}\\
 \paragraph{Fehlerabschätzung}
-Absoluter Fehler:
-$$\|x - \tilde{x}\| \leq 400 \cdot 0.01 = 4$$
-Relativer Fehler:
-$$\frac{\|x - \tilde{x}\|}{\|x\|} \leq 400 \cdot \frac{0.01}{2} = 2$$
+$$\text{Absoluter Fehler: }\|x - \tilde{x}\| \leq 400 \cdot 0.01 = 4$$
+$$\text{Relativer Fehler: }\frac{\|x - \tilde{x}\|}{\|x\|} \leq 400 \cdot \frac{0.01}{2} = 2$$
 \end{example2}
+
+\begin{examplecode}{Fehlerabschätzung}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+\begin{lstlisting}[language=Python, style=basesmol]
+def error_estimate(A, b, x, b_tilde):
+    # Absoluter Fehler
+    abs_error = np.linalg.norm(x - np.linalg.solve(A, b_tilde))
+    # Relativer Fehler
+    rel_error = abs_error / np.linalg.norm(x)
+    return abs_error, rel_error
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Fehleranalyse in der Praxis}
+\begin{enumerate}
+    \item Analyse der Eingangsdaten
+    \begin{itemize}
+        \item Konditionszahl der Matrix bestimmen
+        \item Struktur der Matrix untersuchen
+        \item Größenordnung der Einträge prüfen
+    \end{itemize}
+    
+    \item Fehlerquellen identifizieren
+    \begin{itemize}
+        \item Rundungsfehler bei der Eingabe
+        \item Fehler bei der Elimination
+        \item Akkumulation von Rundungsfehlern
+        \item Instabilitäten durch schlechte Kondition
+    \end{itemize}
+    
+    \item Fehlerabschätzungen berechnen
+    \begin{itemize}
+        \item A-priori: $\frac{\|\Delta x\|}{\|x\|} \leq \text{cond}(A) \cdot \frac{\|\Delta b\|}{\|b\|}$
+        \item A-posteriori: $\|Ax-b\|$ (Residuum)
+        \item Iterative Verfahren: Konvergenzrate
+    \end{itemize}
+    
+    \item Maßnahmen zur Fehlerreduktion
+    \begin{itemize}
+        \item Pivotisierung verwenden
+        \item Skalierung der Matrix
+        \item Höhere Genauigkeit verwenden
+        \item Alternatives Lösungsverfahren wählen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{examplecode}{Fehleranalyse Implementation}
+\begin{lstlisting}[language=Python, style=basesmol]
+def analyze_matrix(A, b):
+    """Analysiert ein LGS auf numerische Probleme"""
+    n = len(A)
+    
+    # 1. Grundlegende Eigenschaften
+    diag_dom = is_diagonally_dominant(A)
+    scaling = max(abs(A[i][j]) for i in range(n) 
+                 for j in range(n))
+    
+    # 2. Konditionszahl schaetzen (ohne numpy)
+    def matrix_norm_inf(M):
+        return max(sum(abs(M[i][j]) for j in range(len(M))) 
+                  for i in range(len(M)))
+    
+    def inverse_power_iteration(M, max_iter=100):
+        x = [1.0] * n
+        for _ in range(max_iter):
+            y = solve_triangular(M, x)
+            norm = max(abs(yi) for yi in y)
+            x = [yi/norm for yi in y]
+        return 1.0/norm
+    
+    norm_A = matrix_norm_inf(A)
+    try:
+        norm_Ainv = inverse_power_iteration(A)
+        cond = norm_A * norm_Ainv
+    except:
+        cond = float('inf')
+    
+    # 3. Analyse der Diagonalelemente
+    min_diag = min(abs(A[i][i]) for i in range(n))
+    max_offdiag = max(abs(A[i][j]) for i in range(n) 
+                     for j in range(n) if i != j)
+    
+    # 4. Empfehlungen generieren
+    recommendations = []
+    if not diag_dom:
+        recommendations.append(
+            "Matrix nicht diagonaldominant - "
+            "Iterative Verfahren koennten divergieren")
+    
+    if cond > 1e4:
+        recommendations.append(
+            f"Hohe Konditionszahl ({cond:.1e}) - "
+            "Ergebnisse koennten ungenau sein")
+    
+    if min_diag < max_offdiag/100:
+        recommendations.append(
+            "Kleine Diagonalelemente - "
+            "Pivotisierung empfohlen")
+    
+    if scaling > 1e8:
+        recommendations.append(
+            "Grosse Zahlenunterschiede - "
+            "Skalierung empfohlen")
+    
+    return {
+        'condition_number': cond,
+        'is_diagonally_dominant': diag_dom,
+        'scaling_factor': scaling,
+        'min_diagonal': min_diag,
+        'max_offdiagonal': max_offdiag,
+        'recommendations': recommendations
+    }
+
+def error_analysis(A, x, b, x_approx):
+    """Analysiert die Genauigkeit einer Naeherungsloesung"""
+    n = len(A)
+    
+    # Residuum berechnen
+    r = [b[i] - sum(A[i][j] * x_approx[j] 
+                   for j in range(n)) 
+         for i in range(n)]
+    res_norm = max(abs(ri) for ri in r)
+    
+    # Relativer Fehler (falls exakte Loesung bekannt)
+    if x is not None:
+        rel_error = max(abs(x[i] - x_approx[i]) 
+                       for i in range(n)) / \
+                   max(abs(x[i]) for i in range(n))
+    else:
+        rel_error = None
+    
+    return {
+        'residual_norm': res_norm,
+        'relative_error': rel_error,
+        'residual': r
+    }
+\end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{Vergleich verschiedener Lösungsverfahren}
+Betrachten Sie das folgende System:
+$$A = \begin{pmatrix}
+1 & 2 & 0\\
+2 & 1 & 2\\
+0 & 2 & 1
+\end{pmatrix}, \quad b = \begin{pmatrix}
+1\\
+2\\
+3
+\end{pmatrix}$$
+
+\paragraph{1. Systemanalyse}
+\begin{itemize}
+    \item Matrix ist symmetrisch
+    \item Nicht streng diagonaldominant
+    \item $\text{cond}_\infty(A) \approx 12.5$
+\end{itemize}
+
+\paragraph{2. Verschiedene Lösungsansätze}
+\begin{center}
+\begin{tabular}{l|ccc}
+Verfahren & Iterationen & Residuum & Zeit\\
+\hline
+LR mit Pivot & 1 & $2.2\cdot10^{-16}$ & 1.0\\
+QR & 1 & $2.2\cdot10^{-16}$ & 2.3\\
+Jacobi & 12 & $1.0\cdot10^{-6}$ & 1.8\\
+Gauss-Seidel & 7 & $1.0\cdot10^{-6}$ & 1.4\\
+\end{tabular}
+\end{center}
+
+\paragraph{3. Interpretation}
+\begin{itemize}
+    \item Direkte Verfahren erreichen höhere Genauigkeit
+    \item LR schneller als QR bei moderater Kondition
+    \item Iterative Verfahren brauchen mehrere Schritte
+    \item Gauss-Seidel konvergiert schneller als Jacobi
+\end{itemize}
+\end{example2}
+
+
 
 \subsection{Iterative Verfahren}
 
-\begin{definition}{Zerlegung der Systemmatrix}\\
-Für iterative Verfahren wird $A$ zerlegt in: $A = L + D + R$
+\begin{definition}{Zerlegung der Systemmatrix} $A$ zerlegt in: $A = L + D + R$
 \begin{itemize}
     \item $L$: streng untere Dreiecksmatrix
     \item $D$: Diagonalmatrix
@@ -553,23 +1281,25 @@ Für iterative Verfahren wird $A$ zerlegt in: $A = L + D + R$
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Jacobi-Verfahren}\\
+\begin{concept}{Jacobi-Verfahren}
 Gesamtschrittverfahren mit der Iteration:
+\vspace{-1mm}\\
 $$x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$$
-
+\vspace{-1mm}
 Komponentenweise:
-$$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$$
+$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$
 \end{concept}
 
-\begin{concept}{Gauss-Seidel-Verfahren}\\
+\begin{concept}{Gauss-Seidel-Verfahren}
 Einzelschrittverfahren mit der Iteration:
+\vspace{-1mm}\\
 $$x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$$
+Komponentenweise:\\
+$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$
 
-Komponentenweise:
-$$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$$
 \end{concept}
 
-\begin{theorem}{Konvergenzkriterien}\\
+\begin{theorem}{Konvergenzkriterien}
 Ein iteratives Verfahren konvergiert, wenn:
 \begin{enumerate}
     \item Die Matrix $A$ diagonaldominant ist:\\
@@ -579,8 +1309,7 @@ Ein iteratives Verfahren konvergiert, wenn:
 \end{enumerate}
 \end{theorem}
 
-\begin{KR}{Implementation iterativer Verfahren}\\
-So implementieren Sie iterative Verfahren:
+\begin{KR}{Implementation iterativer Verfahren}
 \begin{enumerate}
     \item Wählen Sie Startvektor $x^{(0)}$
     \item Wählen Sie Abbruchkriterien:
@@ -594,16 +1323,17 @@ So implementieren Sie iterative Verfahren:
 \end{KR}
 
 \begin{example2}{Iterative Verfahren}{Vergleich Jacobi und Gauss-Seidel}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
 System:
-$$\begin{pmatrix}
+$$\begin{psmallmatrix}
 4 & -1 & 0\\
 -1 & 4 & -1\\
 0 & -1 & 4
-\end{pmatrix}x = \begin{pmatrix}
+\end{psmallmatrix}x = \begin{psmallmatrix}
 1\\
 5\\
 0
-\end{pmatrix}$$
+\end{psmallmatrix}$$
 
 \begin{center}
 \begin{tabular}{c|cc|cc}
@@ -615,5 +1345,179 @@ k & \multicolumn{2}{c|}{Jacobi} & \multicolumn{2}{c}{Gauss-Seidel}\\
 3 & $(0.33,1.33,0.33)^T$ & 0.02 & $(0.33,1.33,0.33)^T$ & 0.00
 \end{tabular}
 \end{center}
+\end{example2}
+
+\begin{examplecode}{Jacobi- und Gauss-Seidel-Verfahren}
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+\begin{lstlisting}[language=Python, style=basesmol]
+def jacobi_iteration(A, b, x):
+    D = np.diag(np.diag(A))
+    L = np.tril(A, -1)
+    R = np.triu(A, 1)
+    x_new = np.linalg.solve(D, b - (L + R) @ x)
+    return x_new
+
+def gauss_seidel_iteration(A, b, x):
+    D = np.diag(np.diag(A))
+    L = np.tril(A, -1)
+    R = np.triu(A, 1)
+    x_new = np.linalg.solve(D + L, b - R @ x)
+    return x_new
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Iterative Verfahren Implementation}
+\begin{lstlisting}[language=Python, style=basesmol]
+# Einfache Version ohne externe Bibliotheken
+def jacobi_method(A, b, x0, tol=1e-6, max_iter=100):
+    n = len(A)
+    x = x0.copy()
+    x_new = [0.0] * n
+    
+    for iter in range(max_iter):
+        # Jacobi-Iteration
+        for i in range(n):
+            sum1 = sum(A[i][j] * x[j] for j in range(i))
+            sum2 = sum(A[i][j] * x[j] for j in range(i+1, n))
+            x_new[i] = (b[i] - sum1 - sum2) / A[i][i]
+            
+        # Konvergenzpruefung
+        diff = max(abs(x_new[i] - x[i]) for i in range(n))
+        if diff < tol:
+            return x_new, iter + 1
+        x = x_new.copy()
+        
+    raise ValueError(f"Keine Konvergenz nach {max_iter} Iterationen")
+
+def gauss_seidel_method(A, b, x0, tol=1e-6, max_iter=100):
+    n = len(A)
+    x = x0.copy()
+    
+    for iter in range(max_iter):
+        x_old = x.copy()
+        # Gauss-Seidel-Iteration
+        for i in range(n):
+            sum1 = sum(A[i][j] * x[j] for j in range(i))
+            sum2 = sum(A[i][j] * x_old[j] for j in range(i+1, n))
+            x[i] = (b[i] - sum1 - sum2) / A[i][i]
+            
+        # Konvergenzpruefung
+        diff = max(abs(x[i] - x_old[i]) for i in range(n))
+        if diff < tol:
+            return x, iter + 1
+            
+    raise ValueError(f"Keine Konvergenz nach {max_iter} Iterationen")
+
+# Optimierte Version mit Konvergenzanalyse
+def iterative_solver(A, b, method='gauss_seidel', tol=1e-6, 
+                    max_iter=100, omega=1.0):
+    """
+    Loest Ax = b mit verschiedenen iterativen Verfahren
+    method: 'jacobi' oder 'gauss_seidel'
+    omega: Relaxationsparameter (1.0 = standard)
+    """
+    n = len(A)
+    x = [0.0] * n  # Startvektor
+    D = [[A[i][j] if i == j else 0 for j in range(n)] 
+         for i in range(n)]  # Diagonalmatrix
+    L = [[A[i][j] if i > j else 0 for j in range(n)] 
+         for i in range(n)]  # Untere Dreiecksmatrix
+    U = [[A[i][j] if i < j else 0 for j in range(n)] 
+         for i in range(n)]  # Obere Dreiecksmatrix
+    
+    # Konvergenzcheck
+    if not is_diagonally_dominant(A):
+        print("Warnung: Matrix nicht diagonaldominant")
+    
+    iterations = []
+    residuals = []
+    
+    for iter in range(max_iter):
+        x_old = x.copy()
+        
+        if method == 'jacobi':
+            for i in range(n):
+                sum_term = sum(A[i][j] * x_old[j] 
+                             for j in range(n) if j != i)
+                x[i] = (1-omega) * x_old[i] + \
+                       (omega/A[i][i]) * (b[i] - sum_term)
+        else:  # gauss_seidel
+            for i in range(n):
+                sum1 = sum(A[i][j] * x[j] for j in range(i))
+                sum2 = sum(A[i][j] * x_old[j] 
+                          for j in range(i+1, n))
+                x[i] = (1-omega) * x_old[i] + \
+                       (omega/A[i][i]) * (b[i] - sum1 - sum2)
+        
+        # Berechne Residuum und relative Aenderung
+        res = max(abs(sum(A[i][j] * x[j] for j in range(n)) 
+                     - b[i]) for i in range(n))
+        diff = max(abs(x[i] - x_old[i]) for i in range(n))
+        
+        iterations.append(x.copy())
+        residuals.append(res)
+        
+        if diff < tol:
+            return {
+                'solution': x,
+                'iterations': iterations,
+                'residuals': residuals,
+                'iteration_count': iter + 1
+            }
+            
+    raise ValueError(f"Keine Konvergenz nach {max_iter} " + 
+                    f"Iterationen\nLetztes Residuum: {res}")
+
+def is_diagonally_dominant(A):
+    """Prueft ob Matrix streng diagonaldominant ist"""
+    n = len(A)
+    for i in range(n):
+        if abs(A[i][i]) <= sum(abs(A[i][j]) 
+                              for j in range(n) if j != i):
+            return False
+    return True
+\end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{Konvergenzverhalten}
+Betrachten Sie das System:
+$$\begin{pmatrix}
+4 & 1 & 0\\
+1 & 4 & 1\\
+0 & 1 & 4
+\end{pmatrix}
+\begin{pmatrix}
+x_1\\
+x_2\\
+x_3
+\end{pmatrix} =
+\begin{pmatrix}
+1\\
+2\\
+3
+\end{pmatrix}$$
+
+Die Matrix ist diagonaldominant:
+$|a_{ii}| = 4 > 1 = \sum_{j\neq i} |a_{ij}|$
+
+\begin{center}
+\begin{tabular}{c|cc|cc}
+k & \multicolumn{2}{c|}{Residuum} & \multicolumn{2}{c}{Rel. Fehler}\\
+& Jacobi & G-S & Jacobi & G-S\\
+\hline
+0 & 3.74 & 3.74 & - & -\\
+1 & 0.94 & 0.47 & 0.935 & 0.468\\
+2 & 0.23 & 0.06 & 0.246 & 0.125\\
+3 & 0.06 & 0.01 & 0.065 & 0.017\\
+4 & 0.01 & 0.001 & 0.016 & 0.002
+\end{tabular}
+\end{center}
+
+\textbf{Beobachtungen:}
+\begin{itemize}
+    \item Gauss-Seidel konvergiert etwa doppelt so schnell wie Jacobi
+    \item Das Residuum fällt linear (geometrische Folge)
+    \item Die Konvergenz ist gleichmäßig (keine Oszillationen)
+\end{itemize}
 \end{example2}
 

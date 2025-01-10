@@ -23,3 +23,45 @@ x = Decimal('1.0') / Decimal('7.0')
 print(x)  # 0.1428571428571428571428571428571428571428
 \end{lstlisting}
 \end{example2}
+
+\subsection{NumPy}
+
+\begin{remark2}{NumPy} NumPy: Numerische Python-Bibliothek
+\begin{itemize}
+    \item Effiziente Implementierung von Arrays
+    \item Vektorisierte Operationen
+    \item Lineare Algebra, Fourier-Transformation, Zufallszahlen
+\end{itemize} 
+ACHTUNG: darf an der Prüfung höchstwahrscheinlich nicht verwendet werden!
+aber falls doch, hier die einfachen Implementationen von allem :D
+\end{remark2}
+
+\begin{examplecode}{Eigenwerte und Eigenvektoren}
+\begin{lstlisting}[language=Python, style=basesmol]
+import numpy as np
+A = np.array([[1, 0, 0], [2, 3, 0], [0, 1, 2]])
+# Eigenwerte
+eigenvalues = np.linalg.eigvals(A)
+# Eigenwerte und Eigenvektoren
+eigenvalues, eigenvectors = np.linalg.eig(A)
+\end{lstlisting}
+\end{examplecode}
+
+\begin{examplecode}{Von-Mises-Iteration}
+\begin{lstlisting}[language=Python, style=basesmol]
+import numpy as np
+def power_iteration(A, tol=1e-10, max_iter=100):
+    n = A.shape[0]
+    v = np.random.rand(n)
+    v = v / np.linalg.norm(v)
+    for i in range(max_iter):
+        w = A @ v
+        v_new = w / np.linalg.norm(w)
+        # Rayleigh-Quotient
+        lambda_k = v_new.T @ A @ v_new
+        if np.linalg.norm(v_new - v) < tol:
+            return lambda_k, v_new
+        v = v_new
+    return lambda_k, v_new
+\end{lstlisting}
+\end{examplecode}
