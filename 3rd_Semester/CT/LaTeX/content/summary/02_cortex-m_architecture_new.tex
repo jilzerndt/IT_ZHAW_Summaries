@@ -102,3 +102,100 @@ Steps to create an assembly program:
   \item End program with END directive
 \end{enumerate}
 \end{KR}
+
+\section{Cortex-M Architecture}
+
+\begin{concept}{Core Architecture Overview}\\
+The ARM Cortex-M is a 32-bit processor architecture designed for embedded systems:
+\begin{itemize}
+  \item Load/store architecture
+  \item 32-bit data path
+  \item Thumb instruction set
+  \item Hardware multiply and optional divide
+  \item Harvard architecture variant (separate instruction and data buses)
+  \item Designed for embedded applications:
+    \begin{itemize}
+      \item Low cost and power consumption
+      \item Real-time capabilities
+      \item Interrupt handling
+      \item Debug support
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Core Registers}\\
+The Cortex-M has 16 core registers, each 32-bit wide:
+\begin{itemize}
+  \item \textbf{R0-R7}: Low registers - general purpose
+    \begin{itemize}
+      \item Used by most instructions
+      \item Parameter passing in functions (R0-R3)
+      \item Results returned in R0
+    \end{itemize}
+  \item \textbf{R8-R12}: High registers - general purpose
+    \begin{itemize}
+      \item Limited instruction support
+      \item Often used for temporary storage
+    \end{itemize}
+  \item \textbf{R13 (SP)}: Stack Pointer
+    \begin{itemize}
+      \item Points to current stack position
+      \item Must be word-aligned (multiple of 4)
+    \end{itemize}
+  \item \textbf{R14 (LR)}: Link Register
+    \begin{itemize}
+      \item Stores return address for function calls
+      \item Can be saved to stack for nested calls
+    \end{itemize}
+  \item \textbf{R15 (PC)}: Program Counter
+    \begin{itemize}
+      \item Points to next instruction
+      \item Auto-incremented during execution
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{definition}{ALU and Flags}\\
+The Arithmetic Logic Unit (ALU) is 32-bit wide and supports:
+\begin{itemize}
+  \item Arithmetic operations:
+    \begin{itemize}
+      \item Addition (ADD, ADC)
+      \item Subtraction (SUB, SBC)
+      \item Multiplication (MUL)
+      \item Division (Optional)
+    \end{itemize}
+  \item Logic operations:
+    \begin{itemize}
+      \item AND, ORR, EOR (XOR)
+      \item BIC (Bit Clear)
+      \item MVN (NOT)
+    \end{itemize}
+  \item Shift and rotate operations
+  \item Compare operations
+\end{itemize}
+
+The Application Program Status Register (APSR) contains flags:
+\begin{itemize}
+  \item \textbf{N}: Set when result is negative (bit 31 = 1)
+  \item \textbf{Z}: Set when result is zero
+  \item \textbf{C}: Set on carry or borrow
+  \item \textbf{V}: Set on signed overflow
+\end{itemize}
+
+Instruction suffix 'S' (e.g., ADDS) updates these flags.
+\end{definition}
+
+\begin{example2}{Flag Usage Examples}\\
+After arithmetic operations with 'S' suffix:
+\begin{lstlisting}[language=armasm, style=base]
+    MOVS    R0, #0xFF    ; R0 = 255 (max unsigned 8-bit)
+    ADDS    R0, #1       ; R0 = 0, Z=1, C=1 (overflow)
+    
+    MOVS    R0, #0x7F    ; R0 = 127 (max signed 8-bit)
+    ADDS    R0, #1       ; R0 = 128, N=1, V=1 (signed overflow)
+    
+    MOVS    R0, #5
+    SUBS    R0, #10      ; R0 = -5, N=1, C=0 (borrow)
+\end{lstlisting}
+\end{example2}
