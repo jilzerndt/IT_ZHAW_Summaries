@@ -1,4 +1,175 @@
-\section{Use Case Realisation}
+\begin{example2}{GRASP-basierte Implementation}
+\textbf{Szenario:} Implementierung einer Bestellverwaltung mit GRASP-Prinzipien
+
+\textbf{Information Expert:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class Order {
+    private List<OrderItem> items = new ArrayList<>();
+    
+    public BigDecimal calculateTotal() {
+        return items.stream()
+                   .map(OrderItem::getSubtotal)
+                   .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+}
+\end{lstlisting}
+
+\textbf{Creator:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class Order {
+    public OrderItem createOrderItem(Product product, int quantity) {
+        OrderItem item = new OrderItem(product, quantity);
+        items.add(item);
+        return item;
+    }
+}
+\end{lstlisting}
+
+\textbf{Controller:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class OrderController {
+    private OrderService orderService;
+    
+    public OrderDTO createOrder(String customerId) {
+        Order order = orderService.initializeOrder(customerId);
+        return OrderMapper.toDTO(order);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Use Case Realization Dokumentation}
+\textbf{1. Analysephase}
+\begin{itemize}
+    \item Use Case und Systemoperationen dokumentieren
+    \item Domänenmodell-Ausschnitt zeigen
+    \item Relevante Anforderungen auflisten
+\end{itemize}
+
+\textbf{2. Design}
+\begin{itemize}
+    \item Design Class Diagram erstellen
+    \item Sequenzdiagramme für komplexe Abläufe
+    \item GRASP-Prinzipien begründen
+\end{itemize}
+
+\textbf{3. Implementation}
+\begin{itemize}
+    \item Code-Struktur dokumentieren
+    \item Wichtige Algorithmen erläutern
+    \item Test-Strategie beschreiben
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Design Decisions Documentation}
+\textbf{Use Case:} Warenkorb verwalten
+
+\textbf{Design Entscheidungen:}
+\begin{itemize}
+    \item \textbf{Pattern: Repository}
+    \begin{itemize}
+        \item Grund: Abstraktion der Datenpersistenz
+        \item Alternative: DAO Pattern verworfen
+    \end{itemize}
+    
+    \item \textbf{Pattern: Factory}
+    \begin{itemize}
+        \item Grund: Komplexe Objekterstellung
+        \item Vorteil: Testbarkeit verbessert
+    \end{itemize}
+\end{itemize}
+
+\textbf{Implementation:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class CartFactory {
+    public ShoppingCart createCart(String customerId) {
+        ShoppingCart cart = new ShoppingCart(customerId);
+        cart.setCreatedAt(LocalDateTime.now());
+        cart.setStatus(CartStatus.NEW);
+        return cart;
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Testing in Use Case Realization}\\
+\textbf{1. Unit Tests}
+\begin{itemize}
+    \item Einzelne Klassen testen
+    \item Mocks für Abhängigkeiten
+    \item Edge Cases abdecken
+\end{itemize}
+
+\textbf{2. Integration Tests}
+\begin{itemize}
+    \item Zusammenspiel der Komponenten
+    \item Use Case Szenarien testen
+    \item Fehlerszenarien prüfen
+\end{itemize}
+
+\textbf{Beispiel Test:}
+\begin{lstlisting}[language=Java, style=basesmol]
+@Test
+public void shouldCalculateCartTotal() {
+    // Given
+    ShoppingCart cart = new ShoppingCart("customer123");
+    cart.addItem(new Product("p1", "Book", 29.99), 2);
+    cart.addItem(new Product("p2", "DVD", 19.99), 1);
+    
+    // When
+    BigDecimal total = cart.calculateTotal();
+    
+    // Then
+    assertEquals(new BigDecimal("79.97"), total);
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Kompletter Use Case Realization Prozess}
+\textbf{Use Case:} Benutzerregistrierung
+
+\textbf{1. System Sequence Diagram}
+% add SSD image for user registration
+
+\textbf{2. Operation Contract}
+\begin{itemize}
+    \item \textbf{Operation:} registerUser(userDTO)
+    \item \textbf{Vorbedingungen:} Benutzer nicht registriert
+    \item \textbf{Nachbedingungen:} 
+    \begin{itemize}
+        \item Benutzer erstellt
+        \item Bestätigungsmail versendet
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Implementation:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class UserRegistrationService {
+    private UserRepository userRepo;
+    private EmailService emailService;
+    
+    public User registerUser(UserDTO dto) {
+        // Validate input
+        validateUserInput(dto);
+        
+        // Create user
+        User user = new User();
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        
+        // Save user
+        user = userRepo.save(user);
+        
+        // Send confirmation
+        emailService.sendConfirmation(user.getEmail());
+        
+        return user;
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\section{Use Case Realisation old}
 
 \begin{concept}{Use Case Realization}\\
 Die Umsetzung von Use Cases erfolgt durch:

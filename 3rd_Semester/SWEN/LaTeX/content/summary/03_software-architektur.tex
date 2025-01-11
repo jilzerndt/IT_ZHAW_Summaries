@@ -1,4 +1,387 @@
-\section{Softwarearchitektur und Design}
+\subsection{Architekturmuster (Patterns)}
+
+\begin{concept}{Architekturmuster Übersicht}\\
+Grundlegende Architekturmuster für verteilte Systeme:
+\begin{itemize}
+    \item \textbf{Layered Pattern:} Schichtenarchitektur
+    \item \textbf{Client-Server Pattern:} Verteilte Dienste
+    \item \textbf{Master-Slave Pattern:} Verteilte Verarbeitung
+    \item \textbf{Pipe-Filter Pattern:} Datenstromverarbeitung
+    \item \textbf{Broker Pattern:} Vermittler zwischen Endpunkten
+    \item \textbf{Event-Bus Pattern:} Nachrichtenverteilung
+    \item \textbf{MVC Pattern:} Trennung von Daten und Darstellung
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Layered Pattern}\\
+\textbf{Struktur:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Presentation Layer
+public class CustomerUI {
+    private CustomerService service;
+    public void showCustomerDetails(int id) {
+        Customer customer = service.getCustomer(id);
+        // display logic
+    }
+}
+
+// Business Layer
+public class CustomerService {
+    private CustomerRepository repository;
+    public Customer getCustomer(int id) {
+        return repository.findById(id);
+    }
+}
+
+// Data Layer
+public class CustomerRepository {
+    public Customer findById(int id) {
+        // database access
+        return customer;
+    }
+}
+\end{lstlisting}
+
+\textbf{Vorteile:}
+\begin{itemize}
+    \item Klare Trennung der Verantwortlichkeiten
+    \item Austauschbarkeit einzelner Schichten
+    \item Einfachere Wartung und Tests
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Clean Architecture}\\
+Prinzipien nach Robert C. Martin:
+
+\begin{itemize}
+    \item \textbf{Unabhängigkeit von Frameworks}
+    \begin{itemize}
+        \item Framework als Tool, nicht als Einschränkung
+        \item Geschäftslogik unabhängig von UI/DB
+    \end{itemize}
+    
+    \item \textbf{Testbarkeit}
+    \begin{itemize}
+        \item Business Rules ohne externe Systeme testbar
+        \item Keine DB/UI für Tests notwendig
+    \end{itemize}
+    
+    \item \textbf{Unabhängigkeit von UI}
+    \begin{itemize}
+        \item UI austauschbar ohne Business Logic Änderung
+        \item Web, Desktop, Mobile möglich
+    \end{itemize}
+    
+    \item \textbf{Unabhängigkeit von Datenbank}
+    \begin{itemize}
+        \item DB-System austauschbar
+        \item Business Rules unabhängig von Datenpersistenz
+    \end{itemize}
+\end{itemize}
+
+\textbf{Schichten von außen nach innen:}
+\begin{enumerate}
+    \item Frameworks \& Drivers (UI, DB, External Interfaces)
+    \item Interface Adapters (Controllers, Presenters)
+    \item Application Business Rules (Use Cases)
+    \item Enterprise Business Rules (Entities)
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Clean Architecture Implementation}\\
+\textbf{Strukturbeispiel für einen Online-Shop:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Enterprise Business Rules (Entities)
+public class Order {
+    private List<OrderItem> items;
+    private OrderStatus status;
+    
+    public Money calculateTotal() {
+        return items.stream()
+                   .map(OrderItem::getSubtotal)
+                   .reduce(Money.ZERO, Money::add);
+    }
+}
+
+// Application Business Rules (Use Cases)
+public class CreateOrderUseCase {
+    private OrderRepository repository;
+    private PaymentGateway paymentGateway;
+    
+    public OrderId execute(CreateOrderCommand command) {
+        Order order = new Order(command.getItems());
+        PaymentResult result = paymentGateway.process(
+            order.calculateTotal());
+        if (result.isSuccessful()) {
+            return repository.save(order);
+        }
+        throw new PaymentFailedException();
+    }
+}
+
+// Interface Adapters
+public class OrderController {
+    private CreateOrderUseCase createOrderUseCase;
+    
+    public OrderResponse createOrder(OrderRequest request) {
+        CreateOrderCommand command = mapToCommand(request);
+        OrderId id = createOrderUseCase.execute(command);
+        return new OrderResponse(id);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{concept}{Microservices Architektur}\\
+\textbf{Grundprinzipien:}
+\begin{itemize}
+    \item Unabhängig deploybare Services
+    \item Lose Kopplung
+    \item Eigene Datenhaltung pro Service
+    \item REST/Message-basierte Kommunikation
+\end{itemize}
+
+\textbf{Vorteile:}
+\begin{itemize}
+    \item Bessere Skalierbarkeit
+    \item Unabhängige Entwicklung
+    \item Technologiefreiheit
+    \item Robustheit
+\end{itemize}
+
+\textbf{Herausforderungen:}
+\begin{itemize}
+    \item Verteilte Transaktionen
+    \item Service Discovery
+    \item Datenkonvergenz
+    \item Monitoring
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Microservice Design}\\
+\textbf{Service für Benutzerprofile:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+@RestController
+@RequestMapping("/api/users")
+public class UserProfileController {
+    private final UserService userService;
+    
+    @GetMapping("/{id}")
+    public UserProfileDTO getProfile(@PathVariable String id) {
+        UserProfile profile = userService.findById(id);
+        return UserProfileDTO.from(profile);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateProfile(
+            @PathVariable String id, 
+            @RequestBody UpdateProfileCommand command) {
+        userService.updateProfile(id, command);
+        return ResponseEntity.ok().build();
+    }
+}
+
+// Event fuer andere Services
+public class UserProfileUpdatedEvent {
+    private final String userId;
+    private final String newEmail;
+    private final LocalDateTime timestamp;
+    
+    // Konstruktor und Getter
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Microservices Design Prinzipien}\\
+\textbf{1. Service Boundaries}
+\begin{itemize}
+    \item Nach Business Capabilities trennen
+    \item Bounded Context (DDD) beachten
+    \item Datenhoheit festlegen
+\end{itemize}
+
+\textbf{2. Service Kommunikation}
+\begin{itemize}
+    \item Synchron vs. Asynchron
+    \item Event-Driven Design
+    \item API Gateway Pattern
+\end{itemize}
+
+\textbf{3. Datenmanagement}
+\begin{itemize}
+    \item Database per Service
+    \item Event Sourcing
+    \item CQRS Pattern
+\end{itemize}
+
+\textbf{4. Resilience}
+\begin{itemize}
+    \item Circuit Breaker
+    \item Bulkhead Pattern
+    \item Fallback Mechanismen
+\end{itemize}
+\end{KR}
+
+\subsection{Design Patterns in der Architektur}
+
+\begin{concept}{Model-View-Controller (MVC)}\\
+Trennt Anwendung in drei Hauptkomponenten:
+\begin{itemize}
+    \item \textbf{Model:} Geschäftslogik und Daten
+    \item \textbf{View:} Darstellung der Daten
+    \item \textbf{Controller:} Steuerung und Koordination
+\end{itemize}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Model
+public class CustomerModel {
+    private String name;
+    private List<Order> orders;
+    
+    public void addOrder(Order order) {
+        orders.add(order);
+        notifyViews();
+    }
+}
+
+// View
+public class CustomerView {
+    private CustomerModel model;
+    
+    public void displayCustomerInfo() {
+        System.out.println("Customer: " + model.getName());
+        System.out.println("Orders: " + model.getOrders().size());
+    }
+}
+
+// Controller
+public class CustomerController {
+    private CustomerModel model;
+    private CustomerView view;
+    
+    public void createOrder(OrderData data) {
+        Order order = new Order(data);
+        model.addOrder(order);
+        view.displayCustomerInfo();
+    }
+}
+\end{lstlisting}
+\end{concept}
+
+\begin{concept}{Event-Driven Architecture (EDA)}\\
+Basiert auf der Produktion, Erkennung und Reaktion auf Events:
+
+\textbf{Komponenten:}
+\begin{itemize}
+    \item Event Producer
+    \item Event Channel
+    \item Event Consumer
+    \item Event Processor
+\end{itemize}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Event Definition
+public class OrderCreatedEvent {
+    private final String orderId;
+    private final LocalDateTime timestamp;
+    private final BigDecimal totalAmount;
+}
+
+// Event Producer
+public class OrderService {
+    private EventBus eventBus;
+    
+    public void createOrder(OrderData data) {
+        Order order = orderRepository.save(data);
+        OrderCreatedEvent event = new OrderCreatedEvent(
+            order.getId(),
+            LocalDateTime.now(),
+            order.getTotalAmount()
+        );
+        eventBus.publish(event);
+    }
+}
+
+// Event Consumer
+@EventListener
+public class InvoiceGenerator {
+    public void handleOrderCreated(OrderCreatedEvent event) {
+        generateInvoice(event.getOrderId());
+    }
+}
+\end{lstlisting}
+\end{concept}
+
+\begin{KR}{Architektur-Dokumentation}\\
+\textbf{1. Überblick}
+\begin{itemize}
+    \item Systemkontext
+    \item Hauptkomponenten
+    \item Technologie-Stack
+\end{itemize}
+
+\textbf{2. Architektur-Entscheidungen}
+\begin{itemize}
+    \item Begründungen
+    \item Alternativen
+    \item Trade-offs
+\end{itemize}
+
+\textbf{3. Technische Konzepte}
+\begin{itemize}
+    \item Persistenz
+    \item Sicherheit
+    \item Integration
+    \item Deployment
+\end{itemize}
+
+\textbf{4. Qualitätsszenarien}
+\begin{itemize}
+    \item Performance
+    \item Skalierbarkeit
+    \item Verfügbarkeit
+    \item Wartbarkeit
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Architektur-Dokumentation: REST API}\\
+\textbf{API-Design und Dokumentation:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+@RestController
+@RequestMapping("/api/v1/orders")
+public class OrderController {
+    
+    @GetMapping("/{id}")
+    @Operation(summary = "Get order by ID",
+              description = "Returns detailed order information")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", 
+                    description = "Order found"),
+        @ApiResponse(responseCode = "404", 
+                    description = "Order not found")
+    })
+    public OrderDTO getOrder(@PathVariable String id) {
+        return orderService.findById(id)
+                          .map(OrderDTO::from)
+                          .orElseThrow(OrderNotFoundException::new);
+    }
+}
+\end{lstlisting}
+
+\textbf{Qualitätsszenarien:}
+\begin{itemize}
+    \item Response Time < 200ms (95. Perzentil)
+    \item Verfügbarkeit 99.9%
+    \item Maximal 1000 req/s pro Instance
+    \item Automatische Skalierung ab 70% CPU
+\end{itemize}
+\end{example2}
+
+
+\section{Softwarearchitektur und Design old}
 
 \begin{concept}{Überblick Softwareentwicklung}\\
 Die Entwicklung von Software erfolgt in verschiedenen Ebenen:

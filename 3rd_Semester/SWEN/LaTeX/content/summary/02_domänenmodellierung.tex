@@ -1,5 +1,409 @@
 \section{Domänenmodellierung}
 
+\begin{concept}{Was ist ein Domänenmodell?}\\
+Ein Domänenmodell ist ein konzeptionelles Modell der Fachdomäne, dargestellt als vereinfachtes UML-Klassendiagramm:
+
+\textbf{Hauptzwecke:}
+\begin{itemize}
+    \item Visualisierung der Problemdomäne
+    \item Kommunikationsmittel zwischen Stakeholdern
+    \item Basis für späteres Softwaredesign
+    \item Dokumentation fachlicher Strukturen
+\end{itemize}
+
+\textbf{Eigenschaften:}
+\begin{itemize}
+    \item Konzepte als Klassen
+    \item Eigenschaften als Attribute (ohne Typangabe)
+    \item Beziehungen als Assoziationen
+    \item Keine Implementierungsdetails
+    \item Keine Softwareklassen
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Entwicklung eines Domänenmodells}\\
+\textbf{1. Konzepte identifizieren}
+\begin{enumerate}
+    \item Substantive aus Anforderungen extrahieren
+    \item Kategorisierung prüfen:
+    \begin{itemize}
+        \item Physische Objekte (Produkt, Gerät)
+        \item Rollen (Kunde, Mitarbeiter)
+        \item Container (Warenkorb, Lager)
+        \item Kataloge und Listen
+        \item Externe Systeme
+        \item Transaktionen (Bestellung, Buchung)
+        \item Dokumente/Verträge
+    \end{itemize}
+    \item Irrelevante Konzepte ausschließen
+    \item Synonyme vereinheitlichen
+\end{enumerate}
+
+\textbf{2. Attribute definieren}
+\begin{itemize}
+    \item Nur wichtige/zentrale Attribute
+    \item Kategorien:
+    \begin{itemize}
+        \item Beschreibende Attribute
+        \item Identifizierende Merkmale
+        \item Statusinformationen
+        \item Mengenwerte
+    \end{itemize}
+    \item Keine technischen IDs
+    \item Keine abgeleiteten Werte
+\end{itemize}
+
+\textbf{3. Beziehungen modellieren}
+\begin{itemize}
+    \item Assoziationen zwischen Konzepten identifizieren
+    \item Multiplizitäten festlegen
+    \item Richtung wenn nötig angeben
+    \item Rollen an Assoziationsenden benennen
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Typische Modellierungsfehler}\\
+\textbf{Fehler 1: Technische statt fachliche Klassen}
+\begin{itemize}
+    \item \textbf{Falsch:} CustomerManager, OrderController, DatabaseHandler
+    \item \textbf{Richtig:} Kunde, Bestellung, Produkt
+\end{itemize}
+
+\textbf{Fehler 2: IDs als Attribute statt Assoziationen}
+\begin{itemize}
+    \item \textbf{Falsch:} customerId: String, orderId: Integer
+    \item \textbf{Richtig:} Direkte Assoziation zwischen Kunde und Bestellung
+\end{itemize}
+
+\textbf{Fehler 3: Implementierungsdetails}
+\begin{itemize}
+    \item \textbf{Falsch:} saveToDatabase(), validateInput(), createPDF()
+    \item \textbf{Richtig:} Keine Operationen im Domänenmodell
+\end{itemize}
+\end{example2}
+
+\subsection{Analysemuster}
+
+\begin{concept}{Analysemuster im Überblick}\\
+Bewährte Lösungsmuster für wiederkehrende Modellierungsprobleme:
+
+\begin{itemize}
+    \item \textbf{Beschreibungsklassen:} Trennung von Typ und Instanz
+    \item \textbf{Generalisierung:} "ist-ein" Beziehungen
+    \item \textbf{Komposition:} Starke Teil-Ganzes Beziehung
+    \item \textbf{Zustände:} Eigene Zustandshierarchie
+    \item \textbf{Rollen:} Verschiedene Funktionen eines Konzepts
+    \item \textbf{Assoziationsklasse:} Attribute einer Beziehung
+\end{itemize}
+\end{concept}
+
+\subsection{Detaillierte Analysemuster}
+
+\begin{concept}{1. Beschreibungsklassen}\\
+Trennt die Beschreibung eines Typs von seinen konkreten Instanzen.
+
+\textbf{Anwendung:}
+\begin{itemize}
+    \item Bei mehreren gleichartigen Objekten
+    \item Gemeinsame unveränderliche Eigenschaften
+    \item Vermeidung von Redundanz
+\end{itemize}
+
+\textbf{Beispielstruktur:}
+\begin{itemize}
+    \item ProductDescription (Typ)
+    \begin{itemize}
+        \item name, price, description
+    \end{itemize}
+    \item Product (Instanz)
+    \begin{itemize}
+        \item serialNumber, location
+    \end{itemize}
+\end{itemize}
+%add simple diagram showing pattern
+\end{concept}
+
+\begin{example2}{Beschreibungsklassen in der Praxis}\\
+\textbf{Szenario:} Bibliothekssystem
+
+\textbf{Problem:} 
+Ein Buch kann mehrere physische Exemplare haben, die alle dieselben Grunddaten (Titel, Autor, ISBN) aber unterschiedliche Zustände (ausgeliehen, verfügbar) haben.
+
+\textbf{Lösung:}
+\begin{itemize}
+    \item \textbf{Book} (Beschreibungsklasse)
+    \begin{itemize}
+        \item title, author, isbn, publisher
+    \end{itemize}
+    \item \textbf{BookCopy} (Instanzklasse)
+    \begin{itemize}
+        \item inventoryNumber, status, location
+    \end{itemize}
+    \item Assoziation: BookCopy "beschrieben durch" Book
+\end{itemize}
+\end{example2}
+
+\begin{concept}{2. Generalisierung/Spezialisierung}\\
+Modelliert "ist-ein" Beziehungen zwischen Konzepten.
+
+\textbf{Regeln:}
+\begin{itemize}
+    \item 100\% Regel: Jede Instanz der Spezialisierung ist auch Instanz der Generalisierung
+    \item Gemeinsame Eigenschaften in Basisklasse
+    \item Spezifische Eigenschaften in Unterklassen
+\end{itemize}
+
+\textbf{Beispiele:}
+\begin{itemize}
+    \item Person → Student, Dozent
+    \item Zahlung → Barzahlung, Kreditkartenzahlung
+    \item Dokument → Rechnung, Lieferschein
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Generalisierung im Online-Shop}\\
+\textbf{Szenario:} Verschiedene Zahlungsarten
+
+\textbf{Struktur:}
+\begin{itemize}
+    \item \textbf{Payment} (abstrakt)
+    \begin{itemize}
+        \item amount, date, status
+    \end{itemize}
+    \item \textbf{CashPayment}
+    \begin{itemize}
+        \item receivedAmount, changeAmount
+    \end{itemize}
+    \item \textbf{CreditCardPayment}
+    \begin{itemize}
+        \item cardType, authorizationCode
+    \end{itemize}
+\end{itemize}
+
+\textbf{Begründung:}
+\begin{itemize}
+    \item Gemeinsame Attribute in Payment
+    \item Spezifische Attribute in Unterklassen
+    \item Jede Zahlung ist genau ein Typ
+\end{itemize}
+%add diagram showing payment hierarchy
+\end{example2}
+
+\begin{concept}{3. Komposition}\\
+Modelliert eine starke Teil-Ganzes Beziehung mit Existenzabhängigkeit.
+
+\textbf{Eigenschaften:}
+\begin{itemize}
+    \item Teile können nicht ohne Ganzes existieren
+    \item Teil gehört zu genau einem Ganzen
+    \item Löschen des Ganzen löscht alle Teile
+\end{itemize}
+
+\textbf{Notation:}
+\begin{itemize}
+    \item Ausgefüllte Raute am "Ganzes"-Ende
+    \item Multiplizität am "Teil"-Ende
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Komposition im Bestellsystem}\\
+\textbf{Szenario:} Bestellung mit Bestellpositionen
+
+\textbf{Struktur:}
+\begin{itemize}
+    \item \textbf{Order}
+    \begin{itemize}
+        \item orderDate, status
+    \end{itemize}
+    \item \textbf{OrderItem}
+    \begin{itemize}
+        \item quantity, price
+    \end{itemize}
+    \item Komposition von Order zu OrderItem (1 zu *)
+\end{itemize}
+
+\textbf{Begründung:}
+\begin{itemize}
+    \item OrderItems existieren nur im Kontext einer Order
+    \item Löschen der Order löscht alle OrderItems
+    \item Ein OrderItem gehört zu genau einer Order
+\end{itemize}
+\end{example2}
+
+\begin{concept}{4. Zustandsmodellierung}\\
+Modelliert Zustände als eigene Konzepthierarchie statt als Attribut.
+
+\textbf{Vorteile:}
+\begin{itemize}
+    \item Klare Strukturierung der Zustände
+    \item Erweiterbarkeit durch neue Zustandsklassen
+    \item Vermeidung von if/else Kaskaden
+    \item Zustandsspezifisches Verhalten möglich
+\end{itemize}
+
+\textbf{Beispielstruktur:}
+\begin{itemize}
+    \item OrderState (abstrakt)
+    \begin{itemize}
+        \item New, InProgress, Completed
+    \end{itemize}
+    \item Order "ist in" OrderState
+\end{itemize}
+%add image showing state pattern in domain model
+\end{concept}
+
+\begin{example2}{Zustandsmodellierung: Ticketsystem}\\
+\textbf{Szenario:} Support-Tickets mit verschiedenen Status
+
+\textbf{Falsche Modellierung:}
+\begin{lstlisting}[language=Java, style=base]
+class Ticket {
+    enum Status {NEW, OPEN, IN_PROGRESS, RESOLVED, CLOSED}
+    private Status status;
+}
+\end{lstlisting}
+
+\textbf{Bessere Modellierung:}
+\begin{itemize}
+    \item \textbf{TicketState} (abstrakt)
+    \begin{itemize}
+        \item timestamp, changedBy
+    \end{itemize}
+    \item Konkrete Zustände:
+    \begin{itemize}
+        \item NewState: assignedTo
+        \item OpenState: priority
+        \item InProgressState: estimatedCompletion
+        \item ResolvedState: solution
+        \item ClosedState: closureReason
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{concept}{5. Rollen}\\
+Modelliert verschiedene Funktionen eines Konzepts.
+
+\textbf{Varianten:}
+\begin{itemize}
+    \item Rollen als eigene Konzepte
+    \item Rollen als Assoziationsenden
+    \item Rollen durch Generalisierung
+\end{itemize}
+
+\textbf{Anwendung:}
+\begin{itemize}
+    \item Bei verschiedenen Verantwortlichkeiten
+    \item Wenn Rollen wechseln können
+    \item Bei unterschiedlichen Beziehungen
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Rollenmuster: Universitätssystem}\\
+\textbf{Szenario:} Person kann gleichzeitig Student und Tutor sein
+
+\textbf{Variante 1: Rollen als Konzepte}
+\begin{itemize}
+    \item \textbf{Person}
+    \begin{itemize}
+        \item name, birthDate, address
+    \end{itemize}
+    \item \textbf{StudentRole}
+    \begin{itemize}
+        \item matriculationNumber, program
+    \end{itemize}
+    \item \textbf{TutorRole}
+    \begin{itemize}
+        \item department, hourlyRate
+    \end{itemize}
+\end{itemize}
+
+\textbf{Variante 2: Generalisierung}
+\begin{itemize}
+    \item Person als Basisklasse
+    \item Student und Tutor als Spezialisierungen
+    \item Problem: Mehrfachrollen schwierig
+\end{itemize}
+%add diagram showing both variants
+\end{example2}
+
+\begin{concept}{6. Assoziationsklassen}\\
+Modelliert Attribute einer Beziehung zwischen Konzepten.
+
+\textbf{Einsatz wenn:}
+\begin{itemize}
+    \item Attribute zur Beziehung gehören
+    \item Beziehung eigene Identität hat
+    \item Mehrere Beziehungen möglich sind
+\end{itemize}
+
+\textbf{Notation:}
+\begin{itemize}
+    \item Gestrichelte Linie zur Assoziation
+    \item Klasse enthält beziehungsspezifische Attribute
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Assoziationsklasse: Kursbuchungssystem}\\
+\textbf{Szenario:} Studenten können sich für Kurse einschreiben
+
+\textbf{Struktur:}
+\begin{itemize}
+    \item \textbf{Student} und \textbf{Course} als Hauptkonzepte
+    \item \textbf{Enrollment} als Assoziationsklasse:
+    \begin{itemize}
+        \item enrollmentDate
+        \item grade
+        \item attendance
+        \item status
+    \end{itemize}
+\end{itemize}
+
+\textbf{Begründung:}
+\begin{itemize}
+    \item Noten gehören zur Einschreibung
+    \item Student kann mehrere Kurse belegen
+    \item Kurs hat mehrere Studenten
+    \item Einschreibungsdaten sind beziehungsspezifisch
+\end{itemize}
+%add diagram showing association class example
+\end{example2}
+
+\begin{KR}{Musterauswahl und Kombination}\\
+Systematisches Vorgehen bei der Anwendung von Analysemustern:
+
+\textbf{1. Analyse der Situation}
+\begin{itemize}
+    \item Konzepte und Beziehungen identifizieren
+    \item Attribute zuordnen
+    \item Probleme im einfachen Modell erkennen
+\end{itemize}
+
+\textbf{2. Musterauswahl}
+\begin{itemize}
+    \item Passende Muster identifizieren
+    \item Vor- und Nachteile abwägen
+    \item Komplexität vs. Nutzen prüfen
+\end{itemize}
+
+\textbf{3. Muster anwenden}
+\begin{itemize}
+    \item Struktur des Musters übernehmen
+    \item An Kontext anpassen
+    \item Mit bestehenden Elementen verbinden
+\end{itemize}
+
+\textbf{4. Evaluation}
+\begin{itemize}
+    \item Modell auf Konsistenz prüfen
+    \item Fachliche Korrektheit sicherstellen
+    \item Komplexität bewerten
+\end{itemize}
+\end{KR}
+
+\pagebreak
+
+\section{Domänenmodellierung old}
+
 \begin{concept}{Domänenmodell}\\
 Ein Domänenmodell ist ein vereinfachtes UML-Klassendiagramm zur Darstellung der Fachdomäne:
 \begin{itemize}
