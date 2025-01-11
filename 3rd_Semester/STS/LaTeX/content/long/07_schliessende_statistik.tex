@@ -1,0 +1,268 @@
+\section{Parameter- und Intervallschätzung}
+
+\begin{concept}{Grundlagen der Schätztheorie}\\
+Die Schätztheorie befasst sich mit zwei Hauptproblemen:
+\begin{itemize}
+  \item Punktschätzung: Bestimmung eines einzelnen Schätzwerts
+  \item Intervallschätzung: Bestimmung eines Vertrauensbereichs
+\end{itemize}
+
+Wichtige Begriffe:
+\begin{itemize}
+  \item $\theta$: Unbekannter Parameter der Grundgesamtheit
+  \item $\Theta$: Schätzfunktion (Zufallsvariable)
+  \item $\hat{\theta}$: Schätzwert (konkreter Wert)
+  \item $n$: Stichprobenumfang
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Erwartungstreue Schätzfunktion}\\
+Eine Schätzfunktion $\Theta$ eines Parameters $\theta$ heisst erwartungstreu, wenn:
+$$
+E(\Theta)=\theta
+$$
+$E(\Theta)$: Erwartungswert der Schätzfunktion\\
+$\theta$: Wahrer Parameter der Grundgesamtheit
+\end{definition}
+
+\begin{definition}{Effizienz einer Schätzfunktion}\\
+Gegeben sind zwei erwartungstreue Schätzfunktionen $\Theta_1$ und $\Theta_2$ desselben Parameters $\theta$. Man nennt $\Theta_1$ effizienter als $\Theta_2$, falls:
+$$
+V(\Theta_1)<V(\Theta_2)
+$$
+$V(\Theta_1), V(\Theta_2)$: Varianzen der Schätzfunktionen
+\end{definition}
+
+\begin{definition}{Konsistenz einer Schätzfunktion}\\
+Eine Schätzfunktion $\Theta$ heisst konsistent, wenn:
+$$
+E(\Theta) \rightarrow \theta \text{ und } V(\Theta) \rightarrow 0 \text{ für } n \rightarrow \infty
+$$
+$n$: Stichprobenumfang
+\end{definition}
+
+\begin{KR}{Prüfen von Schätzfunktionen}\\
+1. Erwartungstreue:
+   \begin{itemize}
+     \item Erwartungswert $E(\Theta)$ berechnen
+     \item Mit Parameter $\theta$ vergleichen
+     \item Erwartungstreu, wenn $E(\Theta)=\theta$
+   \end{itemize}
+
+2. Effizienz:
+   \begin{itemize}
+     \item Varianzen $V(\Theta_1)$ und $V(\Theta_2)$ berechnen
+     \item Varianzen vergleichen
+     \item Kleinere Varianz = effizienter
+   \end{itemize}
+
+3. Konsistenz:
+   \begin{itemize}
+     \item Grenzwert für $n \to \infty$ betrachten
+     \item $E(\Theta) \to \theta$?
+     \item $V(\Theta) \to 0$?
+   \end{itemize}
+\end{KR}
+
+\begin{example2}{Prüfung auf Erwartungstreue}\\
+Gegeben sei die Schätzfunktion $\Theta_1=\frac{1}{3}(2X_1+X_2)$ für den Erwartungswert $\mu$.
+
+1. Erwartungswert berechnen:
+   $$E(\Theta_1)=E(\frac{1}{3}(2X_1+X_2))=\frac{1}{3}(2E(X_1)+E(X_2))$$
+
+2. Einsetzen der Erwartungswerte:
+   $$E(\Theta_1)=\frac{1}{3}(2\mu+\mu)=\frac{3\mu}{3}=\mu$$
+
+3. Da $E(\Theta_1)=\mu$, ist die Schätzfunktion erwartungstreu.
+
+Effizienzberechnung:
+$$
+\begin{aligned}
+V(\Theta_1) &= V(\frac{1}{3}(2X_1+X_2)) \\
+&= \frac{1}{9}V(2X_1+X_2) \\
+&= \frac{1}{9}(4V(X_1)+V(X_2)) \\
+&= \frac{1}{9}(4\sigma^2+\sigma^2) \\
+&= \frac{5\sigma^2}{9}
+\end{aligned}
+$$
+\end{example2}
+
+\begin{definition}{Maximum-Likelihood-Schätzung}\\
+Die Likelihood-Funktion für eine Stichprobe $x_1,\ldots,x_n$ ist:
+$$
+L(\theta)=\prod_{i=1}^n f_X(x_i|\theta)
+$$
+$f_X(x|\theta)$: Wahrscheinlichkeitsdichte\\
+$\theta$: zu schätzender Parameter\\
+$n$: Stichprobenumfang
+
+Der Maximum-Likelihood-Schätzer maximiert $L(\theta)$ bzw. $\ln(L(\theta))$.
+\end{definition}
+
+\begin{KR}{Maximum-Likelihood-Schätzung}\\
+1. Likelihood-Funktion aufstellen:
+   $$L(\theta)=\prod_{i=1}^n f_X(x_i|\theta)$$
+
+2. Logarithmieren:
+   $$\ln(L(\theta))=\sum_{i=1}^n \ln(f_X(x_i|\theta))$$
+
+3. Ableitung Null setzen:
+   $$\frac{d}{d\theta}\ln(L(\theta))=0$$
+
+4. Nach $\theta$ auflösen:
+   $$\hat{\theta}_{ML}=\text{Lösung}$$
+
+5. Maximum prüfen:
+   $$\frac{d^2}{d\theta^2}\ln(L(\theta)) < 0$$
+\end{KR}
+
+\begin{example2}{Maximum-Likelihood Normalverteilung}\\
+Gegeben sei eine Stichprobe aus einer Normalverteilung $N(\mu,\sigma^2)$.
+
+1. Likelihood-Funktion:
+$$L(\mu,\sigma^2)=\prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x_i-\mu)^2}{2\sigma^2}}$$
+
+2. Log-Likelihood:
+$$\ln(L)=-\frac{n}{2}\ln(2\pi\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^n(x_i-\mu)^2$$
+
+3. Ableitungen:
+$$\frac{\partial \ln(L)}{\partial \mu}=\frac{1}{\sigma^2}\sum_{i=1}^n(x_i-\mu)=0$$
+$$\frac{\partial \ln(L)}{\partial \sigma^2}=-\frac{n}{2\sigma^2}+\frac{1}{2(\sigma^2)^2}\sum_{i=1}^n(x_i-\mu)^2=0$$
+
+4. ML-Schätzer:
+$$\hat{\mu}_{ML}=\bar{x}$$
+$$\hat{\sigma}^2_{ML}=\frac{1}{n}\sum_{i=1}^n(x_i-\bar{x})^2$$
+\end{example2}
+
+\begin{definition}{Vertrauensintervall}\\
+Ein Vertrauensintervall zum Niveau $\gamma$ ist ein zufälliges Intervall $[\Theta_u,\Theta_o]$ mit:
+$$
+P(\Theta_u \leq \theta \leq \Theta_o)=\gamma
+$$
+$\gamma$: Vertrauensniveau (stat. Sicherheit)\\
+$\alpha=1-\gamma$: Irrtumswahrscheinlichkeit\\
+$\Theta_u, \Theta_o$: Unter- und Obergrenze
+\end{definition}
+
+\begin{KR}{Vertrauensintervalle berechnen}\\
+1. Verteilungstyp bestimmen:
+   \begin{itemize}
+     \item Normalverteilung ($\sigma^2$ bekannt)
+     \item t-Verteilung ($\sigma^2$ unbekannt)
+     \item Chi-Quadrat (für Varianz)
+   \end{itemize}
+
+2. Quantile bestimmen:
+   \begin{itemize}
+     \item Normalverteilung: $c=u_p$ mit $p=\frac{1+\gamma}{2}$
+     \item t-Verteilung: $c=t_{(p;f)}$ mit $f=n-1$
+     \item Chi-Quadrat: $c_1=\chi^2_{(p_1;f)}$, $c_2=\chi^2_{(p_2;f)}$
+   \end{itemize}
+
+3. Intervallgrenzen berechnen:
+   \begin{itemize}
+     \item Mittelwert: $[\bar{x} \pm c \cdot \frac{s}{\sqrt{n}}]$
+     \item Varianz: $[\frac{(n-1)s^2}{c_2}, \frac{(n-1)s^2}{c_1}]$
+   \end{itemize}
+\end{KR}
+
+\begin{example2}{Vertrauensintervall für Mittelwert}\\
+Gegeben: $n=25$, $\bar{x}=102$, $s=4$, $\gamma=0.95$
+
+1. Verteilung: t-Verteilung mit $f=24$ ($\sigma^2$ unbekannt)
+
+2. Quantil:
+   \begin{itemize}
+     \item $p=\frac{1+0.95}{2}=0.975$
+     \item $c=t_{(0.975;24)}=2.064$
+   \end{itemize}
+
+3. Intervallgrenzen:
+   \begin{itemize}
+     \item $e=2.064 \cdot \frac{4}{\sqrt{25}}=1.652$
+     \item $[102-1.652; 102+1.652]=[100.348; 103.652]$
+   \end{itemize}
+\end{example2}
+
+\begin{KR}{Minimum Stichprobenumfang bestimmen}\\
+1. Voraussetzungen:
+   \begin{itemize}
+     \item Gewünschte Genauigkeit $d$
+     \item Vertrauensniveau $\gamma$
+     \item Standardabweichung $\sigma$ (wenn bekannt)
+   \end{itemize}
+
+2. Kritischen Wert bestimmen:
+   \begin{itemize}
+     \item $c=u_p$ oder $t_{(p;f)}$
+     \item $p=\frac{1+\gamma}{2}$
+   \end{itemize}
+
+3. Stichprobenumfang berechnen:
+   \begin{itemize}
+     \item $n \geq (\frac{2c\sigma}{d})^2$ für Mittelwert
+     \item Auf nächste ganze Zahl aufrunden
+   \end{itemize}
+\end{KR}
+
+\begin{example2}{Stichprobenumfang}\\
+Ein Parameter soll mit einer Genauigkeit von $d=0.2$ bei $\gamma=0.99$ geschätzt werden. Die Standardabweichung ist $\sigma=0.5$ bekannt.
+
+1. Kritischer Wert:
+   \begin{itemize}
+     \item $p=\frac{1+0.99}{2}=0.995$
+     \item $c=u_{0.995}=2.576$
+   \end{itemize}
+
+2. Mindestumfang:
+   \begin{itemize}
+     \item $n \geq (\frac{2 \cdot 2.576 \cdot 0.5}{0.2})^2=41.47$
+     \item $n=42$ (aufgerundet)
+   \end{itemize}
+\end{example2}
+
+\begin{concept}{Übersicht Vertrauensintervalle}\\
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+Parameter & Verteilung & Test-Statistik & Intervall \\
+\hline
+$\mu$ ($\sigma^2$ bekannt) & Normal & $U=\frac{\bar{X}-\mu}{\sigma/\sqrt{n}}$ & $[\bar{x} \pm u_p \frac{\sigma}{\sqrt{n}}]$ \\
+\hline
+$\mu$ ($\sigma^2$ unbek.) & t & $T=\frac{\bar{X}-\mu}{S/\sqrt{n}}$ & $[\bar{x} \pm t_p \frac{s}{\sqrt{n}}]$ \\
+\hline
+$\sigma^2$ & $\chi^2$ & $Z=\frac{(n-1)S^2}{\sigma^2}$ & $[\frac{(n-1)s^2}{c_2}, \frac{(n-1)s^2}{c_1}]$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{concept}
+
+\begin{KR}{Typische Prüfungsaufgaben}\\
+1. Maximum-Likelihood:
+   \begin{itemize}
+     \item Likelihood-Funktion aufstellen
+     \item Logarithmieren und ableiten
+     \item ML-Schätzer bestimmen
+   \end{itemize}
+
+2. Vertrauensintervalle:
+   \begin{itemize}
+     \item Verteilungstyp bestimmen
+     \item Quantile nachschlagen
+     \item Intervall berechnen
+   \end{itemize}
+
+3. Schätzer prüfen:
+   \begin{itemize}
+     \item Erwartungstreue nachweisen
+     \item Effizienz vergleichen
+     \item Konsistenz zeigen
+   \end{itemize}
+
+4. Stichprobenumfang:
+   \begin{itemize}
+     \item Genauigkeit berücksichtigen
+     \item Vertrauensniveau einbeziehen
+     \item Mindestumfang bestimmen
+   \end{itemize}
+\end{KR}

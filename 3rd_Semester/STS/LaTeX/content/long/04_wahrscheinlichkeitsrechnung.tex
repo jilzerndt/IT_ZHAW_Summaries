@@ -1,0 +1,724 @@
+\section{Wahrscheinlichkeitsrechnung}
+
+\subsection{Grundlagen}
+
+\begin{concept}{Grundlegende Strategien}
+\begin{itemize}
+    \item \textbf{Aufteilung in Kombinationen:} Komplexe Probleme in einfachere Teilprobleme zerlegen
+    \item \textbf{Berechnung über Inverse:} Manchmal ist es einfacher, die Gegenwahrscheinlichkeit zu berechnen
+    \item \textbf{Prozentrechnung:} Wahrscheinlichkeit / Gesamt-Wahrscheinlichkeit $\cdot$ 100\%
+    \item \textbf{Vierfeldertafel:} Zur Übersicht bei zwei binären Merkmalen
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Grundschritte der Wahrscheinlichkeitsberechnung}
+1. \textbf{Ergebnisraum identifizieren}
+   \begin{itemize}
+   \item Alle möglichen Ergebnisse auflisten
+   \item Prüfen, ob es sich um einen Laplace-Raum handelt
+   \end{itemize}
+
+2. \textbf{Ereignis präzisieren}
+   \begin{itemize}
+   \item Exakte mathematische Beschreibung des gesuchten Ereignisses
+   \item Zerlegung in Teilmengen falls nötig
+   \end{itemize}
+
+3. \textbf{Berechnungsstrategie wählen}
+   \begin{itemize}
+   \item Direkte Berechnung: $P(A) = \frac{|A|}{|\Omega|}$
+   \item Über Gegenereignis: $P(A) = 1 - P(\bar{A})$
+   \item Über bedingte Wahrscheinlichkeit falls abhängig
+   \end{itemize}
+
+4. \textbf{Berechnung durchführen}
+   \begin{itemize}
+   \item Kombinatorische Formeln anwenden
+   \item Zwischenergebnisse notieren
+   \item Probe durch Plausibilitätskontrolle
+   \end{itemize}
+\end{KR}
+
+\subsection{Klassische Wahrscheinlichkeit}
+
+\begin{definition}{Ergebnisraum und Laplace-Raum}
+Der \textbf{Ergebnisraum} $\Omega$ ist die Menge aller möglichen Ergebnisse des Zufallsexperiments. Die \textbf{Zähldichte} $\rho: \Omega \rightarrow[0,1]$ ordnet jedem Ereignis seine Wahrscheinlichkeit zu.
+
+Für einen \textbf{Laplace-Raum} $(\Omega, P)$ gilt:
+$$P(M)=\frac{|M|}{|\Omega|}$$
+
+\textbf{Parameter:}
+\begin{itemize}
+    \item $\Omega$ = Ergebnisraum (Menge aller möglichen Ergebnisse)
+    \item $P(M)$ = Wahrscheinlichkeit des Ereignisses $M$
+    \item $|M|$ = Anzahl der für $M$ günstigen Ergebnisse
+    \item $|\Omega|$ = Anzahl aller möglichen Ergebnisse
+\end{itemize}
+\end{definition}
+
+\begin{example}{Kartenspiel: Rommé}
+\textbf{Aufgabe:} Beim Rommé spielt man mit 110 Karten, davon sind 6 Joker. Jeder Spieler erhält 12 Karten.
+
+\textbf{Teil 1:} Berechne die Wahrscheinlichkeit für genau zwei Joker.
+\begin{itemize}
+\item \textbf{Ergebnisraum:} Alle möglichen 12-Karten-Hände: $|\Omega| = \binom{110}{12}$
+\item \textbf{Günstige Ereignisse:}
+    \begin{itemize}
+    \item 2 Joker aus 6: $\binom{6}{2}$
+    \item 10 Nicht-Joker aus 104: $\binom{104}{10}$
+    \end{itemize}
+\item \textbf{Berechnung:} $P(\text{2 Joker}) = \frac{\binom{6}{2} \cdot \binom{104}{10}}{\binom{110}{12}}$
+\end{itemize}
+
+\textbf{Teil 2:} Berechne die Wahrscheinlichkeit für mindestens einen Joker.
+\begin{itemize}
+\item \textbf{Strategie:} Berechnung über Gegenereignis (kein Joker)
+\item \textbf{Berechnung:} $P(\text{mind. 1 Joker}) = 1 - \frac{\binom{104}{12}}{\binom{110}{12}}$
+\end{itemize}
+\end{example}
+
+\begin{example}{Glühbirnen-Problem}
+\textbf{Aufgabe:} Von 100 Glühbirnen sind 3 defekt. Es werden 6 zufällig ausgewählt.
+
+\textbf{Teil 1:} Anzahl Möglichkeiten mit mindestens einer defekten Glühbirne.
+\begin{itemize}
+\item \textbf{Gesamtmöglichkeiten:} $\binom{100}{6}$
+\item \textbf{Gegenereignis:} Keine defekte = $\binom{97}{6}$
+\item \textbf{Lösung:} $\binom{100}{6} - \binom{97}{6} = 203'880'032$
+\end{itemize}
+
+\textbf{Teil 2:} Wahrscheinlichkeit für keine defekte Glühbirne.
+$$P(\text{keine defekt}) = \frac{\binom{97}{6}}{\binom{100}{6}}$$
+\end{example}
+
+\begin{KR}{Problemlösung mit Gegenereignis}
+1. \textbf{Prüfe, ob Gegenereignis einfacher ist}
+   \begin{itemize}
+   \item Original: "Mindestens eine..." oder "Mehr als..."
+   \item Gegenereignis: "Keine..." oder "Höchstens..."
+   \end{itemize}
+
+2. \textbf{Berechne Wahrscheinlichkeit des Gegenereignis}
+   \begin{itemize}
+   \item Oft einfacher zu zählen
+   \item Weniger Fälle zu berücksichtigen
+   \end{itemize}
+
+3. \textbf{Wende Komplementärregel an}
+   \begin{itemize}
+   \item $P(A) = 1 - P(\bar{A})$
+   \item Überprüfe Plausibilität des Ergebnisses
+   \end{itemize}
+\end{KR}
+
+\subsection{Bedingte Wahrscheinlichkeit}
+
+\begin{definition}{Bedingte Wahrscheinlichkeit}
+Die bedingte Wahrscheinlichkeit von $B$ unter der Bedingung $A$ ist:
+$$P(B|A)=\frac{P(B \cap A)}{P(A)}$$
+
+\textbf{Parameter:}
+\begin{itemize}
+    \item $P(B|A)$ = Wahrscheinlichkeit von $B$ unter der Bedingung $A$
+    \item $P(B \cap A)$ = Wahrscheinlichkeit des Durchschnitts
+    \item $P(A)$ = Wahrscheinlichkeit von Ereignis $A$
+\end{itemize}
+\end{definition}
+
+\begin{theorem}{Multiplikationssatz}
+$$P(A \cap B)=P(A) \cdot P(B|A)=P(B) \cdot P(A|B)$$
+
+\textbf{Anwendung:}
+\begin{itemize}
+    \item Berechnung von Schnittwahrscheinlichkeiten
+    \item Prüfung auf stochastische Unabhängigkeit
+    \item Zerlegung von mehrstufigen Experimenten
+\end{itemize}
+\end{theorem}
+
+\begin{KR}{Erstellen einer Vierfeldertafel}
+1. \textbf{Aufbau der Tabelle}
+   \begin{itemize}
+   \item Zeilen: Erstes Merkmal (A und nicht A)
+   \item Spalten: Zweites Merkmal (B und nicht B)
+   \item Randwahrscheinlichkeiten notieren
+   \end{itemize}
+
+2. \textbf{Eintragen der Wahrscheinlichkeiten}
+   \begin{itemize}
+   \item Schnittwahrscheinlichkeiten in die Felder
+   \item Zeilensummen = P(A) bzw. P(nicht A)
+   \item Spaltensummen = P(B) bzw. P(nicht B)
+   \end{itemize}
+
+3. \textbf{Berechnung bedingter Wahrscheinlichkeiten}
+   \begin{itemize}
+   \item $P(B|A) = \frac{P(A \cap B)}{P(A)}$
+   \item $P(A|B) = \frac{P(A \cap B)}{P(B)}$
+   \end{itemize}
+\end{KR}
+
+\begin{example}{Medizinischer Test}
+\textbf{Aufgabe:} Ein Test auf eine Krankheit hat folgende Eigenschaften:
+\begin{itemize}
+\item 1\% der Bevölkerung hat die Krankheit
+\item Test ist bei Kranken zu 98\% positiv
+\item Test ist bei Gesunden zu 95\% negativ
+\end{itemize}
+
+\textbf{Lösung mit Vierfeldertafel:}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+ & Test + & Test - & Summe \\
+\hline
+Krank & 0.0098 & 0.0002 & 0.01 \\
+\hline
+Gesund & 0.0495 & 0.9405 & 0.99 \\
+\hline
+Summe & 0.0593 & 0.9407 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Berechnung:} Wahrscheinlichkeit krank bei positivem Test:
+$$P(\text{krank}|\text{positiv}) = \frac{0.0098}{0.0593} \approx 0.165 = 16.5\%$$
+\end{example}
+
+\subsection{Spezielle Sätze}
+
+\begin{theorem}{Satz von der Totalen Wahrscheinlichkeit}
+$$P(B)=P(A) \cdot P(B|A)+P(\bar{A}) \cdot P(B|\bar{A})$$
+
+\textbf{Anwendung:}
+\begin{itemize}
+    \item Berechnung von P(B) durch Fallunterscheidung
+    \item Basis für den Satz von Bayes
+    \item Wichtig bei Entscheidungsbäumen
+\end{itemize}
+\end{theorem}
+
+\begin{theorem}{Satz von Bayes}
+$$P(A|B)=\frac{P(A) \cdot P(B|A)}{P(B)}$$
+
+\textbf{Anwendung:}
+\begin{itemize}
+    \item Umkehrung bedingter Wahrscheinlichkeiten
+    \item Aktualisierung von Wahrscheinlichkeiten
+    \item Diagnostische Tests
+\end{itemize}
+\end{theorem}
+
+\begin{KR}{Anwendung des Satzes von Bayes}
+1. \textbf{Identifiziere die bekannten Größen}
+   \begin{itemize}
+   \item A priori Wahrscheinlichkeit P(A)
+   \item Bedingte Wahrscheinlichkeit P(B|A)
+   \item Totale Wahrscheinlichkeit P(B)
+   \end{itemize}
+
+2. \textbf{Berechne P(B) falls nötig}
+   \begin{itemize}
+   \item Nutze Satz der totalen Wahrscheinlichkeit
+   \item P(B) = P(A)·P(B|A) + P(Ā)·P(B|Ā)
+   \end{itemize}
+
+3. \textbf{Berechne P(A|B)}
+   \begin{itemize}
+   \item Setze in Bayes-Formel ein
+   \item Interpretiere das Ergebnis
+   \end{itemize}
+\end{KR}
+
+\begin{example}{Qualitätskontrolle}
+\textbf{Aufgabe:} Eine Maschine produziert Teile. 
+\begin{itemize}
+\item 95\% der Teile sind fehlerfrei
+\item Ein Test erkennt fehlerhafte Teile zu 98\%
+\item Der Test klassifiziert 3\% der guten Teile falsch
+\end{itemize}
+
+\textbf{Gesucht:} Wahrscheinlichkeit für tatsächlich fehlerhaftes Teil bei positivem Test
+
+\textbf{Lösung:}
+\begin{itemize}
+\item P(F) = 0.05 (fehlerhaft)
+\item P(T|F) = 0.98 (Test positiv wenn fehlerhaft)
+\item P(T|¬F) = 0.03 (Test positiv wenn gut)
+\item P(T) = 0.05·0.98 + 0.95·0.03 = 0.0775
+\item P(F|T) = $\frac{0.05 \cdot 0.98}{0.0775} \approx 0.632$ = 63.2\%
+\end{itemize}
+\end{example}
+
+\subsection{Erwartungswert und Varianz}
+
+\begin{concept}{Kenngrössen von Zufallsvariablen}
+\textbf{Wichtige Eigenschaften:}
+\begin{itemize}
+    \item \textbf{Erwartungswert:} $E(X + Y) = E(X) + E(Y)$, $E(\alpha X) = \alpha E(X)$
+    \item \textbf{Varianz:} $V(X) = E(X^2) - E(X)^2$
+    \item \textbf{Standardabweichung:} $S(X) = \sqrt{V(X)}$
+    \item \textbf{Lineare Transformation:} $V(\alpha X + \beta) = \alpha^2 \cdot V(X)$
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Berechnung von Erwartungswert und Varianz}
+1. \textbf{Erwartungswert bestimmen}
+   \begin{itemize}
+   \item Diskret: $E(X) = \sum_{x} x \cdot P(X=x)$
+   \item Stetig: $E(X) = \int_{-\infty}^{\infty} x \cdot f(x) \, dx$
+   \end{itemize}
+
+2. \textbf{Varianz berechnen (2 Methoden)}
+   \begin{itemize}
+   \item Direkte Methode: $V(X) = \sum_{x} (x-E(X))^2 \cdot P(X=x)$
+   \item Verschiebungssatz: $V(X) = E(X^2) - (E(X))^2$
+   \end{itemize}
+
+3. \textbf{Bei Standardabweichung}
+   \begin{itemize}
+   \item Wurzel aus Varianz ziehen
+   \item Einheit beachten (gleich wie Ursprungsdaten)
+   \end{itemize}
+\end{KR}
+
+\begin{example}{Erwartungswert bei Würfelspiel}
+\textbf{Aufgabe:} Bei einem Würfelspiel gewinnt man:
+\begin{itemize}
+\item Bei 6: 5€
+\item Bei 5: 2€
+\item Bei 1-4: verliert man 1€
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Wahrscheinlichkeiten und Werte aufstellen:}
+   \begin{itemize}
+   \item P(X = 5€) = 1/6
+   \item P(X = 2€) = 1/6
+   \item P(X = -1€) = 4/6
+   \end{itemize}
+
+\item \textbf{Erwartungswert berechnen:}
+   $$E(X) = 5 \cdot \frac{1}{6} + 2 \cdot \frac{1}{6} + (-1) \cdot \frac{4}{6} = \frac{5+2-4}{6} = \frac{3}{6} = 0.5$$
+
+\item \textbf{Varianz berechnen:}
+   \begin{align*}
+   E(X^2) &= 25 \cdot \frac{1}{6} + 4 \cdot \frac{1}{6} + 1 \cdot \frac{4}{6} = \frac{25+4+4}{6} = \frac{33}{6} \\
+   V(X) &= E(X^2) - (E(X))^2 = \frac{33}{6} - (\frac{1}{2})^2 = \frac{33}{6} - \frac{1}{4} \approx 5.25
+   \end{align*}
+\end{enumerate}
+
+\textbf{Interpretation:}
+\begin{itemize}
+\item Positiver Erwartungswert: Spiel ist langfristig profitabel
+\item Hohe Varianz: Große Schwankungen möglich
+\end{itemize}
+\end{example}
+
+\begin{example}{Lotterie mit bedingten Gewinnen}
+\textbf{Aufgabe:} Bei einer Lotterie gewinnt man zunächst mit p = 0.1 einen Bonus-Los. Mit diesem Los kann man dann mit p = 0.2 den Hauptpreis von 1000€ gewinnen. Berechne den Erwartungswert.
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Ereignisbaum erstellen:}
+   \begin{itemize}
+   \item P(Bonus) = 0.1
+   \item P(Hauptgewinn|Bonus) = 0.2
+   \end{itemize}
+
+\item \textbf{Mögliche Ausgänge:}
+   \begin{itemize}
+   \item 1000€: P = 0.1 · 0.2 = 0.02
+   \item 0€: P = 0.98
+   \end{itemize}
+
+\item \textbf{Erwartungswert:}
+   $$E(X) = 1000 \cdot 0.02 + 0 \cdot 0.98 = 20$$
+\end{enumerate}
+\end{example}
+
+\begin{KR}{Interpretation von Erwartungswert und Varianz}
+1. \textbf{Erwartungswert}
+   \begin{itemize}
+   \item Langfristiger Durchschnitt
+   \item Schwerpunkt der Verteilung
+   \item Nicht unbedingt ein möglicher Wert
+   \end{itemize}
+
+2. \textbf{Varianz}
+   \begin{itemize}
+   \item Maß für die Streuung
+   \item Quadratische Einheit beachten
+   \item Je größer, desto unsicherer die Vorhersage
+   \end{itemize}
+
+3. \textbf{Standardabweichung}
+   \begin{itemize}
+   \item Gleiche Einheit wie Daten
+   \item Typische Abweichung vom Mittelwert
+   \item Oft für Konfidenzintervalle verwendet
+   \end{itemize}
+\end{KR}
+
+\begin{example}{Aktienportfolio}
+\textbf{Aufgabe:} Ein Portfolio besteht aus:
+\begin{itemize}
+\item Aktie A: 60\% Anteil, E(A) = 8\%, V(A) = 25
+\item Aktie B: 40\% Anteil, E(B) = 12\%, V(B) = 36
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Erwartungswert des Portfolios:}
+   \begin{align*}
+   E(P) &= 0.6 \cdot E(A) + 0.4 \cdot E(B) \\
+   &= 0.6 \cdot 8\% + 0.4 \cdot 12\% \\
+   &= 4.8\% + 4.8\% = 9.6\%
+   \end{align*}
+
+\item \textbf{Varianz des Portfolios} (bei Unabhängigkeit):
+   \begin{align*}
+   V(P) &= (0.6)^2 \cdot V(A) + (0.4)^2 \cdot V(B) \\
+   &= 0.36 \cdot 25 + 0.16 \cdot 36 \\
+   &= 9 + 5.76 = 14.76
+   \end{align*}
+
+\item \textbf{Standardabweichung:}
+   $$S(P) = \sqrt{14.76} \approx 3.84\%$$
+\end{enumerate}
+\end{example}
+
+\begin{definition}{Kovarianz und Korrelation}
+Die \textbf{Kovarianz} zweier Zufallsvariablen ist:
+$$Cov(X,Y) = E((X-E(X))(Y-E(Y))) = E(XY) - E(X)E(Y)$$
+
+Der \textbf{Korrelationskoeffizient} ist:
+$$\rho_{XY} = \frac{Cov(X,Y)}{\sqrt{V(X)V(Y)}}$$
+
+\textbf{Eigenschaften:}
+\begin{itemize}
+    \item $-1 \leq \rho_{XY} \leq 1$
+    \item $\rho_{XY} = \pm 1$: perfekter linearer Zusammenhang
+    \item $\rho_{XY} = 0$: unkorreliert
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Anwendung von Kovarianz und Korrelation}
+1. \textbf{Kovarianz berechnen}
+   \begin{itemize}
+   \item Direkter Weg: $Cov(X,Y) = E(XY) - E(X)E(Y)$
+   \item Alternativ: $\frac{1}{n}\sum(x_i-\bar{x})(y_i-\bar{y})$
+   \end{itemize}
+
+2. \textbf{Korrelation bestimmen}
+   \begin{itemize}
+   \item Kovarianz durch Produkt der Standardabweichungen
+   \item Normierung auf [-1,1]
+   \end{itemize}
+
+3. \textbf{Interpretation}
+   \begin{itemize}
+   \item Vorzeichen: Richtung des Zusammenhangs
+   \item Betrag: Stärke des Zusammenhangs
+   \item Unabhängig von Maßeinheiten
+   \end{itemize}
+\end{KR}
+
+\begin{example}{Portfoliorisiko mit Korrelation}
+\textbf{Aufgabe:} Zwei Aktien mit:
+\begin{itemize}
+\item A: E(A) = 10\%, S(A) = 5\%
+\item B: E(B) = 8\%, S(B) = 4\%
+\item Korrelation: $\rho_{AB} = 0.3$
+\end{itemize}
+
+\textbf{Portfolio:} 60\% A, 40\% B
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Erwartungswert:}
+   $$E(P) = 0.6 \cdot 10\% + 0.4 \cdot 8\% = 9.2\%$$
+
+\item \textbf{Varianz mit Korrelation:}
+   \begin{align*}
+   V(P) &= (0.6)^2V(A) + (0.4)^2V(B) + 2(0.6)(0.4)\rho_{AB}S(A)S(B) \\
+   &= 0.36 \cdot (5\%)^2 + 0.16 \cdot (4\%)^2 + 2(0.24)(0.3)(5\%)(4\%) \\
+   &= 0.09\% + 0.0256\% + 0.0288\% = 0.1444\%
+   \end{align*}
+
+\item \textbf{Standardabweichung:}
+   $$S(P) = \sqrt{0.1444\%} \approx 3.8\%$$
+\end{enumerate}
+\end{example}
+
+\subsection{Stochastische Unabhängigkeit}
+
+\begin{definition}{Stochastische Unabhängigkeit}
+Zwei Ereignisse $A$ und $B$ heißen stochastisch unabhängig, falls:
+$$P(A \cap B) = P(A) \cdot P(B)$$
+
+Zwei Zufallsvariablen $X$ und $Y$ heißen stochastisch unabhängig, falls für alle $x,y \in \mathbb{R}$:
+$$P(X=x, Y=y) = P(X=x) \cdot P(Y=y)$$
+
+\textbf{Eigenschaften:}
+\begin{itemize}
+    \item Für unabhängige Ereignisse: $P(A|B) = P(A)$
+    \item Für unabhängige Zufallsvariablen: $E(XY) = E(X)E(Y)$
+    \item Varianz der Summe: $V(X+Y) = V(X) + V(Y)$
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Prüfung auf stochastische Unabhängigkeit}
+1. \textbf{Für Ereignisse}
+   \begin{itemize}
+   \item Berechne $P(A \cap B)$
+   \item Berechne $P(A) \cdot P(B)$
+   \item Vergleiche die Werte
+   \end{itemize}
+
+2. \textbf{Für Zufallsvariablen}
+   \begin{itemize}
+   \item Stelle Verbundverteilung auf
+   \item Prüfe für alle Wertepaare
+   \item Alternative: Prüfe Kovarianz = 0
+   \end{itemize}
+
+3. \textbf{Praktische Überlegungen}
+   \begin{itemize}
+   \item Physikalische/logische Abhängigkeit?
+   \item Kausaler Zusammenhang?
+   \item Gemeinsame Einflussfaktoren?
+   \end{itemize}
+\end{KR}
+
+\begin{example}{Würfelwurf und Münzwurf}
+\textbf{Aufgabe:} Ein Würfel wird geworfen und eine Münze geworfen.
+Ereignisse:
+\begin{itemize}
+\item A: "Würfel zeigt eine 6"
+\item B: "Münze zeigt Kopf"
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Einzelwahrscheinlichkeiten:}
+   \begin{itemize}
+   \item $P(A) = \frac{1}{6}$
+   \item $P(B) = \frac{1}{2}$
+   \end{itemize}
+
+\item \textbf{Schnittwahrscheinlichkeit:}
+   $P(A \cap B) = \frac{1}{12} = \frac{1}{6} \cdot \frac{1}{2} = P(A) \cdot P(B)$
+
+\item \textbf{Schlussfolgerung:} Die Ereignisse sind stochastisch unabhängig
+\end{enumerate}
+\end{example}
+
+\begin{example}{Kartenziehen ohne Zurücklegen}
+\textbf{Aufgabe:} Aus einem Kartenspiel werden nacheinander zwei Karten gezogen.
+Ereignisse:
+\begin{itemize}
+\item A: "Erste Karte ist Herz"
+\item B: "Zweite Karte ist Herz"
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Wahrscheinlichkeiten:}
+   \begin{itemize}
+   \item $P(A) = \frac{13}{52} = \frac{1}{4}$
+   \item $P(B|A) = \frac{12}{51}$
+   \item $P(B|\bar{A}) = \frac{13}{51}$
+   \end{itemize}
+
+\item \textbf{Prüfung:}
+   $$P(B) = \frac{13}{52} \neq P(B|A)$$
+
+\item \textbf{Schlussfolgerung:} Die Ereignisse sind stochastisch abhängig
+\end{enumerate}
+\end{example}
+
+\subsection{Spezielle Verteilungen}
+
+\begin{definition}{Bernoulli-Verteilung}
+Experiment mit genau zwei möglichen Ausgängen (Erfolg/Misserfolg).
+$$P(X=1) = p, \quad P(X=0) = 1-p = q$$
+
+\textbf{Kenngrößen:}
+\begin{itemize}
+    \item $E(X) = p$
+    \item $V(X) = p(1-p)$
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Anwendung der Bernoulli-Verteilung}
+1. \textbf{Prüfe Voraussetzungen}
+   \begin{itemize}
+   \item Genau zwei mögliche Ausgänge
+   \item Unabhängige Wiederholungen
+   \item Konstante Erfolgswahrscheinlichkeit
+   \end{itemize}
+
+2. \textbf{Parameter identifizieren}
+   \begin{itemize}
+   \item p = Erfolgswahrscheinlichkeit
+   \item q = 1-p = Misserfolgswahrscheinlichkeit
+   \end{itemize}
+
+3. \textbf{Berechnung}
+   \begin{itemize}
+   \item E(X) = p
+   \item V(X) = pq
+   \end{itemize}
+\end{KR}
+
+\begin{definition}{Binomialverteilung}
+n-malige unabhängige Wiederholung eines Bernoulli-Experiments.
+$$P(X=k) = \binom{n}{k}p^k(1-p)^{n-k}$$
+
+\textbf{Kenngrößen:}
+\begin{itemize}
+    \item $E(X) = np$
+    \item $V(X) = np(1-p)$
+\end{itemize}
+
+\textbf{Notation:} $X \sim B(n,p)$
+\end{definition}
+
+\begin{example}{Qualitätskontrolle mit Binomialverteilung}
+\textbf{Aufgabe:} Eine Maschine produziert Teile mit Ausschussquote 5\%. In einer Stichprobe von 100 Teilen:
+\begin{itemize}
+\item a) Wie viele defekte Teile sind zu erwarten?
+\item b) Wie groß ist die Wahrscheinlichkeit für genau 3 defekte Teile?
+\item c) Wie groß ist die Wahrscheinlichkeit für höchstens 2 defekte Teile?
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Parameter:}
+   \begin{itemize}
+   \item n = 100 (Stichprobenumfang)
+   \item p = 0.05 (Ausschusswahrscheinlichkeit)
+   \item X $\thicksim$ B(100, 0.05)
+   \end{itemize}
+
+\item \textbf{Erwartungswert:}
+   $$E(X) = np = 100 \cdot 0.05 = 5$$
+
+\item \textbf{Genau 3 defekte:}
+   $$P(X=3) = \binom{100}{3}(0.05)^3(0.95)^{97} \approx 0.1404$$
+
+\item \textbf{Höchstens 2 defekte:}
+   $$P(X \leq 2) = \sum_{k=0}^2 \binom{100}{k}(0.05)^k(0.95)^{100-k} \approx 0.0861$$
+\end{enumerate}
+\end{example}
+
+\begin{definition}{Hypergeometrische Verteilung}
+Ziehen ohne Zurücklegen aus einer endlichen Grundgesamtheit.
+
+\textbf{Parameter:}
+\begin{itemize}
+    \item N: Grundgesamtheit
+    \item M: Anzahl der Merkmalsträger
+    \item n: Stichprobenumfang
+\end{itemize}
+
+$$P(X=k) = \frac{\binom{M}{k}\binom{N-M}{n-k}}{\binom{N}{n}}$$
+
+\textbf{Kenngrößen:}
+\begin{itemize}
+    \item $E(X) = n\frac{M}{N}$
+    \item $V(X) = n\frac{M}{N}(1-\frac{M}{N})\frac{N-n}{N-1}$
+\end{itemize}
+
+\textbf{Notation:} $X \sim H(N,M,n)$
+\end{definition}
+
+\begin{example}{Ziehung ohne Zurücklegen}
+\textbf{Aufgabe:} In einer Urne sind 20 Kugeln, davon 8 rot. Es werden 5 Kugeln ohne Zurücklegen gezogen. 
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Parameter:}
+   \begin{itemize}
+   \item N = 20 (Gesamtanzahl)
+   \item M = 8 (rote Kugeln)
+   \item n = 5 (Ziehungen)
+   \end{itemize}
+
+\item \textbf{Erwartungswert:}
+   $$E(X) = 5 \cdot \frac{8}{20} = 2$$
+
+\item \textbf{Varianz:}
+   $$V(X) = 5 \cdot \frac{8}{20} \cdot \frac{12}{20} \cdot \frac{15}{19} \approx 1.184$$
+
+\item \textbf{P(genau 2 rote):}
+   $$P(X=2) = \frac{\binom{8}{2}\binom{12}{3}}{\binom{20}{5}} \approx 0.3682$$
+\end{enumerate}
+\end{example}
+
+\begin{definition}{Poisson-Verteilung}
+Modelliert seltene Ereignisse in festem Zeit- oder Raumintervall.
+
+$$P(X=k) = \frac{\lambda^k}{k!}e^{-\lambda}$$
+
+\textbf{Parameter:}
+\begin{itemize}
+    \item $\lambda$: Erwartungswert pro Intervall
+\end{itemize}
+
+\textbf{Kenngrößen:}
+\begin{itemize}
+    \item $E(X) = \lambda$
+    \item $V(X) = \lambda$
+\end{itemize}
+
+\textbf{Notation:} $X \sim Poi(\lambda)$
+\end{definition}
+
+\begin{KR}{Wahl der richtigen Verteilung}
+1. \textbf{Prüfe Ziehungsart}
+   \begin{itemize}
+   \item Mit Zurücklegen → Binomialverteilung
+   \item Ohne Zurücklegen → Hypergeometrische Verteilung
+   \item Seltene Ereignisse → Poisson-Verteilung
+   \end{itemize}
+
+2. \textbf{Prüfe Grundgesamtheit}
+   \begin{itemize}
+   \item Endlich, klein → Hypergeometrische Verteilung
+   \item Sehr groß/unendlich → Binomialverteilung
+   \item Zeitlich/räumlich kontinuierlich → Poisson-Verteilung
+   \end{itemize}
+
+3. \textbf{Beachte Approximationen}
+   \begin{itemize}
+   \item Binomial → Poisson für $n \to \infty$, $p \to 0$, $np = \lambda$
+   \item Hypergeometrisch → Binomial für $\frac{n}{N} \leq 0.05$
+   \end{itemize}
+\end{KR}
+
+\begin{example}{Poisson-Verteilung in der Praxis}
+\textbf{Aufgabe:} Ein Callcenter erhält durchschnittlich 3 Anrufe pro 10 Minuten.
+\begin{itemize}
+\item a) Wahrscheinlichkeit für genau 2 Anrufe in 10 Minuten?
+\item b) Wahrscheinlichkeit für mehr als 4 Anrufe?
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Parameter:}
+   \begin{itemize}
+   \item $\lambda = 3$ (Erwartungswert)
+   \item X $\thicksim$ Poi(3)
+   \end{itemize}
+
+\item \textbf{Genau 2 Anrufe:}
+   $$P(X=2) = \frac{3^2}{2!}e^{-3} \approx 0.2240$$
+
+\item \textbf{Mehr als 4 Anrufe:}
+   $$P(X>4) = 1 - \sum_{k=0}^4 \frac{3^k}{k!}e^{-3} \approx 0.1847$$
+\end{enumerate}
+\end{example}
+
