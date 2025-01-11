@@ -39,6 +39,37 @@ Der Strukturbruch zwischen objektorientierter und relationaler Welt:
 \end{itemize}
 \end{definition}
 
+\begin{example2}{Prüfungsaufgabe: O/R-Mapping Analyse}
+\textbf{Szenario:}
+Ein Universitätssystem verwaltet Studenten, Kurse und Noten. Studenten können mehrere 
+Kurse belegen, ein Kurs hat mehrere Studenten.
+
+\textbf{Aufgabe:} 
+Analysieren Sie die O/R-Mapping Herausforderungen dieser Domain.
+
+\textbf{Lösung:}
+\begin{itemize}
+    \item \textbf{Beziehungen:}
+    \begin{itemize}
+        \item Many-to-Many zwischen Student und Kurs
+        \item Zusätzliche Attribute in der Beziehung (Noten)
+        \item Bidirektionale Navigation erforderlich
+    \end{itemize}
+    
+    \item \textbf{Vererbung:}
+    \begin{itemize}
+        \item Person -> Student/Dozent
+        \item Verschiedene Mapping-Strategien möglich
+    \end{itemize}
+    
+    \item \textbf{Komplexe Daten:}
+    \begin{itemize}
+        \item Adressdaten als Wertobjekte
+        \item Zeiträume für Kursbelegung
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
 \subsection{JDBC - Java Database Connectivity}
 
 \begin{concept}{JDBC Grundlagen}\\
@@ -91,137 +122,6 @@ Drei grundlegende Ansätze für die Persistenzschicht:
 \end{itemize}
 \end{theorem}
 
-\begin{KR}{DAO Implementation}\\
-Schritte zur Implementierung eines DAOs:
-\begin{enumerate}
-    \item Interface definieren:
-    \begin{itemize}
-        \item CRUD-Methoden (Create, Read, Update, Delete)
-        \item Spezifische Suchmethoden
-    \end{itemize}
-    \item Domänenklasse erstellen:
-    \begin{itemize}
-        \item Nur fachliche Attribute
-        \item Keine Persistenzlogik
-    \end{itemize}
-    \item DAO-Implementierung:
-    \begin{itemize}
-        \item Datenbankzugriff kapseln
-        \item O/R-Mapping implementieren
-        \item Transaktionshandling
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-
-
-\subsection{Java Persistence API (JPA)}
-
-\begin{concept}{JPA Grundkonzepte}\\
-JPA ist der Java-Standard für O/R-Mapping:
-\begin{itemize}
-    \item \textbf{Entity-Klassen:}
-    \begin{itemize}
-        \item Plain Old Java Objects (POJOs)
-        \item Annotation @Entity
-        \item Keine JPA-spezifischen Abhängigkeiten
-    \end{itemize}
-    \item \textbf{Referenzen:}
-    \begin{itemize}
-        \item Eager/Lazy Loading
-        \item Automatisches Nachladen
-    \end{itemize}
-    \item \textbf{Provider:}
-    \begin{itemize}
-        \item Hibernate
-        \item EclipseLink
-        \item OpenJPA
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{concept}{JPA Technologie-Stack}\\
-\begin{itemize}
-    \item Java Application
-    \item Java Persistence API
-    \item JPA Provider (Hibernate, EclipseLink, etc.)
-    \item JDBC Driver
-    \item Relationale Datenbank
-\end{itemize}
-\includegraphics[width=0.8\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-29.jpg}
-\end{concept}
-
-\begin{KR}{JPA Entity Erstellung}
-\begin{enumerate}
-    \item Entity-Klasse definieren:
-    \begin{itemize}
-        \item @Entity Annotation
-        \item ID-Feld mit @Id markieren
-    \end{itemize}
-    \item Beziehungen definieren:
-    \begin{itemize}
-        \item @OneToMany, @ManyToOne etc.
-        \item Navigationsrichtung festlegen
-    \end{itemize}
-    \item Validierung hinzufügen:
-    \begin{itemize}
-        \item @NotNull, @Size etc.
-        \item Geschäftsregeln
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-
-
-\subsection{Repository Pattern}
-
-\begin{concept}{Repository Pattern}\\
-Das Repository Pattern bietet eine zusätzliche Abstraktionsschicht über der Data-Mapper-Schicht:
-\begin{itemize}
-    \item Zentralisierung von Datenbankabfragen
-    \item Domänenorientierte Schnittstelle
-    \item Unterstützung komplexer Abfragen
-    \item Häufig in Kombination mit Spring Data
-\end{itemize}
-\end{concept}
-
-
-
-\begin{remark}
-Spring Data unterstützt die automatische Generierung von Repository-Implementierungen basierend auf Methodennamen. Dies reduziert den Implementierungsaufwand erheblich.
-\end{remark}
-
-\begin{example}{Prüfungsaufgabe: O/R-Mapping Analyse}
-\textbf{Szenario:}
-Ein Universitätssystem verwaltet Studenten, Kurse und Noten. Studenten können mehrere 
-Kurse belegen, ein Kurs hat mehrere Studenten.
-
-\textbf{Aufgabe:} 
-Analysieren Sie die O/R-Mapping Herausforderungen dieser Domain.
-
-\textbf{Lösung:}
-\begin{itemize}
-    \item \textbf{Beziehungen:}
-    \begin{itemize}
-        \item Many-to-Many zwischen Student und Kurs
-        \item Zusätzliche Attribute in der Beziehung (Noten)
-        \item Bidirektionale Navigation erforderlich
-    \end{itemize}
-    
-    \item \textbf{Vererbung:}
-    \begin{itemize}
-        \item Person -> Student/Dozent
-        \item Verschiedene Mapping-Strategien möglich
-    \end{itemize}
-    
-    \item \textbf{Komplexe Daten:}
-    \begin{itemize}
-        \item Adressdaten als Wertobjekte
-        \item Zeiträume für Kursbelegung
-    \end{itemize}
-\end{itemize}
-\end{example}
-
 \begin{KR}{Persistenzstrategie wählen}
 \textbf{1. Anforderungen analysieren}
 \begin{itemize}
@@ -262,7 +162,7 @@ Analysieren Sie die O/R-Mapping Herausforderungen dieser Domain.
 \end{itemize}
 \end{KR}
 
-\begin{example}{Prüfungsaufgabe: Design Pattern Vergleich}
+\begin{example2}{Prüfungsaufgabe: Design Pattern Vergleich}
 \textbf{Aufgabe:}
 Vergleichen Sie Active Record, DAO und Repository Pattern.
 
@@ -313,7 +213,87 @@ Vergleichen Sie Active Record, DAO und Repository Pattern.
         \end{itemize}
     \end{itemize}
 \end{itemize}
-\end{example}
+\end{example2}
+
+\begin{KR}{DAO Implementation}\\
+Schritte zur Implementierung eines DAOs:
+\begin{enumerate}
+    \item Interface definieren:
+    \begin{itemize}
+        \item CRUD-Methoden (Create, Read, Update, Delete)
+        \item Spezifische Suchmethoden
+    \end{itemize}
+    \item Domänenklasse erstellen:
+    \begin{itemize}
+        \item Nur fachliche Attribute
+        \item Keine Persistenzlogik
+    \end{itemize}
+    \item DAO-Implementierung:
+    \begin{itemize}
+        \item Datenbankzugriff kapseln
+        \item O/R-Mapping implementieren
+        \item Transaktionshandling
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+
+
+\subsection{Java Persistence API (JPA)}
+
+\begin{concept}{JPA Grundkonzepte}\\
+JPA ist der Java-Standard für O/R-Mapping:
+\begin{itemize}
+    \item \textbf{Entity-Klassen:}
+    \begin{itemize}
+        \item Plain Old Java Objects (POJOs)
+        \item Annotation @Entity
+        \item Keine JPA-spezifischen Abhängigkeiten
+    \end{itemize}
+    \item \textbf{Referenzen:}
+    \begin{itemize}
+        \item Eager/Lazy Loading
+        \item Automatisches Nachladen
+    \end{itemize}
+    \item \textbf{Provider:}
+    \begin{itemize}
+        \item Hibernate
+        \item EclipseLink
+        \item OpenJPA
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{concept}{JPA Technologie-Stack}
+\begin{itemize}
+    \item Java Application
+    \item Java Persistence API
+    \item JPA Provider (Hibernate, EclipseLink, etc.)
+    \item JDBC Driver
+    \item Relationale Datenbank
+\end{itemize}
+\includegraphics[width=0.5\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-29.jpg}
+\end{concept}
+
+\begin{KR}{JPA Entity Erstellung}
+\begin{enumerate}
+    \item Entity-Klasse definieren:
+    \begin{itemize}
+        \item @Entity Annotation
+        \item ID-Feld mit @Id markieren
+    \end{itemize}
+    \item Beziehungen definieren:
+    \begin{itemize}
+        \item @OneToMany, @ManyToOne etc.
+        \item Navigationsrichtung festlegen
+    \end{itemize}
+    \item Validierung hinzufügen:
+    \begin{itemize}
+        \item @NotNull, @Size etc.
+        \item Geschäftsregeln
+    \end{itemize}
+\end{enumerate}
+\end{KR}
 
 \begin{KR}{JPA Entity Design}
 \textbf{1. Grundstruktur}
@@ -366,4 +346,27 @@ Vergleichen Sie Active Record, DAO und Repository Pattern.
 \end{itemize}
 \end{KR}
 
-[Previous content about Repository Pattern remains]
+
+
+
+\subsection{Repository Pattern}
+
+\begin{concept}{Repository Pattern}\\
+Das Repository Pattern bietet eine zusätzliche Abstraktionsschicht über der Data-Mapper-Schicht:
+\begin{itemize}
+    \item Zentralisierung von Datenbankabfragen
+    \item Domänenorientierte Schnittstelle
+    \item Unterstützung komplexer Abfragen
+    \item Häufig in Kombination mit Spring Data
+\end{itemize}
+\end{concept}
+
+\begin{remark}
+Spring Data unterstützt die automatische Generierung von Repository-Implementierungen basierend auf Methodennamen. Dies reduziert den Implementierungsaufwand erheblich.
+\end{remark}
+
+
+
+
+
+
