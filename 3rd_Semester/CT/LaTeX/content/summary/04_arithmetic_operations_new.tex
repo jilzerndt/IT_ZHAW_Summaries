@@ -110,3 +110,186 @@ Steps for arithmetic operations:
   \item Check relevant flags after operation
 \end{enumerate}
 \end{KR}
+
+\begin{concept}{ALU Operation Fundamentals}\\
+The Arithmetic Logic Unit (ALU) processes data:
+\begin{itemize}
+  \item 32-bit wide data processing unit
+  \item Fixed point operations only (no floating point)
+  \item Flag outputs indicate operation results
+  \item Can perform both signed and unsigned operations
+  \item Same hardware used for addition and subtraction
+\end{itemize}
+\end{concept}
+
+\begin{formula}{Addition Operations}\\
+Addition instructions and their uses:
+\begin{itemize}
+  \item \textbf{ADDS Rd, Rn, Rm}
+    \begin{itemize}
+      \item Rd = Rn + Rm
+      \item Updates flags
+      \item Only low registers
+    \end{itemize}
+  \item \textbf{ADD Rd, Rm}
+    \begin{itemize}
+      \item Rd = Rd + Rm
+      \item No flag updates
+      \item Can use high registers
+    \end{itemize}
+  \item \textbf{ADDS Rd, \#imm}
+    \begin{itemize}
+      \item Rd = Rd + immediate
+      \item 8-bit immediate value only
+    \end{itemize}
+\end{itemize}
+
+Example encodings:
+\begin{lstlisting}[language=armasm, style=base]
+    ; Different ADD variants
+    ADDS    R1, R2, R3      ; R1 = R2 + R3, update flags
+    ADD     R8, R9          ; R8 = R8 + R9, no flags
+    ADDS    R1, #255        ; R1 = R1 + 255, update flags
+\end{lstlisting}
+\end{formula}
+
+\begin{formula}{Subtraction Operations}\\
+Subtraction instructions and their uses:
+\begin{itemize}
+  \item \textbf{SUBS Rd, Rn, Rm}
+    \begin{itemize}
+      \item Rd = Rn - Rm
+      \item Updates flags
+      \item Only low registers
+    \end{itemize}
+  \item \textbf{SUBS Rd, \#imm}
+    \begin{itemize}
+      \item Rd = Rd - immediate
+      \item 8-bit immediate value
+    \end{itemize}
+  \item \textbf{RSBS Rd, Rn, \#0}
+    \begin{itemize}
+      \item Rd = -Rn (2's complement)
+      \item Special case for negation
+    \end{itemize}
+\end{itemize}
+
+Example encodings:
+\begin{lstlisting}[language=armasm, style=base]
+    ; Different SUB variants
+    SUBS    R1, R2, R3      ; R1 = R2 - R3
+    SUBS    R1, #100        ; R1 = R1 - 100
+    RSBS    R1, R2, #0      ; R1 = -R2
+\end{lstlisting}
+\end{formula}
+
+\begin{KR}{Overflow Detection}\\
+Steps to detect overflow in arithmetic operations:
+
+1. For unsigned arithmetic (using C flag):
+\begin{itemize}
+  \item Addition: Check C flag (C=1 means overflow)
+  \item Subtraction: Check C flag (C=0 means underflow)
+\end{itemize}
+
+2. For signed arithmetic (using V flag):
+\begin{itemize}
+  \item Addition: Check V flag for same-sign operands
+  \item Subtraction: Check V flag for opposite-sign operands
+\end{itemize}
+
+Example:
+\begin{lstlisting}[language=armasm, style=base]
+    ; Unsigned overflow detection
+    ADDS    R0, R1          ; Perform addition
+    BCS     overflow        ; Branch if carry set
+    
+    ; Signed overflow detection
+    ADDS    R0, R1          ; Perform addition
+    BVS     overflow        ; Branch if overflow set
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Flag Usage}
+Examples of flag behavior:
+\begin{lstlisting}[language=armasm, style=base]
+    ; Zero flag example
+    MOVS    R0, #5
+    SUBS    R0, #5          ; Z=1 (result is zero)
+    
+    ; Negative flag example
+    MOVS    R0, #1
+    SUBS    R0, #2          ; N=1 (result is negative)
+    
+    ; Carry flag example
+    MOVS    R0, #0xFF
+    ADDS    R0, #1          ; C=1 (unsigned overflow)
+    
+    ; Overflow flag example
+    MOVS    R0, #0x7F       ; Max positive 8-bit
+    ADDS    R0, #1          ; V=1 (signed overflow)
+\end{lstlisting}
+\end{example2}
+
+\begin{concept}{Number Circles and Two's Complement}\\
+Understanding arithmetic wrap-around:
+\begin{itemize}
+  \item Fixed number of bits creates circular number space
+  \item Addition moves clockwise on number circle
+  \item Subtraction moves counter-clockwise
+  \item Two's complement:
+    \begin{itemize}
+      \item Invert all bits (one's complement)
+      \item Add 1 to result
+      \item Enables using addition hardware for subtraction
+    \end{itemize}
+\end{itemize}
+
+Example for 4-bit numbers:
+\begin{verbatim}
+Positive: 0000 to 0111 (0 to 7)
+Negative: 1000 to 1111 (-8 to -1)
+\end{verbatim}
+\end{concept}
+
+\begin{KR}{Multi-Word Arithmetic}\\
+Guidelines for operations on large numbers:
+
+1. Addition sequence:
+\begin{lstlisting}[language=armasm, style=base]
+    ; 64-bit addition (R1:R0 + R3:R2)
+    ADDS    R0, R2          ; Add low words
+    ADCS    R1, R3          ; Add high words with carry
+\end{lstlisting}
+
+2. Subtraction sequence:
+\begin{lstlisting}[language=armasm, style=base]
+    ; 64-bit subtraction (R1:R0 - R3:R2)
+    SUBS    R0, R2          ; Subtract low words
+    SBCS    R1, R3          ; Subtract high words with borrow
+\end{lstlisting}
+
+3. Important considerations:
+\begin{itemize}
+  \item Start with least significant words
+  \item Use carry-aware instructions for higher words
+  \item Ensure proper register allocation
+  \item Track flags through entire operation
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Multiplication}
+Simple multiplication examples:
+\begin{lstlisting}[language=armasm, style=base]
+    ; Basic multiplication
+    MULS    R0, R1, R0      ; R0 = R1 * R0
+    
+    ; Multiply by constant using shifts
+    LSLS    R0, R0, #2      ; R0 = R0 * 4
+    
+    ; Multiply by 10 (8 + 2)
+    LSLS    R1, R0, #3      ; R1 = R0 * 8
+    LSLS    R2, R0, #1      ; R2 = R0 * 2
+    ADDS    R0, R1, R2      ; R0 = R0 * 10
+\end{lstlisting}
+\end{example2}

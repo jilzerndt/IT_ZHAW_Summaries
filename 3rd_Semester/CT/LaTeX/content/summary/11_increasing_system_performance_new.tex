@@ -167,3 +167,187 @@ Steps for performance optimization:
   \item Evaluate security implications
 \end{enumerate}
 \end{KR}
+
+\begin{concept}{Performance Growth Overview}\\
+Historical development:
+\begin{itemize}
+  \item Early improvements:
+    \begin{itemize}
+      \item Increasing clock frequencies
+      \item Better manufacturing processes
+      \item Smaller transistor sizes
+    \end{itemize}
+  \item Modern improvements:
+    \begin{itemize}
+      \item Advanced architectural concepts (RISC, Pipelining)
+      \item Multiple cores
+      \item Specialized hardware units
+    \end{itemize}
+  \item Current limitations:
+    \begin{itemize}
+      \item Power density
+      \item Heat dissipation
+      \item Memory wall
+      \item Parallelization overhead
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{concept}{System Level Optimization}\\
+Different approaches to improve performance:
+\begin{itemize}
+  \item \textbf{External Factors}:
+    \begin{itemize}
+      \item Better compiler optimization
+      \item Improved algorithms
+      \item Efficient software design
+    \end{itemize}
+  \item \textbf{System Level Factors}:
+    \begin{itemize}
+      \item Special Purpose Units (e.g., Crypto, Video)
+      \item Multiple Processors
+      \item Bus Architecture optimization
+      \item Faster peripheral components
+    \end{itemize}
+  \item \textbf{CPU Improvements}:
+    \begin{itemize}
+      \item Increased Clock Speed
+      \item Cache Memory
+      \item Multiple Cores
+      \item Pipeline Optimization
+      \item Branch Prediction
+      \item Out-of-Order Execution
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{formula}{Pipeline Performance Calculation}\\
+For a processor with n pipeline stages:
+
+\textbf{Without pipelining:}
+\begin{itemize}
+  \item Time per instruction = Sum of all stage delays
+  \item Performance = $\frac{1}{\text{Total delay}}$
+\end{itemize}
+
+\textbf{With pipelining:}
+\begin{itemize}
+  \item Time per instruction = Longest stage delay
+  \item Initial latency = n cycles
+  \item Throughput = $\frac{1}{\text{Max stage delay}}$
+\end{itemize}
+
+Example calculation:
+\begin{itemize}
+  \item Stage delays: Fe=3ns, De=4ns, Ex=5ns
+  \item Without pipeline: 12ns per instruction
+  \item With pipeline: 5ns per instruction after filling
+  \item Performance improvement: 2.4×
+\end{itemize}
+\end{formula}
+
+\begin{example2}{Pipeline Hazards}
+Three types of pipeline hazards:
+
+1. \textbf{Structural Hazards}:
+\begin{lstlisting}[style=base]
+LDR  R0, [R1]    ; Needs memory access
+LDR  R2, [R3]    ; Also needs memory access
+; Memory system can't handle both at once
+\end{lstlisting}
+
+2. \textbf{Data Hazards}:
+\begin{lstlisting}[style=base]
+ADDS R0, R1, R2  ; R0 gets new value
+ADDS R3, R0, R4  ; Uses R0 before ready
+; Second instruction must wait
+\end{lstlisting}
+
+3. \textbf{Control Hazards}:
+\begin{lstlisting}[style=base]
+CMP  R0, #0      ; Compare
+BEQ  target      ; Branch if equal
+ADD  R1, R2, R3  ; May be unnecessary
+SUB  R4, R5, R6  ; May be unnecessary
+target
+; Pipeline must flush if branch taken
+\end{lstlisting}
+\end{example2}
+
+\begin{concept}{Parallel Processing Models}\\
+\textbf{SISD (Single Instruction Single Data):}
+\begin{itemize}
+  \item Traditional sequential processing
+  \item One instruction processes one data item
+  \item Example: Basic scalar processor
+\end{itemize}
+
+\textbf{SIMD (Single Instruction Multiple Data):}
+\begin{itemize}
+  \item Vector processing
+  \item One instruction processes multiple data items
+  \item Examples: MMX, SSE, AVX instructions
+\end{itemize}
+
+\textbf{MIMD (Multiple Instruction Multiple Data):}
+\begin{itemize}
+  \item True parallel processing
+  \item Multiple processors execute different instructions
+  \item Example: Multicore systems
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Performance Optimization Guidelines}\\
+Steps for system optimization:
+
+1. \textbf{Analyze Requirements}:
+\begin{itemize}
+  \item Performance targets
+  \item Power constraints
+  \item Cost limitations
+  \item Reliability needs
+\end{itemize}
+
+2. \textbf{Choose Architecture}:
+\begin{itemize}
+  \item RISC vs CISC
+  \item Memory architecture
+  \item Pipeline depth
+  \item Parallelization approach
+\end{itemize}
+
+3. \textbf{Optimize Implementation}:
+\begin{itemize}
+  \item Balance pipeline stages
+  \item Implement hazard handling
+  \item Consider branch prediction
+  \item Optimize memory access
+\end{itemize}
+
+4. \textbf{Security Considerations}:
+\begin{itemize}
+  \item Evaluate optimization risks
+  \item Consider side-channel attacks
+  \item Balance performance and security
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Multicore vs Multiprocessor}
+Key differences:
+\begin{itemize}
+  \item \textbf{Multicore}:
+    \begin{itemize}
+      \item Multiple CPU cores on single chip
+      \item Shared cache and memory interface
+      \item Lower communication overhead
+      \item More power efficient
+    \end{itemize}
+  \item \textbf{Multiprocessor}:
+    \begin{itemize}
+      \item Multiple separate CPU chips
+      \item Independent caches
+      \item Higher communication overhead
+      \item More scalable for large systems
+    \end{itemize}
+\end{itemize}
+\end{example2}
