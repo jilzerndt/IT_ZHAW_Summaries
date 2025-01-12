@@ -1,68 +1,177 @@
 \section{Domänenmodellierung}
 
-\begin{concept}{Was ist ein Domänenmodell?}\\
-Ein Domänenmodell ist ein konzeptionelles Modell der Fachdomäne, dargestellt als vereinfachtes UML-Klassendiagramm:
-
-\textbf{Hauptzwecke:}
-\begin{itemize}
-    \item Visualisierung der Problemdomäne
-    \item Kommunikationsmittel zwischen Stakeholdern
-    \item Basis für späteres Softwaredesign
-    \item Dokumentation fachlicher Strukturen
-\end{itemize}
-
-\textbf{Eigenschaften:}
+\begin{definition}{Domänenmodell}\\
+Ein Domänenmodell ist ein vereinfachtes UML-Klassendiagramm zur Darstellung der Fachdomäne:
 \begin{itemize}
     \item Konzepte als Klassen
     \item Eigenschaften als Attribute (ohne Typangabe)
-    \item Beziehungen als Assoziationen
-    \item Keine Implementierungsdetails
-    \item Keine Softwareklassen
+    \item Beziehungen als Assoziationen mit Multiplizitäten
+    \item Optional: Aggregationen/Kompositionen
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Domänenmodell Zweck}
+\begin{itemize}
+    \item Visualisierung der Fachdomäne für alle Stakeholder
+    \item Grundlage für das spätere Softwaredesign
+    \item Gemeinsames Verständnis der Begriffe und Zusammenhänge
+    \item Dokumentation der fachlichen Strukturen
+    \item Basis für die Kommunikation zwischen Entwicklung und Fachbereich
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Entwicklung eines Domänenmodells}\\
-\textbf{1. Konzepte identifizieren}
-\begin{enumerate}
+\begin{KR}{Domänenmodell Erstellung}\\
+\textbf{Schritt 1: Konzepte identifizieren}
+\begin{itemize}
     \item Substantive aus Anforderungen extrahieren
-    \item Kategorisierung prüfen:
+    \item Kategorien prüfen:
     \begin{itemize}
-        \item Physische Objekte (Produkt, Gerät)
-        \item Rollen (Kunde, Mitarbeiter)
-        \item Container (Warenkorb, Lager)
+        \item Physische Objekte (Produkte, Geräte)
         \item Kataloge und Listen
+        \item Container (Warenkorb, Lager)
         \item Externe Systeme
-        \item Transaktionen (Bestellung, Buchung)
-        \item Dokumente/Verträge
+        \item Rollen von Personen
+        \item Artefakte (Pläne, Dokumente, Verträge)
+        \item Zahlungsinstrumente (Transaktionen)
+        \item \textbf{Wichtig:} Keine Softwareklassen modellieren!
     \end{itemize}
     \item Irrelevante Konzepte ausschließen
     \item Synonyme vereinheitlichen
-\end{enumerate}
+\end{itemize}
 
-\textbf{2. Attribute definieren}
+\textbf{Schritt 2: Attribute definieren}
 \begin{itemize}
     \item Nur wichtige/zentrale Attribute
-    \item Kategorien:
+    \item Typische Kategorien:
     \begin{itemize}
-        \item Beschreibende Attribute
-        \item Identifizierende Merkmale
-        \item Statusinformationen
-        \item Mengenwerte
+        \item Transaktionsdaten
+        \item Teil-Ganzes Beziehungen
+        \item Beschreibungen
+        \item Verwendungszwecke
     \end{itemize}
+    \item \textbf{Wichtig:} Beziehungen als Assoziationen, nicht als Attribute!
     \item Keine technischen IDs
     \item Keine abgeleiteten Werte
 \end{itemize}
 
-\textbf{3. Beziehungen modellieren}
+\textbf{Schritt 3: Beziehungen modellieren}
 \begin{itemize}
     \item Assoziationen zwischen Konzepten identifizieren
     \item Multiplizitäten festlegen
-    \item Richtung wenn nötig angeben
+    \item Art der Beziehung bestimmen
+    \item Richtung der Assoziation falls nötig
     \item Rollen an Assoziationsenden benennen
 \end{itemize}
 \end{KR}
 
-\begin{example2}{Typische Modellierungsfehler}\\
+
+
+
+
+\begin{example2}{Prüfungsaufgabe: Konzeptidentifikation}\\
+    \small
+\textbf{Aufgabentext:} 
+"Ein Bibliothekssystem verwaltet Bücher, die von Mitgliedern ausgeliehen werden können. Jedes Buch hat eine ISBN und mehrere Exemplare. Mitglieder können maximal 5 Bücher gleichzeitig für 4 Wochen ausleihen. Bei Überschreitung wird eine Mahngebühr fällig."
+\vspace{2mm}\\
+\textbf{Identifizierte Konzepte:}
+Buch (Beschreibungsklasse), Exemplar (Physisches Objekt), Mitglied (Rolle), Ausleihe (Transaktion), Mahnung (Artefakt)
+\vspace{2mm}\\
+\textbf{Begründung:}
+\begin{itemize}
+    \item Buch/Exemplar: \\ Trennung wegen mehrfacher Exemplare (Beschreibungsmuster)
+    \item Ausleihe: Verbindet Exemplar und Mitglied, hat Zeitbezug
+    \item Mahnung: Entsteht bei Fristüberschreitung
+\end{itemize}
+\end{example2}
+
+
+\subsubsection{Analysemuster im Domänenmodell}
+
+\begin{concept}{Analysemuster im Überblick} Details siehe nächste Seite\\
+Bewährte Strukturen für wiederkehrende Modellierungssituationen:
+\begin{itemize}
+    \item \textbf{Beschreibungsklassen:} Trennung von Typ und Instanz
+    \item \textbf{Generalisierung:} "ist-ein" Beziehungen
+    \item \textbf{Komposition:} Starke Teil-Ganzes Beziehung
+    \item \textbf{Zustände:} Eigene Zustandshierarchie
+    \item \textbf{Rollen:} Verschiedene Funktionen eines Konzepts
+    \item \textbf{Assoziationsklasse:} Attribute einer Beziehung
+\end{itemize}
+\end{concept}
+
+
+\begin{KR}{Musterauswahl und Kombination}\\
+Systematisches Vorgehen bei der Anwendung von Analysemustern:
+\begin{enumerate}
+    \item \textbf{Analyse der Situation}
+    \begin{itemize}
+        \item Konzepte und Beziehungen identifizieren, Attribute zuordnen
+        \item Probleme im einfachen Modell erkennen (Bei Kombination)
+    \end{itemize}
+
+    \item \textbf{Passende Muster identifizieren}
+    \begin{itemize}
+        \item Beschreibungsklassen bei gleichartigen Objekten
+        \item Generalisierung bei "ist-ein"-Beziehungen
+        \item Komposition bei existenzabhängigen Teilen
+        \item Zustände bei Objektlebenszyklen
+        \item Rollen bei verschiedenen Funktionen
+        \item Assoziationsklassen bei Beziehungsattributen
+        \item Wertobjekte bei komplexen Werten
+    \end{itemize}
+
+    \item \textbf{Musterauswahl}
+    \begin{itemize}
+        \item Vor- und Nachteile abwägen 
+        \item Komplexität vs. Nutzen bewerten
+    \end{itemize}
+    
+    \item \textbf{Muster anwenden}
+    \begin{itemize}
+        \item Struktur des Musters übernehmen, an Kontext anpassen
+        \item Konsistenz und fachliche Korrektheit sicherstellen
+    \end{itemize}
+    
+    \item \textbf{Muster kombinieren}
+    \begin{itemize}
+        \item An Kontext anpassen und mit bestehenden Elementen verbinden
+        \item Überschneidungen identifizieren und Konflikte auflösen
+        \item Gesamtmodell harmonisieren
+        \item Konsistenz und fachliche Korrektheit sicherstellen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+
+\begin{theorem}{Typische Modellierungsfehler vermeiden}
+\begin{itemize}
+    \item \textbf{Keine Softwareklassen modellieren}
+    \begin{itemize}
+        \item Manager-Klassen vermeiden
+        \item Keine technischen Helper-Klassen
+    \end{itemize}
+    
+    \item \textbf{Keine Operationen modellieren}
+    \begin{itemize}
+        \item Fokus auf Struktur, nicht Verhalten
+        \item Keine CRUD-Operationen
+    \end{itemize}
+    
+    \item \textbf{Richtige Abstraktionsebene wählen}
+    \begin{itemize}
+        \item Nicht zu detailliert oder abstrakt
+        \item Fachliche Begriffe verwenden
+    \end{itemize}
+    
+    \item \textbf{Assoziationen statt Attribute}
+    \begin{itemize}
+        \item Beziehungen als Assoziationen modellieren
+        \item Keine Objekt-IDs als Attribute
+    \end{itemize}
+\end{itemize}
+\end{theorem}
+
+\begin{corollary}{Typische Modellierungsfehler}\\
 \textbf{Fehler 1: Technische statt fachliche Klassen}
 \begin{itemize}
     \item \textbf{Falsch:} CustomerManager, OrderController, DatabaseHandler
@@ -80,24 +189,121 @@ Ein Domänenmodell ist ein konzeptionelles Modell der Fachdomäne, dargestellt a
     \item \textbf{Falsch:} saveToDatabase(), validateInput(), createPDF()
     \item \textbf{Richtig:} Keine Operationen im Domänenmodell
 \end{itemize}
+\end{corollary}
+
+
+\begin{KR}{Review eines Domänenmodells}\\
+Checkliste für die Überprüfung:
+\begin{itemize}
+    \item \textbf{Fachliche Korrektheit}
+    \begin{itemize}
+        \item Alle relevanten Konzepte vorhanden?
+        \item Begriffe aus der Fachdomäne verwendet?
+        \item Beziehungen fachlich sinnvoll?
+    \end{itemize}
+    
+    \item \textbf{Technische Korrektheit}
+    \begin{itemize}
+        \item UML-Notation korrekt?
+        \item Multiplizitäten angegeben?
+        \item Assoziationsnamen vorhanden?
+    \end{itemize}
+    
+    \item \textbf{Modellqualität}
+    \begin{itemize}
+        \item Angemessener Detaillierungsgrad?
+        \item Analysemuster sinnvoll eingesetzt?
+        \item Keine Implementation vorweggenommen?
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Typische Prüfungsaufgabe: Modell verbessern}\\
+\textbf{Fehlerhaftes Modell:}
+\begin{itemize}
+    \item Klasse 'UserManager' mit CRUD-Operationen
+    \item Attribute 'customerID' und 'orderID' statt Assoziationen
+    \item Operation 'calculateTotal()' in Bestellung
+    \item Technische Klasse "DatabaseConnection"
+\end{itemize}
+
+\textbf{Verbesserungen:}
+\begin{itemize}
+    \item 'UserManager' entfernen, stattdessen Beziehungen modellieren
+    \item IDs durch direkte Assoziationen ersetzen
+    \item Operationen entfernen (gehören ins Design)
+    \item Technische Klassen entfernen
+\end{itemize}
 \end{example2}
 
-\subsection{Analysemuster}
+\subsubsection{Vollständige Beispiele Domänenmodell}
 
-\begin{concept}{Analysemuster im Überblick}\\
-Bewährte Lösungsmuster für wiederkehrende Modellierungsprobleme:
+\begin{example2}{Domänenmodell Online-Shop}\\
+    \small
+\textbf{Aufgabe:} Erstellen Sie ein Domänenmodell für einen Online-Shop mit Warenkorb-Funktion.
 
+\textbf{Lösung:}
 \begin{itemize}
-    \item \textbf{Beschreibungsklassen:} Trennung von Typ und Instanz
-    \item \textbf{Generalisierung:} "ist-ein" Beziehungen
-    \item \textbf{Komposition:} Starke Teil-Ganzes Beziehung
-    \item \textbf{Zustände:} Eigene Zustandshierarchie
-    \item \textbf{Rollen:} Verschiedene Funktionen eines Konzepts
-    \item \textbf{Assoziationsklasse:} Attribute einer Beziehung
+    \item \textbf{Konzepte identifizieren:}
+    \begin{itemize}
+        \item Artikel (physisches Objekt)
+        \item Artikelbeschreibung (Beschreibungsklasse)
+        \item Warenkorb (Container)
+        \item Bestellung (Transaktion)
+        \item Kunde (Rolle)
+    \end{itemize}
+    \item \textbf{Attribute:}
+    \begin{itemize}
+        \item Artikelbeschreibung: name, preis, beschreibung
+        \item Bestellung: datum, status
+        \item Kunde: name, adresse
+    \end{itemize}
+    \item \textbf{Beziehungen:}
+    \begin{itemize}
+        \item Warenkorb gehört zu genau einem Kunde (Komposition)
+        \item Warenkorb enthält beliebig viele Artikel
+        \item Bestellung wird aus Warenkorb erstellt
+    \end{itemize}
 \end{itemize}
-\end{concept}
+\end{example2}
 
-\subsection{Detaillierte Analysemuster}
+\begin{example2}{Komplexes Domänenmodell: Reisebuchungssystem}\\
+    \small
+\textbf{Anforderung:} Modellieren Sie ein System für Pauschalreisen mit Flügen, Hotels und Aktivitäten.
+
+\textbf{Verwendete Analysemuster:}
+\begin{itemize}
+    \item \textbf{Beschreibungsklassen:}
+    \begin{itemize}
+        \item Flugverbindung vs. konkreter Flug
+        \item Hotelkategorie vs. konkretes Zimmer
+        \item Aktivitätstyp vs. konkrete Durchführung
+    \end{itemize}
+    
+    \item \textbf{Zustände:}
+    \begin{itemize}
+        \item Buchungszustände: angefragt, bestätigt, storniert
+        \item Zahlungszustände: offen, teilbezahlt, vollständig
+    \end{itemize}
+    
+    \item \textbf{Rollen:}
+    \begin{itemize}
+        \item Person als: Kunde, Reiseleiter, Kontaktperson
+    \end{itemize}
+    
+    \item \textbf{Wertobjekte:}
+    \begin{itemize}
+        \item Geldbetrag mit Währung
+        \item Zeitraum für Reisedauer
+    \end{itemize}
+\end{itemize}
+%TODO: Beispieldiagramm
+\end{example2}
+
+
+\columnbreak
+
+\subsubsection{Detaillierte Analysemuster}
 
 \begin{concept}{1. Beschreibungsklassen}\\
 Trennt die Beschreibung eines Typs von seinen konkreten Instanzen.
@@ -159,6 +365,7 @@ Modelliert "ist-ein" Beziehungen zwischen Konzepten.
     \item Zahlung → Barzahlung, Kreditkartenzahlung
     \item Dokument → Rechnung, Lieferschein
 \end{itemize}
+
 \end{concept}
 
 \begin{example2}{Generalisierung im Online-Shop}\\
@@ -187,6 +394,7 @@ Modelliert "ist-ein" Beziehungen zwischen Konzepten.
     \item Jede Zahlung ist genau ein Typ
 \end{itemize}
 %add diagram showing payment hierarchy
+\includegraphics[width=\linewidth]{images/generalisierung_extended.png}
 \end{example2}
 
 \begin{concept}{3. Komposition}\\
@@ -368,124 +576,8 @@ Modelliert Attribute einer Beziehung zwischen Konzepten.
 %add diagram showing association class example
 \end{example2}
 
-\begin{KR}{Musterauswahl und Kombination}\\
-Systematisches Vorgehen bei der Anwendung von Analysemustern:
 
-\textbf{1. Analyse der Situation}
-\begin{itemize}
-    \item Konzepte und Beziehungen identifizieren
-    \item Attribute zuordnen
-    \item Probleme im einfachen Modell erkennen
-\end{itemize}
 
-\textbf{2. Musterauswahl}
-\begin{itemize}
-    \item Passende Muster identifizieren
-    \item Vor- und Nachteile abwägen
-    \item Komplexität vs. Nutzen prüfen
-\end{itemize}
-
-\textbf{3. Muster anwenden}
-\begin{itemize}
-    \item Struktur des Musters übernehmen
-    \item An Kontext anpassen
-    \item Mit bestehenden Elementen verbinden
-\end{itemize}
-
-\textbf{4. Evaluation}
-\begin{itemize}
-    \item Modell auf Konsistenz prüfen
-    \item Fachliche Korrektheit sicherstellen
-    \item Komplexität bewerten
-\end{itemize}
-\end{KR}
-
-\pagebreak
-
-\section{Domänenmodellierung old}
-
-\begin{concept}{Domänenmodell}\\
-Ein Domänenmodell ist ein vereinfachtes UML-Klassendiagramm zur Darstellung der Fachdomäne:
-\begin{itemize}
-    \item Konzepte als Klassen
-    \item Eigenschaften als Attribute (ohne Typangabe)
-    \item Beziehungen als Assoziationen mit Multiplizitäten
-    \item Optional: Aggregationen/Kompositionen
-\end{itemize}
-\end{concept}
-
-\begin{KR}{Domänenmodell Erstellung}\\
-\textbf{Schritt 1: Konzepte identifizieren}
-\begin{itemize}
-    \item Substantive aus Anforderungen extrahieren
-    \item Kategorien prüfen:
-    \begin{itemize}
-        \item Physische Objekte
-        \item Kataloge
-        \item Container
-        \item Externe Systeme
-        \item Rollen von Personen
-        \item Artefakte (Pläne, Dokumente)
-        \item Zahlungsinstrumente
-    \end{itemize}
-    \item \textbf{Wichtig:} Keine Softwareklassen modellieren!
-\end{itemize}
-
-\textbf{Schritt 2: Attribute definieren}
-\begin{itemize}
-    \item Nur wichtige/einfache Attribute
-    \item Typische Kategorien:
-    \begin{itemize}
-        \item Transaktionsdaten
-        \item Teil-Ganzes Beziehungen
-        \item Beschreibungen
-        \item Verwendungszwecke
-    \end{itemize}
-    \item \textbf{Wichtig:} Beziehungen als Assoziationen, nicht als Attribute!
-\end{itemize}
-
-\textbf{Schritt 3: Beziehungen modellieren}
-\begin{itemize}
-    \item Assoziationen zwischen Konzepten identifizieren
-    \item Multiplizitäten festlegen
-    \item Art der Beziehung bestimmen
-    \item Richtung der Assoziation falls nötig
-\end{itemize}
-\end{KR}
-
-\begin{theorem}{Domänenmodell Zweck}
-\begin{itemize}
-    \item Visualisierung der Fachdomäne für alle Stakeholder
-    \item Grundlage für das spätere Softwaredesign
-    \item Gemeinsames Verständnis der Begriffe und Zusammenhänge
-    \item Dokumentation der fachlichen Strukturen
-    \item Basis für die Kommunikation zwischen Entwicklung und Fachbereich
-\end{itemize}
-\end{theorem}
-
-\begin{example2}{Prüfungsaufgabe: Konzeptidentifikation}\\
-\textbf{Aufgabentext:} 
-"Ein Bibliothekssystem verwaltet Bücher, die von Mitgliedern ausgeliehen werden können. Jedes Buch hat eine ISBN und mehrere Exemplare. Mitglieder können maximal 5 Bücher gleichzeitig für 4 Wochen ausleihen. Bei Überschreitung wird eine Mahngebühr fällig."
-
-\textbf{Identifizierte Konzepte:}
-\begin{itemize}
-    \item Buch (Beschreibungsklasse)
-    \item Exemplar (Physisches Objekt)
-    \item Mitglied (Rolle)
-    \item Ausleihe (Transaktion)
-    \item Mahnung (Artefakt)
-\end{itemize}
-
-\textbf{Begründung:}
-\begin{itemize}
-    \item Buch/Exemplar: Trennung wegen mehrfacher Exemplare (Beschreibungsmuster)
-    \item Ausleihe: Verbindet Exemplar und Mitglied, hat Zeitbezug
-    \item Mahnung: Entsteht bei Fristüberschreitung
-\end{itemize}
-\end{example2}
-
-\subsubsection{Analysemuster im Domänenmodell}
-Bewährte Strukturen für wiederkehrende Modellierungssituationen:
 
 \begin{concept}{1. Beschreibungsklassen}
 \begin{itemize}
@@ -542,176 +634,6 @@ Bewährte Strukturen für wiederkehrende Modellierungssituationen:
     \item Vermeidet primitive Obsession
 \end{itemize}
 \end{concept}
-
-
-
-\begin{KR}{Analysemuster Anwendung}\\
-Systematisches Vorgehen bei der Anwendung von Analysemustern:
-\begin{enumerate}
-    \item \textbf{Muster identifizieren}
-    \begin{itemize}
-        \item Beschreibungsklassen bei gleichartigen Objekten
-        \item Generalisierung bei "ist-ein"-Beziehungen
-        \item Komposition bei existenzabhängigen Teilen
-        \item Zustände bei Objektlebenszyklen
-        \item Rollen bei verschiedenen Funktionen
-        \item Assoziationsklassen bei Beziehungsattributen
-        \item Wertobjekte bei komplexen Werten
-    \end{itemize}
-    
-    \item \textbf{Muster anwenden}
-    \begin{itemize}
-        \item Struktur des Musters übernehmen
-        \item An Kontext anpassen
-        \item Konsistenz prüfen
-    \end{itemize}
-    
-    \item \textbf{Muster kombinieren}
-    \begin{itemize}
-        \item Überschneidungen identifizieren
-        \item Konflikte auflösen
-        \item Gesamtmodell harmonisieren
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-\begin{example2}{Domänenmodell Online-Shop}\\
-\textbf{Aufgabe:} Erstellen Sie ein Domänenmodell für einen Online-Shop mit Warenkorb-Funktion.
-
-\textbf{Lösung:}
-\begin{itemize}
-    \item \textbf{Konzepte identifizieren:}
-    \begin{itemize}
-        \item Artikel (physisches Objekt)
-        \item Artikelbeschreibung (Beschreibungsklasse)
-        \item Warenkorb (Container)
-        \item Bestellung (Transaktion)
-        \item Kunde (Rolle)
-    \end{itemize}
-    \item \textbf{Attribute:}
-    \begin{itemize}
-        \item Artikelbeschreibung: name, preis, beschreibung
-        \item Bestellung: datum, status
-        \item Kunde: name, adresse
-    \end{itemize}
-    \item \textbf{Beziehungen:}
-    \begin{itemize}
-        \item Warenkorb gehört zu genau einem Kunde (Komposition)
-        \item Warenkorb enthält beliebig viele Artikel
-        \item Bestellung wird aus Warenkorb erstellt
-    \end{itemize}
-\end{itemize}
-\end{example2}
-
-\begin{example2}{Komplexes Domänenmodell: Reisebuchungssystem}\\
-\textbf{Anforderung:} Modellieren Sie ein System für Pauschalreisen mit Flügen, Hotels und Aktivitäten.
-
-\textbf{Verwendete Analysemuster:}
-\begin{itemize}
-    \item \textbf{Beschreibungsklassen:}
-    \begin{itemize}
-        \item Flugverbindung vs. konkreter Flug
-        \item Hotelkategorie vs. konkretes Zimmer
-        \item Aktivitätstyp vs. konkrete Durchführung
-    \end{itemize}
-    
-    \item \textbf{Zustände:}
-    \begin{itemize}
-        \item Buchungszustände: angefragt, bestätigt, storniert
-        \item Zahlungszustände: offen, teilbezahlt, vollständig
-    \end{itemize}
-    
-    \item \textbf{Rollen:}
-    \begin{itemize}
-        \item Person als: Kunde, Reiseleiter, Kontaktperson
-    \end{itemize}
-    
-    \item \textbf{Wertobjekte:}
-    \begin{itemize}
-        \item Geldbetrag mit Währung
-        \item Zeitraum für Reisedauer
-    \end{itemize}
-\end{itemize}
-%TODO: Beispieldiagramm
-\end{example2}
-
-\begin{KR}{Review eines Domänenmodells}\\
-Checkliste für die Überprüfung:
-\begin{itemize}
-    \item \textbf{Fachliche Korrektheit}
-    \begin{itemize}
-        \item Alle relevanten Konzepte vorhanden?
-        \item Begriffe aus der Fachdomäne verwendet?
-        \item Beziehungen fachlich sinnvoll?
-    \end{itemize}
-    
-    \item \textbf{Technische Korrektheit}
-    \begin{itemize}
-        \item UML-Notation korrekt?
-        \item Multiplizitäten angegeben?
-        \item Assoziationsnamen vorhanden?
-    \end{itemize}
-    
-    \item \textbf{Modellqualität}
-    \begin{itemize}
-        \item Angemessener Detaillierungsgrad?
-        \item Analysemuster sinnvoll eingesetzt?
-        \item Keine Implementation vorweggenommen?
-    \end{itemize}
-\end{itemize}
-\end{KR}
-
-\begin{example2}{Typische Prüfungsaufgabe: Modell verbessern}\\
-\textbf{Fehlerhaftes Modell:}
-\begin{itemize}
-    \item Klasse "UserManager" mit CRUD-Operationen
-    \item Attribute "customerID" und "orderID" statt Assoziationen
-    \item Operation "calculateTotal()" in Bestellung
-    \item Technische Klasse "DatabaseConnection"
-\end{itemize}
-
-\textbf{Verbesserungen:}
-\begin{itemize}
-    \item "UserManager" entfernen, stattdessen Beziehungen modellieren
-    \item IDs durch direkte Assoziationen ersetzen
-    \item Operationen entfernen (gehören ins Design)
-    \item Technische Klassen entfernen
-\end{itemize}
-\end{example2}
-
-\begin{KR}{Typische Modellierungsfehler vermeiden}
-\begin{itemize}
-    \item \textbf{Keine Softwareklassen modellieren}
-    \begin{itemize}
-        \item Manager-Klassen vermeiden
-        \item Keine technischen Helper-Klassen
-    \end{itemize}
-    
-    \item \textbf{Keine Operationen modellieren}
-    \begin{itemize}
-        \item Fokus auf Struktur, nicht Verhalten
-        \item Keine CRUD-Operationen
-    \end{itemize}
-    
-    \item \textbf{Richtige Abstraktionsebene wählen}
-    \begin{itemize}
-        \item Nicht zu detailliert
-        \item Nicht zu abstrakt
-        \item Fachliche Begriffe verwenden
-    \end{itemize}
-    
-    \item \textbf{Assoziationen statt Attribute}
-    \begin{itemize}
-        \item Beziehungen als Assoziationen modellieren
-        \item Keine Objekt-IDs als Attribute
-    \end{itemize}
-\end{itemize}
-\end{KR}
-
-
-
-
-
 
 
 
