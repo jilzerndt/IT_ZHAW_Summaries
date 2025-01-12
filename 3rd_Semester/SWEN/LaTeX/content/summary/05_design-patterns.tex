@@ -1,4 +1,340 @@
-\section{Design Patterns}
+\begin{definition}{Factory Method Pattern}
+\textbf{Problem:}
+\begin{itemize}
+   \item Erzeugung von Objekten soll flexibel sein
+   \item Entscheidung über konkrete Klasse erst zur Laufzeit
+   \item Basis für Frameworks/Libraries
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{itemize}
+   \item Abstrakte Methode zur Objekterzeugung
+   \item Subklassen bestimmen konkreten Typ
+   \item Template Method Pattern für Algorithmus
+\end{itemize}
+
+\textbf{Beispiel:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public abstract class DocumentCreator {
+   // Factory Method
+   protected abstract Document createDocument();
+   
+   // Template Method using factory method
+   public final void openDocument() {
+       Document doc = createDocument();
+       doc.open();
+   }
+}
+
+public class PDFCreator extends DocumentCreator {
+   protected Document createDocument() {
+       return new PDFDocument();
+   }
+}
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{Command Pattern}
+\textbf{Problem:}
+\begin{itemize}
+   \item Aktionen/Requests als Objekte kapseln
+   \item Entkopplung von Sender und Empfänger
+   \item Unterstützung für Undo/Redo
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{itemize}
+   \item Command Interface mit execute() Methode
+   \item Konkrete Commands für spezifische Aktionen
+   \item Invoker ruft Commands auf
+   \item Optional: Undo/Redo Funktionalität
+\end{itemize}
+
+\textbf{Beispiel:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public interface Command {
+   void execute();
+   void undo();
+}
+
+public class SaveCommand implements Command {
+   private Document doc;
+   
+   public SaveCommand(Document doc) {
+       this.doc = doc;
+   }
+   
+   public void execute() {
+       doc.save();
+   }
+   
+   public void undo() {
+       doc.revertToLastVersion();
+   }
+}
+\end{lstlisting}
+\end{definition}
+
+\begin{definition}{Template Method Pattern}
+\textbf{Problem:}
+\begin{itemize}
+   \item Algorithmus-Struktur fest, aber Schritte variabel
+   \item Code-Duplizierung vermeiden
+   \item Erweiterbarkeit gewährleisten
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{itemize}
+   \item Abstrakte Basisklasse definiert Algorithmus-Skelett
+   \item Hook Methods für variable Schritte
+   \item Konkrete Klassen implementieren Hook Methods
+\end{itemize}
+
+\textbf{Beispiel:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public abstract class DataMiner {
+   // Template method
+   public final void mine() {
+       openFile();
+       extractData();
+       parseData();
+       analyzeData();
+       sendReport();
+       closeFile();
+   }
+   
+   abstract void extractData();
+   abstract void parseData();
+   
+   // Hook method with default implementation
+   protected void analyzeData() {
+       // Default analysis
+   }
+}
+\end{lstlisting}
+\end{definition}
+
+\begin{KR}{Pattern Implementierung}
+\textbf{Schritte zur Pattern-Implementierung:}
+
+\textbf{1. Analyse}
+\begin{itemize}
+   \item Pattern-Struktur verstehen
+   \item Anpassungen identifizieren
+   \item Schnittstellen definieren
+\end{itemize}
+
+\textbf{2. Design}
+\begin{itemize}
+   \item Klassenstruktur erstellen
+   \item Beziehungen definieren
+   \item Methodensignaturen festlegen
+\end{itemize}
+
+\textbf{3. Implementation}
+\begin{itemize}
+   \item Code-Struktur aufbauen
+   \item Schnittstellen implementieren
+   \item Tests erstellen
+\end{itemize}
+
+\textbf{4. Review}
+\begin{itemize}
+   \item Pattern-Konformität prüfen
+   \item Komplexität bewerten
+   \item Testabdeckung sicherstellen
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Pattern Vergleichstabelle}
+\textbf{Creational Patterns:}
+\begin{itemize}
+   \item \textbf{Abstract Factory:} Familien verwandter Objekte
+   \item \textbf{Factory Method:} Objekterzeugung durch Subklassen
+   \item \textbf{Singleton:} Genau eine Instanz
+   \item \textbf{Builder:} Komplexe Objektkonstruktion
+   \item \textbf{Prototype:} Klonen existierender Objekte
+\end{itemize}
+
+\textbf{Structural Patterns:}
+\begin{itemize}
+   \item \textbf{Adapter:} Inkompatible Interfaces verbinden
+   \item \textbf{Bridge:} Abstraktion von Implementation trennen
+   \item \textbf{Composite:} Baumstrukturen einheitlich behandeln
+   \item \textbf{Decorator:} Dynamisch Funktionalität erweitern
+   \item \textbf{Facade:} Subsystem vereinfachen
+   \item \textbf{Proxy:} Zugriffskontrolle auf Objekte
+\end{itemize}
+
+\textbf{Behavioral Patterns:}
+\begin{itemize}
+   \item \textbf{Chain of Responsibility:} Anfragen durch Handler-Kette
+   \item \textbf{Command:} Requests als Objekte
+   \item \textbf{Observer:} Abhängigkeiten bei Zustandsänderungen
+   \item \textbf{Strategy:} Austauschbare Algorithmen
+   \item \textbf{Template Method:} Skelett eines Algorithmus
+   \item \textbf{State:} Zustandsabhängiges Verhalten
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Prüfungsvorbereitung Design Patterns}
+\textbf{1. Kernkonzepte für jedes Pattern:}
+\begin{itemize}
+   \item Problem verstehen
+   \item Lösung erkennen
+   \item Struktur beschreiben können
+   \item Anwendungsfälle kennen
+\end{itemize}
+
+\textbf{2. Typische Prüfungsfragen:}
+\begin{itemize}
+   \item Pattern für gegebenes Problem identifizieren
+   \item Unterschiede zwischen ähnlichen Patterns erklären
+   \item UML-Diagramm für Pattern-Implementierung zeichnen
+   \item Code-Beispiel analysieren und Pattern erkennen
+\end{itemize}
+
+\textbf{3. Übungsaufgaben lösen:}
+\begin{itemize}
+   \item Pattern-Strukturen skizzieren
+   \item Implementierungsbeispiele schreiben
+   \item Pattern-Kombinationen üben
+   \item Refactoring mit Patterns durchführen
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Komplexe Pattern-Anwendung}
+\textbf{Szenario:} Dokumentverarbeitungssystem
+
+\textbf{Anforderungen:}
+\begin{itemize}
+   \item Verschiedene Dokumenttypen (PDF, DOC, TXT)
+   \item Unterschiedliche Speicherorte (Lokal, Cloud)
+   \item Verschiedene Verarbeitungsoperationen
+   \item Erweiterbarkeit für neue Formate
+\end{itemize}
+
+\textbf{Pattern-Kombination:}
+\begin{itemize}
+   \item \textbf{Abstract Factory:} Dokumenterzeugung
+   \item \textbf{Strategy:} Verarbeitungsalgorithmen
+   \item \textbf{Adapter:} Speicheranbindung
+   \item \textbf{Command:} Operationen
+\end{itemize}
+
+\textbf{Implementierung:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Abstract Factory
+public interface DocumentFactory {
+   Document createDocument();
+   Storage createStorage();
+}
+
+// Strategy
+public interface ProcessingStrategy {
+   void process(Document doc);
+}
+
+// Command
+public interface DocumentCommand {
+   void execute();
+   void undo();
+}
+
+// Adapter
+public class CloudStorageAdapter implements Storage {
+   private CloudService service;
+   
+   public void save(Document doc) {
+       service.upload(doc.getBytes());
+   }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Pattern Anti-Patterns}
+\textbf{1. Überflüssige Pattern-Anwendung:}
+\begin{itemize}
+   \item Komplexität ohne Nutzen
+   \item Pattern als Selbstzweck
+   \item Übertriebene Abstraktion
+\end{itemize}
+
+\textbf{2. Falsche Pattern-Wahl:}
+\begin{itemize}
+   \item Pattern passt nicht zum Problem
+   \item Bessere Alternativen ignoriert
+   \item Performance-Probleme
+\end{itemize}
+
+\textbf{3. Schlechte Implementation:}
+\begin{itemize}
+   \item Pattern-Struktur nicht eingehalten
+   \item Schlechte Namensgebung
+   \item Inkonsistente Verwendung
+\end{itemize}
+\end{KR}
+
+[continue with more content or specific focus area?]
+
+\begin{example2}{Exam-Style Pattern Recognition}
+\textbf{Aufgabe:} Analysieren Sie den folgenden Code und identifizieren Sie verwendete Patterns:
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public interface PaymentStrategy {
+   void pay(int amount);
+}
+
+public class CreditCardPayment implements PaymentStrategy {
+   private String cardNum;
+   
+   public void pay(int amount) {
+       // Process credit card payment
+   }
+}
+
+public class PayPalPayment implements PaymentStrategy {
+   private String email;
+   
+   public void pay(int amount) {
+       // Process PayPal payment
+   }
+}
+
+public class ShoppingCart {
+   private PaymentStrategy paymentMethod;
+   
+   public void setPaymentMethod(PaymentStrategy method) {
+       this.paymentMethod = method;
+   }
+   
+   public void checkout(int amount) {
+       paymentMethod.pay(amount);
+   }
+}
+\end{lstlisting}
+
+\textbf{Lösung:}
+\begin{itemize}
+   \item Identifiziertes Pattern: Strategy
+   \item Begründung:
+   \begin{itemize}
+       \item Interface für austauschbare Algorithmen
+       \item Konkrete Strategien für verschiedene Zahlungsmethoden
+       \item Kontext (ShoppingCart) verwendet Strategy-Interface
+   \end{itemize}
+   \item Vorteile:
+   \begin{itemize}
+       \item Neue Zahlungsmethoden einfach hinzufügbar
+       \item Lose Kopplung zwischen Kontext und Algorithmus
+       \item Zahlungsmethode zur Laufzeit änderbar
+   \end{itemize}
+\end{itemize}
+\end{example2}
+
+\pagebreak
+
+\section{Design Patterns old}
 
 \begin{concept}{Grundlagen Design Patterns}\\
 Bewährte Lösungsmuster für wiederkehrende Probleme:

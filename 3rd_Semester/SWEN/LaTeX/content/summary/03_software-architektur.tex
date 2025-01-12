@@ -380,6 +380,488 @@ public class OrderController {
 \end{itemize}
 \end{example2}
 
+\subsection{Integrationsmuster}
+
+\begin{concept}{Integration Patterns}\\
+Muster für die Integration von Systemen und Services:
+
+\textbf{Hauptkategorien:}
+\begin{itemize}
+    \item \textbf{File Transfer:} Datenaustausch über Dateien
+    \item \textbf{Shared Database:} Gemeinsame Datenbasis
+    \item \textbf{Remote Procedure Call:} Direkter Methodenaufruf
+    \item \textbf{Messaging:} Nachrichtenbasierte Kommunikation
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Messaging Pattern Implementation}\\
+\textbf{Message Producer und Consumer:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Message Definition
+public class OrderMessage {
+    private String orderId;
+    private String customerId;
+    private BigDecimal amount;
+    private OrderStatus status;
+}
+
+// Message Producer
+public class OrderProducer {
+    private MessageQueue messageQueue;
+    
+    public void sendOrderCreated(Order order) {
+        OrderMessage message = new OrderMessage(
+            order.getId(),
+            order.getCustomerId(),
+            order.getAmount(),
+            OrderStatus.CREATED
+        );
+        messageQueue.send("orders", message);
+    }
+}
+
+// Message Consumer
+public class OrderProcessor {
+    @MessageListener(queue = "orders")
+    public void processOrder(OrderMessage message) {
+        if (message.getStatus() == OrderStatus.CREATED) {
+            processNewOrder(message);
+        }
+    }
+    
+    private void processNewOrder(OrderMessage message) {
+        // Verarbeitung der Bestellung
+        validateOrder(message);
+        updateInventory(message);
+        notifyCustomer(message);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{concept}{API Gateway Pattern}\\
+Zentraler Einstiegspunkt für Client-Anfragen:
+
+\textbf{Verantwortlichkeiten:}
+\begin{itemize}
+    \item Routing von Anfragen
+    \item Authentifizierung/Autorisierung
+    \item Last-Verteilung
+    \item Caching
+    \item Monitoring
+    \item API-Versionierung
+\end{itemize}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+@Component
+public class ApiGateway {
+    private final AuthService authService;
+    private final ServiceRegistry registry;
+    
+    @GetMapping("/api/v1/**")
+    public ResponseEntity<Object> routeRequest(
+            HttpServletRequest request,
+            @RequestHeader("Authorization") String token) {
+            
+        // Authentifizierung
+        if (!authService.validateToken(token)) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        // Service Discovery
+        String serviceName = extractServiceName(request);
+        ServiceInstance instance = registry.getInstance(serviceName);
+        
+        // Request Weiterleitung
+        return forwardRequest(instance, request);
+    }
+}
+\end{lstlisting}
+\end{concept}
+
+\begin{KR}{API Design Best Practices}\\
+\textbf{1. Ressourcen-Orientierung}
+\begin{itemize}
+    \item Klare Ressourcen-Namen
+    \item Hierarchische Struktur
+    \item Korrekte HTTP-Methoden
+\end{itemize}
+
+\textbf{2. Versionierung}
+\begin{itemize}
+    \item Explizite Versions-Nummer
+    \item Abwärtskompatibilität
+    \item Migrations-Strategie
+\end{itemize}
+
+\textbf{3. Fehlerbehandlung}
+\begin{itemize}
+    \item Standardisierte Fehler-Formate
+    \item Aussagekräftige Fehlermeldungen
+    \item Korrekte HTTP-Status-Codes
+\end{itemize}
+
+\textbf{4. Dokumentation}
+\begin{itemize}
+    \item OpenAPI/Swagger
+    \item Beispiele und Use Cases
+    \item Fehlerszenarien
+\end{itemize}
+\end{KR}
+
+\begin{example2}{REST API Design}\\
+\textbf{Ressourcen-Design für E-Commerce System:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+@RestController
+@RequestMapping("/api/v1")
+public class ProductController {
+    
+    // Collection Resource
+    @GetMapping("/products")
+    public PagedResponse<ProductDTO> getProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return productService.findAll(page, size);
+    }
+    
+    // Single Resource
+    @GetMapping("/products/{id}")
+    public ProductDTO getProduct(@PathVariable String id) {
+        return productService.findById(id);
+    }
+    
+    // Sub-Resource Collection
+    @GetMapping("/products/{id}/reviews")
+    public List<ReviewDTO> getProductReviews(
+            @PathVariable String id) {
+        return reviewService.findByProductId(id);
+    }
+    
+    // Error Handling
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            ProductNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+            "PRODUCT_NOT_FOUND",
+            ex.getMessage()
+        );
+        return ResponseEntity.status(404).body(error);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\subsection{Architekturstile und Patterns}
+
+\begin{concept}{Schichtenarchitektur (Layered Architecture)}\\
+Strukturierung eines Systems in horizontale Schichten:
+
+\textbf{Typische Schichten:}
+\begin{itemize}
+    \item Präsentationsschicht (UI)
+    \item Anwendungsschicht (Application)
+    \item Geschäftslogikschicht (Domain)
+    \item Datenzugriffsschicht (Persistence)
+\end{itemize}
+
+\textbf{Regeln:}
+\begin{itemize}
+    \item Kommunikation nur mit angrenzenden Schichten
+    \item Abhängigkeiten nur nach unten
+    \item Jede Schicht kapselt ihre Implementierung
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Schichtenarchitektur Implementation}\\
+\textbf{Beispiel einer typischen Schichtenstruktur:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Presentation Layer
+public class CustomerController {
+    private CustomerService service;
+    
+    public CustomerDTO getCustomer(String id) {
+        Customer customer = service.findById(id);
+        return CustomerDTO.from(customer);
+    }
+}
+
+// Application Layer
+public class CustomerService {
+    private CustomerRepository repository;
+    
+    public Customer findById(String id) {
+        validateId(id);
+        return repository.findById(id)
+            .orElseThrow(CustomerNotFoundException::new);
+    }
+}
+
+// Domain Layer
+public class Customer {
+    private CustomerId id;
+    private String name;
+    private Address address;
+    
+    public void updateAddress(Address newAddress) {
+        validateAddress(newAddress);
+        this.address = newAddress;
+    }
+}
+
+// Persistence Layer
+public class CustomerRepository {
+    private JpaRepository<Customer, CustomerId> jpaRepo;
+    
+    public Optional<Customer> findById(String id) {
+        return jpaRepo.findById(new CustomerId(id));
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{concept}{Client-Server Architektur}\\
+Verteilung von Funktionalitäten zwischen Client und Server:
+
+\textbf{Charakteristiken:}
+\begin{itemize}
+    \item Klare Trennung von Zuständigkeiten
+    \item Zentralisierte Ressourcenverwaltung
+    \item Skalierbarkeit durch Server-Erweiterung
+    \item Verschiedene Client-Typen möglich
+\end{itemize}
+
+\textbf{Varianten:}
+\begin{itemize}
+    \item Thin Client: Minimale Client-Logik
+    \item Rich Client: Komplexe Client-Funktionalität
+    \item Web Client: Browser-basiert
+    \item Mobile Client: Für mobile Geräte optimiert
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Architektur-Evaluation}\\
+Systematische Bewertung einer Softwarearchitektur:
+
+\textbf{1. Qualitätsattribute identifizieren}
+\begin{itemize}
+    \item Performance
+    \item Skalierbarkeit
+    \item Wartbarkeit
+    \item Sicherheit
+\end{itemize}
+
+\textbf{2. Szenarien entwickeln}
+\begin{itemize}
+    \item Normale Nutzung
+    \item Grenzfälle
+    \item Fehlerfälle
+    \item Wartungsszenarien
+\end{itemize}
+
+\textbf{3. Architektur analysieren}
+\begin{itemize}
+    \item Strukturanalyse
+    \item Verhaltensanalyse
+    \item Trade-off Analyse
+\end{itemize}
+
+\textbf{4. Risiken identifizieren}
+\begin{itemize}
+    \item Technische Risiken
+    \item Geschäftsrisiken
+    \item Architekturrisiken
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Architektur-Evaluation: Performance}\\
+\textbf{Szenario:} Online-Shop während Black Friday
+
+\textbf{Analyse:}
+\begin{itemize}
+    \item \textbf{Last-Annahmen:}
+    \begin{itemize}
+        \item 10.000 gleichzeitige Nutzer
+        \item 1.000 Bestellungen pro Minute
+        \item 100.000 Produktaufrufe pro Minute
+    \end{itemize}
+    
+    \item \textbf{Architektur-Maßnahmen:}
+    \begin{itemize}
+        \item Caching-Strategie für Produkte
+        \item Load Balancing für Anfragen
+        \item Asynchrone Bestellverarbeitung
+        \item Datenbank-Replikation
+    \end{itemize}
+    
+    \item \textbf{Monitoring:}
+    \begin{itemize}
+        \item Response-Zeiten
+        \item Server-Auslastung
+        \item Cache-Hit-Rate
+        \item Fehlerraten
+    \end{itemize}
+\end{itemize}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Performance-optimierte Produktabfrage
+@Cacheable(value = "products")
+public ProductDTO getProduct(String id) {
+    ProductDTO product = cache.get(id);
+    if (product == null) {
+        product = repository.findById(id)
+                          .map(this::toDTO)
+                          .orElseThrow();
+        cache.put(id, product);
+    }
+    return product;
+}
+\end{lstlisting}
+\end{example2}
+
+\subsection{Architektur-Taktiken und Best Practices}
+
+\begin{concept}{Architektur-Taktiken}\\
+Grundlegende Strategien zur Erfüllung von Qualitätsanforderungen:
+
+\textbf{Performance:}
+\begin{itemize}
+    \item Resource Pooling
+    \item Caching
+    \item Parallelisierung
+    \item Lazy Loading/Evaluation
+\end{itemize}
+
+\textbf{Verfügbarkeit:}
+\begin{itemize}
+    \item Redundanz
+    \item Health Monitoring
+    \item Failover Mechanismen
+    \item Circuit Breaker
+\end{itemize}
+
+\textbf{Wartbarkeit:}
+\begin{itemize}
+    \item Separation of Concerns
+    \item Information Hiding
+    \item Interface-basierte Kommunikation
+    \item Standardisierung
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Performance-Optimierung}\\
+\textbf{Implementation von Caching:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+@Service
+public class ProductService {
+    private final Cache<String, Product> cache;
+    private final ProductRepository repository;
+    
+    public Product getProduct(String id) {
+        return cache.get(id, key -> {
+            Product product = repository
+                .findById(key)
+                .orElseThrow();
+                
+            // Warm up frequently accessed data
+            product.getCategories().size();
+            product.getReviews().size();
+            
+            return product;
+        });
+    }
+    
+    @CacheEvict(value = "products")
+    public void updateProduct(Product product) {
+        repository.save(product);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Architektur-Review}\\
+Systematische Überprüfung der Architektur:
+
+\textbf{1. Vorbereitung}
+\begin{itemize}
+    \item Architektur-Dokumentation sichten
+    \item Qualitätsanforderungen prüfen
+    \item Review-Team zusammenstellen
+    \item Checklisten erstellen
+\end{itemize}
+
+\textbf{2. Durchführung}
+\begin{itemize}
+    \item Architektur-Walkthrough
+    \item Szenario-basierte Evaluation
+    \item Risiko-Analyse
+    \item Trade-off Analyse
+\end{itemize}
+
+\textbf{3. Nachbereitung}
+\begin{itemize}
+    \item Ergebnisse dokumentieren
+    \item Maßnahmen ableiten
+    \item Priorisierung vornehmen
+    \item Follow-up planen
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Architektur-Review Checkliste}\\
+\textbf{Qualitätskriterien:}
+
+\begin{itemize}
+    \item \textbf{Modularität:}
+    \begin{itemize}
+        \item Klare Modulgrenze
+        \item Minimale Abhängigkeiten
+        \item Hohe Kohäsion
+    \end{itemize}
+    
+    \item \textbf{Testbarkeit:}
+    \begin{itemize}
+        \item Isolation von Komponenten
+        \item Mockbarkeit von Abhängigkeiten
+        \item Testautomatisierung
+    \end{itemize}
+    
+    \item \textbf{Änderbarkeit:}
+    \begin{itemize}
+        \item Lokalisierung von Änderungen
+        \item Erweiterbarkeit
+        \item Backward Compatibility
+    \end{itemize}
+\end{itemize}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Beispiel fuer gute Testbarkeit
+public class OrderService {
+    private final OrderRepository repository;
+    private final PaymentGateway paymentGateway;
+    
+    // Dependency Injection ermoeglicht einfaches Mocking
+    public OrderService(
+            OrderRepository repository,
+            PaymentGateway paymentGateway) {
+        this.repository = repository;
+        this.paymentGateway = paymentGateway;
+    }
+    
+    // Klare Methoden-Verantwortlichkeiten
+    public OrderResult createOrder(OrderRequest request) {
+        validateRequest(request);
+        Order order = createOrderEntity(request);
+        PaymentResult payment = processPayment(order);
+        return createOrderResult(order, payment);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+
 
 \section{Softwarearchitektur und Design old}
 
@@ -780,5 +1262,486 @@ General Responsibility Assignment Software Patterns:
 \end{itemize}
 \end{example2}
 
+\subsection{UML-Modellierung}
 
+\begin{concept}{UML Diagrammtypen Übersicht}\\
+UML bietet verschiedene Diagrammtypen für statische und dynamische Modellierung:
+
+\textbf{Statische Modelle:}
+\begin{itemize}
+    \item Klassendiagramm
+    \item Paketdiagramm
+    \item Komponentendiagramm
+    \item Verteilungsdiagramm
+\end{itemize}
+
+\textbf{Dynamische Modelle:}
+\begin{itemize}
+    \item Sequenzdiagramm
+    \item Kommunikationsdiagramm
+    \item Zustandsdiagramm
+    \item Aktivitätsdiagramm
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Klassendiagramm}\\
+\textbf{Hauptelemente:}
+\begin{itemize}
+    \item \textbf{Klassen:}
+    \begin{itemize}
+        \item Name der Klasse
+        \item Attribute mit Sichtbarkeit
+        \item Operationen mit Parametern
+    \end{itemize}
+    
+    \item \textbf{Beziehungen:}
+    \begin{itemize}
+        \item Assoziation (normaler Pfeil)
+        \item Vererbung (geschlossener Pfeil)
+        \item Implementierung (gestrichelter Pfeil)
+        \item Aggregation (leere Raute)
+        \item Komposition (gefüllte Raute)
+    \end{itemize}
+    
+    \item \textbf{Interfaces:}
+    \begin{itemize}
+        \item Stereotyp <<interface>>
+        \item Nur Methodensignaturen
+        \item Implementierungsbeziehung
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Klassendiagramm: E-Commerce System}\\
+\textbf{Domänenmodell mit wichtigen Beziehungen:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public interface OrderRepository {
+    Optional<Order> findById(OrderId id);
+    void save(Order order);
+}
+
+public class Order {
+    private OrderId id;
+    private Customer customer;
+    private List<OrderLine> orderLines;
+    private OrderStatus status;
+    
+    public Money calculateTotal() {
+        return orderLines.stream()
+                        .map(OrderLine::getSubTotal)
+                        .reduce(Money.ZERO, Money::add);
+    }
+}
+
+public class OrderLine {
+    private Product product;
+    private int quantity;
+    private Money price;
+    
+    public Money getSubTotal() {
+        return price.multiply(quantity);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{definition}{Sequenzdiagramm}\\
+\textbf{Notationselemente:}
+\begin{itemize}
+    \item \textbf{Lebenslinien:}
+    \begin{itemize}
+        \item Objekte als Rechtecke
+        \item Vertikale gestrichelte Linie
+        \item Aktivierungsbalken für Ausführung
+    \end{itemize}
+    
+    \item \textbf{Nachrichten:}
+    \begin{itemize}
+        \item Synchron (durchgezogener Pfeil)
+        \item Asynchron (offener Pfeil)
+        \item Antwort (gestrichelter Pfeil)
+        \item Parameter und Rückgabewerte
+    \end{itemize}
+    
+    \item \textbf{Kontrollelemente:}
+    \begin{itemize}
+        \item alt (Alternative)
+        \item loop (Schleife)
+        \item opt (Optional)
+        \item par (Parallel)
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Sequenzdiagramm: Bestellprozess}\\
+\textbf{Interaktion zwischen Komponenten:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public class OrderService {
+    private final OrderRepository orderRepo;
+    private final PaymentService paymentService;
+    
+    public OrderConfirmation processOrder(OrderRequest request) {
+        // Validiere Bestellung
+        validateOrder(request);
+        
+        // Erstelle Order
+        Order order = createOrder(request);
+        orderRepo.save(order);
+        
+        // Prozessiere Zahlung
+        PaymentResult result = paymentService
+            .processPayment(order.getId(), order.getTotal());
+            
+        // Bestaetige Bestellung
+        if (result.isSuccessful()) {
+            order.confirm();
+            orderRepo.save(order);
+            return new OrderConfirmation(order);
+        }
+        
+        throw new PaymentFailedException();
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{definition}{Zustandsdiagramm}\\
+\textbf{Notationselemente:}
+\begin{itemize}
+    \item \textbf{Zustände:}
+    \begin{itemize}
+        \item Startzustand (gefüllter Kreis)
+        \item Endzustand (Kreis mit Punkt)
+        \item Einfache Zustände (Rechteck)
+        \item Zusammengesetzte Zustände
+    \end{itemize}
+    
+    \item \textbf{Transitionen:}
+    \begin{itemize}
+        \item Event [Guard] / Action
+        \item Interne Transitionen
+        \item Selbsttransitionen
+    \end{itemize}
+    
+    \item \textbf{Spezielle Elemente:}
+    \begin{itemize}
+        \item History State (H)
+        \item Deep History (H*)
+        \item Entry/Exit Points
+        \item Choice Points
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Zustandsdiagramm: Bestellstatus}\\
+\textbf{Implementation eines State Patterns:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public interface OrderState {
+    void process(Order order);
+    void cancel(Order order);
+    void ship(Order order);
+}
+
+public class NewOrderState implements OrderState {
+    @Override
+    public void process(Order order) {
+        validateOrder(order);
+        order.setState(new ProcessingState());
+    }
+    
+    @Override
+    public void cancel(Order order) {
+        order.setState(new CancelledState());
+    }
+    
+    @Override
+    public void ship(Order order) {
+        throw new IllegalStateException(
+            "Cannot ship new order");
+    }
+}
+
+public class Order {
+    private OrderState state;
+    
+    public void process() {
+        state.process(this);
+    }
+    
+    void setState(OrderState newState) {
+        this.state = newState;
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{definition}{Aktivitätsdiagramm}\\
+\textbf{Hauptelemente:}
+\begin{itemize}
+    \item \textbf{Aktionen:}
+    \begin{itemize}
+        \item Atomare Aktionen
+        \item Call Behavior Action
+        \item Send/Receive Signal
+    \end{itemize}
+    
+    \item \textbf{Kontrollfluss:}
+    \begin{itemize}
+        \item Verzweigungen (Diamond)
+        \item Parallelisierung (Balken)
+        \item Join/Merge Nodes
+    \end{itemize}
+    
+    \item \textbf{Strukturierung:}
+    \begin{itemize}
+        \item Activity Partitions (Swimlanes)
+        \item Structured Activity Nodes
+        \item Interruptible Regions
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Aktivitätsdiagramm: Bestellabwicklung}\\
+\textbf{Implementation eines Geschäftsprozesses:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public class OrderProcessor {
+    public void processOrder(Order order) {
+        // Parallele Verarbeitung
+        CompletableFuture.allOf(
+            validateInventory(order),
+            validatePayment(order)
+        ).thenRun(() -> {
+            if (order.isValid()) {
+                fulfillOrder(order);
+            } else {
+                handleValidationFailure(order);
+            }
+        });
+    }
+    
+    private CompletableFuture<Void> validateInventory(
+            Order order) {
+        return CompletableFuture.runAsync(() -> {
+            order.getItems().forEach(item -> {
+                if (!inventoryService.isAvailable(item)) {
+                    throw new OutOfStockException(item);
+                }
+            });
+        });
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{definition}{Verteilungsdiagramm}\\
+\textbf{Elemente:}
+\begin{itemize}
+    \item \textbf{Nodes:}
+    \begin{itemize}
+        \item Device Nodes
+        \item Execution Environment
+        \item Artifacts
+    \end{itemize}
+    
+    \item \textbf{Verbindungen:}
+    \begin{itemize}
+        \item Kommunikationspfade
+        \item Protokolle
+        \item Multiplizitäten
+    \end{itemize}
+    
+    \item \textbf{Deployment:}
+    \begin{itemize}
+        \item Deployment Specifications
+        \item Manifestationen
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Verteilungsdiagramm: Microservice-Architektur}\\
+\textbf{Deployment-Konfiguration:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+@Configuration
+public class ServiceConfig {
+    @Value("${service.host}")
+    private String serviceHost;
+    
+    @Value("${service.port}")
+    private int servicePort;
+    
+    @Bean
+    public ServiceRegistry registry() {
+        return ServiceRegistry.builder()
+            .host(serviceHost)
+            .port(servicePort)
+            .healthCheck("/health")
+            .build();
+    }
+    
+    @Bean
+    public LoadBalancer loadBalancer(
+            ServiceRegistry registry) {
+        return new RoundRobinLoadBalancer(registry);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{definition}{Kommunikationsdiagramm}\\
+\textbf{Hauptelemente:}
+\begin{itemize}
+    \item \textbf{Objekte:}
+    \begin{itemize}
+        \item Als Rechtecke dargestellt
+        \item Mit Objektname und Klasse
+        \item Verbunden durch Links
+    \end{itemize}
+    
+    \item \textbf{Nachrichten:}
+    \begin{itemize}
+        \item Nummerierte Sequenz
+        \item Synchrone/Asynchrone Aufrufe
+        \item Parameter und Rückgabewerte
+    \end{itemize}
+    
+    \item \textbf{Steuerungselemente:}
+    \begin{itemize}
+        \item Bedingte Nachrichten [condition]
+        \item Iterationen *
+        \item Parallele Ausführung || 
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Kommunikationsdiagramm: Shopping Cart}\\
+\textbf{Objektinteraktionen beim Checkout:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public class ShoppingCart {
+    private List<CartItem> items;
+    private CheckoutService checkoutService;
+    
+    public Order checkout() {
+        // 1: validateItems()
+        validateItems();
+        
+        // 2: calculateTotal()
+        Money total = calculateTotal();
+        
+        // 3: createOrder(items, total)
+        Order order = checkoutService.createOrder(
+            items, total);
+            
+        // 4: clearCart()
+        items.clear();
+        
+        return order;
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{definition}{Paketdiagramm}\\
+\textbf{Elemente:}
+\begin{itemize}
+    \item \textbf{Pakete:}
+    \begin{itemize}
+        \item Gruppierung von Modellelementen
+        \item Hierarchische Strukturierung
+        \item Namensräume
+    \end{itemize}
+    
+    \item \textbf{Abhängigkeiten:}
+    \begin{itemize}
+        \item Import/Export von Elementen
+        \item <<use>> Beziehungen
+        \item Zugriffsrechte
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{KR}{UML Diagrammauswahl}\\
+Entscheidungshilfen für die Wahl des passenden Diagrammtyps:
+
+\textbf{1. Statische Struktur}
+\begin{itemize}
+    \item Klassendiagramm für Typen und Beziehungen
+    \item Paketdiagramm für Modularisierung
+    \item Komponentendiagramm für Bausteinsicht
+    \item Verteilungsdiagramm für physische Verteilung
+\end{itemize}
+
+\textbf{2. Dynamisches Verhalten}
+\begin{itemize}
+    \item Sequenzdiagramm für zeitliche Abläufe
+    \item Kommunikationsdiagramm für Objektkollaborationen
+    \item Zustandsdiagramm für Objektlebenszyklen
+    \item Aktivitätsdiagramm für Geschäftsprozesse
+\end{itemize}
+
+\textbf{3. Verwendungszweck}
+\begin{itemize}
+    \item Analyse: Konzeptuelle Modellierung
+    \item Design: Detaillierte Spezifikation
+    \item Implementation: Code-nahe Darstellung
+    \item Dokumentation: Architekturübersicht
+\end{itemize}
+\end{KR}
+
+\begin{example2}{UML in der Praxis}\\
+\textbf{Beispiel eines kompletten Designs:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Paketstruktur
+package com.example.shop;
+
+// Domain Model
+public class Product {
+    private ProductId id;
+    private String name;
+    private Money price;
+    private Category category;
+}
+
+// Service Layer
+@Service
+public class ProductService {
+    private final ProductRepository repository;
+    private final PriceCalculator calculator;
+    
+    public Product updatePrice(
+            ProductId id, Money newPrice) {
+        Product product = repository.findById(id)
+            .orElseThrow(ProductNotFoundException::new);
+            
+        Money calculatedPrice = calculator
+            .calculateFinalPrice(newPrice);
+            
+        product.updatePrice(calculatedPrice);
+        return repository.save(product);
+    }
+}
+
+// Controller Layer
+@RestController
+@RequestMapping("/api/products")
+public class ProductController {
+    private final ProductService service;
+    
+    @PutMapping("/{id}/price")
+    public ProductDTO updatePrice(
+            @PathVariable ProductId id,
+            @RequestBody PriceUpdateRequest request) {
+        Product product = service.updatePrice(
+            id, request.getNewPrice());
+        return ProductDTO.from(product);
+    }
+}
+\end{lstlisting}
+\end{example2}
 

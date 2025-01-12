@@ -1,4 +1,172 @@
-\section{Implementation, Refactoring und Testing}
+\begin{example2}{Unit Testing Best Practices}
+\textbf{FIRST Prinzipien:}
+\begin{itemize}
+   \item \textbf{Fast:} Tests müssen schnell ausführbar sein
+   \item \textbf{Independent:} Tests dürfen nicht voneinander abhängen
+   \item \textbf{Repeatable:} Gleiche Ergebnisse bei mehrfacher Ausführung
+   \item \textbf{Self-validating:} Automatische Ergebnisüberprüfung
+   \item \textbf{Timely:} Tests werden zeitnah geschrieben
+\end{itemize}
+
+\textbf{Beispiel Implementierung:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class OrderServiceTest {
+   private OrderService orderService;
+   private OrderRepository mockRepo;
+   
+   @Before
+   public void setup() {
+       mockRepo = mock(OrderRepository.class);
+       orderService = new OrderService(mockRepo);
+   }
+   
+   @Test
+   public void shouldCalculateOrderTotal() {
+       // Arrange
+       Order order = new Order();
+       order.addItem(new OrderItem("Book", 29.99, 2));
+       order.addItem(new OrderItem("DVD", 19.99, 1));
+       
+       // Act
+       BigDecimal total = orderService.calculateTotal(order);
+       
+       // Assert
+       assertEquals(new BigDecimal("79.97"), total);
+   }
+   
+   @Test(expected = ValidationException.class)
+   public void shouldThrowExceptionForEmptyOrder() {
+       // Arrange
+       Order order = new Order();
+       
+       // Act & Assert
+       orderService.calculateTotal(order);
+   }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Integration Testing}
+\textbf{1. Teststrategie:}
+\begin{itemize}
+   \item Bottom-up Integration
+   \item Top-down Integration
+   \item Big Bang Integration
+\end{itemize}
+
+\textbf{2. Testumfang:}
+\begin{itemize}
+   \item Komponenteninteraktion
+   \item Schnittstellentests
+   \item Datenfluss
+\end{itemize}
+
+\textbf{3. Testaufbau:}
+\begin{lstlisting}[language=Java, style=basesmol]
+@SpringBootTest
+public class OrderIntegrationTest {
+   @Autowired
+   private OrderService orderService;
+   
+   @Autowired
+   private CustomerService customerService;
+   
+   @Test
+   public void shouldProcessOrderEndToEnd() {
+       // Setup test data
+       Customer customer = customerService.createCustomer(
+           "Test Customer", "test@example.com");
+       
+       Order order = new Order(customer);
+       order.addItem(new OrderItem("Test Product", 29.99, 1));
+       
+       // Execute process
+       OrderResult result = orderService.processOrder(order);
+       
+       // Verify results
+       assertTrue(result.isSuccess());
+       assertEquals("COMPLETED", result.getStatus());
+       // Verify database state
+       Order savedOrder = orderService.findOrder(result.getOrderId());
+       assertEquals("COMPLETED", savedOrder.getStatus());
+   }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Refactoring Patterns}
+\textbf{1. Extract Class:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Vorher
+public class Order {
+   private List<OrderItem> items;
+   private BigDecimal total;
+   private BigDecimal tax;
+   private BigDecimal shipping;
+   
+   public BigDecimal calculateTotal() {
+       total = items.stream()
+           .map(OrderItem::getSubtotal)
+           .reduce(BigDecimal.ZERO, BigDecimal::add);
+       tax = total.multiply(TAX_RATE);
+       shipping = calculateShipping();
+       return total.add(tax).add(shipping);
+   }
+}
+
+// Nachher
+public class Order {
+   private List<OrderItem> items;
+   private PriceCalculator priceCalculator;
+   
+   public BigDecimal calculateTotal() {
+       return priceCalculator.calculateTotal(items);
+   }
+}
+
+public class PriceCalculator {
+   public BigDecimal calculateTotal(List<OrderItem> items) {
+       BigDecimal subtotal = calculateSubtotal(items);
+       BigDecimal tax = calculateTax(subtotal);
+       BigDecimal shipping = calculateShipping(items);
+       return subtotal.add(tax).add(shipping);
+   }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{System Testing}
+\textbf{1. Funktionale Tests:}
+\begin{itemize}
+   \item End-to-End Szenarien
+   \item Geschäftsprozesse
+   \item Use Case Tests
+\end{itemize}
+
+\textbf{2. Nicht-funktionale Tests:}
+\begin{itemize}
+   \item Performance Tests
+   \item Last Tests
+   \item Sicherheitstests
+   \item Usability Tests
+\end{itemize}
+
+\textbf{3. Dokumentation:}
+\begin{itemize}
+   \item Testfälle
+   \item Testdaten
+   \item Testergebnisse
+   \item Fehlerberichte
+\end{itemize}
+\end{KR}
+
+[continue with more content or specific focus area?]
+
+
+
+
+\pagebreak
+\section{Implementation, Refactoring und Testing old}
 
 \subsection{Von Design zu Code}
 

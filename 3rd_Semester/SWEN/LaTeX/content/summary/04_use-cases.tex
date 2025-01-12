@@ -1,3 +1,454 @@
+\section{Use Case Realization}
+
+\begin{concept}{Was ist Use Case Realization?}
+Use Case Realization beschreibt die Umsetzung von Use Cases in konkreten Code. Dies umfasst:
+\begin{itemize}
+    \item Mapping von Analyse-Artefakten auf Design-Artefakte
+    \item Implementierung der Systemoperationen aus dem SSD
+    \item Erstellung von testbarem und wartbarem Code
+    \item Dokumentation der Design-Entscheidungen
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Vorgehen bei der Use Case Realization}
+\textbf{1. Vorbereitung}
+\begin{itemize}
+    \item Use Case auswählen, offene Fragen klären, SSD ableiten
+    \item Systemoperation auswählen
+    \item Operation Contract erstellen/überlegen/lesen
+    \item Aktuellen Code/Dokumentation analysieren
+    \begin{itemize}
+        \item DCD überprüfen/aktualisieren
+        \item Vergleich mit Domänenmodell durchführen
+        \item Allenfalls bereits jetzt neue Software-Klassen erstellen
+    \end{itemize}
+    \item Falls notwendig, Refactorings durchführen
+\end{itemize}
+
+\textbf{2. Design}
+\begin{itemize}
+    \item Controller Klasse bestimmen/identifizieren
+    \item Zu verändernde Klassen festlegen
+    \item Weg zu diesen Klassen festlegen:
+    \begin{itemize}
+        \item Parameter zur Wegwahl definieren
+        \item Notwendige Klassen erstellen
+        \item Verantwortlichkeiten nach GRASP zuweisen
+        \item Varianten evaluieren nach Low Coupling/High Cohesion
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Implementation}
+\begin{itemize}
+    \item Veränderungen gemäß Systemvertrag implementieren
+    \item Review bezüglich High Cohesion und Architekturkonformität
+    \item Tests erstellen und durchführen
+\end{itemize}
+\end{KR}
+
+\begin{concept}{GRASP Prinzipien in der Use Case Realization}
+GRASP (General Responsibility Assignment Software Patterns) dient als Leitfaden für die Zuweisung von Verantwortlichkeiten:
+
+\textbf{Zentrale Prinzipien:}
+\begin{itemize}
+    \item Information Expert: Verantwortlichkeit dort, wo die Information ist
+    \item Creator: Objekte werden von eng verbundenen anderen Objekten erstellt
+    \item Controller: Erste Anlaufstelle für Systemoperationen
+    \item Low Coupling: Minimale Abhängigkeiten zwischen Klassen
+    \item High Cohesion: Fokussierte Verantwortlichkeiten pro Klasse
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Use Case Realization am Beispiel "Process Sale"}
+\textbf{1. Systemoperationen aus SSD:}
+\begin{itemize}
+    \item makeNewSale()
+    \item enterItem(itemID, quantity)
+    \item endSale()
+    \item makePayment(amount)
+\end{itemize}
+
+\textbf{2. Operation Contract für makeNewSale():}
+\begin{itemize}
+    \item \textbf{Vorbedingung:} Register ist betriebsbereit
+    \item \textbf{Nachbedingungen:}
+    \begin{itemize}
+        \item Neue Sale-Instanz s ist erstellt
+        \item s ist die neue aktuelle Sale Instanz von Register
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Implementation mit GRASP:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Controller Pattern
+public class Register {
+    private Sale currentSale;
+    private ProductCatalog catalog;
+    
+    public void makeNewSale() {
+        currentSale = new Sale(); // Creator Pattern
+    }
+    
+    public void enterItem(String itemId, int quantity) {
+        ProductDescription desc = catalog.getDescription(itemId);
+        currentSale.makeLineItem(desc, quantity); // Information Expert
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Design Class Diagram (DCD) erstellen}
+\textbf{1. Analyse Artefakte prüfen}
+\begin{itemize}
+    \item Domänenmodell als Ausgangsbasis verwenden
+    \item Use Cases und Contracts analysieren
+    \item Systemoperationen identifizieren
+\end{itemize}
+
+\textbf{2. Technische Klassen ergänzen}
+\begin{itemize}
+    \item Controller Klasse(n) definieren
+    \item Service Layer bei Bedarf einführen
+    \item Persistence Layer bei Bedarf ergänzen
+\end{itemize}
+
+\textbf{3. Methoden und Attribute}
+\begin{itemize}
+    \item Aus Systemoperationen ableiten
+    \item Getter/Setter nach Bedarf
+    \item Datentypen festlegen
+    \item Sichtbarkeiten bestimmen
+\end{itemize}
+
+\textbf{4. Beziehungen definieren}
+\begin{itemize}
+    \item Assoziationen aus Domänenmodell übernehmen
+    \item Navigierbarkeit festlegen
+    \item Multiplizitäten definieren
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Interaction Diagrams in der Use Case Realization}
+\textbf{Sequenzdiagramm für enterItem():}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+:Register -> :ProductCatalog: getDescription(itemId)
+:ProductCatalog --> :Register: desc
+:Register -> currentSale: makeLineItem(desc, quantity)
+currentSale -> :SalesLineItem: create(desc, quantity)
+currentSale -> lineItems: add(sl)
+\end{lstlisting}
+
+\textbf{Begründung der Interaktionen:}
+\begin{itemize}
+    \item Register als Controller empfängt Systemoperation
+    \item ProductCatalog als Information Expert für Produkte
+    \item Sale als Creator für SalesLineItem
+    \item Sale als Container verwaltet seine LineItems
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Typische Prüfungsaufgaben}
+\textbf{1. Use Case Realization dokumentieren}
+\begin{itemize}
+    \item System Sequence Diagram erstellen
+    \item Operation Contracts definieren
+    \item Design Class Diagram zeichnen
+    \item GRASP Prinzipien begründen
+    \item Sequenzdiagramm für wichtige Operationen
+\end{itemize}
+
+\textbf{2. Implementation analysieren}
+\begin{itemize}
+    \item GRASP Verletzungen identifizieren
+    \item Verbesserungen vorschlagen
+    \item Alternative Designs diskutieren
+\end{itemize}
+
+\textbf{3. Architektur evaluieren}
+\begin{itemize}
+    \item Schichtenarchitektur prüfen
+    \item Kopplung analysieren
+    \item Kohäsion bewerten
+\end{itemize}
+\end{KR}
+
+\begin{definition}{Verantwortlichkeiten (Responsibilities)}
+Im objektorientierten Design unterscheiden wir zwei Arten von Verantwortlichkeiten:
+
+\textbf{Doing-Verantwortlichkeiten:}
+\begin{itemize}
+    \item Selbst etwas tun
+    \item Aktionen anderer Objekte anstoßen
+    \item Aktivitäten anderer Objekte kontrollieren
+\end{itemize}
+
+\textbf{Knowing-Verantwortlichkeiten:}
+\begin{itemize}
+    \item Private eingekapselte Daten kennen
+    \item Verwandte Objekte kennen
+    \item Dinge berechnen/ableiten können
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Typische Prüfungsaufgabe mit Musterlösung}
+\textbf{Aufgabe:} Implementieren Sie die Use Case Realization für "Benutzer registrieren"
+
+\textbf{1. System Sequence Diagram}
+\begin{itemize}
+    \item registerUser(email, password)
+    \item confirmRegistration(token)
+\end{itemize}
+
+\textbf{2. Operation Contract registerUser()}
+\begin{itemize}
+    \item \textbf{Vorbedingungen:} Email nicht registriert
+    \item \textbf{Nachbedingungen:}
+    \begin{itemize}
+        \item User-Instanz erstellt
+        \item Bestätigungstoken generiert
+        \item Bestätigungsmail versendet
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Implementation mit GRASP:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class UserController {
+    private UserService userService;
+    private EmailService emailService;
+    
+    public void registerUser(String email, String password) {
+        // Controller empfaengt Systemoperation
+        User user = userService.createUser(email, password);
+        String token = userService.generateToken();
+        emailService.sendConfirmation(email, token);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Testing in Use Case Realization}
+\textbf{1. Unit Tests}
+\begin{itemize}
+    \item Isolierte Tests für einzelne Klassen
+    \item Mocking von Abhängigkeiten
+    \item Tests für Standardfälle und Ausnahmen
+    \item ATRIP-Prinzipien beachten:
+    \begin{itemize}
+        \item Automatic: Tests müssen automatisch ausführbar sein
+        \item Thorough: Vollständige Testabdeckung wichtiger Funktionen
+        \item Repeatable: Tests müssen reproduzierbar sein
+        \item Independent: Tests dürfen sich nicht gegenseitig beeinflussen
+        \item Professional: Tests müssen wartbar und lesbar sein
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Beispiel Unit Test:}
+\begin{lstlisting}[language=Java, style=basesmol]
+@Test
+public void shouldCalculateTotalForSale() {
+    // Given
+    Sale sale = new Sale();
+    ProductDescription product = new ProductDescription("p1", "Book", 29.99);
+    sale.makeLineItem(product, 2);
+    
+    // When
+    BigDecimal total = sale.getTotal();
+    
+    // Then
+    assertEquals(new BigDecimal("59.98"), total);
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Architekturbezogene Aspekte}
+Bei der Use Case Realization müssen folgende architektonische Aspekte beachtet werden:
+
+\textbf{Schichtenarchitektur:}
+\begin{itemize}
+    \item Presentation Layer (UI)
+    \item Application Layer (Use Cases)
+    \item Domain Layer (Business Logic)
+    \item Infrastructure Layer (Persistence, External Services)
+\end{itemize}
+
+\textbf{Abhängigkeitsregeln:}
+\begin{itemize}
+    \item Abhängigkeiten nur nach unten
+    \item Interfaces für externe Services
+    \item Dependency Injection für lose Kopplung
+\end{itemize}
+
+\textbf{Cross-Cutting Concerns:}
+\begin{itemize}
+    \item Logging
+    \item Security
+    \item Transaction Management
+    \item Exception Handling
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Typische Implementierungsfehler}
+\textbf{1. Verletzung von GRASP-Prinzipien}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Falsch: Information Expert verletzt
+public class Register {
+    public BigDecimal calculateTotal(Sale sale) {
+        // Register berechnet Total statt Sale
+        return sale.getItems().stream()
+                  .map(item -> item.getPrice())
+                  .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+}
+
+// Richtig: Sale ist Information Expert
+public class Sale {
+    public BigDecimal getTotal() {
+        return items.stream()
+                   .map(item -> item.getSubtotal())
+                   .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+}
+\end{lstlisting}
+
+\textbf{2. Architekturverletzungen}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Falsch: Domain-Objekt mit UI-Abhaengigkeit
+public class Sale {
+    private JFrame frame;
+    public void complete() {
+        // Domain-Logik vermischt mit UI
+        frame.showMessage("Sale completed");
+    }
+}
+
+// Richtig: Trennung der Schichten
+public class Sale {
+    public void complete() {
+        // Reine Domain-Logik
+        this.status = SaleStatus.COMPLETED;
+        this.completionTime = LocalDateTime.now();
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Refactoring in Use Case Realization}
+\textbf{1. Code Smells erkennen}
+\begin{itemize}
+    \item Duplizierter Code
+    \item Lange Methoden
+    \item Große Klassen
+    \item Feature Envy
+    \item Data Class
+\end{itemize}
+
+\textbf{2. Refactoring durchführen}
+\begin{itemize}
+    \item Extract Method
+    \item Move Method
+    \item Extract Class
+    \item Introduce Parameter Object
+    \item Replace Conditional with Polymorphism
+\end{itemize}
+
+\textbf{3. Beispiel Refactoring:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Vor Refactoring
+public class Sale {
+    public void complete() {
+        BigDecimal total = BigDecimal.ZERO;
+        for(SaleLineItem item : items) {
+            total = total.add(item.getPrice()
+                   .multiply(new BigDecimal(item.getQuantity())));
+        }
+        this.total = total;
+        this.status = "COMPLETED";
+        // ... weitere 20 Zeilen Code
+    }
+}
+
+// Nach Refactoring
+public class Sale {
+    public void complete() {
+        calculateTotal();
+        updateStatus();
+        generateReceipt();
+        notifyInventory();
+    }
+    
+    private void calculateTotal() {
+        this.total = items.stream()
+            .map(SaleLineItem::getSubtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    // ... weitere private Methoden
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Vollständiges Use Case Realization Beispiel}
+\textbf{Use Case:} Warenkorb zum Check-out freigeben
+
+\textbf{1. System Sequence Diagram}
+\begin{itemize}
+    \item validateCart()
+    \item prepareCheckout()
+    \item getCheckoutURL()
+\end{itemize}
+
+\textbf{2. Design Class Diagram}
+\begin{itemize}
+    \item CartController
+    \item ShoppingCart
+    \item CartValidator
+    \item CheckoutService
+\end{itemize}
+
+\textbf{3. Implementation:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class CartController {
+    private CartValidator validator;
+    private CheckoutService checkoutService;
+    
+    public CheckoutResult prepareCheckout(String cartId) {
+        ShoppingCart cart = findCart(cartId);
+        
+        // Validierung (Information Expert)
+        ValidationResult result = validator.validate(cart);
+        if (!result.isValid()) {
+            throw new ValidationException(result.getErrors());
+        }
+        
+        // Checkout vorbereiten
+        String checkoutUrl = checkoutService.initiate(cart);
+        return new CheckoutResult(checkoutUrl);
+    }
+}
+\end{lstlisting}
+
+\textbf{4. Tests:}
+\begin{lstlisting}[language=Java, style=basesmol]
+@Test
+public void shouldPrepareCheckoutForValidCart() {
+    // Given
+    ShoppingCart cart = createValidCart();
+    when(validator.validate(cart))
+        .thenReturn(ValidationResult.valid());
+    when(checkoutService.initiate(cart))
+        .thenReturn("https://checkout/123");
+        
+    // When
+    CheckoutResult result = controller.prepareCheckout(cart.getId());
+    
+    // Then
+    assertNotNull(result.getCheckoutUrl());
+    verify(checkoutService).initiate(cart);
+}
+\end{lstlisting}
+\end{example2}
+
+
 \begin{example2}{GRASP-basierte Implementation}
 \textbf{Szenario:} Implementierung einer Bestellverwaltung mit GRASP-Prinzipien
 
