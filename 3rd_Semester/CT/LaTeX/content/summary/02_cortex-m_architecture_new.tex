@@ -199,3 +199,170 @@ After arithmetic operations with 'S' suffix:
     SUBS    R0, #10      ; R0 = -5, N=1, C=0 (borrow)
 \end{lstlisting}
 \end{example2}
+
+\begin{definition}{Instruction Set}\\
+The Cortex-M uses 16-bit Thumb instructions:
+
+\includegraphics[width=0.35\linewidth, angle=90]{images/2024_12_29_79e6b22f503fb7b4f718g-02}
+
+Main instruction types:
+\begin{itemize}
+  \item \textbf{Data Transfer}:
+    \begin{itemize}
+      \item MOV/MOVS - Register to register
+      \item LDR/STR - Memory access
+      \item PUSH/POP - Stack operations
+      \item LDM/STM - Multiple register transfer
+    \end{itemize}
+  \item \textbf{Data Processing}:
+    \begin{itemize}
+      \item ADD/SUB - Arithmetic
+      \item AND/ORR/EOR - Logical
+      \item LSL/LSR/ASR - Shifts
+      \item CMP/CMN - Compare
+    \end{itemize}
+  \item \textbf{Control Flow}:
+    \begin{itemize}
+      \item B - Branch
+      \item BL - Branch with Link
+      \item BX - Branch and Exchange
+      \item Conditional variants (BEQ, BNE, etc.)
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Common Instruction Formats}\\
+Register operations:
+\begin{lstlisting}[language=armasm, style=base]
+    ADDS    R0, R1, R2   ; R0 = R1 + R2
+    MOVS    R0, R1       ; R0 = R1
+    ANDS    R0, R1       ; R0 = R0 & R1
+\end{lstlisting}
+
+Immediate values:
+\begin{lstlisting}[language=armasm, style=base]
+    MOVS    R0, #100     ; Load immediate value
+    ADDS    R0, R0, #1   ; Add immediate
+    CMP     R0, #10      ; Compare with immediate
+\end{lstlisting}
+
+Memory access:
+\begin{lstlisting}[language=armasm, style=base]
+    LDR     R0, [R1]     ; Load from memory
+    STR     R0, [R1, #4] ; Store with offset
+    LDRB    R0, [R1]     ; Load byte
+\end{lstlisting}
+\end{example2}
+
+\begin{concept}{Assembly Program Sections}\\
+Program memory is organized in sections:
+
+\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-02(1)}
+
+\textbf{Code Section (CODE):}
+\begin{itemize}
+  \item Contains program instructions
+  \item Usually read-only
+  \item Placed in Flash memory
+  \item Can contain constants (literal pool)
+\end{itemize}
+
+\textbf{Data Section (DATA):}
+\begin{itemize}
+  \item Contains global/static variables
+  \item Read-write access
+  \item Placed in RAM
+  \item Initialized at startup
+\end{itemize}
+
+\textbf{Stack Section:}
+\begin{itemize}
+  \item Dynamic memory allocation
+  \item Used for local variables
+  \item Function call management
+  \item Grows downward in memory
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Writing Assembly Programs}\\
+Steps for creating an assembly program:
+
+1. Setup sections:
+\begin{lstlisting}[language=armasm, style=base]
+    AREA    |.text|, CODE, READONLY
+    AREA    |.data|, DATA, READWRITE
+\end{lstlisting}
+
+2. Declare external symbols:
+\begin{lstlisting}[language=armasm, style=base]
+    IMPORT  external_func    ; External function
+    EXPORT  my_function     ; Public function
+\end{lstlisting}
+
+3. Define data:
+\begin{lstlisting}[language=armasm, style=base]
+    AREA    |.data|, DATA, READWRITE
+var1    DCD     0x1234        ; Word
+array   SPACE   100          ; Reserve space
+\end{lstlisting}
+
+4. Write code:
+\begin{lstlisting}[language=armasm, style=base]
+    AREA    |.text|, CODE, READONLY
+    ENTRY                   ; Program entry
+main
+    ; Your code here
+    END
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Complete Program Example}\\
+Program to sum array elements:
+\begin{lstlisting}[language=armasm, style=base]
+    AREA    |.text|, CODE, READONLY
+    EXPORT  array_sum
+        
+array_sum
+    MOVS    R2, #0          ; Initialize sum
+    MOVS    R3, #0          ; Initialize index
+loop
+    LDR     R1, [R0, R3]    ; Load array element
+    ADDS    R2, R2, R1      ; Add to sum
+    ADDS    R3, R3, #4      ; Next element
+    CMP     R3, #16         ; Check if done
+    BLT     loop           ; Continue if not
+    MOVS    R0, R2          ; Return sum
+    BX      LR             ; Return
+    END
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Common Assembly Patterns}\\
+1. Loop with counter:
+\begin{lstlisting}[language=armasm, style=base]
+    MOVS    R0, #0          ; Initialize counter
+loop
+    ; Loop body
+    ADDS    R0, #1          ; Increment
+    CMP     R0, #10         ; Check condition
+    BLT     loop           ; Branch if less than
+\end{lstlisting}
+
+2. Memory copy:
+\begin{lstlisting}[language=armasm, style=base]
+    ; R0 = source, R1 = destination, R2 = count
+copy_loop
+    LDR     R3, [R0], #4    ; Load and increment
+    STR     R3, [R1], #4    ; Store and increment
+    SUBS    R2, #1          ; Decrement counter
+    BNE     copy_loop      ; Continue if not done
+\end{lstlisting}
+
+3. Function call with parameters:
+\begin{lstlisting}[language=armasm, style=base]
+    MOVS    R0, #1          ; First parameter
+    MOVS    R1, #2          ; Second parameter
+    BL      function        ; Call function
+    ; Result in R0
+\end{lstlisting}
+\end{KR}
