@@ -367,6 +367,459 @@ Spring Data unterstützt die automatische Generierung von Repository-Implementie
 
 
 
+\pagebreak
 
+\section{new}
+
+\section{Persistenz}
+
+\begin{concept}{Persistenz Grundlagen}\\
+Persistenz bezeichnet die dauerhafte Speicherung von Daten über das Programmende hinaus:
+\begin{itemize}
+    \item Speicherung in Datenbankmanagementsystemen (DBMS)
+    \item Haupttypen:
+    \begin{itemize}
+        \item Relationale Datenbanksysteme (RDBMS) - vorherrschende Technologie
+        \item NoSQL-Datenbanken (ohne fixes Schema, verschiedene Formate)
+        \begin{itemize}
+            \item Document Stores
+            \item Key-Value Stores
+            \item Graph Databases
+        \end{itemize}
+    \end{itemize}
+    \item O/R-Mapping (Object Relational Mapping)
+    \begin{itemize}
+        \item Abbildung zwischen Objekten und Datensätzen
+        \item Überwindung des Strukturbruchs (Impedance Mismatch)
+        \item Verhältnismäßig viel Code für Transformation nötig
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{definition}{O/R-Mismatch}\\
+Der Strukturbruch zwischen objektorientierter und relationaler Welt:
+\begin{itemize}
+    \item \textbf{Typen-Systeme:}
+    \begin{itemize}
+        \item Unterschiedliche NULL-Behandlung
+        \item Datum/Zeit-Darstellung
+    \end{itemize}
+    \item \textbf{Beziehungen:}
+    \begin{itemize}
+        \item Richtung der Beziehungen
+        \item Mehrfachbeziehungen
+        \item Vererbung
+    \end{itemize}
+    \item \textbf{Identität:}
+    \begin{itemize}
+        \item OO: Implizite Objektidentität
+        \item DB: Explizite Identität (Primary Key)
+    \end{itemize}
+    \item \textbf{Besondere Herausforderungen:}
+    \begin{itemize}
+        \item Unterschiedliche Repräsentationsformen
+        \item Flache Tabellenstruktur vs. Objekthierarchien
+        \item Verschiedene Konzepte für Beziehungen
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Design Optionen für Persistenz}\\
+\textbf{Drei grundlegende Ansätze:}
+\begin{itemize}
+    \item \textbf{Active Record (Anti-Pattern):}
+    \begin{itemize}
+        \item Jede Entität ist selbst für Persistenz zuständig
+        \item Wrapper für eine Zeile einer Datenbanktabelle
+        \item Spiegelt die Datenbankstruktur direkt
+        \item Fachlichkeit und Technik in einer Klasse
+        \item Schlechte Testbarkeit der Domänenlogik
+        \item Schlechte Wartbarkeit und Erweiterbarkeit
+    \end{itemize}
+
+    \item \textbf{Data Access Object (DAO):}
+    \begin{itemize}
+        \item Trennung von Fachlichkeit und Technik
+        \item Domänenklasse hat hohe Kohäsion
+        \item Gute Testbarkeit durch Mocking
+        \item Bevorzugtes Design ohne O/R-Mapper
+    \end{itemize}
+
+    \item \textbf{O/R-Mapper (z.B. JPA):}
+    \begin{itemize}
+        \item Weniger Code und standardisierte Schnittstelle
+        \item Trennung von Fachlichkeit und Technik
+        \item Gute Testbarkeit durch Mocking
+        \item DAO auch bei JPA empfehlenswert
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Analyse der Persistenzanforderungen}
+\textbf{1. Funktionale Anforderungen}
+\begin{itemize}
+    \item Datenmodell und Beziehungen
+    \item Abfrageanforderungen
+    \item Transaktionsverhalten 
+\end{itemize}
+
+\textbf{2. Nicht-funktionale Anforderungen}
+\begin{itemize}
+    \item Performance
+    \item Skalierbarkeit
+    \item Wartbarkeit
+    \item Konsistenz
+\end{itemize}
+
+\textbf{3. Technische Randbedingungen}
+\begin{itemize}
+    \item Vorhandene Systeme
+    \item Datenbanktyp
+    \item Entwicklungsumgebung
+\end{itemize}
+
+\textbf{4. Designentscheidungen}
+\begin{itemize}
+    \item Persistenzstrategie wählen
+    \item Framework-Auswahl
+    \item Architekturmuster festlegen
+\end{itemize}
+\end{KR}
+
+\subsection{JDBC - Java Database Connectivity}
+
+\begin{concept}{JDBC Grundlagen}\\
+JDBC ist die standardisierte Schnittstelle für Datenbankzugriffe in Java:
+\begin{itemize}
+    \item Standardisierte Schnittstelle für relationale Datenbanken
+    \item Cross-Plattform und DB-independent
+    \item Teil der Java-Platform seit JDK1.1 (1997)
+    \item Aktuelle Version: 4.2
+\end{itemize}
+\end{concept}
+
+\begin{concept}{JDBC Architektur}\\
+\textbf{Hauptkomponenten:}
+\begin{itemize}
+    \item \textbf{JDBC API:} 
+    \begin{itemize}
+        \item Interfaces und Klassen für DB-Zugriff
+        \item Im java.sql Package
+    \end{itemize}
+    \item \textbf{JDBC Driver Manager:}
+    \begin{itemize}
+        \item Verwaltet Datenbanktreiber
+        \item Erstellt Verbindungen
+    \end{itemize}
+    \item \textbf{JDBC Drivers:}
+    \begin{itemize}
+        \item Herstellerspezifische Implementierungen
+        \item Übersetzen JDBC-Aufrufe in DB-Protokoll
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{KR}{JDBC Basisoperationen}
+\textbf{1. Verbindungsaufbau}
+\begin{lstlisting}[language=Java, style=base]
+Connection con = DriverManager.getConnection(
+    "jdbc:postgresql://server/db",
+    "user", "password");
+\end{lstlisting}
+
+\textbf{2. Statement erstellen und ausführen}
+\begin{lstlisting}[language=Java, style=base]
+Statement stmt = con.createStatement();
+ResultSet rs = stmt.executeQuery(
+    "SELECT * FROM users");
+\end{lstlisting}
+
+\textbf{3. Ergebnisse verarbeiten}
+\begin{lstlisting}[language=Java, style=base]
+while (rs.next()) {
+    String name = rs.getString("name");
+    int age = rs.getInt("age");
+}
+\end{lstlisting}
+
+\textbf{4. Ressourcen freigeben}
+\begin{lstlisting}[language=Java, style=base]
+rs.close();
+stmt.close();
+con.close();
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{DAO Pattern mit JDBC}\\
+\textbf{Implementierungsstruktur:}
+\begin{itemize}
+    \item \textbf{Interface:}
+    \begin{itemize}
+        \item Definiert CRUD-Operationen
+        \item Definiert spezifische Abfragen
+    \end{itemize}
+    \item \textbf{Implementierung:}
+    \begin{itemize}
+        \item Verwendet JDBC für DB-Zugriff
+        \item Implementiert O/R-Mapping
+        \item Behandelt Fehler
+    \end{itemize}
+    \item \textbf{Domänenklasse:}
+    \begin{itemize}
+        \item Reine Geschäftslogik
+        \item Keine Persistenzlogik
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{example2}{DAO Implementation}
+\textbf{1. Interface definieren:}
+\begin{lstlisting}[language=Java, style=base]
+public interface UserDAO {
+    void insert(User user);
+    User findById(long id);
+    List<User> findAll();
+    void update(User user);
+    void delete(User user);
+}
+\end{lstlisting}
+
+\textbf{2. JDBC-Implementierung:}
+\begin{lstlisting}[language=Java, style=base]
+public class JdbcUserDAO implements UserDAO {
+    private Connection getConnection() {
+        // Verbindungsaufbau
+    }
+    
+    public User findById(long id) {
+        Connection conn = getConnection();
+        try {
+            PreparedStatement ps = conn.prepareStatement(
+                "SELECT * FROM users WHERE id = ?");
+            ps.setLong(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapUser(rs);
+            }
+            return null;
+        } finally {
+            conn.close();
+        }
+    }
+    
+    private User mapUser(ResultSet rs) {
+        User user = new User();
+        user.setId(rs.getLong("id"));
+        user.setName(rs.getString("name"));
+        return user;
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Common Pitfalls in Persistence Implementation}
+\textbf{1. JPA Fallstricke}
+\begin{itemize}
+    \item \textbf{N+1 Problem:}
+    \begin{itemize}
+        \item Symptom: Für jedes Objekt wird eine zusätzliche Query ausgeführt
+        \item Lösung: Join Fetch oder Eager Loading strategisch einsetzen
+    \end{itemize}
+    \item \textbf{LazyInitializationException:}
+    \begin{itemize}
+        \item Symptom: Zugriff auf lazy geladene Referenz außerhalb der Session
+        \item Lösung: Transaktionen richtig abgrenzen oder Fetch Join verwenden
+    \end{itemize}
+    \item \textbf{Bidirektionale Beziehungen:}
+    \begin{itemize}
+        \item Symptom: Inkonsistente Objektzustände
+        \item Lösung: Helper-Methoden für Beziehungspflege
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Performance Probleme}
+\begin{itemize}
+    \item \textbf{Zu viele Queries:}
+    \begin{itemize}
+        \item Problem: Ineffiziente Datenbankzugriffe
+        \item Lösung: Batch Processing, Bulk Operations
+    \end{itemize}
+    \item \textbf{Memory Leaks:}
+    \begin{itemize}
+        \item Problem: Große Result Sets
+        \item Lösung: Pagination, Streaming Results
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Typische Prüfungsaufgabe: Parent-Child Beziehung}
+\textbf{Szenario:}
+Implementieren Sie eine bidirektionale One-to-Many Beziehung zwischen Department und Employee.
+
+\textbf{1. Entity-Klassen:}
+\begin{lstlisting}[language=Java, style=base]
+@Entity
+public class Department {
+    @Id @GeneratedValue
+    private Long id;
+    
+    private String name;
+    
+    @OneToMany(mappedBy = "department", 
+               cascade = CascadeType.ALL,
+               orphanRemoval = true)
+    private List<Employee> employees = new ArrayList<>();
+    
+    // Helper Methoden
+    public void addEmployee(Employee employee) {
+        employees.add(employee);
+        employee.setDepartment(this);
+    }
+    
+    public void removeEmployee(Employee employee) {
+        employees.remove(employee);
+        employee.setDepartment(null);
+    }
+}
+
+@Entity
+public class Employee {
+    @Id @GeneratedValue
+    private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+}
+\end{lstlisting}
+
+\textbf{2. Repository Interface:}
+\begin{lstlisting}[language=Java, style=base]
+public interface DepartmentRepository 
+    extends JpaRepository<Department, Long> {
+    
+    @Query("SELECT d FROM Department d " +
+           "LEFT JOIN FETCH d.employees " +
+           "WHERE d.id = :id")
+    Optional<Department> findByIdWithEmployees(
+        @Param("id") Long id);
+}
+\end{lstlisting}
+
+\textbf{3. Service Layer:}
+\begin{lstlisting}[language=Java, style=base]
+@Service
+@Transactional
+public class DepartmentService {
+    @Autowired
+    private DepartmentRepository repository;
+    
+    public void addEmployeeToDepartment(
+            Long deptId, Employee employee) {
+        Department dept = repository
+            .findById(deptId)
+            .orElseThrow(() -> 
+                new EntityNotFoundException());
+        dept.addEmployee(employee);
+        repository.save(dept);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Best Practices für Persistenz}
+\textbf{1. Architektur-Ebene}
+\begin{itemize}
+    \item Trennung von Concerns
+    \begin{itemize}
+        \item Repository für Datenzugriff
+        \item Service für Geschäftslogik
+        \item DTO für Datentransfer
+    \end{itemize}
+    \item Transaktionsmanagement
+    \begin{itemize}
+        \item Auf Service-Ebene
+        \item Atomare Operationen
+        \item Konsistente Daten
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Entity Design}
+\begin{itemize}
+    \item Immutable wenn möglich
+    \item Validierung durch Bean Validation
+    \item Geschäftsregeln in Entity-Klassen
+\end{itemize}
+
+\textbf{3. Performance Optimierung}
+\begin{itemize}
+    \item Caching Strategien
+    \item Batch Processing
+    \item Query Optimierung
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Praktische Implementierungsbeispiele}
+\textbf{1. Optimistisches Locking:}
+\begin{lstlisting}[language=Java, style=base]
+@Entity
+public class Account {
+    @Version
+    private Long version;
+    
+    private BigDecimal balance;
+    
+    public void withdraw(BigDecimal amount) {
+        if (balance.compareTo(amount) < 0) {
+            throw new InsufficientFundsException();
+        }
+        balance = balance.subtract(amount);
+    }
+}
+\end{lstlisting}
+
+\textbf{2. Entity Lifecycle Callbacks:}
+\begin{lstlisting}[language=Java, style=base]
+@Entity
+public class AuditedEntity {
+    @PrePersist
+    void onCreate() {
+        this.createdDate = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    void onUpdate() {
+        this.lastModified = LocalDateTime.now();
+    }
+}
+\end{lstlisting}
+
+\textbf{3. Custom Repository Implementation:}
+\begin{lstlisting}[language=Java, style=base]
+@Repository
+public class CustomOrderRepositoryImpl 
+    implements CustomOrderRepository {
+    
+    @PersistenceContext
+    private EntityManager em;
+    
+    public List<Order> findComplexOrders(
+            OrderCriteria criteria) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Order> query = 
+            cb.createQuery(Order.class);
+        Root<Order> root = query.from(Order.class);
+        
+        // Complex criteria building
+        Predicate[] predicates = buildPredicates(
+            cb, root, criteria);
+        query.where(predicates);
+        
+        return em.createQuery(query)
+                 .getResultList();
+    }
+}
+\end{lstlisting}
+\end{example2}
 
 

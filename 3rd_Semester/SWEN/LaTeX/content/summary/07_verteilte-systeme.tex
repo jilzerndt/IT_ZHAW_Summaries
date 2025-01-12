@@ -304,3 +304,395 @@ Gängige Technologien für verteilte Systeme:
 \end{itemize}
 \end{KR}
 
+\pagebreak
+
+\section{new}
+
+\section{Verteilte Systeme}
+
+\begin{definition}{Verteiltes System}\\
+Ein Netzwerk aus autonomen Computern und Softwarekomponenten, die als einheitliches System erscheinen. Basiert auf einer Menge voneinander unabhängiger Rechnersysteme (Knoten) und Softwarebausteinen (Komponenten).
+\begin{itemize}
+    \item Autonome Knoten und Komponenten
+    \item Netzwerkverbindung
+    \item Erscheint dem Benutzer wie ein einzelnes, kohärentes System
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Motivation für Verteilte Systeme}\\
+\textbf{Vorteile:}
+\begin{itemize}
+    \item Gemeinsamer Ressourcenzugriff
+    \item Lastverteilung
+    \item Ausfallsicherheit, Verfügbarkeit  
+    \item Skalierbarkeit
+    \item Flexibilität
+    \item Verteilungstransparenz (Ort, Fehler, Persistenz, ...)
+\end{itemize}
+
+\textbf{Nachteile:}
+\begin{itemize}
+    \item Komplexität durch Verteilung, Netzinfrastruktur
+    \item Sicherheitsrisiken
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Charakteristika verteilter Systeme}\\
+Typische Merkmale verteilter Informationssysteme:
+\begin{itemize}
+    \item \textbf{Größe:} Oft sehr große Systeme
+    \item \textbf{Datenorientierung:} Zentrale Datenbanken im Fokus
+    \item \textbf{Interaktivität:} GUI und Batch-Verarbeitung
+    \item \textbf{Nebenläufigkeit:} Große Anzahl parallel arbeitender Benutzer
+    \item \textbf{Konsistenz:} Hohe Konsistenzanforderungen
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Heterogenität}\\
+Mehrere Ebenen der Heterogenität müssen berücksichtigt werden:
+
+\textbf{1. Hardware und Betriebssysteme}
+\begin{itemize}
+    \item Unterschiedliche Speicherung der Daten ("Little Endian" vs "Big Endian")
+    \item Verschiedene Zeichensätze (ASCII, EBCDIC, Unicode)
+\end{itemize}
+
+\textbf{2. Überwindung der Heterogenität}
+\begin{itemize}
+    \item Einheitliche Transportsyntax (ASN.1, XDR, HTML, XML, JSON)
+    \item Middleware-Technologien mit standardisierten Ansätzen
+    \item Marshalling/Unmarshalling über generierten Code
+\end{itemize}
+\end{concept}
+
+\begin{theorem}{Architekturmodelle}\\
+Heute finden vor allem folgende Architekturmodelle ihren Einsatz:
+
+\textbf{1. Client/Server}
+\begin{itemize}
+    \item Kurzlebiger Client-Prozess kommuniziert mit langlebigem Server-Prozess
+    \item Beispiel: Web-Applikation
+\end{itemize}
+
+\textbf{2. Peer-to-Peer}
+\begin{itemize}
+    \item Gleichberechtigte Peer-Prozesse
+    \item Informationsaustausch nur bei Bedarf
+    \item Beispiel: Blockchain
+\end{itemize}
+
+\textbf{3. Event Systems}
+\begin{itemize}
+    \item Event-Sources-Prozesse und Event-Sinks-Prozesse
+    \item Asynchroner Informationsaustausch
+    \item Beispiel: E-Mail-System
+\end{itemize}
+\end{theorem}
+
+\begin{concept}{Mehrstufige Architekturen}\\
+Multi-Tier-Architekturen erweitern das Client-Server-Modell:
+\begin{itemize}
+    \item Beschreiben Verteilung einer Anwendung auf verschiedene Rechner (Tiers)
+    \item Arbeitsteilung zwischen Client und Server in verschiedenen Varianten
+    \item Schichten: Präsentation, Verarbeitung (Domänenlogik), Datenhaltung
+    \item Beispiel: 3-Tier-Architektur mit Präsentation, Anwendungslogik und Datenbank
+\end{itemize}
+\includegraphics[width=0.9\linewidth]{images/2024_12_29_0d1d7b5551ea1b4b41bdg-18}
+\end{concept}
+
+\begin{concept}{Kommunikation zwischen Client und Server}\\
+\textbf{Grundlagen:}
+\begin{itemize}
+    \item Services sind über URLs aufrufbar: protokoll://<server>:<port>/<pfad_des_service>
+    \item Kommunikation über TCP oder UDP
+    \item Socket = Programmierschnittstelle zu Kommunikationskanal
+    \item IP-Socket-Adresse besteht aus IP-Adresse + Portnummer
+\end{itemize}
+
+\textbf{Ablauf:}
+\begin{itemize}
+    \item Client sendet Request an Server
+    \item Server empfängt Request und leitet an entsprechenden Service weiter
+    \item Service bearbeitet Request und schickt Response zurück
+    \item Server ist in Ablaufumgebung (z.B. VM) des Betriebssystems eingebettet
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Kommunikationsmodelle}\\
+\textbf{1. Synchrone Kommunikation}
+\begin{itemize}
+    \item Synchroner entfernter Dienstaufruf → blockierend
+    \item Sender wartet auf Ergebnis der Methode send
+    \item Typisch für Request-Response Pattern
+\end{itemize}
+
+\textbf{2. Asynchrone Kommunikation}
+\begin{itemize}
+    \item Asynchroner entfernter Serviceaufruf → nicht blockierend
+    \item Sender kann direkt weitermachen
+    \item Senden und Empfangen zeitlich versetzt
+    \item Keine Blockierung des Prozesses
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Lebenszyklus von Serverbausteinen}\\
+Ein Serverbaustein durchläuft verschiedene Zustände:
+\begin{itemize}
+    \item Wird zur Laufzeit von Server instanziiert
+    \item Zustandsübergänge abhängig von Bausteintyp und Implementierung
+    \item Anzahl und Benennung der Zustände variiert je nach Middleware
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Implementierung verteilter Systeme}\\
+\textbf{1. Nebenläufigkeit}
+\begin{itemize}
+    \item Iterative oder parallele Serverbausteine
+    \item Threadpooling für gleichzeitige Bedienung mehrerer Clients
+    \item Dispatcher verteilt Requests auf Threads
+    \item Einfaches sequentielles Programmiermodell für Entwickler
+\end{itemize}
+
+\textbf{2. Fehlersituationen}
+\begin{itemize}
+    \item Request geht verloren
+    \item Server-Response geht verloren
+    \item Server stürzt während Ausführung ab
+    \item Server braucht zu lange für Bearbeitung
+    \item Client stürzt vor Ankunft des Ergebnisses ab
+\end{itemize}
+
+\textbf{3. Parameterübergabe}
+\begin{itemize}
+    \item Call-by-value: Wert wird übergeben
+    \item Call-by-reference: Verweis auf Variable wird übergeben  
+    \item Call-by-copy/restore: Aufrufer arbeitet mit Kopie
+\end{itemize}
+\end{KR}
+
+\begin{concept}{Marshalling/Unmarshalling}\\
+Umwandlung von Daten für die Übermittlung:
+
+\textbf{1. Tag-basierte Transfersyntax}
+\begin{itemize}
+    \item ASN.1 mit BER (Basic Encoding Rules)
+    \item TLV-Kodierung (Type, Length, Value)
+\end{itemize}
+
+\textbf{2. Tag-freie Transfersyntax}
+\begin{itemize}
+    \item Sun ONC XDR, CORBA CDR
+    \item Beschreibung durch Stellung in Nachricht
+    \item Aufbau beiden Seiten bekannt
+\end{itemize}
+
+\textbf{3. Moderne Formate}
+\begin{itemize}
+    \item XML (Tag-basiert)
+    \item JSON (Tag-basiert, sprachunabhängig)
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Prüfungsaufgabe: Kommunikationsanalyse}
+\textbf{Szenario:}
+Ein verteiltes System soll große Datenmengen verarbeiten. Analysieren Sie die Vor- und Nachteile synchroner vs. asynchroner Kommunikation.
+
+\textbf{Synchrone Kommunikation:}
+\begin{itemize}
+    \item \textbf{Vorteile:}
+    \begin{itemize}
+        \item Einfaches Programmiermodell
+        \item Direktes Feedback
+        \item Garantierte Reihenfolge
+    \end{itemize}
+    \item \textbf{Nachteile:}
+    \begin{itemize}
+        \item Blockierung von Ressourcen
+        \item Schlechte Skalierbarkeit
+        \item Anfällig für Timeouts
+    \end{itemize}
+\end{itemize}
+
+\textbf{Asynchrone Kommunikation:}
+\begin{itemize}
+    \item \textbf{Vorteile:}
+    \begin{itemize}
+        \item Bessere Ressourcennutzung
+        \item Höhere Skalierbarkeit
+        \item Entkopplung von Systemen
+    \end{itemize}
+    \item \textbf{Nachteile:}
+    \begin{itemize}
+        \item Komplexere Implementierung
+        \item Schwierigere Fehlerbehandlung
+        \item Reihenfolge nicht garantiert
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{concept}{Middleware}\\
+Middleware ist eine Softwareschicht, die standardisierte Kommunikations- und andere Dienste über ein API bereitstellt.
+
+\textbf{Middleware-Kategorien:}
+\begin{itemize}
+    \item \textbf{Anwendungsorientiert:}
+    \begin{itemize}
+        \item Java Enterprise Edition (Jakarta EE)
+        \item Spring-Framework
+        \item .NET Enterprise Services
+    \end{itemize}
+    
+    \item \textbf{Kommunikationsorientiert:}
+    \begin{itemize}
+        \item Remote Procedure Call (RPC)
+        \item Remote Method Invocation (RMI)
+        \item REST, WebSocket
+    \end{itemize}
+    
+    \item \textbf{Nachrichtenorientiert:}
+    \begin{itemize}
+        \item Message Oriented Middleware (MOM)
+        \item Java Messaging Service (JMS)
+        \item MQTT
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Design Pattern Auswahl}\\
+\textbf{1. Remote Proxy Pattern}
+\begin{itemize}
+    \item Grundlegendes Pattern für Zugriff auf Services
+    \item Proxy wird durch Dependency Injection (DI) instanziiert
+    \item Client- und serverseitiger Stub ("Skeleton")
+\end{itemize}
+
+\textbf{2. Data Transfer Object (DTO)}
+\begin{itemize}
+    \item Bündelt mehrere Daten für einen einzelnen Programmaufruf
+    \item Reduziert Anzahl der Remote-Zugriffe
+    \item Typischerweise "immutable" (nur getter-Methoden)
+\end{itemize}
+
+\textbf{3. Service Locator}
+\begin{itemize}
+    \item Zentrale Registrierung von Services
+    \item Ermöglicht dynamisches Auffinden von Diensten
+    \item Unterstützt Load Balancing
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Prüfungsaufgabe: Systemanalyse}
+\textbf{Aufgabe:}
+Für ein Online-Banking-System sollen kritische Aspekte analysiert werden.
+
+\textbf{1. Anforderungen identifizieren:}
+\begin{itemize}
+    \item Hohe Verfügbarkeit (24/7)
+    \item Strikte Konsistenz bei Finanztransaktionen
+    \item Skalierbarkeit für viele Nutzer
+    \item Sicherheit und Verschlüsselung
+\end{itemize}
+
+\textbf{2. Architekturentscheidungen:}
+\begin{itemize}
+    \item \textbf{Client-Server mit Multi-Tier:}
+    \begin{itemize}
+        \item Präsentationsschicht (Web/Mobile)
+        \item Geschäftslogik
+        \item Datenbankschicht
+    \end{itemize}
+    
+    \item \textbf{Synchrone Kommunikation:}
+    \begin{itemize}
+        \item Direkte Bestätigung von Transaktionen
+        \item Garantierte Reihenfolge
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Technische Maßnahmen:}
+\begin{itemize}
+    \item Verteilte Datenbank mit Two-Phase Commit
+    \item Load Balancing für Hochverfügbarkeit
+    \item SSL/TLS für Verschlüsselung
+    \item Session Management für Authentifizierung
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Lastverteilung und Skalierung}\\
+\textbf{1. Load Balancing}
+\begin{itemize}
+    \item Lastverteiler für multiple Serverinstanzen
+    \item DNS-basiertes Request-Routing
+    \item Session-Sticky Load Balancing
+\end{itemize}
+
+\textbf{2. Hochverfügbarkeit}
+\begin{itemize}
+    \item Server-Cluster
+    \item Failover-Mechanismen
+    \item Session-Replikation
+\end{itemize}
+
+\textbf{3. Skalierungsmethoden}
+\begin{itemize}
+    \item \textbf{Horizontal:} Mehr Rechner hinzufügen
+    \item \textbf{Vertikal:} Ressourcen pro Rechner erhöhen
+    \item \textbf{Funktional:} Services aufteilen
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Implementierungsaspekte}
+\textbf{Zustandsverwaltung:}
+\begin{itemize}
+    \item \textbf{Stateful vs. Stateless:}
+    \begin{itemize}
+        \item Stateless Server bevorzugt
+        \item Zustand in Datenbank oder Client
+        \item Bessere Skalierbarkeit
+    \end{itemize}
+    
+    \item \textbf{Session Management:}
+    \begin{itemize}
+        \item Verteilte Sessions
+        \item Session Clustering
+        \item Sticky Sessions
+    \end{itemize}
+\end{itemize}
+
+\textbf{Garbage Collection:}
+\begin{itemize}
+    \item Verteiltes Reference-Counting
+    \item Leases für temporäre Ressourcen
+    \item Zusammenarbeit mit lokalem GC
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Checkliste für Prüfungsvorbereitung}\\
+\textbf{1. Theoretische Grundlagen}
+\begin{itemize}
+    \item Definition verteilter Systeme
+    \item Architekturmodelle verstehen
+    \item Kommunikationsformen kennen
+\end{itemize}
+
+\textbf{2. Implementierungsaspekte}
+\begin{itemize}
+    \item Synchron vs. Asynchron
+    \item Marshalling/Unmarshalling
+    \item Fehlerbehandlung
+\end{itemize}
+
+\textbf{3. Architekturmuster}
+\begin{itemize}
+    \item Client-Server
+    \item Peer-to-Peer
+    \item Event-basierte Systeme
+\end{itemize}
+
+\textbf{4. Best Practices}
+\begin{itemize}
+    \item Skalierungsstrategien
+    \item Fehlertoleranz
+    \item Konsistenzmodelle
+\end{itemize}
+\end{KR}

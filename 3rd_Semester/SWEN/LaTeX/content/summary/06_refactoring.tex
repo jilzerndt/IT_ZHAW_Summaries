@@ -160,7 +160,402 @@ public class PriceCalculator {
 \end{itemize}
 \end{KR}
 
-[continue with more content or specific focus area?]
+\begin{KR}{Testing Frameworks and Tools}
+\textbf{1. Unit Testing}
+\begin{itemize}
+   \item \textbf{JUnit:}
+   \begin{itemize}
+       \item Assertions für Vergleiche
+       \item Test Lifecycle (@Before, @After)
+       \item Test Suites organisieren
+   \end{itemize}
+   \item \textbf{Mockito:}
+   \begin{itemize}
+       \item Mocking von Abhängigkeiten
+       \item Verifikation von Aufrufen
+       \item Stubbing von Verhalten
+   \end{itemize}
+\end{itemize}
+
+\textbf{Beispiel:}
+\begin{lstlisting}[language=Java, style=basesmol]
+@Test
+public void shouldProcessPayment() {
+   // Given
+   PaymentService paymentService = mock(PaymentService.class);
+   when(paymentService.process(any(Payment.class)))
+       .thenReturn(true);
+   
+   OrderProcessor processor = new OrderProcessor(paymentService);
+   Order order = new Order("123", BigDecimal.valueOf(99.99));
+   
+   // When
+   boolean result = processor.processOrder(order);
+   
+   // Then
+   assertTrue(result);
+   verify(paymentService).process(any(Payment.class));
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Common Testing Pitfalls}
+\textbf{1. Flaky Tests}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Schlecht: Test könnte fehlschlagen
+@Test
+public void testAsyncOperation() throws Exception {
+   service.startAsyncOperation();
+   Thread.sleep(1000); // Fragil!
+   assertTrue(service.isOperationComplete());
+}
+
+// Besser: Explizites Warten
+@Test
+public void testAsyncOperation() {
+   service.startAsyncOperation();
+   await()
+       .atMost(5, TimeUnit.SECONDS)
+       .until(() -> service.isOperationComplete());
+   assertTrue(service.isOperationComplete());
+}
+\end{lstlisting}
+
+\textbf{2. Zu viele Mocks}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Schlecht: Übermaßiges Mocking
+@Test
+public void testOverMocked() {
+   Database db = mock(Database.class);
+   Logger logger = mock(Logger.class);
+   EmailService email = mock(EmailService.class);
+   UserService users = mock(UserService.class);
+   
+   // Test wird unübersichtlich und fragil
+}
+
+// Besser: Sociable Unit Testing
+@Test
+public void testSociable() {
+   // Nur externe Abhängigkeiten mocken
+   EmailService email = mock(EmailService.class);
+   UserService service = new UserService(email);
+   
+   User user = service.createUser("test@test.com");
+   assertNotNull(user.getId());
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Performance Testing}
+\textbf{1. Last Tests (Load Testing)}
+\begin{itemize}
+   \item Normales Benutzerverhalten simulieren
+   \item Durchschnittliche Antwortzeiten messen
+   \item Ressourcenverbrauch überwachen
+\end{itemize}
+
+\textbf{2. Stress Tests}
+\begin{itemize}
+   \item System an Grenzen bringen
+   \item Verhalten bei Überlast prüfen
+   \item Wiederherstellung testen
+\end{itemize}
+
+\textbf{3. Endurance Tests}
+\begin{itemize}
+   \item Langzeitverhalten prüfen
+   \item Memory Leaks aufdecken
+   \item Ressourcenverbrauch über Zeit
+\end{itemize}
+
+\textbf{Beispiel JMeter Test Plan:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Thread Group Configuration
+Number of Threads (Users): 100
+Ramp-up Period: 60 seconds
+Loop Count: 10
+
+// HTTP Request
+GET /api/products
+Headers:
+ Content-Type: application/json
+ Authorization: Bearer ${token}
+
+// Response Assertions
+Response Code: 200
+Response Time: < 500ms
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Test Coverage Analysis}
+\textbf{1. Line Coverage}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class PaymentProcessor {
+   public boolean processPayment(Payment payment) {
+       if (payment == null) {         // Covered
+           return false;              // Covered
+       }
+       
+       if (payment.getAmount() <= 0) { // Not covered
+           return false;               // Not covered
+       }
+       
+       return doProcessPayment(payment); // Covered
+   }
+}
+\end{lstlisting}
+
+\textbf{2. Branch Coverage}
+\begin{lstlisting}[language=Java, style=basesmol]
+@Test
+public void testPaymentProcessing() {
+   // Test 1: null payment
+   assertFalse(processor.processPayment(null));
+   
+   // Test 2: valid payment
+   Payment payment = new Payment(100.00);
+   assertTrue(processor.processPayment(payment));
+   
+   // Missing: Test für payment.getAmount() <= 0
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Continuous Integration Testing}
+\textbf{1. Build Pipeline}
+\begin{itemize}
+   \item Compile und Unit Tests
+   \item Integration Tests
+   \item Code Quality Checks
+   \item Security Scans
+\end{itemize}
+
+\textbf{2. Test Automatisierung}
+\begin{itemize}
+   \item Smoke Tests
+   \item Regression Tests
+   \item Performance Tests
+\end{itemize}
+
+\textbf{3. Reporting}
+\begin{itemize}
+   \item Test Coverage Reports
+   \item Performance Metrics
+   \item Error Logs
+\end{itemize}
+\end{KR}
+
+\begin{concept}{Grundlegende Testarten}
+Es gibt verschiedene Grundarten von Tests:
+\begin{itemize}
+    \item \textbf{Funktionaler Test (Black-Box Verfahren):} 
+    \begin{itemize}
+        \item Test aus Benutzersicht
+        \item Ohne Kenntnis der internen Implementation
+        \item Fokus auf Input/Output
+    \end{itemize}
+    \item \textbf{Nicht funktionaler Test:}
+    \begin{itemize}
+        \item Performance Tests
+        \item Last Tests
+        \item Sicherheitstests
+    \end{itemize}
+    \item \textbf{Strukturbezogener Test (White-Box Verfahren):}
+    \begin{itemize}
+        \item Test mit Kenntnis der Implementation
+        \item Code Coverage 
+        \item Pfadtests
+    \end{itemize}
+    \item \textbf{Änderungsbezogener Test:}
+    \begin{itemize}
+        \item Regressionstest
+        \item Smoke Test
+        \item Sanity Test
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Wichtige Testbegriffe}
+\begin{itemize}
+    \item \textbf{Testling/Testobjekt:} Das zu testende Element
+    \item \textbf{Fehler:} Fehler des Entwicklers bei der Implementation
+    \item \textbf{Fehlerwirkung/Bug:} Abweichung vom spezifizierten Verhalten
+    \item \textbf{Testfall:} Spezifische Testkonfiguration mit Testdaten
+    \item \textbf{Testtreiber:} Programm zur Testausführung
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Teststufen}
+\textbf{1. Unit Tests}
+\begin{itemize}
+    \item Test einzelner Komponenten
+    \item Isolation durch Mocks/Stubs
+    \item Schnelle Ausführung
+    \item Automatisierte Tests
+\end{itemize}
+
+\textbf{2. Integrationstests}
+\begin{itemize}
+    \item Test des Zusammenspiels mehrerer Komponenten
+    \item Fokus auf Schnittstellen
+    \item Kann externe Systeme einbeziehen
+\end{itemize}
+
+\textbf{3. Systemtests} 
+\begin{itemize}
+    \item Test des Gesamtsystems
+    \item End-to-End Szenarien
+    \item Auch nicht-funktionale Anforderungen
+\end{itemize}
+
+\textbf{4. Abnahmetests}
+\begin{itemize}
+    \item Test gegen Kundenanforderungen
+    \item Oft manuelle Tests
+    \item User Acceptance Testing (UAT)
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Testmerkmale}
+\textbf{Was wird getestet?}
+\begin{itemize}
+    \item Eine Einheit/Klasse (Unit-Test)
+    \item Zusammenarbeit mehrerer Klassen
+    \item Die gesamte Applikationslogik (ohne UI)
+    \item Die gesamte Anwendung (über UI)
+\end{itemize}
+
+\textbf{Wie wird getestet?}
+\begin{itemize}
+    \item Dynamisch: Testfall wird ausgeführt
+    \begin{itemize}
+        \item Black-Box Test
+        \item White-Box Test
+    \end{itemize}
+    \item Statisch: Quelltext wird analysiert
+    \begin{itemize}
+        \item Walkthrough
+        \item Review
+        \item Inspektion
+    \end{itemize}
+\end{itemize}
+
+\textbf{Wann wird der Test geschrieben?}
+\begin{itemize}
+    \item Vor dem Implementieren (Test-Driven Development)
+    \item Nach dem Implementieren
+\end{itemize}
+
+\textbf{Wer testet?}
+\begin{itemize}
+    \item Entwickler
+    \item Tester, Qualitätssicherungsabteilung
+    \item Kunde, Endbenutzer
+\end{itemize}
+\end{KR}
+
+\begin{concept}{Refactoring - Grundlagen}
+Refactoring ist eine strukturierte, disziplinierte Methode, um vorhandenen Code umzuschreiben:
+\begin{itemize}
+    \item Externes Verhalten bleibt gleich
+    \item Viele kleine Schritte (Codeänderungen)
+    \item Interne Struktur wird verbessert
+    \item Ziel: Bessere Wartbarkeit und Erweiterbarkeit
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Code Smells}
+Anzeichen für mögliche Probleme im Code:
+\begin{itemize}
+    \item \textbf{Duplizierter Code:} Gleicher Code an mehreren Stellen
+    \item \textbf{Lange Methoden:} Methoden mit zu vielen Verantwortlichkeiten
+    \item \textbf{Große Klassen:} Klassen mit vielen Instanzvariablen
+    \item \textbf{Auffällig ähnliche Unterklassen:} Potential für Abstraktion
+    \item \textbf{Hohe Kopplung:} Zu viele Abhängigkeiten zwischen Klassen
+    \item \textbf{Keine Interfaces:} Mangelnde Abstraktion
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Refactoring Patterns}
+\textbf{1. Extract Method}
+\begin{itemize}
+    \item Code in eigene Methode auslagern
+    \item Verbessert Lesbarkeit und Wiederverwendbarkeit
+    \item Reduziert Duplikation
+\end{itemize}
+
+\textbf{2. Move Method/Field}
+\begin{itemize}
+    \item Methode/Feld in andere Klasse verschieben 
+    \item Verbessert Kohäsion
+    \item Folgt Information Expert
+\end{itemize}
+
+\textbf{3. Extract Class}
+\begin{itemize}
+    \item Teil einer Klasse in neue Klasse auslagern
+    \item Trennt Verantwortlichkeiten
+    \item Erhöht Kohäsion
+\end{itemize}
+
+\textbf{4. Rename Method/Class/Variable}
+\begin{itemize}
+    \item Bessere Namen für besseres Verständnis
+    \item Dokumentiert Zweck
+    \item Erleichtert Wartung
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Refactoring: Extract Method}
+\textbf{Vor dem Refactoring:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public void printOwing() {
+    // print banner
+    System.out.println("*****************");
+    System.out.println("**Customer Owes**");
+    System.out.println("*****************");
+    
+    // calculate total
+    double total = 0;
+    for (Order order : orders) {
+        total += order.getAmount();
+    }
+    
+    // print details
+    System.out.println("name: " + name);
+    System.out.println("amount: " + total);
+}
+\end{lstlisting}
+
+\textbf{Nach dem Refactoring:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public void printOwing() {
+    printBanner();
+    double total = calculateTotal();
+    printDetails(total);
+}
+
+private void printBanner() {
+    System.out.println("*****************");
+    System.out.println("**Customer Owes**");
+    System.out.println("*****************");
+}
+
+private double calculateTotal() {
+    double total = 0;
+    for (Order order : orders) {
+        total += order.getAmount();
+    }
+    return total;
+}
+
+private void printDetails(double total) {
+    System.out.println("name: " + name);
+    System.out.println("amount: " + total);
+}
+\end{lstlisting}
+\end{example2}
 
 
 
