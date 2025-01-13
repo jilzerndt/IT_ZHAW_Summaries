@@ -61,6 +61,50 @@ Die Architektur eines Softwaresystems definiert:
 \end{itemize}
 \end{definition}
 
+\begin{concept}{Architektursichten (4+1 View Model)}\\
+Verschiedene Perspektiven auf die Architektur:
+
+\begin{itemize}
+    \item \textbf{Logical View:} End-User, Functionality
+    \begin{itemize}
+        \item Funktionalität des Systems
+        \item Schichten, Subsysteme, Pakete
+        \item Klassen und Schnittstellen
+    \end{itemize}
+    
+    \item \textbf{Process View:} Integrators, Performance, Scalability
+    \begin{itemize}
+        \item Laufzeitverhalten
+        \item Prozesse und Threads
+        \item Performance und Skalierung
+    \end{itemize}
+
+    \item \textbf{Development View:} Programmers, Software Management
+    \begin{itemize}
+        \item Implementierungsstruktur
+        \item Quellcode-Organisation
+        \item Build und Deployment
+    \end{itemize}
+    
+    \item \textbf{Physical View:} System Engineers, Topology, Communications
+    \begin{itemize}
+        \item Hardware-Topologie
+        \item Verteilung der Software
+        \item Netzwerkkommunikation
+    \end{itemize}
+\end{itemize}
+
+    
+\textbf{+1: Scenarios:}
+    \begin{itemize}
+        \item Wichtige Use Cases
+        \item Validierung der Architektur
+        \item Integration der anderen Views
+    \end{itemize}
+%todo: better resolution image
+\includegraphics[width=0.9\linewidth]{images/2024_12_29_0d1d7b5551ea1b4b41bdg-09}
+\end{concept}
+
 \begin{concept}{Architekturanalyse}\\
 erfolgt iterativ mit den Anforderungen (Twin Peaks Model):
 
@@ -103,326 +147,136 @@ erfolgt iterativ mit den Anforderungen (Twin Peaks Model):
 \end{itemize}
 \end{theorem}
 
-\begin{KR}{Architekturanalyse durchführen}\\
-\textbf{1. Anforderungen analysieren}
-\begin{itemize}
-    \item Funktionale Anforderungen gruppieren
-    \item Nicht-funktionale Anforderungen priorisieren
-    \item Randbedingungen identifizieren
-\end{itemize}
-
-\textbf{2. Qualitätsziele definieren}
-\begin{itemize}
-    \item Messbare Kriterien festlegen
-    \item Priorisierung vornehmen
-    \item Trade-offs identifizieren
-\end{itemize}
-
-\textbf{3. Architekturentscheidungen treffen}
-\begin{itemize}
-    \item Alternativen evaluieren
-    \item Entscheidungen dokumentieren
-    \item Mit Stakeholdern abstimmen
-\end{itemize}
-
-\textbf{4. Validierung durchführen}
-\begin{itemize}
-    \item Architektur-Reviews planen
-    \item Prototypen erstellen
-    \item Risiken bewerten
-\end{itemize}
-\end{KR}
-
 \pagebreak
 
-\subsection{Architekturprozess}
+\subsubsection{Designprinzipien und Qualitätskriterien}
 
-\begin{definition}{Architekturprozess-Komponenten}\\
-\textbf{Architekturanalyse:}
+\begin{KR}{Clean Architecture}
+Prinzipien nach Robert C. Martin:
+
+\textbf{Hauptprinzipien:}
 \begin{itemize}
-    \item Erster Schritt im Architekturprozess
-    \item Analyse der funktionalen und nicht-funktionalen Anforderungen
-    \item Identifikation von Qualitätszielen
-    \item Parallel zur Anforderungserhebung (Twin Peaks)
+    \item Unabhängigkeit von Frameworks
+    \item Testbare Business Rules
+    \item Unabhängigkeit von UI
+    \item Unabhängigkeit von Datenbank
+    \item Unabhängigkeit von externen Systemen
 \end{itemize}
 
-\textbf{Architektur-Entscheidungen:}
-\begin{itemize}
-    \item Konkrete Beschlüsse basierend auf der Analyse
-    \item Technologiewahl und Strukturierung
-    \item Dokumentation und Begründung
-    \item Einschließlich verworfener Alternativen
-\end{itemize}
+\textbf{Schichten (von innen nach außen):}
+\begin{enumerate}
+    \item Entities (Enterprise Business Rules)
+    \item Use Cases (Application Business Rules)
+    \item Interface Adapters (Controllers, Presenters)
+    \item Frameworks \& Drivers (UI, DB, Devices)
+\end{enumerate}
 
-\textbf{Architektur-Entwurf:}
-\begin{itemize}
-    \item Praktischer Gestaltungsprozess
-    \item Anwendung von Architekturmustern
-    \item Umsetzung von Qualitätsanforderungen
-    \item Erstellung konkreter Artefakte
-\end{itemize}
-
-\textbf{Architektur-Review:}
-\begin{itemize}
-    \item Systematische Überprüfung
-    \item Meist durch externe Experten
-    \item Prüfung der Anforderungserfüllung
-    \item Identifikation von Schwachstellen
-\end{itemize}
-
-\textbf{Architektur-Evaluation:}
-\begin{itemize}
-    \item Bewertung anhand definierter Kriterien
-    \item Quantitative und qualitative Analyse
-    \item Szenario-basierte Prüfung
-    \item Bewertung von Qualitätsattributen
-\end{itemize}
-\end{definition}
-
-\begin{KR}{Architekturanalyse}\\
-\textbf{1. Anforderungen sammeln}
-\begin{itemize}
-    \item Funktionale Anforderungen gruppieren
-    \item Nicht-funktionale Anforderungen identifizieren
-    \item Randbedingungen dokumentieren
-\end{itemize}
-
-\textbf{2. Qualitätsziele definieren}
-\begin{itemize}
-    \item Messbare Kriterien festlegen
-    \item Priorisierung vornehmen
-    \item Trade-offs identifizieren
-\end{itemize}
-
-\textbf{3. Einflussfaktoren analysieren}
-\begin{itemize}
-    \item Technische Faktoren
-    \item Organisatorische Faktoren
-    \item Wirtschaftliche Faktoren
-\end{itemize}
+\textbf{Dependency Rule:}
+Abhängigkeiten dürfen nur nach innen zeigen.
 \end{KR}
 
-\begin{example2}{Architekturanalyse}\\
-\textbf{Analyse für ein E-Commerce-System:}
+\begin{concept}{Architekturprinzipien}
+Grundlegende Prinzipien für gute Architektur:
 
-\begin{lstlisting}[language=Java, style=basesmol]
-// Dokumentation der Analyse
-public class ArchitectureAnalysis {
-    public class QualityRequirement {
-        String name;
-        String description;
-        int priority;
-        String measurementCriteria;
-    }
-    
-    public class ArchitecturalConstraint {
-        String type; // Technical, Organizational, Business
-        String description;
-        String impact;
-    }
-    
-    // Beispiel Qualitätsanforderung
-    QualityRequirement performance = new QualityRequirement(
-        "Response Time",
-        "System responses within 200ms",
-        1,
-        "95th percentile < 200ms"
-    );
-    
-    // Beispiel Randbedingung
-    ArchitecturalConstraint technology = new ArchitecturalConstraint(
-        "Technical",
-        "Must use Java 17",
-        "Affects framework selection"
-    );
-}
-\end{lstlisting}
-\end{example2}
-
-\begin{KR}{Architektur-Entscheidungen}\\
-\textbf{1. Alternativen identifizieren}
+\textbf{Separation of Concerns:}
 \begin{itemize}
-    \item Mögliche Lösungen sammeln
-    \item Vor- und Nachteile analysieren
-    \item Machbarkeit prüfen
+    \item Trennung von Verantwortlichkeiten
+    \item Klare Modulgrenzen
+    \item Reduzierte Komplexität
 \end{itemize}
 
-\textbf{2. Bewertungskriterien}
+\textbf{Information Hiding:}
 \begin{itemize}
-    \item Erfüllung der Anforderungen
-    \item Technische Umsetzbarkeit
-    \item Kosten und Aufwand
+    \item Kapselung von Implementierungsdetails
+    \item Definierte Schnittstellen
+    \item Änderbarkeit ohne Seiteneffekte
 \end{itemize}
 
-\textbf{3. Entscheidung dokumentieren}
+\textbf{Loose Coupling:}
 \begin{itemize}
-    \item Begründung
-    \item Konsequenzen
-    \item Verworfene Alternativen
+    \item Minimale Abhängigkeiten
+    \item Austauschbarkeit
+    \item Unabhängige Entwicklung
 \end{itemize}
-\end{KR}
+\end{concept}
 
-\begin{example2}{Architektur-Entscheidungen}\\
-\textbf{Entscheidungsdokumentation:}
 
-\begin{lstlisting}[language=Java, style=basesmol]
-public class ArchitectureDecision {
-    String id;
-    String title;
-    String context;
-    String decision;
-    String rationale;
-    List<String> consequences;
-    List<Alternative> alternatives;
-    
-    class Alternative {
-        String description;
-        List<String> pros;
-        List<String> cons;
-        String rejectionReason;
-    }
-}
+\begin{corollary}{Qualitätskriterien und deren Umsetzung}\\
+Strategien zur Erfüllung von Qualitätsanforderungen:
 
-// Beispiel:
-ArchitectureDecision caching = new ArchitectureDecision(
-    "AD001",
-    "Caching Strategy",
-    "High read load on product catalog",
-    "Use Redis as distributed cache",
-    "Better performance and scalability",
-    List.of("Requires Redis expertise", 
-            "Additional infrastructure"),
-    List.of(new Alternative(
-        "In-memory cache",
-        List.of("Simple", "No additional infrastructure"),
-        List.of("Not distributed", "Memory limited"),
-        "Doesn't scale horizontally"
-    ))
-);
-\end{lstlisting}
-\end{example2}
-
-\begin{KR}{Architektur-Review}\\
-\textbf{1. Vorbereitung}
+\textbf{Performance:}
 \begin{itemize}
-    \item Review-Team zusammenstellen
-    \item Dokumentation aufbereiten
-    \item Checklisten erstellen
+    \item Effiziente Ressourcennutzung (Resource Pooling, Caching)
+    \item Optimierte Verarbeitung (Parallelisierung, Lazy Loading)
 \end{itemize}
 
-\textbf{2. Durchführung}
+\textbf{Skalierbarkeit:}
 \begin{itemize}
-    \item Architektur präsentieren
-    \item Entscheidungen hinterfragen
-    \item Risiken identifizieren
+    \item Dynamische Anpassung (horizontale/vertikale Skalierung)
+    \item Effiziente Lastverteilung (Load Balancing, Partitionierung)
 \end{itemize}
 
-\textbf{3. Nachbereitung}
+\textbf{Wartbarkeit:}
 \begin{itemize}
-    \item Findings dokumentieren
-    \item Maßnahmen ableiten
-    \item Follow-up planen
-\end{itemize}
-\end{KR}
-
-\begin{example2}{Architektur-Review}\\
-\textbf{Review-Protokoll:}
-
-\begin{lstlisting}[language=Java, style=basesmol]
-public class ArchitectureReview {
-    public class Finding {
-        String area;
-        String observation;
-        Risk risk;
-        String recommendation;
-        Priority priority;
-    }
-    
-    public class Action {
-        String description;
-        String responsible;
-        LocalDate dueDate;
-        Status status;
-    }
-    
-    List<Finding> findings = List.of(
-        new Finding(
-            "Security",
-            "Missing rate limiting",
-            Risk.HIGH,
-            "Implement API gateway with rate limiting",
-            Priority.HIGH
-        )
-    );
-    
-    List<Action> actions = List.of(
-        new Action(
-            "Implement API gateway",
-            "Team A",
-            LocalDate.now().plusWeeks(2),
-            Status.OPEN
-        )
-    );
-}
-\end{lstlisting}
-\end{example2}
-
-\begin{KR}{Gesamter Architekturprozess}\\
-\textbf{1. Initiale Phase}
-\begin{itemize}
-    \item Architekturanalyse durchführen
-    \item Grundlegende Entscheidungen treffen
-    \item Ersten Entwurf erstellen
+    \item Klare Strukturen (Separation of Concerns, Modularisierung)
+    \item Verbesserte Codequalität (Information Hiding, Standardisierung)
 \end{itemize}
 
-\textbf{2. Iterative Verfeinerung}
+\textbf{Zuverlässigkeit:}
 \begin{itemize}
-    \item Review durchführen
-    \item Evaluation vornehmen
-    \item Anpassungen basierend auf Feedback
+    \item Fehlerresistenz (Redundanz, Fehlertoleranz)
+    \item Prävention und Wiederherstellung (Monitoring, Backup/Recovery)
 \end{itemize}
 
-\textbf{3. Kontinuierliche Verbesserung}
+\textbf{Verfügbarkeit:}
 \begin{itemize}
-    \item Regelmäßige Reviews
-    \item Neue Anforderungen einarbeiten
-    \item Technische Schulden adressieren
+    \item Ausfallschutz (Redundanz, Failover-Mechanismen)
+    \item Überwachung/Stabilisierung (Health Monitoring, Circuit Breaker)
 \end{itemize}
 
-\textbf{4. Dokumentation}
+\textbf{Modularität:}
 \begin{itemize}
-    \item Entscheidungen festhalten
-    \item Architektur dokumentieren
-    \item Änderungen nachverfolgen
+    \item Gut definierte Grenzen (klare Modulgrenzen, hohe Kohäsion)
+    \item Minimale Abhängigkeiten zwischen Modulen
 \end{itemize}
 
-\textbf{5. Qualitätssicherung}
+\textbf{Testbarkeit:}
 \begin{itemize}
-    \item Architektur-Konformität prüfen
-    \item Performance-Tests durchführen
-    \item Sicherheitsaudits durchführen
+    \item Einfachheit von Tests (Isolation, Mockbarkeit)
+    \item Automatisierung und Skalierung von Tests
 \end{itemize}
-\end{KR}
 
-\subsection{Architektur-Design}
+\textbf{Änderbarkeit:}
+\begin{itemize}
+    \item Anpassungsfähigkeit (Lokalisierung, Erweiterbarkeit)
+    \item Sicherstellung der Kompatibilität (Backward Compatibility)
+\end{itemize}
+
+\textbf{Erweiterbarkeit:}
+\begin{itemize}
+    \item Flexible Architekturen (offene Schnittstellen, Plugin-Systeme)
+    \item Serviceorientierung für modulare Erweiterungen
+\end{itemize}
+\end{corollary}
+
+
+
+
+
 
 \begin{concept}{Modulkonzept}\\
-Ein Modul (Baustein, Komponente) wird charakterisiert durch:
-
+Ein Modul (Baustein, Komponente) wird bewertet nach:
 \begin{itemize}
-    \item \textbf{Eigenschaften:}
-    \begin{itemize}
-        \item Autarkes Teilsystem (geringe externe Abhängigkeiten)
-        \item Klar definierte Schnittstellen nach außen
-        \item Enthält alle benötigten Funktionen und Daten
-        \item Kann als Paket, Library, Komponente oder Service realisiert werden
-    \end{itemize}
-    
-    \item \textbf{Bewertungskriterien:}
-    \begin{itemize}
-        \item \textbf{Kohäsion:} Stärke des inneren Zusammenhangs
-        \item \textbf{Kopplung:} Grad der Abhängigkeit zu anderen Modulen
-    \end{itemize}
+    \item \textbf{Kohäsion:} Innerer Zusammenhang
+    \item \textbf{Kopplung:} Externe Abhängigkeiten
+\end{itemize}
+
+\textbf{Eigenschaften:}
+\begin{itemize}
+    \item Autarkes Teilsystem
+    \item Minimale externe Schnittstellen
+    \item Enthält alle benötigten Funktionen/Daten
+    \item Verschiedene Formen: Paket, Library, Service
 \end{itemize}
 \end{concept}
 
@@ -441,123 +295,139 @@ Module kommunizieren über definierte Schnittstellen:
     \begin{itemize}
         \item Von anderen Modulen benötigte Funktionalität
         \item Definieren Abhängigkeiten
+        \item Basis für Kopplung
         \item Sollten minimiert werden (Low Coupling)
     \end{itemize}
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Architektursichten (4+1 View Model)}\\
-Verschiedene Perspektiven auf die Architektur:
+\subsubsection{Objektorientiertes Design}
 
+\begin{concept}{GRASP Prinzipien}\\
+General Responsibility Assignment Software Patterns - Grundlegende Prinzipien für die Zuweisung von Verantwortlichkeiten:
+
+\textbf{Information Expert:}
 \begin{itemize}
-    \item \textbf{Logical View:}
-    \begin{itemize}
-        \item Funktionalität des Systems
-        \item Schichten, Subsysteme, Pakete
-        \item Klassen und Schnittstellen
-    \end{itemize}
-    
-    \item \textbf{Process View:}
-    \begin{itemize}
-        \item Laufzeitverhalten
-        \item Prozesse und Threads
-        \item Performance und Skalierung
-    \end{itemize}
-    
-    \item \textbf{Development View:}
-    \begin{itemize}
-        \item Implementierungsstruktur
-        \item Quellcode-Organisation
-        \item Build und Deployment
-    \end{itemize}
-    
-    \item \textbf{Physical View:}
-    \begin{itemize}
-        \item Hardware-Topologie
-        \item Verteilung der Software
-        \item Netzwerkkommunikation
-    \end{itemize}
-    
-    \item \textbf{+1: Scenarios:}
-    \begin{itemize}
-        \item Wichtige Use Cases
-        \item Validierung der Architektur
-        \item Integration der anderen Views
-    \end{itemize}
+    \item Zuständigkeit basierend auf Information
+    \item Klasse mit relevanten Daten übernimmt Aufgabe
+    \item Fördert Kapselung und Kohäsion
 \end{itemize}
 
-\includegraphics[width=0.9\linewidth]{images/2024_12_29_0d1d7b5551ea1b4b41bdg-09}
+\textbf{Creator:}
+\begin{itemize}
+    \item Verantwortung für Objekterstellung
+    \item Basierend auf Beziehungen (enthält, aggregiert)
+    \item Starke Verwendungsbeziehung
+\end{itemize}
+
+\textbf{Controller:}
+\begin{itemize}
+    \item Koordination von Systemoperationen
+    \item Erste Anlaufstelle nach UI
+    \item Fassade für Subsystem
+\end{itemize}
+
+\textbf{Low Coupling:}
+\begin{itemize}
+    \item Minimale Abhängigkeiten
+    \item Erhöht Wiederverwendbarkeit
+    \item Erleichtert Änderungen
+\end{itemize}
+
+\textbf{High Cohesion:}
+\begin{itemize}
+    \item Fokussierte Verantwortlichkeiten
+    \item Zusammengehörige Funktionalität
+    \item Wartbare Klassen
+\end{itemize}
 \end{concept}
 
-\begin{theorem}{Qualitaetskriterien und deren Umsetzung}\\
-Strategien zur Erfüllung von Qualitätsanforderungen:
+\begin{concept}{Design nach GRASP}\\
+General Responsibility Assignment Software Patterns:
 
-\textbf{Performance:}
+\textbf{Grundprinzipien:}
 \begin{itemize}
-    \item Resource Pooling (Wiederverwendung von Ressourcen)
-    \item Caching (Zwischenspeicherung)
-    \item Parallelisierung (Verteilung der Last)
-    \item Lazy Loading (Verzögerte Initialisierung)
+    \item \textbf{Information Expert:} Verantwortlichkeit dort, wo die Information liegt
+    \item \textbf{Creator:} Objekterstellung durch eng verbundene Klassen
+    \item \textbf{Controller:} Koordination von Systemoperationen
+    \item \textbf{Low Coupling:} Minimale Abhängigkeiten zwischen Klassen
+    \item \textbf{High Cohesion:} Starker innerer Zusammenhang in Klassen
 \end{itemize}
 
-\textbf{Skalierbarkeit:}
+\textbf{Erweiterte Prinzipien:}
 \begin{itemize}
-    \item Horizontale Skalierung (mehr Instanzen)
-    \item Vertikale Skalierung (mehr Ressourcen)
-    \item Load Balancing (Lastverteilung)
-    \item Partitionierung (Datenaufteilung)
+    \item \textbf{Polymorphism:} Typenabhängiges Verhalten durch Polymorphie
+    \item \textbf{Pure Fabrication:} Hilfsklassen für besseres Design
+    \item \textbf{Indirection:} Vermittler für lose Kopplung
+    \item \textbf{Protected Variations:} Kapselung von Änderungen
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Responsibility Driven Design}\\
+Designansatz basierend auf Verantwortlichkeiten und Kollaborationen:
+
+\textbf{Verantwortlichkeiten:}
+\begin{itemize}
+    \item \textbf{Doing:}
+    \begin{itemize}
+        \item Aktionen ausführen
+        \item Berechnungen durchführen
+        \item Andere Objekte steuern
+    \end{itemize}
+    
+    \item \textbf{Knowing:}
+    \begin{itemize}
+        \item Eigene Daten kennen
+        \item Verwandte Objekte kennen
+        \item Berechnete Informationen
+    \end{itemize}
 \end{itemize}
 
-\textbf{Wartbarkeit:}
+\textbf{Kollaborationen:}
 \begin{itemize}
-    \item Separation of Concerns (Trennung der Zuständigkeiten)
-    \item Information Hiding (Kapselung)
-    \item Standardisierung (einheitliche Patterns)
-    \item Modularisierung (unabhängige Komponenten)
+    \item Klare Rollen definieren
+    \item Aufgaben verteilen
+    \item Interfaces abstimmen
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Design Pattern Kategorien}\\
+Bewährte Lösungsmuster für wiederkehrende Designprobleme:
+
+\textbf{Erzeugungsmuster (Creational):}
+\begin{itemize}
+    \item Abstract Factory: Familien verwandter Objekte
+    \item Factory Method: Objekterzeugung in Subklassen
+    \item Singleton: Genau eine Instanz
+    \item Builder: Komplexe Objektkonstruktion
+    \item Prototype: Klonen existierender Objekte
 \end{itemize}
 
-\textbf{Zuverlässigkeit:}
+\textbf{Strukturmuster (Structural):}
 \begin{itemize}
-    \item Redundanz (Mehrfachsysteme)
-    \item Fehlertoleranz (Graceful Degradation)
-    \item Monitoring (Überwachung)
-    \item Backup und Recovery
-\end{itemize}
-\end{theorem}
-
-\begin{KR}{Best Practices im Architekturentwurf}\\
-\textbf{1. Analyse und Planung}
-\begin{itemize}
-    \item Anforderungen priorisieren
-    \item Qualitätsziele definieren
-    \item Constraints identifizieren
-    \item Stakeholder einbinden
+    \item Adapter: Schnittstellen anpassen
+    \item Bridge: Implementation von Abstraktion trennen
+    \item Composite: Teil-Ganzes Hierarchien
+    \item Decorator: Dynamische Funktionserweiterung
+    \item Facade: Vereinfachte Schnittstelle
+    \item Proxy: Kontrollierter Zugriff
 \end{itemize}
 
-\textbf{2. Design-Prinzipien}
+\textbf{Verhaltensmuster (Behavioral):}
 \begin{itemize}
-    \item Separation of Concerns
-    \item Single Responsibility
-    \item Information Hiding
-    \item Don't Repeat Yourself (DRY)
+    \item Command: Anfrage als Objekt
+    \item Observer: Ereignisbenachrichtigung
+    \item Strategy: Austauschbare Algorithmen
+    \item Template Method: Algorithmus-Skelett
+    \item State: Zustandsabhängiges Verhalten
+    \item Visitor: Operation zu Objektstruktur hinzufügen
 \end{itemize}
+\end{concept}
 
-\textbf{3. Strukturierung}
-\begin{itemize}
-    \item Klare Schichtenarchitektur
-    \item Definierte Schnittstellen
-    \item Lose Kopplung
-    \item Hohe Kohäsion
-\end{itemize}
+\pagebreak
 
-\textbf{4. Dokumentation}
-\begin{itemize}
-    \item Architekturentscheidungen
-    \item Begründungen
-    \item Alternativen
-    \item Trade-offs
-\end{itemize}
-\end{KR}
+
+
 
 \subsection{Architekturmuster}
 
@@ -605,6 +475,13 @@ Grundlegende Architekturmuster für Software-Systeme:
         \item Asynchrone Kommunikation
         \item Publisher-Subscriber Modell
         \item Lose Kopplung
+    \end{itemize}
+
+    \item \textbf{MVC Pattern:}
+    \begin{itemize}
+        \item Trennung von Daten, Präsentation und Logik
+        \item Wiederverwendbare Komponenten
+        \item Klare Strukturierung
     \end{itemize}
 \end{itemize}
 \end{concept}
@@ -884,108 +761,7 @@ Muster für die Integration verschiedener Systeme:
 \end{itemize}
 \end{concept}
 
-\subsection{Objektorientiertes Design}
 
-\begin{concept}{GRASP Prinzipien}\\
-General Responsibility Assignment Software Patterns - Grundlegende Prinzipien für die Zuweisung von Verantwortlichkeiten:
-
-\textbf{Information Expert:}
-\begin{itemize}
-    \item Zuständigkeit basierend auf Information
-    \item Klasse mit relevanten Daten übernimmt Aufgabe
-    \item Fördert Kapselung und Kohäsion
-\end{itemize}
-
-\textbf{Creator:}
-\begin{itemize}
-    \item Verantwortung für Objekterstellung
-    \item Basierend auf Beziehungen (enthält, aggregiert)
-    \item Starke Verwendungsbeziehung
-\end{itemize}
-
-\textbf{Controller:}
-\begin{itemize}
-    \item Koordination von Systemoperationen
-    \item Erste Anlaufstelle nach UI
-    \item Fassade für Subsystem
-\end{itemize}
-
-\textbf{Low Coupling:}
-\begin{itemize}
-    \item Minimale Abhängigkeiten
-    \item Erhöht Wiederverwendbarkeit
-    \item Erleichtert Änderungen
-\end{itemize}
-
-\textbf{High Cohesion:}
-\begin{itemize}
-    \item Fokussierte Verantwortlichkeiten
-    \item Zusammengehörige Funktionalität
-    \item Wartbare Klassen
-\end{itemize}
-
-\begin{lstlisting}[language=Java, style=basesmol]
-// Information Expert
-public class Order {
-    private List<OrderLine> lines;
-    
-    // Order kennt seine eigenen Daten
-    public Money calculateTotal() {
-        return lines.stream()
-                   .map(OrderLine::getSubTotal)
-                   .reduce(Money.ZERO, Money::add);
-    }
-}
-
-// Creator
-public class Order {
-    // Order erstellt OrderLines 
-    // (enthaelt und verwendet sie)
-    public void addProduct(Product product, int quantity) {
-        lines.add(new OrderLine(product, quantity));
-    }
-}
-
-// Controller
-public class OrderController {
-    private OrderService orderService;
-    
-    // Koordiniert Systemoperationen
-    public OrderResponse createOrder(OrderRequest request) {
-        Order order = orderService.createOrder(request);
-        return OrderResponse.from(order);
-    }
-}
-\end{lstlisting}
-\end{concept}
-
-\begin{concept}{Responsibility Driven Design}\\
-Designansatz basierend auf Verantwortlichkeiten und Kollaborationen:
-
-\textbf{Verantwortlichkeiten:}
-\begin{itemize}
-    \item \textbf{Doing:}
-    \begin{itemize}
-        \item Aktionen ausführen
-        \item Berechnungen durchführen
-        \item Andere Objekte steuern
-    \end{itemize}
-    
-    \item \textbf{Knowing:}
-    \begin{itemize}
-        \item Eigene Daten kennen
-        \item Verwandte Objekte kennen
-        \item Berechnete Informationen
-    \end{itemize}
-\end{itemize}
-
-\textbf{Kollaborationen:}
-\begin{itemize}
-    \item Klare Rollen definieren
-    \item Aufgaben verteilen
-    \item Interfaces abstimmen
-\end{itemize}
-\end{concept}
 
 \subsection{UML-Modellierung}
 
@@ -1040,6 +816,28 @@ UML (Unified Modeling Language) wird im Design auf zwei Arten verwendet:
     \item Kontrollfluss und Datenfluss
     \item Parallelität und Synchronisation
     \item Swimlanes für Verantwortlichkeiten
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Statische vs. Dynamische Modelle}\\
+UML bietet verschiedene Diagrammtypen für unterschiedliche Aspekte:
+
+\textbf{Statische Modelle:}
+\begin{itemize}
+    \item Fokus auf Struktur und Beziehungen
+    \item UML-Klassendiagramm für Klassen, Attribute, Methoden
+    \item UML-Paketdiagramm für Modularisierung
+    \item UML-Komponentendiagramm für Systembausteine
+    \item UML-Verteilungsdiagramm für Deployment
+\end{itemize}
+
+\textbf{Dynamische Modelle:}
+\begin{itemize}
+    \item Fokus auf Verhalten und Interaktion
+    \item UML-Sequenzdiagramm für Abläufe
+    \item UML-Aktivitätsdiagramm für Prozesse
+    \item UML-Zustandsdiagramm für Objektzustände
+    \item UML-Kommunikationsdiagramm für Objektkollaborationen
 \end{itemize}
 \end{concept}
 
@@ -1232,6 +1030,468 @@ public class OrderProcessor {
             });
         });
     }
+}
+\end{lstlisting}
+\end{example2}
+
+\pagebreak
+
+\subsubsection{Gesamter Architekturprozess}
+
+\begin{KR}{Gesamter Architekturprozess}\\
+\textbf{1. Initiale Phase}
+\begin{itemize}
+    \item Architekturanalyse durchführen
+    \item Grundlegende Entscheidungen treffen
+    \item Ersten Entwurf erstellen
+\end{itemize}
+
+\textbf{2. Iterative Verfeinerung}
+\begin{itemize}
+    \item Review durchführen
+    \item Evaluation vornehmen
+    \item Anpassungen basierend auf Feedback
+\end{itemize}
+
+\textbf{3. Kontinuierliche Verbesserung}
+\begin{itemize}
+    \item Regelmäßige Reviews
+    \item Neue Anforderungen einarbeiten
+    \item Technische Schulden adressieren
+\end{itemize}
+
+\textbf{4. Dokumentation}
+\begin{itemize}
+    \item Entscheidungen festhalten
+    \item Architektur dokumentieren
+    \item Änderungen nachverfolgen
+\end{itemize}
+
+\textbf{5. Qualitätssicherung}
+\begin{itemize}
+    \item Architektur-Konformität prüfen
+    \item Performance-Tests durchführen
+    \item Sicherheitsaudits durchführen
+\end{itemize}
+\end{KR}
+
+\begin{definition}{Architekturprozess-Komponenten}\\
+\textbf{Architekturanalyse:}
+\begin{itemize}
+    \item Erster Schritt im Architekturprozess
+    \item Analyse der funktionalen und nicht-funktionalen Anforderungen
+    \item Identifikation von Qualitätszielen
+    \item Parallel zur Anforderungserhebung (Twin Peaks)
+\end{itemize}
+
+\textbf{Architektur-Entscheidungen:}
+\begin{itemize}
+    \item Konkrete Beschlüsse basierend auf der Analyse
+    \item Technologiewahl und Strukturierung
+    \item Dokumentation und Begründung
+    \item Einschließlich verworfener Alternativen
+\end{itemize}
+
+\textbf{Architektur-Entwurf:}
+\begin{itemize}
+    \item Praktischer Gestaltungsprozess
+    \item Anwendung von Architekturmustern
+    \item Umsetzung von Qualitätsanforderungen
+    \item Erstellung konkreter Artefakte
+\end{itemize}
+
+\textbf{Architektur-Review:}
+\begin{itemize}
+    \item Systematische Überprüfung
+    \item Meist durch externe Experten
+    \item Prüfung der Anforderungserfüllung
+    \item Identifikation von Schwachstellen
+\end{itemize}
+
+\textbf{Architektur-Evaluation:}
+\begin{itemize}
+    \item Bewertung anhand definierter Kriterien
+    \item Quantitative und qualitative Analyse
+    \item Szenario-basierte Prüfung
+    \item Bewertung von Qualitätsattributen
+\end{itemize}
+\end{definition}
+
+
+\begin{KR}{Architekturanalyse}\\
+\textbf{1. Anforderungen sammeln}
+\begin{itemize}
+    \item Funktionale Anforderungen gruppieren
+    \item Nicht-funktionale Anforderungen identifizieren
+    \item Randbedingungen dokumentieren
+\end{itemize}
+
+\textbf{2. Qualitätsziele definieren}
+\begin{itemize}
+    \item Messbare Kriterien festlegen
+    \item Priorisierung vornehmen
+    \item Trade-offs identifizieren
+\end{itemize}
+
+\textbf{3. Einflussfaktoren analysieren}
+\begin{itemize}
+    \item Technische Faktoren
+    \item Organisatorische Faktoren
+    \item Wirtschaftliche Faktoren
+\end{itemize}
+\end{KR}
+
+\begin{KR}{Architektur-Entscheidungen}\\
+\textbf{1. Alternativen identifizieren}
+\begin{itemize}
+    \item Mögliche Lösungen sammeln
+    \item Vor- und Nachteile analysieren
+    \item Machbarkeit prüfen
+\end{itemize}
+
+\textbf{2. Bewertungskriterien}
+\begin{itemize}
+    \item Erfüllung der Anforderungen
+    \item Technische Umsetzbarkeit
+    \item Kosten und Aufwand
+\end{itemize}
+
+\textbf{3. Entscheidung dokumentieren}
+\begin{itemize}
+    \item Begründung
+    \item Konsequenzen
+    \item Verworfene Alternativen
+\end{itemize}
+\end{KR}
+
+\begin{KR}{Architektur-Entscheidungen dokumentieren}\\
+\textbf{1. Entscheidung festhalten}
+\begin{itemize}
+    \item Dokumentation der getroffenen Architekturentscheidungen
+    \item Begründungen und Alternativen
+    \item Auswirkungen und Konsequenzen
+\end{itemize}
+
+\textbf{2. Strukturierte Dokumentation}
+\begin{itemize}
+    \item Einheitliches Format für alle Entscheidungen
+    \item Verwendung von Templates
+    \item Nachvollziehbare Historie der Entscheidungen
+\end{itemize}
+
+\textbf{3. Kommunikation}
+\begin{itemize}
+    \item Regelmäßige Updates an Stakeholder
+    \item Transparenz über getroffene Entscheidungen
+    \item Einbindung des gesamten Teams
+\end{itemize}
+
+\textbf{4. Review und Anpassung}
+\begin{itemize}
+    \item Regelmäßige Überprüfung der Entscheidungen
+    \item Anpassung bei geänderten Rahmenbedingungen
+    \item Lessons Learned dokumentieren
+\end{itemize}
+\end{KR}
+
+
+\begin{KR}{Architekturentwurf}\\
+\textbf{Schritte:}
+\begin{enumerate}
+    \item Anforderungen analysieren
+    \item Architekturstil wählen
+    \item Module identifizieren
+    \item Schnittstellen definieren
+    \item Mit Stakeholdern abstimmen
+\end{enumerate}
+
+\textbf{Qualitätskriterien:}
+\begin{itemize}
+    \item Änderbarkeit
+    \item Wartbarkeit
+    \item Erweiterbarkeit
+    \item Testbarkeit
+\end{itemize}
+\end{KR}
+
+\begin{KR}{Architektur-Review durchführen}\\
+\textbf{Vorgehen:}
+\begin{enumerate}
+    \item \textbf{Vorbereitung}
+    \begin{itemize}
+        \item Architektur-Dokumentation zusammenstellen
+        \item Review-Team zusammenstellen
+        \item Checklisten vorbereiten
+    \end{itemize}
+    
+    \item \textbf{Durchführung}
+    \begin{itemize}
+        \item Architektur vorstellen
+        \item Anforderungen prüfen
+        \item Entscheidungen hinterfragen
+        \item Risiken identifizieren
+    \end{itemize}
+    
+    \item \textbf{Nachbereitung}
+    \begin{itemize}
+        \item Findings dokumentieren
+        \item Maßnahmen definieren
+        \item Follow-up planen
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Prüfkriterien:}
+\begin{itemize}
+    \item Anforderungserfüllung
+    \item Technische Machbarkeit
+    \item Zukunftssicherheit
+    \item Best Practices
+\end{itemize}
+\end{KR}
+
+
+
+\begin{KR}{Architektur-Evaluation}\\
+Systematische Bewertung einer Softwarearchitektur:
+
+\textbf{1. Qualitätsattribute identifizieren}
+\begin{itemize}
+    \item Performance
+    \item Skalierbarkeit
+    \item Wartbarkeit
+    \item Sicherheit
+\end{itemize}
+
+\textbf{2. Szenarien entwickeln}
+\begin{itemize}
+    \item Normale Nutzung
+    \item Grenzfälle
+    \item Fehlerfälle
+    \item Wartungsszenarien
+\end{itemize}
+
+\textbf{3. Architektur analysieren}
+\begin{itemize}
+    \item Strukturanalyse
+    \item Verhaltensanalyse
+    \item Trade-off Analyse
+\end{itemize}
+
+\textbf{4. Risiken identifizieren}
+\begin{itemize}
+    \item Technische Risiken
+    \item Geschäftsrisiken
+    \item Architekturrisiken
+\end{itemize}
+\end{KR}
+
+\columnbreak
+
+\subsubsection{Beispiele}
+
+\begin{example2}{Typische Prüfungsaufgabe: Architekturanalyse und Entscheidungen}\\
+\textbf{Aufgabenstellung:}
+Analysieren Sie folgende Anforderungen und leiten Sie architektonische Konsequenzen ab:
+\begin{itemize}
+    \item System muss 24/7 verfügbar sein
+    \item 10.000 gleichzeitige Benutzer
+    \item Reaktionszeit unter 1 Sekunde
+    \item Jährliche Wartungsfenster maximal 4 Stunden
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{itemize}
+    \item \textbf{Architekturentscheidungen:}
+    \begin{itemize}
+        \item Verteilte Architektur für Hochverfügbarkeit
+        \item Load Balancing für gleichzeitige Benutzer
+        \item Caching-Strategien für Performanz
+        \item Blue-Green Deployment für Wartung
+    \end{itemize}
+    
+    \item \textbf{Begründungen:}
+    \begin{itemize}
+        \item Verteilung minimiert Single Points of Failure
+        \item Load Balancer verteilt Last gleichmäßig
+        \item Caching reduziert Datenbankzugriffe
+        \item Blue-Green erlaubt Updates ohne Downtime
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Architekturentwurf}\\
+\textbf{Aufgabe:} Entwerfen Sie die grundlegende Architektur für ein Online-Banking-System.
+
+\textbf{Lösung:}
+\begin{itemize}
+    \item \textbf{Anforderungsanalyse:}
+    \begin{itemize}
+        \item Sicherheit (ISO 25010)
+        \item Performance (FURPS+)
+        \item Skalierbarkeit
+    \end{itemize}
+    
+    \item \textbf{Architekturentscheidungen:}
+    \begin{itemize}
+        \item Mehrschichtige Architektur
+        \item Microservices für Skalierbarkeit
+        \item Sicherheitsschicht
+    \end{itemize}
+    
+    \item \textbf{Module:}
+    \begin{itemize}
+        \item Authentifizierung
+        \item Transaktionen
+        \item Kontoführung
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\subsection{other examples}
+
+\begin{example2}{Gute Testbarkeit}\\
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public class OrderService {
+    private final OrderRepository repository;
+    private final PaymentGateway paymentGateway;
+    
+    // Dependency Injection ermoeglicht einfaches Mocking
+    public OrderService(
+            OrderRepository repository,
+            PaymentGateway paymentGateway) {
+        this.repository = repository;
+        this.paymentGateway = paymentGateway;
+    }
+    
+    // Klare Methoden-Verantwortlichkeiten
+    public OrderResult createOrder(OrderRequest request) {
+        validateRequest(request);
+        Order order = createOrderEntity(request);
+        PaymentResult payment = processPayment(order);
+        return createOrderResult(order, payment);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\subsubsection{Dokumentation Architektur}
+
+\begin{example2}{Architekturanalyse}\\
+\textbf{Analyse für ein E-Commerce-System:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Dokumentation der Analyse
+public class ArchitectureAnalysis {
+    public class QualityRequirement {
+        String name;
+        String description;
+        int priority;
+        String measurementCriteria;
+    }
+    
+    public class ArchitecturalConstraint {
+        String type; // Technical, Organizational, Business
+        String description;
+        String impact;
+    }
+    
+    // Beispiel Qualitaetsanforderung
+    QualityRequirement performance = new QualityRequirement(
+        "Response Time",
+        "System responses within 200ms",
+        1,
+        "95th percentile < 200ms"
+    );
+    
+    // Beispiel Randbedingung
+    ArchitecturalConstraint technology = new ArchitecturalConstraint(
+        "Technical",
+        "Must use Java 17",
+        "Affects framework selection"
+    );
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Architektur-Entscheidungen}\\
+\textbf{Entscheidungsdokumentation:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public class ArchitectureDecision {
+    String id;
+    String title;
+    String context;
+    String decision;
+    String rationale;
+    List<String> consequences;
+    List<Alternative> alternatives;
+    
+    class Alternative {
+        String description;
+        List<String> pros;
+        List<String> cons;
+        String rejectionReason;
+    }
+}
+
+// Beispiel:
+ArchitectureDecision caching = new ArchitectureDecision(
+    "AD001",
+    "Caching Strategy",
+    "High read load on product catalog",
+    "Use Redis as distributed cache",
+    "Better performance and scalability",
+    List.of("Requires Redis expertise", 
+            "Additional infrastructure"),
+    List.of(new Alternative(
+        "In-memory cache",
+        List.of("Simple", "No additional infrastructure"),
+        List.of("Not distributed", "Memory limited"),
+        "Doesn't scale horizontally"
+    ))
+);
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Architektur-Review}\\
+\textbf{Review-Protokoll:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public class ArchitectureReview {
+    public class Finding {
+        String area;
+        String observation;
+        Risk risk;
+        String recommendation;
+        Priority priority;
+    }
+    
+    public class Action {
+        String description;
+        String responsible;
+        LocalDate dueDate;
+        Status status;
+    }
+    
+    List<Finding> findings = List.of(
+        new Finding(
+            "Security",
+            "Missing rate limiting",
+            Risk.HIGH,
+            "Implement API gateway with rate limiting",
+            Priority.HIGH
+        )
+    );
+    
+    List<Action> actions = List.of(
+        new Action(
+            "Implement API gateway",
+            "Team A",
+            LocalDate.now().plusWeeks(2),
+            Status.OPEN
+        )
+    );
 }
 \end{lstlisting}
 \end{example2}
