@@ -1,0 +1,30 @@
+\begin{example2}{Performance-Optimierung}\\
+\textbf{Implementation von Caching:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+@Service
+public class ProductService {
+    private final Cache<String, Product> cache;
+    private final ProductRepository repository;
+    
+    public Product getProduct(String id) {
+        return cache.get(id, key -> {
+            Product product = repository
+                .findById(key)
+                .orElseThrow();
+                
+            // Warm up frequently accessed data
+            product.getCategories().size();
+            product.getReviews().size();
+            
+            return product;
+        });
+    }
+    
+    @CacheEvict(value = "products")
+    public void updateProduct(Product product) {
+        repository.save(product);
+    }
+}
+\end{lstlisting}
+\end{example2}
