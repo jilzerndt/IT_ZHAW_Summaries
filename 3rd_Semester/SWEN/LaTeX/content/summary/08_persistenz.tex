@@ -17,6 +17,42 @@ Persistenz bezeichnet die dauerhafte Speicherung von Daten über das Programmend
 \end{itemize}
 \end{concept}
 
+\begin{KR}{Best Practices für Persistenz}
+
+    \begin{minipage}[t]{0.5\textwidth}
+\textbf{1. Architektur-Ebene}
+\begin{itemize}
+    \item Trennung von Concerns
+    \begin{itemize}
+        \item Repository für Datenzugriff
+        \item Service für Geschäftslogik
+        \item DTO für Datentransfer
+    \end{itemize}
+    \item Transaktionsmanagement
+    \begin{itemize}
+        \item Auf Service-Ebene
+        \item Atomare Operationen
+        \item Konsistente Daten
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{2. Entity Design}
+\begin{itemize}
+    \item Immutable wenn möglich
+    \item Validierung durch\\ Bean Validation
+    \item Geschäftsregeln in\\ Entity-Klassen
+\end{itemize}
+
+\textbf{3. Performance Optimierung}
+\begin{itemize}
+    \item Caching Strategien
+    \item Batch Processing
+    \item Query Optimierung
+\end{itemize}
+\end{minipage}
+\end{KR}
+
 \begin{definition}{O/R-Mismatch}\\
 Der Strukturbruch zwischen objektorientierter und relationaler Welt:
 \begin{itemize}
@@ -36,10 +72,18 @@ Der Strukturbruch zwischen objektorientierter und relationaler Welt:
         \item OO: Implizite Objektidentität
         \item DB: Explizite Identität (Primary Key)
     \end{itemize}
+    \item \textbf{Besondere Herausforderungen:}
+    \begin{itemize}
+        \item Unterschiedliche Repräsentationsformen
+        \item Flache Tabellenstruktur vs. Objekthierarchien
+        \item Verschiedene Konzepte für Beziehungen
+    \end{itemize}
 \end{itemize}
 \end{definition}
 
-\begin{example2}{Prüfungsaufgabe: O/R-Mapping Analyse}
+
+
+\begin{example2}{Prüfungsaufgabe: O/R-Mapping Analyse}\\
 \textbf{Szenario:}
 Ein Universitätssystem verwaltet Studenten, Kurse und Noten. Studenten können mehrere 
 Kurse belegen, ein Kurs hat mehrere Studenten.
@@ -70,15 +114,38 @@ Analysieren Sie die O/R-Mapping Herausforderungen dieser Domain.
 \end{itemize}
 \end{example2}
 
-\subsection{JDBC - Java Database Connectivity}
+\columnbreak
 
-\begin{concept}{JDBC Grundlagen}\\
+\subsubsection{JDBC - Java Database Connectivity}
+
+\begin{definition}{JDBC Grundlagen}\\
 JDBC ist die standardisierte Schnittstelle für Datenbankzugriffe in Java:
 \begin{itemize}
     \item Seit JDK 1.1 (1997)
     \item Plattformunabhängig
     \item Datenbankunabhängig
     \item Aktuelle Version: 4.2
+\end{itemize}
+\end{definition}
+
+\begin{concept}{JDBC Architektur}\\
+\textbf{Hauptkomponenten:}
+\begin{itemize}
+    \item \textbf{JDBC API:} 
+    \begin{itemize}
+        \item Interfaces und Klassen für DB-Zugriff
+        \item Im java.sql Package
+    \end{itemize}
+    \item \textbf{JDBC Driver Manager:}
+    \begin{itemize}
+        \item Verwaltet Datenbanktreiber
+        \item Erstellt Verbindungen
+    \end{itemize}
+    \item \textbf{JDBC Drivers:}
+    \begin{itemize}
+        \item Herstellerspezifische Implementierungen
+        \item Übersetzen JDBC-Aufrufe in DB-Protokoll
+    \end{itemize}
 \end{itemize}
 \end{concept}
 
@@ -94,6 +161,180 @@ Grundlegende Schritte für Datenbankzugriff:
 \end{enumerate}
 \end{KR}
 
+\begin{code}{JDBC Basisoperationen}\\
+\textbf{1. Verbindungsaufbau}
+\begin{lstlisting}[language=Java, style=basesmol]
+Connection con = DriverManager.getConnection(
+    "jdbc:postgresql://server/db",
+    "user", "password");
+\end{lstlisting}
+
+\textbf{2. Statement erstellen und ausführen}
+\begin{lstlisting}[language=Java, style=basesmol]
+Statement stmt = con.createStatement();
+ResultSet rs = stmt.executeQuery(
+    "SELECT * FROM users");
+\end{lstlisting}
+
+\textbf{3. Ergebnisse verarbeiten}
+\begin{lstlisting}[language=Java, style=basesmol]
+while (rs.next()) {
+    String name = rs.getString("name");
+    int age = rs.getInt("age");
+}
+\end{lstlisting}
+
+\textbf{4. Ressourcen freigeben}
+\begin{lstlisting}[language=Java, style=basesmol]
+rs.close();
+stmt.close();
+con.close();
+\end{lstlisting}
+\end{code}
+
+
+
+\subsubsection{Java Persistence API (JPA)}
+
+\begin{concept}{JPA Grundkonzepte}
+JPA ist der Java-Standard für O/R-Mapping:
+
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item \textbf{Entity-Klassen:}
+    \begin{itemize}
+        \item Plain Old Java Objects\\ (POJOs)
+        \item Annotation @Entity
+        \item Keine JPA-spezifischen\\ Abhängigkeiten
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item \textbf{Referenzen:}
+    \begin{itemize}
+        \item Eager/Lazy Loading
+        \item Automatisches Nachladen
+    \end{itemize}
+    \item \textbf{Provider:}
+    \begin{itemize}
+        \item Hibernate
+        \item EclipseLink
+        \item OpenJPA
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\end{concept}
+
+\begin{concept}{JPA Technologie-Stack}
+
+\begin{minipage}[b]{0.45\textwidth}
+\begin{itemize}
+    \item Java Application
+    \item Java Persistence API
+    \item JPA Provider \\(Hibernate, EclipseLink, etc.)
+    \item JDBC Driver
+    \item Relationale Datenbank
+\end{itemize}
+\end{minipage}
+\hspace{4mm}
+\begin{minipage}{0.45\textwidth}
+\includegraphics[width=0.8\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-29.jpg}
+\end{minipage}
+\end{concept}
+
+\begin{KR}{JPA Entity Erstellung}
+\begin{enumerate}
+    \item Entity-Klasse definieren:
+    \begin{itemize}
+        \item @Entity Annotation
+        \item ID-Feld mit @Id markieren
+    \end{itemize}
+    \item Beziehungen definieren:
+    \begin{itemize}
+        \item @OneToMany, @ManyToOne etc.
+        \item Navigationsrichtung festlegen
+    \end{itemize}
+    \item Validierung hinzufügen:
+    \begin{itemize}
+        \item @NotNull, @Size etc.
+        \item Geschäftsregeln
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{KR}{JPA Entity Design}
+
+\textbf{1. Grundstruktur}
+
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item \textbf{Basisanforderungen:}
+    \begin{itemize}
+        \item Default Constructor
+        \item Serializable (optional)
+        \item Getter/Setter
+    \end{itemize}
+    \end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item \textbf{Identifikation:}
+    \begin{itemize}
+        \item Primary Key Strategie
+        \item Natural vs. Surrogate Key
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\vspace{1mm}\\
+\textbf{2. Beziehungen}
+
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item \textbf{Kardinalität:}
+    \begin{itemize}
+        \item OneToOne
+        \item OneToMany/ManyToOne
+        \item ManyToMany
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item \textbf{Richtung:}
+    \begin{itemize}
+        \item Unidirektional
+        \item Bidirektional
+    \end{itemize}
+    \item \textbf{Lifecycle:}
+    \begin{itemize}
+        \item Cascade-Operationen
+        \item Orphan Removal
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+
+\textbf{3. Optimierungen}
+
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item \textbf{Lazy Loading:}
+    \begin{itemize}
+        \item Fetch-Strategien
+        \item Join Fetching
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item \textbf{Caching:}
+    \begin{itemize}
+        \item First-Level Cache
+        \item Second-Level Cache
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\end{KR}
 
 
 \subsection{Design Patterns für Persistenz}
@@ -103,26 +344,104 @@ Drei grundlegende Ansätze für die Persistenzschicht:
 \begin{itemize}
     \item \textbf{Active Record (Anti-Pattern):}
     \begin{itemize}
-        \item Entität verwaltet eigene Persistenz
-        \item Vermischung von Fachlichkeit und Technik
-        \item Schlechte Testbarkeit
+        \item Jede Entität verwaltet eigene Persistenz
+        \item Vermischung von Fachlichkeit und Technik in einer Klasse
+        \item Wrapper für Datenbankzeilen, spiegelt DB-Struktur direkt
+        \item Schlechte Testbarkeit der Domänenlogik
+        \item Schlechte Wartbarkeit und Erweiterbarkeit
     \end{itemize}
     \item \textbf{Data Access Object (DAO):}
     \begin{itemize}
         \item Kapselung des Datenbankzugriffs
         \item Trennung von Fachlichkeit und Technik
+        \item Domänenklasse hat hohe Kohäsion
         \item Gute Testbarkeit durch Mocking
+        \item Bevorzugtes Design ohne O/R-Mapper
     \end{itemize}
     \item \textbf{Repository (DDD):}
     \begin{itemize}
         \item Abstraktionsschicht über Data-Mapper
         \item Zentralisierung von Datenbankabfragen
-        \item Komplexere Implementierung
+        \item Komplexere Implementierung, aber Unterstützung für Komplexere Abfragen
+        \item Domänenorientierte Schnittstelle
+        \item Häufig in Kombination mit Spring Data
     \end{itemize}
 \end{itemize}
 \end{theorem}
 
-\begin{KR}{Persistenzstrategie wählen}
+\begin{remark}
+    Spring Data unterstützt die automatische Generierung von Repository-Implementierungen basierend auf Methodennamen. Dies reduziert den Implementierungsaufwand erheblich.
+\end{remark}
+
+\begin{KR}{Analyse der Persistenzanforderungen}
+
+    \begin{minipage}[t]{0.5\textwidth}
+\textbf{1. Funktionale Anforderungen}
+\begin{itemize}
+    \item Datenmodell und Beziehungen
+    \item Abfrageanforderungen
+    \item Transaktionsverhalten 
+\end{itemize}
+
+\textbf{2. Nicht-funktionale\\ Anforderungen}
+\begin{itemize}
+    \item Performance
+    \item Skalierbarkeit
+    \item Wartbarkeit
+    \item Konsistenz
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{3. Technische Randbedingungen}
+\begin{itemize}
+    \item Vorhandene Systeme
+    \item Datenbanktyp
+    \item Entwicklungsumgebung
+\end{itemize}
+
+\textbf{4. Designentscheidungen}
+\begin{itemize}
+    \item Persistenzstrategie wählen
+    \item Framework-Auswahl
+    \item Architekturmuster festlegen
+\end{itemize}
+\end{minipage}
+\end{KR}
+
+\begin{concept}{Common Pitfalls in Persistence Implementation}
+\paragraph{1. JPA Fallstricke}
+
+    \textbf{N+1 Problem:}
+    \begin{itemize}
+        \item Symptom: Für jedes Objekt wird eine zusätzliche Query ausgeführt
+        \item Lösung: Join Fetch oder Eager Loading strategisch einsetzen
+    \end{itemize}
+     \textbf{LazyInitializationException:}
+    \begin{itemize}
+        \item Symptom: Zugriff auf lazy geladene Referenz außerhalb der Session
+        \item Lösung: Transaktionen richtig abgrenzen oder Fetch Join verwenden
+    \end{itemize}
+     \textbf{Bidirektionale Beziehungen:}
+    \begin{itemize}
+        \item Symptom: Inkonsistente Objektzustände
+        \item Lösung: Helper-Methoden für Beziehungspflege
+    \end{itemize}
+
+
+\paragraph{2. Performance Probleme}
+     \textbf{Zu viele Queries:}
+    \begin{itemize}
+        \item Problem: Ineffiziente Datenbankzugriffe
+        \item Lösung: Batch Processing, Bulk Operations
+    \end{itemize}
+     \textbf{Memory Leaks:}
+    \begin{itemize}
+        \item Problem: Große Result Sets
+        \item Lösung: Pagination, Streaming Results
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Persistenzstrategie wählen}\\
 \textbf{1. Anforderungen analysieren}
 \begin{itemize}
     \item \textbf{Funktional:}
@@ -162,7 +481,7 @@ Drei grundlegende Ansätze für die Persistenzschicht:
 \end{itemize}
 \end{KR}
 
-\begin{example2}{Prüfungsaufgabe: Design Pattern Vergleich}
+\begin{example2}{Prüfungsaufgabe: Design Pattern Vergleich}\\
 \textbf{Aufgabe:}
 Vergleichen Sie Active Record, DAO und Repository Pattern.
 
@@ -215,6 +534,8 @@ Vergleichen Sie Active Record, DAO und Repository Pattern.
 \end{itemize}
 \end{example2}
 
+\subsubsection{Implementation der Patterns}
+
 \begin{KR}{DAO Implementation}\\
 Schritte zur Implementierung eines DAOs:
 \begin{enumerate}
@@ -239,330 +560,15 @@ Schritte zur Implementierung eines DAOs:
 
 
 
-\subsection{Java Persistence API (JPA)}
-
-\begin{concept}{JPA Grundkonzepte}\\
-JPA ist der Java-Standard für O/R-Mapping:
-\begin{itemize}
-    \item \textbf{Entity-Klassen:}
-    \begin{itemize}
-        \item Plain Old Java Objects (POJOs)
-        \item Annotation @Entity
-        \item Keine JPA-spezifischen Abhängigkeiten
-    \end{itemize}
-    \item \textbf{Referenzen:}
-    \begin{itemize}
-        \item Eager/Lazy Loading
-        \item Automatisches Nachladen
-    \end{itemize}
-    \item \textbf{Provider:}
-    \begin{itemize}
-        \item Hibernate
-        \item EclipseLink
-        \item OpenJPA
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{concept}{JPA Technologie-Stack}
-\begin{itemize}
-    \item Java Application
-    \item Java Persistence API
-    \item JPA Provider (Hibernate, EclipseLink, etc.)
-    \item JDBC Driver
-    \item Relationale Datenbank
-\end{itemize}
-\includegraphics[width=0.5\linewidth]{images/2025_01_02_5ba1dc702e9f94ba8e06g-29.jpg}
-\end{concept}
-
-\begin{KR}{JPA Entity Erstellung}
-\begin{enumerate}
-    \item Entity-Klasse definieren:
-    \begin{itemize}
-        \item @Entity Annotation
-        \item ID-Feld mit @Id markieren
-    \end{itemize}
-    \item Beziehungen definieren:
-    \begin{itemize}
-        \item @OneToMany, @ManyToOne etc.
-        \item Navigationsrichtung festlegen
-    \end{itemize}
-    \item Validierung hinzufügen:
-    \begin{itemize}
-        \item @NotNull, @Size etc.
-        \item Geschäftsregeln
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-\begin{KR}{JPA Entity Design}
-\textbf{1. Grundstruktur}
-\begin{itemize}
-    \item \textbf{Basisanforderungen:}
-    \begin{itemize}
-        \item Default Constructor
-        \item Serializable (optional)
-        \item Getter/Setter
-    \end{itemize}
-    \item \textbf{Identifikation:}
-    \begin{itemize}
-        \item Primary Key Strategie
-        \item Natural vs. Surrogate Key
-    \end{itemize}
-\end{itemize}
-
-\textbf{2. Beziehungen}
-\begin{itemize}
-    \item \textbf{Kardinalität:}
-    \begin{itemize}
-        \item OneToOne
-        \item OneToMany/ManyToOne
-        \item ManyToMany
-    \end{itemize}
-    \item \textbf{Richtung:}
-    \begin{itemize}
-        \item Unidirektional
-        \item Bidirektional
-    \end{itemize}
-    \item \textbf{Lifecycle:}
-    \begin{itemize}
-        \item Cascade-Operationen
-        \item Orphan Removal
-    \end{itemize}
-\end{itemize}
-
-\textbf{3. Optimierungen}
-\begin{itemize}
-    \item \textbf{Lazy Loading:}
-    \begin{itemize}
-        \item Fetch-Strategien
-        \item Join Fetching
-    \end{itemize}
-    \item \textbf{Caching:}
-    \begin{itemize}
-        \item First-Level Cache
-        \item Second-Level Cache
-    \end{itemize}
-\end{itemize}
-\end{KR}
-
-
-
-
-\subsection{Repository Pattern}
-
-\begin{concept}{Repository Pattern}\\
-Das Repository Pattern bietet eine zusätzliche Abstraktionsschicht über der Data-Mapper-Schicht:
-\begin{itemize}
-    \item Zentralisierung von Datenbankabfragen
-    \item Domänenorientierte Schnittstelle
-    \item Unterstützung komplexer Abfragen
-    \item Häufig in Kombination mit Spring Data
-\end{itemize}
-\end{concept}
-
-\begin{remark}
-Spring Data unterstützt die automatische Generierung von Repository-Implementierungen basierend auf Methodennamen. Dies reduziert den Implementierungsaufwand erheblich.
-\end{remark}
-
-
-
-\pagebreak
-
-\section{new}
-
-\section{Persistenz}
-
-\begin{concept}{Persistenz Grundlagen}\\
-Persistenz bezeichnet die dauerhafte Speicherung von Daten über das Programmende hinaus:
-\begin{itemize}
-    \item Speicherung in Datenbankmanagementsystemen (DBMS)
-    \item Haupttypen:
-    \begin{itemize}
-        \item Relationale Datenbanksysteme (RDBMS) - vorherrschende Technologie
-        \item NoSQL-Datenbanken (ohne fixes Schema, verschiedene Formate)
-        \begin{itemize}
-            \item Document Stores
-            \item Key-Value Stores
-            \item Graph Databases
-        \end{itemize}
-    \end{itemize}
-    \item O/R-Mapping (Object Relational Mapping)
-    \begin{itemize}
-        \item Abbildung zwischen Objekten und Datensätzen
-        \item Überwindung des Strukturbruchs (Impedance Mismatch)
-        \item Verhältnismäßig viel Code für Transformation nötig
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{definition}{O/R-Mismatch}\\
-Der Strukturbruch zwischen objektorientierter und relationaler Welt:
-\begin{itemize}
-    \item \textbf{Typen-Systeme:}
-    \begin{itemize}
-        \item Unterschiedliche NULL-Behandlung
-        \item Datum/Zeit-Darstellung
-    \end{itemize}
-    \item \textbf{Beziehungen:}
-    \begin{itemize}
-        \item Richtung der Beziehungen
-        \item Mehrfachbeziehungen
-        \item Vererbung
-    \end{itemize}
-    \item \textbf{Identität:}
-    \begin{itemize}
-        \item OO: Implizite Objektidentität
-        \item DB: Explizite Identität (Primary Key)
-    \end{itemize}
-    \item \textbf{Besondere Herausforderungen:}
-    \begin{itemize}
-        \item Unterschiedliche Repräsentationsformen
-        \item Flache Tabellenstruktur vs. Objekthierarchien
-        \item Verschiedene Konzepte für Beziehungen
-    \end{itemize}
-\end{itemize}
-\end{definition}
-
-\begin{concept}{Design Optionen für Persistenz}\\
-\textbf{Drei grundlegende Ansätze:}
-\begin{itemize}
-    \item \textbf{Active Record (Anti-Pattern):}
-    \begin{itemize}
-        \item Jede Entität ist selbst für Persistenz zuständig
-        \item Wrapper für eine Zeile einer Datenbanktabelle
-        \item Spiegelt die Datenbankstruktur direkt
-        \item Fachlichkeit und Technik in einer Klasse
-        \item Schlechte Testbarkeit der Domänenlogik
-        \item Schlechte Wartbarkeit und Erweiterbarkeit
-    \end{itemize}
-
-    \item \textbf{Data Access Object (DAO):}
-    \begin{itemize}
-        \item Trennung von Fachlichkeit und Technik
-        \item Domänenklasse hat hohe Kohäsion
-        \item Gute Testbarkeit durch Mocking
-        \item Bevorzugtes Design ohne O/R-Mapper
-    \end{itemize}
-
-    \item \textbf{O/R-Mapper (z.B. JPA):}
-    \begin{itemize}
-        \item Weniger Code und standardisierte Schnittstelle
-        \item Trennung von Fachlichkeit und Technik
-        \item Gute Testbarkeit durch Mocking
-        \item DAO auch bei JPA empfehlenswert
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{KR}{Analyse der Persistenzanforderungen}
-\textbf{1. Funktionale Anforderungen}
-\begin{itemize}
-    \item Datenmodell und Beziehungen
-    \item Abfrageanforderungen
-    \item Transaktionsverhalten 
-\end{itemize}
-
-\textbf{2. Nicht-funktionale Anforderungen}
-\begin{itemize}
-    \item Performance
-    \item Skalierbarkeit
-    \item Wartbarkeit
-    \item Konsistenz
-\end{itemize}
-
-\textbf{3. Technische Randbedingungen}
-\begin{itemize}
-    \item Vorhandene Systeme
-    \item Datenbanktyp
-    \item Entwicklungsumgebung
-\end{itemize}
-
-\textbf{4. Designentscheidungen}
-\begin{itemize}
-    \item Persistenzstrategie wählen
-    \item Framework-Auswahl
-    \item Architekturmuster festlegen
-\end{itemize}
-\end{KR}
-
-\subsection{JDBC - Java Database Connectivity}
-
-\begin{concept}{JDBC Grundlagen}\\
-JDBC ist die standardisierte Schnittstelle für Datenbankzugriffe in Java:
-\begin{itemize}
-    \item Standardisierte Schnittstelle für relationale Datenbanken
-    \item Cross-Plattform und DB-independent
-    \item Teil der Java-Platform seit JDK1.1 (1997)
-    \item Aktuelle Version: 4.2
-\end{itemize}
-\end{concept}
-
-\begin{concept}{JDBC Architektur}\\
-\textbf{Hauptkomponenten:}
-\begin{itemize}
-    \item \textbf{JDBC API:} 
-    \begin{itemize}
-        \item Interfaces und Klassen für DB-Zugriff
-        \item Im java.sql Package
-    \end{itemize}
-    \item \textbf{JDBC Driver Manager:}
-    \begin{itemize}
-        \item Verwaltet Datenbanktreiber
-        \item Erstellt Verbindungen
-    \end{itemize}
-    \item \textbf{JDBC Drivers:}
-    \begin{itemize}
-        \item Herstellerspezifische Implementierungen
-        \item Übersetzen JDBC-Aufrufe in DB-Protokoll
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{KR}{JDBC Basisoperationen}
-\textbf{1. Verbindungsaufbau}
-\begin{lstlisting}[language=Java, style=base]
-Connection con = DriverManager.getConnection(
-    "jdbc:postgresql://server/db",
-    "user", "password");
-\end{lstlisting}
-
-\textbf{2. Statement erstellen und ausführen}
-\begin{lstlisting}[language=Java, style=base]
-Statement stmt = con.createStatement();
-ResultSet rs = stmt.executeQuery(
-    "SELECT * FROM users");
-\end{lstlisting}
-
-\textbf{3. Ergebnisse verarbeiten}
-\begin{lstlisting}[language=Java, style=base]
-while (rs.next()) {
-    String name = rs.getString("name");
-    int age = rs.getInt("age");
-}
-\end{lstlisting}
-
-\textbf{4. Ressourcen freigeben}
-\begin{lstlisting}[language=Java, style=base]
-rs.close();
-stmt.close();
-con.close();
-\end{lstlisting}
-\end{KR}
-
 \begin{concept}{DAO Pattern mit JDBC}\\
-\textbf{Implementierungsstruktur:}
+    \textbf{Implementierungsstruktur:}
+
+    \begin{minipage}[t]{0.5\textwidth}
 \begin{itemize}
     \item \textbf{Interface:}
     \begin{itemize}
         \item Definiert CRUD-Operationen
-        \item Definiert spezifische Abfragen
-    \end{itemize}
-    \item \textbf{Implementierung:}
-    \begin{itemize}
-        \item Verwendet JDBC für DB-Zugriff
-        \item Implementiert O/R-Mapping
-        \item Behandelt Fehler
+        \item Definiert spezifische \\ Abfragen
     \end{itemize}
     \item \textbf{Domänenklasse:}
     \begin{itemize}
@@ -570,11 +576,22 @@ con.close();
         \item Keine Persistenzlogik
     \end{itemize}
 \end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+    \begin{itemize}
+    \item \textbf{Implementierung:}
+    \begin{itemize}
+        \item Verwendet JDBC für\\ DB-Zugriff
+        \item Implementiert O/R-Mapping
+        \item Behandelt Fehler
+    \end{itemize}
+\end{itemize}
+\end{minipage}
 \end{concept}
 
 \begin{example2}{DAO Implementation}
 \textbf{1. Interface definieren:}
-\begin{lstlisting}[language=Java, style=base]
+\begin{lstlisting}[language=Java, style=basesmol]
 public interface UserDAO {
     void insert(User user);
     User findById(long id);
@@ -585,12 +602,11 @@ public interface UserDAO {
 \end{lstlisting}
 
 \textbf{2. JDBC-Implementierung:}
-\begin{lstlisting}[language=Java, style=base]
+\begin{lstlisting}[language=Java, style=basesmol]
 public class JdbcUserDAO implements UserDAO {
     private Connection getConnection() {
         // Verbindungsaufbau
     }
-    
     public User findById(long id) {
         Connection conn = getConnection();
         try {
@@ -606,7 +622,6 @@ public class JdbcUserDAO implements UserDAO {
             conn.close();
         }
     }
-    
     private User mapUser(ResultSet rs) {
         User user = new User();
         user.setId(rs.getLong("id"));
@@ -617,52 +632,18 @@ public class JdbcUserDAO implements UserDAO {
 \end{lstlisting}
 \end{example2}
 
-\begin{KR}{Common Pitfalls in Persistence Implementation}
-\textbf{1. JPA Fallstricke}
-\begin{itemize}
-    \item \textbf{N+1 Problem:}
-    \begin{itemize}
-        \item Symptom: Für jedes Objekt wird eine zusätzliche Query ausgeführt
-        \item Lösung: Join Fetch oder Eager Loading strategisch einsetzen
-    \end{itemize}
-    \item \textbf{LazyInitializationException:}
-    \begin{itemize}
-        \item Symptom: Zugriff auf lazy geladene Referenz außerhalb der Session
-        \item Lösung: Transaktionen richtig abgrenzen oder Fetch Join verwenden
-    \end{itemize}
-    \item \textbf{Bidirektionale Beziehungen:}
-    \begin{itemize}
-        \item Symptom: Inkonsistente Objektzustände
-        \item Lösung: Helper-Methoden für Beziehungspflege
-    \end{itemize}
-\end{itemize}
 
-\textbf{2. Performance Probleme}
-\begin{itemize}
-    \item \textbf{Zu viele Queries:}
-    \begin{itemize}
-        \item Problem: Ineffiziente Datenbankzugriffe
-        \item Lösung: Batch Processing, Bulk Operations
-    \end{itemize}
-    \item \textbf{Memory Leaks:}
-    \begin{itemize}
-        \item Problem: Große Result Sets
-        \item Lösung: Pagination, Streaming Results
-    \end{itemize}
-\end{itemize}
-\end{KR}
 
-\begin{example2}{Typische Prüfungsaufgabe: Parent-Child Beziehung}
+\begin{example2}{Typische Prüfungsaufgabe: Parent-Child Beziehung}\\
 \textbf{Szenario:}
 Implementieren Sie eine bidirektionale One-to-Many Beziehung zwischen Department und Employee.
 
 \textbf{1. Entity-Klassen:}
-\begin{lstlisting}[language=Java, style=base]
+\begin{lstlisting}[language=Java, style=basesmol]
 @Entity
 public class Department {
     @Id @GeneratedValue
     private Long id;
-    
     private String name;
     
     @OneToMany(mappedBy = "department", 
@@ -694,7 +675,7 @@ public class Employee {
 \end{lstlisting}
 
 \textbf{2. Repository Interface:}
-\begin{lstlisting}[language=Java, style=base]
+\begin{lstlisting}[language=Java, style=basesmol]
 public interface DepartmentRepository 
     extends JpaRepository<Department, Long> {
     
@@ -707,7 +688,7 @@ public interface DepartmentRepository
 \end{lstlisting}
 
 \textbf{3. Service Layer:}
-\begin{lstlisting}[language=Java, style=base]
+\begin{lstlisting}[language=Java, style=basesmol]
 @Service
 @Transactional
 public class DepartmentService {
@@ -727,41 +708,11 @@ public class DepartmentService {
 \end{lstlisting}
 \end{example2}
 
-\begin{KR}{Best Practices für Persistenz}
-\textbf{1. Architektur-Ebene}
-\begin{itemize}
-    \item Trennung von Concerns
-    \begin{itemize}
-        \item Repository für Datenzugriff
-        \item Service für Geschäftslogik
-        \item DTO für Datentransfer
-    \end{itemize}
-    \item Transaktionsmanagement
-    \begin{itemize}
-        \item Auf Service-Ebene
-        \item Atomare Operationen
-        \item Konsistente Daten
-    \end{itemize}
-\end{itemize}
 
-\textbf{2. Entity Design}
-\begin{itemize}
-    \item Immutable wenn möglich
-    \item Validierung durch Bean Validation
-    \item Geschäftsregeln in Entity-Klassen
-\end{itemize}
 
-\textbf{3. Performance Optimierung}
-\begin{itemize}
-    \item Caching Strategien
-    \item Batch Processing
-    \item Query Optimierung
-\end{itemize}
-\end{KR}
-
-\begin{example2}{Praktische Implementierungsbeispiele}
+\begin{example2}{Praktische Implementierungsbeispiele}\\
 \textbf{1. Optimistisches Locking:}
-\begin{lstlisting}[language=Java, style=base]
+\begin{lstlisting}[language=Java, style=basesmol]
 @Entity
 public class Account {
     @Version
@@ -779,7 +730,7 @@ public class Account {
 \end{lstlisting}
 
 \textbf{2. Entity Lifecycle Callbacks:}
-\begin{lstlisting}[language=Java, style=base]
+\begin{lstlisting}[language=Java, style=basesmol]
 @Entity
 public class AuditedEntity {
     @PrePersist
@@ -795,7 +746,7 @@ public class AuditedEntity {
 \end{lstlisting}
 
 \textbf{3. Custom Repository Implementation:}
-\begin{lstlisting}[language=Java, style=base]
+\begin{lstlisting}[language=Java, style=basesmol]
 @Repository
 public class CustomOrderRepositoryImpl 
     implements CustomOrderRepository {
