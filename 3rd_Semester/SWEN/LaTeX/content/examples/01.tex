@@ -1,0 +1,285 @@
+\section{KR und Beispiele für Anforderungsanalyse}
+
+\begin{KR}{Use Case Erstellung}\\
+\textbf{Vorgehen bei der Erstellung eines vollständigen Use Cases:}
+\begin{enumerate}
+    \item \textbf{Identifikation:}
+    \begin{itemize}
+        \item Primärakteur bestimmen
+        \item Scope festlegen
+        \item Ebene definieren (Summary, User-Goal, Subfunction)
+    \end{itemize}
+    
+    \item \textbf{Stakeholder und Interessen:}
+    \begin{itemize}
+        \item Alle betroffenen Parteien identifizieren
+        \item Interessen pro Stakeholder beschreiben
+        \item Priorisierung der Interessen
+    \end{itemize}
+    
+    \item \textbf{Bedingungen:}
+    \begin{itemize}
+        \item Vorbedingungen definieren
+        \item Nachbedingungen (Erfolgsfall)
+        \item Minimalgarantien festlegen
+    \end{itemize}
+    
+    \item \textbf{Standardablauf:}
+    \begin{itemize}
+        \item Schritte durchnummerieren
+        \item Akteur-System Interaktion
+        \item Klare, aktive Formulierung
+    \end{itemize}
+    
+    \item \textbf{Erweiterungen/Alternativen:}
+    \begin{itemize}
+        \item Fehlerfälle identifizieren
+        \item Alternative Abläufe beschreiben
+        \item Auf Standardablauf referenzieren
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Fully-dressed Use Case}\\
+\textbf{Aufgabe:} Schreiben Sie einen vollständigen Use Case für "Ticket buchen" in einem Hotelreservierungssystem.
+
+\textbf{Use Case:} Hotelzimmer buchen
+
+\textbf{Scope:} Hotelbuchungssystem
+
+\textbf{Level:} User Goal
+
+\textbf{Primary Actor:} Hotel-Gast
+
+\textbf{Stakeholder und Interessen:}
+\begin{itemize}
+    \item \textbf{Hotel-Gast:}
+    \begin{itemize}
+        \item Schnelle, einfache Buchung
+        \item Bestätigung der Buchung
+        \item Korrekte Preisberechnung
+    \end{itemize}
+    \item \textbf{Hotel:}
+    \begin{itemize}
+        \item Korrekte Zimmerbelegung
+        \item Zahlungsgarantie
+        \item Vollständige Gästeinformationen
+    \end{itemize}
+\end{itemize}
+
+\textbf{Vorbedingungen:}
+\begin{itemize}
+    \item Gast ist im System angemeldet
+    \item Mindestens ein Zimmer verfügbar
+\end{itemize}
+
+\textbf{Nachbedingungen:}
+\begin{itemize}
+    \item Buchung ist gespeichert
+    \item Zimmer ist reserviert
+    \item Bestätigung ist versendet
+\end{itemize}
+
+\textbf{Standardablauf:}
+\begin{enumerate}
+    \item Gast wählt Reisedaten aus
+    \item System zeigt verfügbare Zimmer
+    \item Gast wählt Zimmer aus
+    \item System zeigt Buchungsdetails und Gesamtpreis
+    \item Gast gibt Zahlungsinformationen ein
+    \item System validiert Zahlungsdaten
+    \item System bestätigt Buchung
+    \item System sendet Buchungsbestätigung
+\end{enumerate}
+
+\textbf{Erweiterungen:}
+\begin{itemize}
+    \item 2a. Keine Zimmer verfügbar:
+    \begin{enumerate}
+        \item System zeigt alternative Daten
+        \item Gast wählt neue Daten oder bricht ab
+    \end{enumerate}
+    \item 6a. Zahlung fehlgeschlagen:
+    \begin{enumerate}
+        \item System zeigt Fehlermeldung
+        \item Gast kann neue Zahlungsdaten eingeben oder abbrechen
+    \end{enumerate}
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Systemsequenzdiagramme erstellen}\\
+\textbf{Vorgehen für SSD:}
+\begin{enumerate}
+    \item \textbf{Akteure identifizieren:}
+    \begin{itemize}
+        \item Primärakteur festlegen
+        \item System als Black Box
+        \item Zeitachse definieren
+    \end{itemize}
+    
+    \item \textbf{Operationen definieren:}
+    \begin{itemize}
+        \item Systemoperationen identifizieren
+        \item Parameter festlegen
+        \item Rückgabewerte bestimmen
+    \end{itemize}
+    
+    \item \textbf{Ablauf modellieren:}
+    \begin{itemize}
+        \item Nachrichten einzeichnen
+        \item Alternative Pfade markieren
+        \item Schleifen kennzeichnen
+    \end{itemize}
+    
+    \item \textbf{Dokumentation:}
+    \begin{itemize}
+        \item Beschriftungen prüfen
+        \item Alternatives ergänzen
+        \item Bezug zum Use Case herstellen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Systemsequenzdiagramm: Hotelbuchung}\\
+\textbf{Aufgabe:} Erstellen Sie ein SSD für den Use Case "Hotelzimmer buchen".
+
+\textbf{Systemoperationen:}
+\begin{lstlisting}[language=Java, style=base]
+// Verfügbarkeit prüfen
+checkAvailability(dates: DateRange): List<Room>
+
+// Zimmer reservieren
+bookRoom(roomId: RoomId, 
+         dates: DateRange): Reservation
+
+// Zahlung durchführen
+processPayment(reservationId: ReservationId,
+              paymentInfo: PaymentDetails): boolean
+
+// Buchung bestätigen
+confirmBooking(reservationId: ReservationId): 
+    BookingConfirmation
+\end{lstlisting}
+
+\textbf{Alternative Pfade:}
+\begin{itemize}
+    \item Keine Verfügbarkeit → Alternative Daten
+    \item Zahlungsfehler → Neue Zahlungsdaten
+    \item Systembuchungsfehler → Fehlermeldung
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Contracts für Systemoperationen}\\
+\textbf{Contract-Elemente:}
+\begin{enumerate}
+    \item \textbf{Operation:}
+    \begin{itemize}
+        \item Name und Parameter
+        \item Rückgabetyp
+        \item Exceptions
+    \end{itemize}
+    
+    \item \textbf{Vorbedingungen:}
+    \begin{itemize}
+        \item Systemzustand
+        \item Gültige Parameter
+        \item Benutzerkontext
+    \end{itemize}
+    
+    \item \textbf{Nachbedingungen:}
+    \begin{itemize}
+        \item Zustandsänderungen
+        \item Objekterzeugung
+        \item Attributänderungen
+        \item Assoziationen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Contract: Hotelbuchung}\\
+\textbf{Operation:} bookRoom(roomId: RoomId, dates: DateRange): Reservation
+
+\textbf{Querverweis:} UC "Hotelzimmer buchen"
+
+\textbf{Vorbedingungen:}
+\begin{itemize}
+    \item Benutzer ist authentifiziert
+    \item Zimmer ist im spezifizierten Zeitraum verfügbar
+    \item Zimmer existiert
+\end{itemize}
+
+\textbf{Nachbedingungen:}
+\begin{itemize}
+    \item Reservierungs-Instanz wurde erstellt
+    \item Reservierung ist mit Zimmer verknüpft
+    \item Zimmer ist als reserviert markiert
+    \item Reservierungszeitraum ist gesetzt
+    \item Benutzer ist mit Reservierung verknüpft
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Usability-Requirements analysieren}\\
+\textbf{Analyseschritte:}
+\begin{enumerate}
+    \item \textbf{Benutzergruppen identifizieren:}
+    \begin{itemize}
+        \item Primäre/sekundäre Nutzer
+        \item Erfahrungsniveau
+        \item Nutzungskontext
+    \end{itemize}
+    
+    \item \textbf{Anforderungen nach ISO 9241-110:}
+    \begin{itemize}
+        \item Aufgabenangemessenheit
+        \item Selbstbeschreibungsfähigkeit
+        \item Steuerbarkeit
+        \item Erwartungskonformität
+        \item Fehlertoleranz
+        \item Individualisierbarkeit
+        \item Lernförderlichkeit
+    \end{itemize}
+    
+    \item \textbf{Messbare Kriterien definieren:}
+    \begin{itemize}
+        \item Erfolgsrate bei Aufgaben
+        \item Bearbeitungszeit
+        \item Fehlerrate
+        \item Nutzerzufriedenheit
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Usability-Analyse: Online-Banking}\\
+\textbf{Aufgabe:} Analysieren Sie die Usability-Anforderungen für eine Online-Banking App.
+
+\textbf{Analyse nach ISO 9241-110:}
+\begin{itemize}
+    \item \textbf{Aufgabenangemessenheit:}
+    \begin{itemize}
+        \item Schneller Zugriff auf häufige Funktionen
+        \item Klare Übersicht über Kontostände
+        \item Effiziente Überweisungsprozesse
+    \end{itemize}
+    
+    \item \textbf{Selbstbeschreibungsfähigkeit:}
+    \begin{itemize}
+        \item Klare Status-Anzeigen
+        \item Verständliche Fehlermeldungen
+        \item Hilfe-Funktion
+    \end{itemize}
+    
+    \item \textbf{Fehlertoleranz:}
+    \begin{itemize}
+        \item Bestätigung bei kritischen Aktionen
+        \item Korrekturmöglichkeiten
+        \item Plausibilitätsprüfungen
+    \end{itemize}
+\end{itemize}
+
+\textbf{Messbare Kriterien:}
+\begin{itemize}
+    \item Überweisung in < 60 Sekunden
+    \item Fehlerrate < 1\%
+    \item Nutzerzufriedenheit > 4/5
+\end{itemize}
+\end{example2}

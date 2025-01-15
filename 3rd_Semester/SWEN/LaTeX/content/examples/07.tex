@@ -1,0 +1,457 @@
+\section{Kochrezepte und Übungen}
+
+\subsection{Verteilte Systeme}
+
+\begin{KR}{Verteiltes System entwerfen}\\
+\textbf{1. Architekturanalyse}
+\begin{itemize}
+    \item Anforderungen analysieren
+    \begin{itemize}
+        \item Skalierbarkeit
+        \item Verfügbarkeit
+        \item Konsistenz
+    \end{itemize}
+    \item Kommunikationsmuster bestimmen
+    \begin{itemize}
+        \item Synchron vs. Asynchron
+        \item Request-Response vs. Messaging
+        \item Push vs. Pull
+    \end{itemize}
+    \item Fehlerszenarien identifizieren
+    \begin{itemize}
+        \item Netzwerkfehler
+        \item Server-Ausfälle
+        \item Datenverlust
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Design}
+\begin{itemize}
+    \item Architekturmuster wählen
+    \begin{itemize}
+        \item Client-Server
+        \item Peer-to-Peer
+        \item Event-basiert
+    \end{itemize}
+    \item Verteilungsstruktur festlegen
+    \begin{itemize}
+        \item Service-Grenzen
+        \item Datenverteilung
+        \item Load Balancing
+    \end{itemize}
+    \item Konsistenzmodell definieren
+    \begin{itemize}
+        \item Strong vs. Eventual Consistency
+        \item ACID vs. BASE
+        \item CAP Trade-offs
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Implementation}
+\begin{itemize}
+    \item Kommunikation implementieren
+    \begin{itemize}
+        \item Protokolle definieren
+        \item Serialisierung festlegen
+        \item Error Handling
+    \end{itemize}
+    \item Monitoring einrichten
+    \begin{itemize}
+        \item Logging
+        \item Metriken
+        \item Alarme
+    \end{itemize}
+    \item Testing
+    \begin{itemize}
+        \item Unit Tests
+        \item Integration Tests
+        \item Chaos Testing
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{KR}{Remote Procedure Call (RPC) implementieren}\\
+\textbf{1. Interface definieren}
+\begin{itemize}
+    \item Services spezifizieren
+    \item Parameter definieren
+    \item Rückgabewerte festlegen
+    \item Fehlerbehandlung planen
+\end{itemize}
+
+\textbf{2. Stub/Skeleton generieren}
+\begin{itemize}
+    \item IDL verwenden
+    \item Marshalling implementieren
+    \item Proxies erstellen
+\end{itemize}
+
+\textbf{3. Netzwerkkommunikation}
+\begin{itemize}
+    \item Protokoll wählen
+    \item Serialisierung implementieren
+    \item Timeouts einbauen
+    \item Retry-Logik
+\end{itemize}
+
+\textbf{4. Fehlerbehandlung}
+\begin{itemize}
+    \item Netzwerkfehler behandeln
+    \item Timeout-Handling
+    \item Circuit Breaker einbauen
+    \item Fallback-Strategien
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Typische Prüfungsaufgabe: Verteiltes System}\\
+\textbf{Aufgabe:} Entwerfen Sie ein verteiltes Chat-System
+
+\textbf{Anforderungen:}
+\begin{itemize}
+    \item Unterstützung für 100.000 gleichzeitige Nutzer
+    \item Nachrichtenhistorie speichern
+    \item Offline-Nachrichten möglich
+    \item Maximale Latenz 500ms
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{lstlisting}[language=Java, style=base]
+// Message Broker Interface
+public interface MessageBroker {
+    void publish(String topic, Message message);
+    void subscribe(String topic, MessageHandler handler);
+}
+
+// Chat Service
+@Service
+public class ChatService {
+    private final MessageBroker broker;
+    private final MessageRepository repository;
+    
+    public void sendMessage(ChatMessage message) {
+        // Persist message
+        repository.save(message);
+        
+        // Publish to online users
+        broker.publish(
+            "chat." + message.getRoomId(), 
+            message
+        );
+        
+        // Handle offline users
+        message.getRecipients().stream()
+            .filter(user -> !userIsOnline(user))
+            .forEach(user -> 
+                queueOfflineMessage(user, message));
+    }
+    
+    public void joinRoom(String userId, String roomId) {
+        broker.subscribe("chat." + roomId, 
+            message -> deliverToUser(userId, message));
+    }
+    
+    private void queueOfflineMessage(
+            String userId, ChatMessage message) {
+        broker.publish(
+            "offline." + userId,
+            message
+        );
+    }
+}
+
+// Load Balancer Configuration
+@Configuration
+public class LoadBalancerConfig {
+    @Bean
+    public LoadBalancer chatLoadBalancer() {
+        return LoadBalancer.builder()
+            .algorithm(RoundRobin.class)
+            .maxConnections(10000)
+            .healthCheck("/health")
+            .build();
+    }
+}
+\end{lstlisting}
+
+\textbf{Architekturentscheidungen:}
+\begin{itemize}
+    \item Event-driven Architecture mit Message Broker
+    \item Sharding nach Chat-Räumen
+    \item In-Memory Caching für aktive Chats
+    \item Message Queue für Offline-Nachrichten
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Message Oriented Middleware}\\
+\textbf{Aufgabe:} Implementieren Sie ein Nachrichtensystem mit JMS
+
+\begin{lstlisting}[language=Java, style=base]
+// Message Producer
+@Component
+public class OrderProducer {
+    @Autowired
+    private JmsTemplate jmsTemplate;
+    
+    public void sendOrder(Order order) {
+        try {
+            jmsTemplate.convertAndSend("orders", order, message -> {
+                message.setStringProperty(
+                    "orderType", 
+                    order.getType().toString()
+                );
+                return message;
+            });
+        } catch (JmsException e) {
+            handleMessageError(order, e);
+        }
+    }
+}
+
+// Message Consumer
+@Component
+public class OrderConsumer {
+    @JmsListener(
+        destination = "orders",
+        selector = "orderType = 'PREMIUM'"
+    )
+    public void processPremiumOrder(Order order) {
+        try {
+            // Process order with high priority
+            processOrderWithPriority(order);
+        } catch (Exception e) {
+            // Dead Letter Queue
+            handleFailedOrder(order, e);
+        }
+    }
+    
+    @JmsListener(
+        destination = "orders",
+        selector = "orderType = 'STANDARD'"
+    )
+    public void processStandardOrder(Order order) {
+        // Process normal order
+    }
+}
+
+// Error Handling
+@Component
+public class DeadLetterQueueHandler {
+    @JmsListener(destination = "DLQ")
+    public void handleFailedMessages(Message failedMessage) {
+        // Analyze failure
+        // Retry with backoff
+        // Alert if necessary
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Fehlerbehandlung in verteilten Systemen}\\
+\textbf{1. Netzwerkfehler}
+\begin{itemize}
+    \item Timeouts implementieren
+    \item Retry-Strategien definieren
+    \item Circuit Breaker einsetzen
+\end{itemize}
+
+\textbf{2. Dateninkonsistenzen}
+\begin{itemize}
+    \item Eventual Consistency
+    \item Konfliktauflösung
+    \item Versioning
+\end{itemize}
+
+\textbf{3. Ausfallsicherheit}
+\begin{itemize}
+    \item Redundanz einbauen
+    \item Fallback-Strategien
+    \item Graceful Degradation
+\end{itemize}
+
+\textbf{4. Monitoring}
+\begin{itemize}
+    \item Logging
+    \item Metriken sammeln
+    \item Alerting einrichten
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Circuit Breaker Implementation}\\
+\textbf{Aufgabe:} Implementieren Sie einen Circuit Breaker für einen Microservice
+
+\begin{lstlisting}[language=Java, style=base]
+public class CircuitBreaker {
+    private final long timeout;
+    private final int failureThreshold;
+    private final long resetTimeout;
+    
+    private AtomicInteger failures = new AtomicInteger();
+    private AtomicReference<State> state = 
+        new AtomicReference<>(State.CLOSED);
+    private AtomicLong lastFailureTime = new AtomicLong();
+    
+    public enum State {
+        CLOSED, OPEN, HALF_OPEN
+    }
+    
+    public <T> T execute(Supplier<T> action) throws Exception {
+        if (shouldExecute()) {
+            try {
+                T result = action.get();
+                reset();
+                return result;
+            } catch (Exception e) {
+                handleFailure();
+                throw e;
+            }
+        }
+        throw new CircuitBreakerException("Circuit open");
+    }
+    
+    private boolean shouldExecute() {
+        State currentState = state.get();
+        if (currentState == State.CLOSED) {
+            return true;
+        }
+        if (currentState == State.OPEN) {
+            if (hasResetTimeoutExpired()) {
+                state.compareAndSet(State.OPEN, State.HALF_OPEN);
+                return true;
+            }
+            return false;
+        }
+        return true; // HALF_OPEN
+    }
+    
+    private void handleFailure() {
+        lastFailureTime.set(System.currentTimeMillis());
+        if (failures.incrementAndGet() >= failureThreshold) {
+            state.set(State.OPEN);
+        }
+    }
+    
+    private void reset() {
+        failures.set(0);
+        state.set(State.CLOSED);
+    }
+    
+    private boolean hasResetTimeoutExpired() {
+        return System.currentTimeMillis() - lastFailureTime.get() 
+            > resetTimeout;
+    }
+}
+
+// Usage Example
+@Service
+public class UserService {
+    private final CircuitBreaker circuitBreaker = new CircuitBreaker(
+        1000,  // timeout
+        5,     // failureThreshold
+        60000  // resetTimeout
+    );
+    
+    private final RestTemplate restTemplate;
+    
+    public UserDTO getUser(String id) {
+        return circuitBreaker.execute(() ->
+            restTemplate.getForObject(
+                "/api/users/" + id,
+                UserDTO.class
+            )
+        );
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Service Discovery implementieren}\\
+\textbf{1. Registry Service}
+\begin{itemize}
+    \item Service-Registrierung
+    \item Health Checking
+    \item Load Balancing
+\end{itemize}
+
+\textbf{2. Service Registration}
+\begin{itemize}
+    \item Startup Registration
+    \item Heartbeat Mechanism
+    \item Graceful Shutdown
+\end{itemize}
+
+\textbf{3. Service Discovery}
+\begin{itemize}
+    \item Cache Management
+    \item Failure Detection
+    \item Load Balancing
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Service Discovery mit Spring Cloud}\\
+\textbf{Aufgabe:} Implementieren Sie Service Discovery für Microservices
+
+\begin{lstlisting}[language=Java, style=base]
+// Eureka Server
+@SpringBootApplication
+@EnableEurekaServer
+public class ServiceRegistryApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(
+            ServiceRegistryApplication.class, 
+            args
+        );
+    }
+}
+
+// Service Registration
+@SpringBootApplication
+@EnableDiscoveryClient
+public class UserServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(
+            UserServiceApplication.class, 
+            args
+        );
+    }
+}
+
+// Service Discovery
+@Service
+public class UserServiceClient {
+    @Autowired
+    private DiscoveryClient discoveryClient;
+    
+    @Autowired
+    private RestTemplate restTemplate;
+    
+    public UserDTO getUser(String id) {
+        // Get service instance
+        List<ServiceInstance> instances = 
+            discoveryClient.getInstances("user-service");
+            
+        if (instances.isEmpty()) {
+            throw new ServiceNotFoundException(
+                "user-service not available");
+        }
+        
+        // Load balance
+        ServiceInstance instance = 
+            loadBalance(instances);
+            
+        // Make request
+        return restTemplate.getForObject(
+            instance.getUri() + "/api/users/" + id,
+            UserDTO.class
+        );
+    }
+    
+    private ServiceInstance loadBalance(
+            List<ServiceInstance> instances) {
+        // Simple round-robin
+        int index = requestCounter.incrementAndGet() 
+            % instances.size();
+        return instances.get(index);
+    }
+}
+\end{lstlisting}
+\end{example2}

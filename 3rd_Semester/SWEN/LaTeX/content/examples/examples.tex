@@ -1,0 +1,281 @@
+\section{Examples}
+
+\subsection{Software Engineering}
+
+\begin{example2}{Typische Prüfungsaufgabe: Prozessmodelle vergleichen}\\
+Vergleichen Sie das Wasserfallmodell mit einem iterativ-inkrementellen Ansatz anhand folgender Kriterien:
+\begin{itemize}
+    \item Umgang mit sich ändernden Anforderungen
+    \item Risikomanagement
+    \item Planbarkeit
+    \item Kundeneinbindung
+\end{itemize}
+
+Musterlösung:
+\begin{itemize}
+    \item Wasserfall:
+    \begin{itemize}
+        \item Änderungen schwierig zu integrieren
+        \item Risiken erst spät erkennbar
+        \item Gut planbar durch feste Phasen
+        \item Kunde hauptsächlich am Anfang und Ende involviert
+    \end{itemize}
+    \item Iterativ-inkrementell:
+    \begin{itemize}
+        \item Flexibel bei Änderungen
+        \item Frühes Erkennen von Risiken
+        \item Planung pro Iteration
+        \item Kontinuierliches Kundenfeedback
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Modellierungsumfang bestimmen}\\
+Folgende Fragen zur Bestimmung des notwendigen Modellierungsumfangs:
+\begin{itemize}
+    \item Wie komplex ist die Problemstellung?
+    \item Wie viele Stakeholder sind involviert?
+    \item Wie kritisch ist das System?
+    \item Analogie: Planung einer Hundehütte vs. Haus vs. Wolkenkratzer
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Prüfungsfrage zur Modellierung}\\
+Erklären Sie anhand eines selbst gewählten Beispiels, warum der Modellierungsaufwand je nach Projekt stark variieren kann. Nennen Sie mindestens drei Faktoren, die den Modellierungsumfang beeinflussen.
+\vspace{3mm}\\
+Mögliche Antwort:
+\begin{itemize}
+    \item Beispiel: Entwicklung einer Smartphone-App vs. Medizinisches Gerät
+    \item Faktoren:
+    \begin{itemize}
+        \item Komplexität der Domäne
+        \item Regulatorische Anforderungen
+        \item Anzahl beteiligter Stakeholder
+        \item Sicherheitsanforderungen
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\subsection{Architekturmuster}
+
+\begin{KR}{Event-Bus Pattern}\\
+\textbf{Implementierung eines Event-Bus Systems:}
+
+\textbf{1. Event-Bus}
+
+\begin{itemize}
+    \item Publisher-Subscriber Mechanismus implementieren
+    \item Event-Routing einrichten
+    \item Event-Persistenz berücksichtigen
+    \item Ordering und Filtering ermöglichen
+\end{itemize}
+
+\textbf{2. Publisher}
+
+\begin{itemize}
+    \item Event-Typen definieren
+    \item Event-Publikation implementieren
+    \item Transaktionshandling berücksichtigen
+    \item Fehlerbehandlung vorsehen
+\end{itemize}
+
+\textbf{3. Subscriber}
+
+\begin{itemize}
+    \item Event-Handler implementieren
+    \item Idempotenz sicherstellen
+    \item Fehlertoleranz einbauen
+    \item Dead-Letter-Queue vorsehen
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Event-Bus Implementation}
+    %Keine Umlaute in lstlisting blocks!! e.g. replace ä with ae
+\begin{lstlisting}[language=Java, style=basesmol]
+// Event Bus
+public class EventBus {
+    private Map<Class<?>, List<EventSubscriber>> subscribers = new HashMap<>();
+    
+    public void publish(Event event) {
+        List<EventSubscriber> eventSubscribers = subscribers
+            .getOrDefault(event.getClass(), Collections.emptyList());
+            
+        for (EventSubscriber subscriber : eventSubscribers) {
+            try {
+                subscriber.onEvent(event);
+            } catch (Exception e) {
+                handleSubscriberError(subscriber, event, e);
+            }
+        }
+    }
+    public void subscribe(Class<?> eventType, EventSubscriber subscriber) {
+        subscribers.computeIfAbsent(eventType, k -> new ArrayList<>())
+                  .add(subscriber);
+    }
+}
+// Publisher
+public class OrderService {
+    private EventBus eventBus;
+    
+    public void createOrder(OrderRequest request) {
+        Order order = orderRepository.save(
+            new Order(request));
+            
+        eventBus.publish(new OrderCreatedEvent(
+            order.getId(),
+            order.getCustomerId(),
+            order.getTotalAmount(),
+            LocalDateTime.now()
+        ));
+    }
+}
+// Subscriber
+@Component
+public class NotificationService implements EventSubscriber {
+    private ProcessedEventRepository processedEvents;
+    
+    @Override
+    public void onEvent(Event event) {
+        if (!(event instanceof OrderCreatedEvent)) return;
+        
+        String eventId = event.getId();
+        if (processedEvents.exists(eventId)) return;
+        
+        try {
+            sendNotification((OrderCreatedEvent) event);
+            processedEvents.save(eventId);
+        } catch (Exception e) {
+            sendToDeadLetterQueue(event, e);
+        }
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\subsection{Framework Design}
+
+\begin{KR}{Framework Design Principles}
+
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{1. Abstraktionsebenen definieren}
+\begin{itemize}
+    \item \textbf{Core API:}
+    \begin{itemize}
+        \item Zentrale Interfaces
+        \item Hauptfunktionalität
+        \item Erweiterungspunkte
+    \end{itemize}
+    
+    \item \textbf{Extensions:}
+    \begin{itemize}
+        \item Plugin-Mechanismen
+        \item Callback-Interfaces
+        \item Event-Systeme
+    \end{itemize}
+    
+    \item \textbf{Implementierung:}
+    \begin{itemize}
+        \item Standard-Implementierungen
+        \item Utility-Klassen
+        \item Helper-Funktionen
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{2. Erweiterungsmechanismen}
+\begin{itemize}
+    \item \textbf{Interface-basiert:}
+    \begin{itemize}
+        \item Klare Verträge
+        \item Lose Kopplung
+        \item Einfache Erweiterung
+    \end{itemize}
+    
+    \item \textbf{Annotations:}
+    \begin{itemize}
+        \item Deklarative Konfiguration
+        \item Metadaten-getrieben
+        \item Runtime-Processing
+    \end{itemize}
+    
+    \item \textbf{Composition:}
+    \begin{itemize}
+        \item Plugin-System
+        \item Service-Loader
+        \item Dependency Injection
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\end{KR}
+
+\begin{KR}{Analyse von Framework-Anforderungen}
+
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{1. Fachliche Analyse}
+\begin{itemize}
+    \item \textbf{Core Features:}
+    \begin{itemize}
+        \item Zentrale Funktionalität
+        \item Gemeinsame Abstraktionen
+        \item Standardverhalten
+    \end{itemize}
+    \item \textbf{Variationspunkte:}
+    \begin{itemize}
+        \item Kundenspezifische\\ Anpassungen
+        \item Optionale Features
+        \item Erweiterungsmöglichkeiten
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{2. Technische Analyse}
+\begin{itemize}
+    \item \textbf{Architektur-Entscheidungen:}
+    \begin{itemize}
+        \item Erweiterungsmechanismen
+        \item Integration in\\ bestehende Systeme
+        \item Schnittstellen-Design
+    \end{itemize}
+    \item \textbf{Qualitätsanforderungen:}
+    \begin{itemize}
+        \item Performance
+        \item Wartbarkeit
+        \item Testbarkeit
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\end{KR}
+
+
+\begin{example2}{Prüfungsaufgabe: Framework-Analyse}\\
+\textbf{Szenario:}
+Ein Framework für die Verarbeitung verschiedener Dokumentformate (PDF, DOC, TXT) 
+soll entwickelt werden.
+
+\textbf{Aufgabe:}
+Analysieren Sie die Design-Entscheidungen.
+
+\textbf{Lösung:}
+\begin{itemize}
+    \item \textbf{Erweiterungspunkte:}
+    \begin{itemize}
+        \item Dokumenttyp-Erkennung
+        \item Parser für Formate
+        \item Konvertierungslogik
+    \end{itemize}
+    
+    \item \textbf{Design Patterns:}
+    \begin{itemize}
+        \item Factory für Parser-Erzeugung
+        \item Strategy für Verarbeitungsalgorithmen
+        \item Template Method für Konvertierung
+    \end{itemize}
+    
+    \item \textbf{Schnittstellen:}
+    \begin{itemize}
+        \item DocumentParser Interface
+        \item ConversionStrategy Interface
+        \item DocumentMetadata Klasse
+    \end{itemize}
+\end{itemize}
+\end{example2}

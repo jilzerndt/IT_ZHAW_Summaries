@@ -1,0 +1,345 @@
+\section{Kochrezepte und Übungen}
+
+\subsection{Implementation, Refactoring and Testing}
+
+\begin{KR}{Test-Driven Development (TDD)}\\
+\textbf{Schritte:}
+\begin{enumerate}
+    \item \textbf{Red:} Test schreiben der fehlschlägt
+    \begin{itemize}
+        \item Testfall definieren
+        \item Erwartetes Verhalten spezifizieren
+        \item Test implementieren
+    \end{itemize}
+    
+    \item \textbf{Green:} Minimale Implementation
+    \begin{itemize}
+        \item Nur das Nötigste implementieren
+        \item Test soll grün werden
+        \item Keine Optimierungen
+    \end{itemize}
+    
+    \item \textbf{Refactor:} Code verbessern
+    \begin{itemize}
+        \item Code aufräumen
+        \item Duplizierung entfernen
+        \item Tests müssen grün bleiben
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{KR}{Typische Refactoring Patterns}\\
+\textbf{Methoden:}
+\begin{itemize}
+    \item \textbf{Extract Method:}
+    \begin{itemize}
+        \item Code in neue Methode auslagern
+        \item Gemeinsame Funktionalität zusammenfassen
+        \item Lesbarkeit verbessern
+    \end{itemize}
+    
+    \item \textbf{Move Method:}
+    \begin{itemize}
+        \item Methode in andere Klasse verschieben
+        \item Näher an verwendeten Daten
+        \item Kohäsion verbessern
+    \end{itemize}
+    
+    \item \textbf{Replace Conditional with Polymorphism:}
+    \begin{itemize}
+        \item Switch/if durch Vererbung ersetzen
+        \item Flexibilität erhöhen
+        \item Wartbarkeit verbessern
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Typische Prüfungsaufgabe: Code Refactoring}\\
+\textbf{Aufgabe:} Refactoren Sie den folgenden Code unter Anwendung geeigneter Patterns
+
+\textbf{Vorher:}
+\begin{lstlisting}[language=Java, style=base]
+public class Order {
+    private List<OrderItem> items;
+    private double totalAmount;
+    private String status;
+    
+    public void calculateTotal() {
+        totalAmount = 0;
+        for(OrderItem item : items) {
+            totalAmount += item.getPrice() * item.getQuantity();
+            // Komplexe Rabattberechnung
+            if(item.getQuantity() > 10) {
+                totalAmount *= 0.9;  // 10% Rabatt
+            }
+            if(totalAmount > 1000) {
+                totalAmount *= 0.95; // 5% Rabatt
+            }
+        }
+    }
+    
+    public void processOrder() {
+        calculateTotal();
+        // Komplexe Statusberechnung
+        if(totalAmount < 100) {
+            status = "SMALL_ORDER";
+        } else if(totalAmount < 1000) {
+            status = "MEDIUM_ORDER";
+        } else {
+            status = "LARGE_ORDER";
+        }
+        // Weitere 20 Zeilen Status-Logik...
+    }
+}
+\end{lstlisting}
+
+\textbf{Nachher:}
+\begin{lstlisting}[language=Java, style=base]
+public class Order {
+    private List<OrderItem> items;
+    private OrderStatus status;
+    private DiscountStrategy discountStrategy;
+    
+    public Money calculateTotal() {
+        Money total = items.stream()
+            .map(OrderItem::getSubtotal)
+            .reduce(Money.ZERO, Money::add);
+            
+        return discountStrategy.applyDiscount(total);
+    }
+    
+    public void processOrder() {
+        Money total = calculateTotal();
+        status = OrderStatus.forAmount(total);
+        status.process(this);
+    }
+}
+
+public interface DiscountStrategy {
+    Money applyDiscount(Money amount);
+}
+
+public class QuantityBasedDiscount implements DiscountStrategy {
+    public Money applyDiscount(Money amount) {
+        if(quantity > 10) {
+            return amount.multiply(0.9);
+        }
+        return amount;
+    }
+}
+
+public enum OrderStatus {
+    SMALL_ORDER(amount -> amount.isLessThan(Money.of(100))),
+    MEDIUM_ORDER(amount -> amount.isLessThan(Money.of(1000))),
+    LARGE_ORDER(amount -> true);
+    
+    private final Predicate<Money> matcher;
+    
+    public static OrderStatus forAmount(Money amount) {
+        return Stream.of(values())
+            .filter(s -> s.matcher.test(amount))
+            .findFirst()
+            .orElseThrow();
+    }
+    
+    public void process(Order order) {
+        // Status-spezifische Verarbeitung
+    }
+}
+\end{lstlisting}
+
+\textbf{Angewendete Refactorings:}
+\begin{itemize}
+    \item Extract Method für Berechnungslogik
+    \item Strategy Pattern für Rabattberechnung
+    \item State Pattern für Orderstatus
+    \item Replace Conditional with Polymorphism
+    \item Value Objects für Geldbeträge
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Unit Testing Best Practices}\\
+\textbf{1. Test-Struktur (AAA):}
+\begin{itemize}
+    \item \textbf{Arrange:} Testdaten vorbereiten
+    \item \textbf{Act:} Testobjekt ausführen
+    \item \textbf{Assert:} Ergebnis prüfen
+\end{itemize}
+
+\textbf{2. Namenskonventionen:}
+\begin{itemize}
+    \item methodName_testCase_expectedResult
+    \item should_doSomething_when_condition
+    \item given_when_then Format
+\end{itemize}
+
+\textbf{3. Coverage:}
+\begin{itemize}
+    \item Happy Path testen
+    \item Edge Cases abdecken
+    \item Fehlerfälle prüfen
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Typische Prüfungsaufgabe: Unit Tests}\\
+\textbf{Aufgabe:} Schreiben Sie Unit Tests für eine Warenkorb-Komponente
+
+\begin{lstlisting}[language=Java, style=base]
+public class ShoppingCartTest {
+    private ShoppingCart cart;
+    private Product testProduct;
+    
+    @BeforeEach
+    void setUp() {
+        cart = new ShoppingCart();
+        testProduct = new Product("Test", Money.of(10));
+    }
+    
+    @Test
+    void shouldCalculateTotal_whenEmpty() {
+        assertEquals(Money.ZERO, cart.getTotal());
+    }
+    
+    @Test
+    void shouldCalculateTotal_withOneItem() {
+        cart.addItem(testProduct, 1);
+        assertEquals(Money.of(10), cart.getTotal());
+    }
+    
+    @Test 
+    void shouldApplyQuantityDiscount_whenOver10Items() {
+        cart.addItem(testProduct, 11);
+        Money expected = Money.of(10 * 11 * 0.9);
+        assertEquals(expected, cart.getTotal());
+    }
+    
+    @Test
+    void shouldThrowException_whenNegativeQuantity() {
+        assertThrows(IllegalArgumentException.class, 
+            () -> cart.addItem(testProduct, -1));
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Code Review}\\
+\textbf{Review Checklist:}
+\begin{enumerate}
+    \item \textbf{Funktionalität:}
+    \begin{itemize}
+        \item Anforderungen erfüllt?
+        \item Edge Cases behandelt?
+        \item Fehlerbehandlung korrekt?
+    \end{itemize}
+    
+    \item \textbf{Code Qualität:}
+    \begin{itemize}
+        \item Clean Code Prinzipien
+        \item SOLID Prinzipien
+        \item Naming Conventions
+    \end{itemize}
+    
+    \item \textbf{Tests:}
+    \begin{itemize}
+        \item Testabdeckung ausreichend?
+        \item Tests aussagekräftig?
+        \item Testfälle vollständig?
+    \end{itemize}
+    
+    \item \textbf{Best Practices:}
+    \begin{itemize}
+        \item Design Patterns korrekt?
+        \item Logging vorhanden?
+        \item Dokumentation aktuell?
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Code Review Szenario}\\
+\textbf{Aufgabe:} Führen Sie ein Code Review für folgende Implementierung durch:
+
+\begin{lstlisting}[language=Java, style=base]
+// Original Code
+public class DataManager {
+    private static DataManager instance;
+    private Connection conn;
+    
+    private DataManager() {
+        try {
+            conn = DriverManager.getConnection("db_url");
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static DataManager getInstance() {
+        if(instance == null) {
+            instance = new DataManager();
+        }
+        return instance;
+    }
+    
+    public void saveData(String data) {
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.execute("INSERT INTO data VALUES('" + data + "')");
+        } catch(Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{Review Feedback:}
+\begin{itemize}
+    \item \textbf{Probleme:}
+    \begin{itemize}
+        \item Singleton nicht thread-safe
+        \item SQL Injection Gefahr
+        \item Schlechte Exception-Behandlung
+        \item Keine Ressourcen-Freigabe
+        \item Keine Konfigurierbarkeit
+    \end{itemize}
+    
+    \item \textbf{Verbesserungsvorschläge:}
+    \begin{itemize}
+        \item Dependency Injection statt Singleton
+        \item Prepared Statements verwenden
+        \item Proper Exception Handling
+        \item Try-with-resources für Statements
+        \item Konfiguration externalisieren
+    \end{itemize}
+\end{itemize}
+
+\textbf{Verbesserte Version:}
+\begin{lstlisting}[language=Java, style=base]
+@Component
+public class DataManager implements AutoCloseable {
+    private final DataSource dataSource;
+    private final Logger logger = LoggerFactory.getLogger(DataManager.class);
+    
+    public DataManager(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+    
+    public void saveData(String data) {
+        String sql = "INSERT INTO data VALUES(?)";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, data);
+            stmt.execute();
+            
+        } catch (SQLException e) {
+            logger.error("Failed to save data", e);
+            throw new DataAccessException("Could not save data", e);
+        }
+    }
+    
+    @Override
+    public void close() {
+        // Cleanup code
+    }
+}
+\end{lstlisting}
+\end{example2}

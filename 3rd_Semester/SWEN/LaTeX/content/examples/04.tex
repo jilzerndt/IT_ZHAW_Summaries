@@ -1,0 +1,399 @@
+\section{KR und Beispiele für Use Case Realization}
+
+\begin{KR}{Use Case Realization durchführen}\\
+\textbf{1. Vorbereitung}
+\begin{itemize}
+    \item \textbf{Use Case analysieren:}
+    \begin{itemize}
+        \item Standardablauf identifizieren
+        \item Wichtige Erweiterungen identifizieren
+        \item Systemoperationen aus SSD extrahieren
+    \end{itemize}
+    
+    \item \textbf{Domänenmodell prüfen:}
+    \begin{itemize}
+        \item Benötigte Klassen identifizieren
+        \item Beziehungen validieren
+        \item Fehlende Konzepte ergänzen
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Design}
+\begin{itemize}
+    \item \textbf{Controller bestimmen:}
+    \begin{itemize}
+        \item Use Case oder Fassaden Controller
+        \item Verantwortlichkeiten definieren
+        \item Schnittstellen festlegen
+    \end{itemize}
+    
+    \item \textbf{Interaktionen modellieren:}
+    \begin{itemize}
+        \item Sequenzdiagramm erstellen
+        \item GRASP Prinzipien anwenden
+        \item Patterns einsetzen
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Implementation}
+\begin{itemize}
+    \item \textbf{Code strukturieren:}
+    \begin{itemize}
+        \item Package-Struktur
+        \item Schichtenarchitektur
+        \item Abhängigkeiten
+    \end{itemize}
+    
+    \item \textbf{Tests erstellen:}
+    \begin{itemize}
+        \item Unit Tests
+        \item Integrationstests
+        \item Use Case Tests
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Use Case Realization: Forum}\\
+\textbf{Use Case:} Neue Diskussion erstellen
+
+\textbf{Systemoperationen:}
+\begin{itemize}
+    \item addNewDiscussion(title, content)
+    \item getNumberOfContributions()
+\end{itemize}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Controller
+public class ForumController {
+    private ForumService forumService;
+    private AccessValidator accessValidator;
+    
+    public Discussion addNewDiscussion(
+            String topicId, 
+            DiscussionRequest request) {
+        // Validate access
+        accessValidator.validateUserAccess(
+            request.getUserId());
+            
+        // Create discussion
+        return forumService.createDiscussion(
+            topicId, 
+            request.getTitle(),
+            request.getContent()
+        );
+    }
+}
+
+// Domain Model
+public class Discussion {
+    private String title;
+    private String content;
+    private User author;
+    private List<Comment> comments;
+    private LocalDateTime createdAt;
+    
+    public void addComment(Comment comment) {
+        validateComment(comment);
+        comments.add(comment);
+    }
+    
+    public int getContributionCount() {
+        return 1 + comments.size(); // Discussion + Comments
+    }
+}
+
+// Service Layer
+public class ForumService {
+    private DiscussionRepository repository;
+    private TopicRepository topicRepository;
+    
+    @Transactional
+    public Discussion createDiscussion(
+            String topicId,
+            String title,
+            String content) {
+        // Find topic
+        Topic topic = topicRepository
+            .findById(topicId)
+            .orElseThrow(TopicNotFoundException::new);
+            
+        // Create discussion
+        Discussion discussion = new Discussion(
+            title, content);
+            
+        // Add to topic
+        topic.addDiscussion(discussion);
+        
+        // Save
+        return repository.save(discussion);
+    }
+}
+
+// Unit Test
+public class ForumControllerTest {
+    @Mock
+    private ForumService forumService;
+    
+    @Mock
+    private AccessValidator accessValidator;
+    
+    @InjectMocks
+    private ForumController controller;
+    
+    @Test
+    public void shouldCreateNewDiscussion() {
+        // Given
+        DiscussionRequest request = new DiscussionRequest(
+            "userId", "title", "content");
+        
+        // When
+        controller.addNewDiscussion("topicId", request);
+        
+        // Then
+        verify(accessValidator)
+            .validateUserAccess("userId");
+        verify(forumService)
+            .createDiscussion(
+                "topicId", "title", "content");
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{GRASP Prinzipien anwenden}\\
+\textbf{1. Information Expert}
+\begin{itemize}
+    \item \textbf{Identifikation:}
+    \begin{itemize}
+        \item Welche Klasse hat die Information?
+        \item Wo liegen die relevanten Daten?
+        \item Wer kennt die Berechnungsgrundlagen?
+    \end{itemize}
+    
+    \item \textbf{Anwendung:}
+    \begin{itemize}
+        \item Methoden dort platzieren wo die Daten sind
+        \item Berechnungen in Expertenklasse
+        \item Delegieren wenn nötig
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Low Coupling}
+\begin{itemize}
+    \item \textbf{Analyse:}
+    \begin{itemize}
+        \item Abhängigkeiten identifizieren
+        \item Kritische Kopplungen erkennen
+        \item Alternatives Design prüfen
+    \end{itemize}
+    
+    \item \textbf{Maßnahmen:}
+    \begin{itemize}
+        \item Interfaces einführen
+        \item Dependency Injection
+        \item Vermittler einsetzen
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. High Cohesion}
+\begin{itemize}
+    \item \textbf{Prüfung:}
+    \begin{itemize}
+        \item Zusammengehörigkeit der Methoden
+        \item Fokus der Klasse
+        \item Aufgabenteilung
+    \end{itemize}
+    
+    \item \textbf{Verbesserung:}
+    \begin{itemize}
+        \item Klassen aufteilen
+        \item Verantwortlichkeiten gruppieren
+        \item Hilfsklassen einführen
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{GRASP Anwendung: Online Shop}\\
+\textbf{Use Case:} Bestellung aufgeben
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Information Expert: Order berechnet eigenen Gesamtbetrag
+public class Order {
+    private List<OrderLine> lines;
+    private Customer customer;
+    
+    public Money calculateTotal() {
+        return lines.stream()
+            .map(OrderLine::getSubtotal)
+            .reduce(Money.ZERO, Money::add);
+    }
+}
+
+// Low Coupling: Interface statt konkreter Implementierung
+public interface PaymentGateway {
+    PaymentResult processPayment(Money amount);
+}
+
+public class OrderService {
+    private final PaymentGateway paymentGateway;
+    
+    public OrderResult createOrder(OrderRequest request) {
+        Order order = createOrderFromRequest(request);
+        
+        PaymentResult payment = 
+            paymentGateway.processPayment(
+                order.calculateTotal());
+                
+        if (payment.isSuccessful()) {
+            return OrderResult.success(order);
+        } else {
+            return OrderResult.failed(payment.getReason());
+        }
+    }
+}
+
+// High Cohesion: Spezialisierte Services
+public class OrderValidator {
+    public void validate(Order order) {
+        validateCustomer(order.getCustomer());
+        validateOrderLines(order.getLines());
+        validateDeliveryAddress(
+            order.getDeliveryAddress());
+    }
+}
+
+public class InventoryService {
+    public void reserveStock(Order order) {
+        for (OrderLine line : order.getLines()) {
+            reserveItem(
+                line.getProduct(), 
+                line.getQuantity());
+        }
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Interaction Diagrams erstellen}\\
+\textbf{1. Sequenzdiagramm}
+\begin{itemize}
+    \item \textbf{Elemente:}
+    \begin{itemize}
+        \item Lebenslinien für Objekte
+        \item Nachrichten (synchron/asynchron)
+        \item Aktivierungsbalken
+        \item Alternative Abläufe
+    \end{itemize}
+    
+    \item \textbf{Best Practices:}
+    \begin{itemize}
+        \item Von links nach rechts lesen
+        \item Wichtige Objekte links
+        \item Klare Beschriftungen
+        \item Rückgabewerte zeigen
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Kommunikationsdiagramm}
+\begin{itemize}
+    \item \textbf{Elemente:}
+    \begin{itemize}
+        \item Objekte als Rechtecke
+        \item Nummerierte Nachrichten
+        \item Assoziationen als Linien
+    \end{itemize}
+    
+    \item \textbf{Best Practices:}
+    \begin{itemize}
+        \item Übersichtliche Anordnung
+        \item Klare Nummerierung
+        \item Wichtige Beziehungen hervorheben
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Interaction Diagrams: Bestellprozess}\\
+\textbf{Use Case:} Bestellung aufgeben
+
+\textbf{Sequenzdiagramm Code:}
+\begin{lstlisting}[language=Java, style=basesmol]
+@RestController
+public class OrderController {
+    private OrderService orderService;
+    private PaymentService paymentService;
+    
+    public OrderResponse createOrder(
+            OrderRequest request) {
+        // 1: Validiere Bestellung
+        OrderValidator.validate(request);
+        
+        // 2: Erstelle Order
+        Order order = orderService.createOrder(request);
+        
+        // 3: Prozessiere Zahlung
+        PaymentResult payment = 
+            paymentService.processPayment(
+                order.getId(), 
+                order.getTotal());
+        
+        // 4: Bestätige Order
+        if (payment.isSuccessful()) {
+            order.confirm();
+            orderService.save(order);
+            return OrderResponse.success(order);
+        } else {
+            return OrderResponse.failed(
+                payment.getReason());
+        }
+    }
+}
+
+public class OrderService {
+    @Transactional
+    public Order createOrder(OrderRequest request) {
+        // 2.1: Create order entity
+        Order order = new Order(
+            request.getCustomerId());
+            
+        // 2.2: Add items
+        for (OrderItemRequest item : request.getItems()) {
+            Product product = productRepository
+                .findById(item.getProductId())
+                .orElseThrow(ProductNotFoundException::new);
+                
+            order.addItem(
+                product, 
+                item.getQuantity());
+        }
+        
+        // 2.3: Save order
+        return orderRepository.save(order);
+    }
+}
+\end{lstlisting}
+
+\textbf{Sequenzdiagramm Analyse:}
+\begin{itemize}
+    \item \textbf{Objekte:}
+    \begin{itemize}
+        \item OrderController als Fassade
+        \item OrderService für Geschäftslogik
+        \item PaymentService für Zahlungen
+        \item Order als Domain Object
+    \end{itemize}
+    
+    \item \textbf{Verantwortlichkeiten:}
+    \begin{itemize}
+        \item Controller: Koordination
+        \item Service: Transaktionslogik
+        \item Domain: Business Rules
+    \end{itemize}
+    
+    \item \textbf{GRASP Patterns:}
+    \begin{itemize}
+        \item Controller Pattern
+        \item Information Expert
+        \item Creator Pattern
+    \end{itemize}
+\end{itemize}
+\end{example2}

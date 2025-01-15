@@ -1,0 +1,156 @@
+\subsection{Common Pitfalls und Best Practices}
+
+\begin{concept}{Common Pitfalls in JPA Implementation}
+\textbf{N+1 Problem:}
+\begin{itemize}
+    \item \textbf{Symptom:} Für jedes Objekt wird eine zusätzliche Query ausgeführt
+    \item \textbf{Lösung:} Join Fetch oder Eager Loading strategisch einsetzen
+\end{itemize}
+
+\textbf{LazyInitializationException:}
+\begin{itemize}
+    \item \textbf{Symptom:} Zugriff auf lazy geladene Referenz außerhalb der Session
+    \item \textbf{Lösung:} Transaktionen korrekt abgrenzen
+\end{itemize}
+
+\textbf{Bidirektionale Beziehungen:}
+\begin{itemize}
+    \item \textbf{Symptom:} Inkonsistente Objektzustände
+    \item \textbf{Lösung:} Helper-Methoden für Beziehungspflege
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Best Practices für Persistenz}
+\textbf{1. Architektur-Ebene}
+\begin{itemize}
+    \item Repository für Datenzugriff
+    \item Service für Geschäftslogik
+    \item DTO für Datentransfer
+\end{itemize}
+
+\textbf{2. Entity Design}
+\begin{itemize}
+    \item Immutable wenn möglich
+    \item Bean Validation nutzen
+    \item Geschäftsregeln in Entity-Klassen
+\end{itemize}
+
+\textbf{3. Performance}
+\begin{itemize}
+    \item Caching Strategien
+    \item Batch Processing
+    \item Query Optimierung
+\end{itemize}
+\end{KR}
+
+\subsection{Parent-Child Beziehungen}
+
+\begin{concept}{Parent-Child Mapping}
+\textbf{Implementationsaspekte:}
+\begin{itemize}
+    \item Cascade-Typen definieren
+    \item Bidirektionale Navigation
+    \item Lazy Loading konfigurieren
+    \item Orphan Removal festlegen
+\end{itemize}
+
+\textbf{JPA Annotationen:}
+\begin{itemize}
+    \item @OneToMany / @ManyToOne
+    \item @JoinColumn
+    \item mappedBy Parameter
+    \item fetch = FetchType.LAZY/EAGER
+\end{itemize}
+\end{concept}
+
+\subsection{Repository Pattern}
+
+\begin{concept}{Spring Data Repository}
+\textbf{Vorteile:}
+\begin{itemize}
+    \item Standardisierte CRUD-Operationen
+    \item Query-Methoden aus Methodennamen
+    \item Paginierung und Sortierung
+    \item Einfache Integration mit Spring
+\end{itemize}
+
+\textbf{Repository Hierarchie:}
+\begin{itemize}
+    \item Repository (Marker Interface)
+    \item CrudRepository (Basis CRUD)
+    \item PagingAndSortingRepository
+    \item JpaRepository (JPA-spezifisch)
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Repository Design}
+\textbf{1. Interface Definition}
+\begin{itemize}
+    \item Domänenspezifische Methoden
+    \item Query-Methoden
+    \item Custom Implementations
+\end{itemize}
+
+\textbf{2. Query Methoden}
+\begin{itemize}
+    \item Methodennamen-Konventionen
+    \item @Query Annotation
+    \item Native Queries
+\end{itemize}
+
+\textbf{3. Transaktionshandling}
+\begin{itemize}
+    \item @Transactional Annotation
+    \item Isolation Level
+    \item Propagation Rules
+\end{itemize}
+\end{KR}
+
+\subsection{Performance Optimierung}
+
+\begin{KR}{Optimierungsstrategien}
+\textbf{1. Fetch-Strategien}
+\begin{itemize}
+    \item Lazy Loading als Default
+    \item Joins für häufig benötigte Daten
+    \item EntityGraphs für komplexe Szenarien
+\end{itemize}
+
+\textbf{2. Caching}
+\begin{itemize}
+    \item First-Level Cache (Session)
+    \item Second-Level Cache
+    \item Query Cache
+\end{itemize}
+
+\textbf{3. Batch-Verarbeitung}
+\begin{itemize}
+    \item Batch Inserts/Updates
+    \item JDBC Batch Size
+    \item Pagination für große Datensätze
+\end{itemize}
+\end{KR}
+
+%todo: Add examples for:
+% - Handling parent-child relationships
+% - Repository implementation with Spring Data
+% - Performance optimization scenarios
+% - Common pitfall solutions
+
+\begin{concept}{Transaktionsmanagement}
+\textbf{ACID-Eigenschaften:}
+\begin{itemize}
+    \item Atomicity (Atomarität)
+    \item Consistency (Konsistenz)
+    \item Isolation (Isolation)
+    \item Durability (Dauerhaftigkeit)
+\end{itemize}
+
+\textbf{Isolation Levels:}
+\begin{itemize}
+    \item READ_UNCOMMITTED
+    \item READ_COMMITTED
+    \item REPEATABLE_READ
+    \item SERIALIZABLE
+\end{itemize}
+\end{concept}

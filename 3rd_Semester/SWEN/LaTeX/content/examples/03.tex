@@ -1,0 +1,1067 @@
+\section{KR und Beispiele für Softwarearchitektur und Design}
+
+\begin{KR}{Architekturanalyse durchführen}\\
+\textbf{1. Requirements analysieren}
+\begin{itemize}
+    \item \textbf{Funktionale Anforderungen:}
+    \begin{itemize}
+        \item Use Cases gruppieren
+        \item Systemgrenzen definieren
+        \item Schnittstellen identifizieren
+    \end{itemize}
+    
+    \item \textbf{Nicht-funktionale Anforderungen:}
+    \begin{itemize}
+        \item FURPS+ Kategorien prüfen
+        \item ISO 25010 Qualitätsmerkmale
+        \item Priorisierung vornehmen
+    \end{itemize}
+    
+    \item \textbf{Randbedingungen:}
+    \begin{itemize}
+        \item Technische Constraints
+        \item Organisatorische Vorgaben
+        \item Budget und Zeitrahmen
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Architekturentscheidungen:}
+\begin{itemize}
+    \item \textbf{Variationspunkte analysieren:}
+    \begin{itemize}
+        \item Veränderliche Komponenten
+        \item Austauschbare Teile
+        \item Erweiterungsmöglichkeiten
+    \end{itemize}
+    
+    \item \textbf{Entscheidungen dokumentieren:}
+    \begin{itemize}
+        \item Problem beschreiben
+        \item Alternativen evaluieren
+        \item Entscheidung begründen
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Architekturanalyse: Hotelsystem}\\
+\textbf{Aus Muster-SEP:} Analysieren Sie die Anforderungen zur Ansteuerung des automatischen Zimmerverschlusssystems (ZVS).
+
+\textbf{Analyse:}
+\begin{itemize}
+    \item \textbf{System-Schnittstelle:}
+    \begin{itemize}
+        \item ZVS arbeitet autonom
+        \item Benötigt nur Karten-ID und Zimmer-Zuordnung
+        \item Hauslieferant für ZVS festgelegt
+    \end{itemize}
+    
+    \item \textbf{Architektur-Entscheidung:}
+    \begin{itemize}
+        \item \textbf{Kein Variationspunkt nötig da:}
+        \begin{itemize}
+            \item Gleicher Lieferant für alle Hotels
+            \item Schnittstelle stabil
+            \item Keine Änderungen geplant
+        \end{itemize}
+        
+        \item \textbf{Trotzdem Adaption empfohlen:}
+        \begin{itemize}
+            \item Technische Änderungen möglich
+            \item Adapter-Pattern einfach umsetzbar
+            \item Zukünftige Flexibilität
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Layered Architecture Design}\\
+\textbf{1. Schichten definieren}
+\begin{itemize}
+    \item \textbf{Presentation Layer:}
+    \begin{itemize}
+        \item UI-Komponenten
+        \item Controller
+        \item View Models
+    \end{itemize}
+    
+    \item \textbf{Application Layer:}
+    \begin{itemize}
+        \item Services
+        \item Use Case Implementation
+        \item Koordination
+    \end{itemize}
+    
+    \item \textbf{Domain Layer:}
+    \begin{itemize}
+        \item Business Objects
+        \item Domain Logic
+        \item Domain Services
+    \end{itemize}
+    
+    \item \textbf{Infrastructure Layer:}
+    \begin{itemize}
+        \item Persistence
+        \item External Services
+        \item Technical Services
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Regeln definieren:}
+\begin{itemize}
+    \item Abhängigkeiten nur nach unten
+    \item Schichten über Interfaces verbinden
+    \item Domänenlogik isolieren
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Schichtenarchitektur: SafeHome}\\
+\textbf{Aus Muster-SEP:} Entwerfen Sie die Architektur für ein Sicherheitssystem.
+
+\textbf{Schichtenmodell:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Presentation Layer
+public class SecurityController {
+    private SecurityService securityService;
+    
+    public void arm(String code) {
+        securityService.armSystem(code);
+    }
+}
+
+// Application Layer
+public class SecurityService {
+    private AlarmSystem alarmSystem;
+    private CodeValidator validator;
+    
+    public void armSystem(String code) {
+        if (validator.isValid(code)) {
+            alarmSystem.arm();
+        }
+    }
+}
+
+// Domain Layer
+public class AlarmSystem {
+    private List<Sensor> sensors;
+    private AlarmState state;
+    
+    public void arm() {
+        validateSystemState();
+        state = state.arm();
+        activateSensors();
+    }
+}
+
+// Infrastructure Layer
+public class SensorRepository {
+    public List<Sensor> getActiveSensors() {
+        // DB access
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Architekturdokumentation erstellen}\\
+\textbf{1. Überblick}
+\begin{itemize}
+    \item \textbf{Systemkontext:}
+    \begin{itemize}
+        \item Externe Systeme
+        \item Akteure/Benutzer
+        \item Schnittstellen
+    \end{itemize}
+    
+    \item \textbf{Architekturziele:}
+    \begin{itemize}
+        \item Qualitätsattribute
+        \item Randbedingungen
+        \item Designprinzipien
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Entscheidungen}
+\begin{itemize}
+    \item \textbf{Architekturentscheidungen:}
+    \begin{itemize}
+        \item Problem/Kontext
+        \item Alternativen
+        \item Begründung
+    \end{itemize}
+    
+    \item \textbf{Muster/Konzepte:}
+    \begin{itemize}
+        \item Verwendete Patterns
+        \item Architekturstile
+        \item Prinzipien
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Architekturdokumentation: SafeHome}\\
+\textbf{Aus Muster-SEP:} Dokumentieren Sie die Architekturentscheidungen für das Sicherheitssystem.
+
+\textbf{1. Systemkontext}
+\begin{itemize}
+    \item \textbf{Externe Systeme:}
+    \begin{itemize}
+        \item Sensoren (Bewegung, Feuer, Wasser)
+        \item Aktoren (Alarm, Licht)
+        \item Mobile Clients
+    \end{itemize}
+    
+    \item \textbf{Schnittstellen:}
+    \begin{itemize}
+        \item REST API für Remote-Zugriff
+        \item Hardware-Protokolle für Sensoren
+        \item Event-Bus für Benachrichtigungen
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Architekturmuster}
+\begin{itemize}
+    \item \textbf{State Pattern:}
+    \begin{itemize}
+        \item Für Systemzustände (Armed, Disarmed)
+        \item Zustandsübergänge kontrollieren
+        \item Zustandsspezifisches Verhalten
+    \end{itemize}
+    
+    \item \textbf{Observer Pattern:}
+    \begin{itemize}
+        \item Für Sensor-Events
+        \item Benachrichtigung bei Alarmen
+        \item Lose Kopplung
+    \end{itemize}
+\end{itemize}
+
+\textbf{Code-Beispiel:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// State Pattern Implementation
+public interface SystemState {
+    void arm();
+    void disarm(String code);
+    void handleSensorTriggered(Sensor sensor);
+}
+
+public class ArmedState implements SystemState {
+    private AlarmSystem system;
+    
+    @Override
+    public void handleSensorTriggered(Sensor sensor) {
+        if (sensor.requiresImmediateResponse()) {
+            system.triggerAlarm();
+        } else {
+            system.startEntryTimer();
+        }
+    }
+}
+
+// Observer Pattern Implementation
+public interface SensorListener {
+    void onSensorTriggered(SensorEvent event);
+}
+
+public class AlarmSystem implements SensorListener {
+    @Override
+    public void onSensorTriggered(SensorEvent event) {
+        currentState.handleSensorTriggered(
+            event.getSensor());
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Qualitätsanforderungen prüfen}\\
+\textbf{1. ISO 25010 Kategorien}
+\begin{itemize}
+    \item \textbf{Performance:}
+    \begin{itemize}
+        \item Response Times
+        \item Throughput
+        \item Resource Usage
+    \end{itemize}
+    
+    \item \textbf{Reliability:}
+    \begin{itemize}
+        \item Fault Tolerance
+        \item Recovery
+        \item Availability
+    \end{itemize}
+    
+    \item \textbf{Security:}
+    \begin{itemize}
+        \item Authentication
+        \item Authorization
+        \item Data Protection
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Szenario-basierte Bewertung}
+\begin{itemize}
+    \item \textbf{Szenario definieren:}
+    \begin{itemize}
+        \item Auslöser/Stimulus
+        \item Umgebung/Kontext
+        \item Erwartete Reaktion
+    \end{itemize}
+    
+    \item \textbf{Architektur prüfen:}
+    \begin{itemize}
+        \item Mechanismen identifizieren
+        \item Risiken bewerten
+        \item Maßnahmen definieren
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Qualitätsszenarien: SafeHome}\\
+\textbf{Performance-Szenario:}
+\begin{itemize}
+    \item \textbf{Stimulus:} Sensor meldet Einbruch
+    \item \textbf{Umgebung:} System im Armed-Zustand
+    \item \textbf{Response:} Alarm innerhalb 500ms
+    \item \textbf{Messung:} Reaktionszeit < 500ms in 99.9%
+\end{itemize}
+
+\textbf{Verfügbarkeits-Szenario:}
+\begin{itemize}
+    \item \textbf{Stimulus:} Hardware-Komponente fällt aus
+    \item \textbf{Umgebung:} Normalbetrieb
+    \item \textbf{Response:} System bleibt funktionsfähig
+    \item \textbf{Messung:} 99.99% Verfügbarkeit
+\end{itemize}
+
+\textbf{Architekturmaßnahmen:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Performance Optimization
+@Component
+public class SensorEventProcessor {
+    private BlockingQueue<SensorEvent> eventQueue;
+    private ThreadPoolExecutor executor;
+    
+    @Async
+    public void processSensorEvent(SensorEvent event) {
+        eventQueue.offer(event);
+        executor.execute(() -> processEvent(event));
+    }
+}
+
+// High Availability
+public class RedundantAlarmSystem {
+    private List<AlarmDevice> alarmDevices;
+    
+    public void triggerAlarm() {
+        for (AlarmDevice device : alarmDevices) {
+            try {
+                device.activate();
+                return; // Success
+            } catch (DeviceFailureException e) {
+                // Try next device
+                continue;
+            }
+        }
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\section{KR und Beispiele für Architekturmuster}
+
+\begin{KR}{Architekturmuster auswählen}\\
+\textbf{1. Pattern-Analyse}
+\begin{itemize}
+    \item \textbf{Problemkontext:}
+    \begin{itemize}
+        \item Art der Anwendung
+        \item Verteilungsanforderungen
+        \item Qualitätsattribute
+    \end{itemize}
+    
+    \item \textbf{Pattern-Katalog durchsuchen:}
+    \begin{itemize}
+        \item Layered Architecture
+        \item Client-Server
+        \item Pipe-Filter
+        \item Event-Bus
+        \item Master-Slave
+    \end{itemize}
+    
+    \item \textbf{Trade-offs evaluieren:}
+    \begin{itemize}
+        \item Vorteile/Nachteile
+        \item Komplexität vs. Flexibilität
+        \item Implementierungsaufwand
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Implementierung planen}
+\begin{itemize}
+    \item \textbf{Struktur:}
+    \begin{itemize}
+        \item Komponenten definieren
+        \item Schnittstellen festlegen
+        \item Interaktionen beschreiben
+    \end{itemize}
+    
+    \item \textbf{Qualitätssicherung:}
+    \begin{itemize}
+        \item Testbarkeit berücksichtigen
+        \item Performance-Aspekte
+        \item Wartbarkeit sicherstellen
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Event-Bus Pattern: SafeHome}\\
+\textbf{Aufgabe:} Implementieren Sie das Event-Bus Pattern für die Sensor-Kommunikation im SafeHome System.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Event Klasse
+public class SensorEvent {
+    private String sensorId;
+    private SensorType type;
+    private LocalDateTime timestamp;
+    private Map<String, Object> data;
+    
+    // Constructor und Getter
+}
+
+// Event Bus
+public class SecurityEventBus {
+    private Map<Class<?>, List<EventHandler>> handlers = 
+        new HashMap<>();
+    
+    public void publish(SensorEvent event) {
+        List<EventHandler> eventHandlers = 
+            handlers.getOrDefault(
+                event.getClass(), 
+                Collections.emptyList()
+            );
+        
+        for (EventHandler handler : eventHandlers) {
+            try {
+                handler.handle(event);
+            } catch (Exception e) {
+                handleError(handler, event, e);
+            }
+        }
+    }
+    
+    public void subscribe(Class<?> eventType, 
+                         EventHandler handler) {
+        handlers.computeIfAbsent(
+            eventType, 
+            k -> new ArrayList<>()
+        ).add(handler);
+    }
+}
+
+// Event Handler Implementation
+@Component
+public class MotionSensorHandler 
+    implements EventHandler<MotionEvent> {
+    
+    private AlarmSystem alarmSystem;
+    
+    @Override
+    public void handle(MotionEvent event) {
+        if (alarmSystem.isArmed()) {
+            evaluateMotion(event);
+        }
+    }
+    
+    private void evaluateMotion(MotionEvent event) {
+        if (event.getIntensity() > THRESHOLD) {
+            alarmSystem.startEntryTimer();
+        }
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Client-Server Pattern implementieren}\\
+\textbf{1. Komponenten definieren}
+\begin{itemize}
+    \item \textbf{Server:}
+    \begin{itemize}
+        \item Service-Interfaces
+        \item Request-Handling
+        \item Resource-Management
+    \end{itemize}
+    
+    \item \textbf{Client:}
+    \begin{itemize}
+        \item Service-Proxies
+        \item Error-Handling
+        \item UI/Interaktion
+    \end{itemize}
+    
+    \item \textbf{Protokoll:}
+    \begin{itemize}
+        \item Nachrichten-Format
+        \item Statushandling
+        \item Security
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Implementierungsaspekte}
+\begin{itemize}
+    \item \textbf{Kommunikation:}
+    \begin{itemize}
+        \item Synchron/Asynchron
+        \item Serialisierung
+        \item Fehlerbehandlung
+    \end{itemize}
+    
+    \item \textbf{Skalierung:}
+    \begin{itemize}
+        \item Load Balancing
+        \item Caching
+        \item Connection Pooling
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Client-Server: SafeHome Mobile App}\\
+\textbf{Aufgabe:} Implementieren Sie die Client-Server Architektur für die mobile SafeHome App.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Server-Side Controller
+@RestController
+@RequestMapping("/api/v1/security")
+public class SecurityController {
+    private SecurityService securityService;
+    
+    @PostMapping("/arm")
+    public ResponseEntity<SystemStatus> armSystem(
+            @RequestBody ArmRequest request) {
+        try {
+            SystemStatus status = 
+                securityService.armSystem(
+                    request.getCode());
+            return ResponseEntity.ok(status);
+        } catch (InvalidCodeException e) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .build();
+        }
+    }
+    
+    @GetMapping("/status")
+    public ResponseEntity<SystemStatus> getStatus() {
+        return ResponseEntity.ok(
+            securityService.getCurrentStatus());
+    }
+}
+
+// Client-Side Service
+public class SecurityClient {
+    private final WebClient webClient;
+    private final String baseUrl;
+    
+    public Mono<SystemStatus> armSystem(String code) {
+        return webClient.post()
+            .uri(baseUrl + "/arm")
+            .body(new ArmRequest(code))
+            .retrieve()
+            .bodyToMono(SystemStatus.class)
+            .timeout(Duration.ofSeconds(5))
+            .retry(3)
+            .onErrorResume(this::handleError);
+    }
+    
+    private Mono<SystemStatus> handleError(Throwable error) {
+        if (error instanceof TimeoutException) {
+            return Mono.error(
+                new ConnectionException("Timeout"));
+        }
+        return Mono.error(error);
+    }
+}
+
+// Mobile App Component
+public class SecurityViewModel {
+    private SecurityClient securityClient;
+    private MutableLiveData<SystemStatus> status = 
+        new MutableLiveData<>();
+    
+    public void armSystem(String code) {
+        securityClient.armSystem(code)
+            .subscribe(
+                status::setValue,
+                this::handleError
+            );
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Master-Slave Pattern implementieren}\\
+\textbf{1. Komponenten}
+\begin{itemize}
+    \item \textbf{Master:}
+    \begin{itemize}
+        \item Aufgabenverteilung
+        \item Ergebnissammlung
+        \item Fehlerhandling
+    \end{itemize}
+    
+    \item \textbf{Slaves:}
+    \begin{itemize}
+        \item Aufgabenausführung
+        \item Statusmeldungen
+        \item Autonome Arbeit
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Koordination}
+\begin{itemize}
+    \item \textbf{Verteilung:}
+    \begin{itemize}
+        \item Load Balancing
+        \item Resource Management
+        \item Failover
+    \end{itemize}
+    
+    \item \textbf{Monitoring:}
+    \begin{itemize}
+        \item Health Checks
+        \item Performance Metrics
+        \item Error Tracking
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Master-Slave: Sensor Processing}\\
+\textbf{Aufgabe:} Implementieren Sie eine Master-Slave Architektur für die Verarbeitung von Sensordaten.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Master Component
+public class SensorMaster {
+    private List<SensorSlave> slaves;
+    private Map<String, SensorData> results = 
+        new ConcurrentHashMap<>();
+    
+    public void processSensorData(List<SensorInput> inputs) {
+        // Distribute work
+        Map<SensorSlave, List<SensorInput>> distribution = 
+            distributeWork(inputs);
+            
+        // Start processing
+        List<Future<SensorData>> futures = 
+            submitTasks(distribution);
+            
+        // Collect results
+        collectResults(futures);
+    }
+    
+    private Map<SensorSlave, List<SensorInput>> 
+            distributeWork(List<SensorInput> inputs) {
+        Map<SensorSlave, List<SensorInput>> distribution = 
+            new HashMap<>();
+            
+        int slaveIndex = 0;
+        for (SensorInput input : inputs) {
+            SensorSlave slave = slaves.get(
+                slaveIndex % slaves.size());
+            distribution.computeIfAbsent(
+                slave, 
+                k -> new ArrayList<>()
+            ).add(input);
+            slaveIndex++;
+        }
+        
+        return distribution;
+    }
+}
+
+// Slave Component
+public class SensorSlave {
+    private String slaveId;
+    private SensorProcessor processor;
+    
+    public SensorData process(SensorInput input) {
+        try {
+            return processor.process(input);
+        } catch (Exception e) {
+            handleError(e);
+            return SensorData.error(input, e);
+        }
+    }
+    
+    public HealthStatus checkHealth() {
+        return new HealthStatus(
+            slaveId,
+            processor.getStatus(),
+            getResourceMetrics()
+        );
+    }
+}
+
+// Coordinator
+public class SensorCoordinator {
+    private SensorMaster master;
+    private HealthMonitor monitor;
+    
+    @Scheduled(fixedRate = 5000)
+    public void checkSlaveHealth() {
+        List<HealthStatus> statuses = 
+            master.getSlaveStatuses();
+        monitor.updateHealth(statuses);
+        
+        // Handle unhealthy slaves
+        List<String> unhealthySlaves = 
+            findUnhealthySlaves(statuses);
+        if (!unhealthySlaves.isEmpty()) {
+            reconfigureMaster(unhealthySlaves);
+        }
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\section{KR und Beispiele für Architektur-Evaluation}
+
+\begin{KR}{Architektur-Evaluation durchführen}\\
+\textbf{1. Evaluationskriterien definieren}
+\begin{itemize}
+    \item \textbf{Qualitätsattribute:}
+    \begin{itemize}
+        \item Erfüllung der ISO 25010 Kriterien
+        \item Priorisierte Qualitätsziele
+        \item Messbare Metriken
+    \end{itemize}
+    
+    \item \textbf{Business-Ziele:}
+    \begin{itemize}
+        \item Time-to-Market
+        \item Entwicklungskosten
+        \item Wartungsaufwand
+    \end{itemize}
+    
+    \item \textbf{Technische Ziele:}
+    \begin{itemize}
+        \item Skalierbarkeit
+        \item Integrationsfähigkeit
+        \item Technologie-Stack
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Evaluation durchführen}
+\begin{itemize}
+    \item \textbf{Szenarien prüfen:}
+    \begin{itemize}
+        \item Use Case Realisierung
+        \item Qualitätsszenarien
+        \item Änderungsszenarien
+    \end{itemize}
+    
+    \item \textbf{Risiken analysieren:}
+    \begin{itemize}
+        \item Technische Risiken
+        \item Abhängigkeiten
+        \item Komplexität
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\section{KR und Beispiele für Architektur-Evaluation}
+
+\begin{KR}{Architektur-Evaluation durchführen}\\
+\textbf{1. Evaluationskriterien definieren}
+\begin{itemize}
+    \item \textbf{Qualitätsattribute:}
+    \begin{itemize}
+        \item Erfüllung der ISO 25010 Kriterien
+        \item Priorisierte Qualitätsziele
+        \item Messbare Metriken
+    \end{itemize}
+    
+    \item \textbf{Business-Ziele:}
+    \begin{itemize}
+        \item Time-to-Market
+        \item Entwicklungskosten
+        \item Wartungsaufwand
+    \end{itemize}
+    
+    \item \textbf{Technische Ziele:}
+    \begin{itemize}
+        \item Skalierbarkeit
+        \item Integrationsfähigkeit
+        \item Technologie-Stack
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Evaluation durchführen}
+\begin{itemize}
+    \item \textbf{Szenarien prüfen:}
+    \begin{itemize}
+        \item Use Case Realisierung
+        \item Qualitätsszenarien
+        \item Änderungsszenarien
+    \end{itemize}
+    
+    \item \textbf{Risiken analysieren:}
+    \begin{itemize}
+        \item Technische Risiken
+        \item Abhängigkeiten
+        \item Komplexität
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Architektur-Evaluation: SafeHome}\\
+\textbf{Aufgabe:} Evaluieren Sie die Architektur des SafeHome Systems bezüglich Zuverlässigkeit und Skalierbarkeit.
+
+\textbf{1. Qualitätsszenarien}
+\begin{itemize}
+    \item \textbf{Zuverlässigkeit:}
+    \begin{itemize}
+        \item \textbf{Szenario:} Sensorausfall
+        \item \textbf{Stimulus:} Sensor antwortet nicht
+        \item \textbf{Response:} System bleibt funktionsfähig
+        \item \textbf{Metrik:} 99.99% Verfügbarkeit
+    \end{itemize}
+    
+    \item \textbf{Skalierbarkeit:}
+    \begin{itemize}
+        \item \textbf{Szenario:} Erhöhte Sensoranzahl
+        \item \textbf{Stimulus:} 100 neue Sensoren
+        \item \textbf{Response:} Performance stabil
+        \item \textbf{Metrik:} < 500ms Reaktionszeit
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Architektur-Review}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Reliability Pattern Implementation
+public class SensorManager {
+    private Map<String, Sensor> sensors;
+    private CircuitBreaker circuitBreaker;
+    
+    @Retry(maxAttempts = 3)
+    public SensorStatus checkSensor(String sensorId) {
+        return circuitBreaker.execute(() -> 
+            sensors.get(sensorId)
+                .getStatus());
+    }
+    
+    public void handleSensorFailure(String sensorId) {
+        // Deactivate failed sensor
+        sensors.get(sensorId).deactivate();
+        
+        // Notify system
+        notifySystemStatus(
+            String.format(
+                "Sensor %s failed, system operating in degraded mode",
+                sensorId
+            )
+        );
+        
+        // Adjust monitoring
+        updateMonitoringStrategy();
+    }
+}
+
+// Scalability Pattern Implementation
+public class SensorEventProcessor {
+    private Queue<SensorEvent> eventQueue;
+    private ThreadPoolExecutor executor;
+    
+    public SensorEventProcessor(int maxThreads) {
+        this.eventQueue = new LinkedBlockingQueue<>();
+        this.executor = new ThreadPoolExecutor(
+            2, maxThreads,
+            60L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>()
+        );
+    }
+    
+    public void processEvent(SensorEvent event) {
+        executor.submit(() -> {
+            try {
+                handleEvent(event);
+            } catch (Exception e) {
+                handleProcessingError(event, e);
+            }
+        });
+    }
+    
+    private void handleEvent(SensorEvent event) {
+        // Process event based on type
+        switch (event.getType()) {
+            case MOTION:
+                processMotionEvent((MotionEvent) event);
+                break;
+            case FIRE:
+                processFireEvent((FireEvent) event);
+                break;
+            // ... other event types
+        }
+    }
+}
+
+\end{lstlisting}
+
+\textbf{3. Evaluation Ergebnisse}
+\begin{itemize}
+    \item \textbf{Zuverlässigkeit:}
+    \begin{itemize}
+        \item + Circuit Breaker verhindert Kaskadeneffekte
+        \item + Retry-Mechanismus für Stabilität
+        \item + Degraded Mode für Teilausfälle
+        \item - Komplexe Fehlerbehandlung nötig
+    \end{itemize}
+    
+    \item \textbf{Skalierbarkeit:}
+    \begin{itemize}
+        \item + Asynchrone Event-Verarbeitung
+        \item + Dynamischer Thread-Pool
+        \item + Event-Queue als Buffer
+        \item - Monitoring Overhead bei vielen Sensoren
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Variationspunkte analysieren}\\
+\textbf{1. Identifikation}
+\begin{itemize}
+    \item \textbf{Technische Variation:}
+    \begin{itemize}
+        \item Datenbankanbindung
+        \item UI-Framework
+        \item Protokolle
+    \end{itemize}
+    
+    \item \textbf{Fachliche Variation:}
+    \begin{itemize}
+        \item Geschäftsregeln
+        \item Workflows
+        \item Berechnungen
+    \end{itemize}
+    
+    \item \textbf{Konfiguration:}
+    \begin{itemize}
+        \item Parameter
+        \item Grenzwerte
+        \item Features
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Design}
+\begin{itemize}
+    \item \textbf{Pattern-Auswahl:}
+    \begin{itemize}
+        \item Strategy Pattern
+        \item Factory Pattern
+        \item Plugin-System
+    \end{itemize}
+    
+    \item \textbf{Interface-Design:}
+    \begin{itemize}
+        \item Abstraktion
+        \item Stabilität
+        \item Erweiterbarkeit
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Variationspunkte: SafeHome}\\
+\textbf{Aufgabe:} Identifizieren und implementieren Sie Variationspunkte im SafeHome System.
+
+\textbf{1. Analyse}
+\begin{itemize}
+    \item \textbf{Sensor-Protokolle:}
+    \begin{itemize}
+        \item Verschiedene Hersteller
+        \item Unterschiedliche Kommunikationsprotokolle
+        \item Erweiterbarkeit für neue Sensoren
+    \end{itemize}
+    
+    \item \textbf{Alarmierung:}
+    \begin{itemize}
+        \item Multiple Benachrichtigungskanäle
+        \item Konfigurierbare Eskalation
+        \item Kundenspezifische Regeln
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Implementation}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Sensor Protocol Variation
+public interface SensorProtocol {
+    void initialize();
+    SensorData readData();
+    void sendCommand(Command cmd);
+}
+
+public class ZigBeeSensor implements SensorProtocol {
+    @Override
+    public void initialize() {
+        // ZigBee specific initialization
+    }
+    
+    @Override
+    public SensorData readData() {
+        // Read from ZigBee sensor
+        return new SensorData(/* ... */);
+    }
+}
+
+// Notification Variation
+public interface NotificationChannel {
+    void sendAlert(AlertLevel level, String message);
+    boolean isAvailable();
+    Priority getPriority();
+}
+
+public class NotificationService {
+    private List<NotificationChannel> channels;
+    private NotificationConfig config;
+    
+    public void notify(Alert alert) {
+        // Sort channels by priority
+        List<NotificationChannel> availableChannels = 
+            channels.stream()
+                .filter(NotificationChannel::isAvailable)
+                .sorted(comparing(
+                    NotificationChannel::getPriority))
+                .collect(toList());
+                
+        // Try channels until successful
+        for (NotificationChannel channel : availableChannels) {
+            try {
+                channel.sendAlert(
+                    alert.getLevel(), 
+                    alert.getMessage()
+                );
+                return;
+            } catch (NotificationException e) {
+                // Try next channel
+                continue;
+            }
+        }
+        
+        // No channel available
+        handleNotificationFailure(alert);
+    }
+}
+\end{lstlisting}
+
+\textbf{3. Bewertung}
+\begin{itemize}
+    \item \textbf{Vorteile:}
+    \begin{itemize}
+        \item Neue Sensor-Protokolle einfach integrierbar
+        \item Flexible Alarmierungskonfiguration
+        \item Ausfallsicherheit durch Multiple Channels
+    \end{itemize}
+    
+    \item \textbf{Nachteile:}
+    \begin{itemize}
+        \item Erhöhte Komplexität
+        \item Testing Overhead
+        \item Configuration Management
+    \end{itemize}
+\end{itemize}
+\end{example2}

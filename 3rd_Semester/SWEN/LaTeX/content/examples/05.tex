@@ -1,0 +1,1897 @@
+\section{KR und Beispiele für Design Patterns}
+
+\begin{KR}{Design Pattern Auswahl}\\
+\textbf{1. Problemanalyse}
+\begin{itemize}
+    \item \textbf{Kontext verstehen:}
+    \begin{itemize}
+        \item Art des Problems
+        \item Flexibilitätsanforderungen
+        \item Qualitätsattribute
+    \end{itemize}
+    
+    \item \textbf{Pattern Kategorien:}
+    \begin{itemize}
+        \item Creational Patterns für Objekterzeugung
+        \item Structural Patterns für Beziehungen
+        \item Behavioral Patterns für Verhalten
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Pattern auswählen}
+\begin{itemize}
+    \item \textbf{Kriterien:}
+    \begin{itemize}
+        \item Passend zum Problem
+        \item Angemessene Komplexität
+        \item Kombination mit anderen Patterns
+    \end{itemize}
+    
+    \item \textbf{Trade-offs:}
+    \begin{itemize}
+        \item Flexibilität vs. Komplexität
+        \item Performance vs. Erweiterbarkeit
+        \item Einfachheit vs. Wiederverwendbarkeit
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Pattern-Analyse: Document Processing}\\
+\textbf{Aufgabe:} Ein System soll verschiedene Dokumenttypen (PDF, DOC, TXT) verarbeiten können.
+
+\textbf{Analyse:}
+\begin{itemize}
+    \item \textbf{Anforderungen:}
+    \begin{itemize}
+        \item Unterschiedliche Parser pro Format
+        \item Erweiterbar für neue Formate
+        \item Einheitliche Verarbeitungsschnittstelle
+    \end{itemize}
+    
+    \item \textbf{Patterns:}
+    \begin{itemize}
+        \item Factory Method für Parser-Erzeugung
+        \item Strategy für Verarbeitungsalgorithmen
+        \item Template Method für allgemeinen Prozess
+    \end{itemize}
+\end{itemize}
+
+\textbf{Implementation:}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Template Method Pattern
+public abstract class DocumentProcessor {
+    public final void processDocument(byte[] data) {
+        Document doc = parseDocument(data);
+        validateDocument(doc);
+        processContent(doc);
+        saveResults(doc);
+    }
+    
+    protected abstract Document parseDocument(byte[] data);
+    protected abstract void processContent(Document doc);
+    
+    // Hook methods mit Default-Implementation
+    protected void validateDocument(Document doc) {
+        if (doc.isEmpty()) {
+            throw new EmptyDocumentException();
+        }
+    }
+    
+    protected void saveResults(Document doc) {
+        // Default-Speicherung
+    }
+}
+
+// Factory Method Pattern
+public abstract class DocumentParserFactory {
+    public abstract DocumentParser 
+        createParser(String fileType);
+}
+
+public class PDFParserFactory 
+        extends DocumentParserFactory {
+    @Override
+    public DocumentParser createParser(String fileType) {
+        if ("pdf".equals(fileType)) {
+            return new PDFParser();
+        }
+        throw new UnsupportedFormatException(fileType);
+    }
+}
+
+// Strategy Pattern
+public interface ProcessingStrategy {
+    void process(Document doc);
+}
+
+public class TextExtractionStrategy 
+        implements ProcessingStrategy {
+    @Override
+    public void process(Document doc) {
+        // Text aus Dokument extrahieren
+    }
+}
+
+public class MetadataExtractionStrategy 
+        implements ProcessingStrategy {
+    @Override
+    public void process(Document doc) {
+        // Metadaten extrahieren
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Pattern Implementierung}\\
+\textbf{1. Strukturierung}
+\begin{itemize}
+    \item \textbf{Klassen definieren:}
+    \begin{itemize}
+        \item Pattern-Rollen identifizieren
+        \item Interfaces festlegen
+        \item Beziehungen modellieren
+    \end{itemize}
+    
+    \item \textbf{Flexibilität einbauen:}
+    \begin{itemize}
+        \item Erweiterungspunkte
+        \item Loose Coupling
+        \item Interface Segregation
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Best Practices}
+\begin{itemize}
+    \item \textbf{Prinzipien beachten:}
+    \begin{itemize}
+        \item SOLID Principles
+        \item GRASP Patterns
+        \item Clean Code
+    \end{itemize}
+    
+    \item \textbf{Testbarkeit:}
+    \begin{itemize}
+        \item Unit Tests pro Pattern
+        \item Integrationstests
+        \item Edge Cases
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Pattern Implementation: Event System}\\
+\textbf{Aufgabe:} Implementieren Sie ein Event-System mit Observer und Command Pattern.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Observer Pattern
+public interface EventListener<T extends Event> {
+    void onEvent(T event);
+}
+
+public class EventBus {
+    private Map<Class<?>, List<EventListener>> 
+        listeners = new HashMap<>();
+    
+    public <T extends Event> void register(
+            Class<T> eventType, 
+            EventListener<T> listener) {
+        listeners.computeIfAbsent(
+            eventType, 
+            k -> new ArrayList<>()
+        ).add(listener);
+    }
+    
+    public void publish(Event event) {
+        List<EventListener> eventListeners = 
+            listeners.getOrDefault(
+                event.getClass(), 
+                Collections.emptyList()
+            );
+            
+        for (EventListener listener : eventListeners) {
+            try {
+                listener.onEvent(event);
+            } catch (Exception e) {
+                handleError(listener, event, e);
+            }
+        }
+    }
+}
+
+// Command Pattern
+public interface Command {
+    void execute();
+    void undo();
+}
+
+public class CreateOrderCommand implements Command {
+    private OrderService orderService;
+    private OrderRequest request;
+    private Order createdOrder;
+    
+    @Override
+    public void execute() {
+        createdOrder = orderService.createOrder(request);
+    }
+    
+    @Override
+    public void undo() {
+        if (createdOrder != null) {
+            orderService.cancelOrder(createdOrder.getId());
+        }
+    }
+}
+
+public class CommandProcessor {
+    private Deque<Command> executedCommands = 
+        new ArrayDeque<>();
+    
+    public void execute(Command command) {
+        command.execute();
+        executedCommands.push(command);
+    }
+    
+    public void undo() {
+        if (!executedCommands.isEmpty()) {
+            Command command = executedCommands.pop();
+            command.undo();
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{Testen:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class EventBusTest {
+    private EventBus eventBus;
+    private TestEventListener listener;
+    
+    @BeforeEach
+    void setUp() {
+        eventBus = new EventBus();
+        listener = new TestEventListener();
+    }
+    
+    @Test
+    void shouldDeliverEventToRegisteredListener() {
+        // Given
+        TestEvent event = new TestEvent("test");
+        eventBus.register(TestEvent.class, listener);
+        
+        // When
+        eventBus.publish(event);
+        
+        // Then
+        assertEquals(1, listener.getEventCount());
+        assertEquals(event, listener.getLastEvent());
+    }
+}
+
+public class CommandProcessorTest {
+    private CommandProcessor processor;
+    private OrderService orderService;
+    
+    @Test
+    void shouldExecuteAndUndoCommand() {
+        // Given
+        OrderRequest request = new OrderRequest();
+        Command command = new CreateOrderCommand(
+            orderService, request);
+            
+        // When
+        processor.execute(command);
+        processor.undo();
+        
+        // Then
+        verify(orderService).createOrder(request);
+        verify(orderService).cancelOrder(any());
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Pattern Kombinationen}\\
+\textbf{1. Analyse}
+\begin{itemize}
+    \item \textbf{Komplexe Anforderungen:}
+    \begin{itemize}
+        \item Mehrere Probleme identifizieren
+        \item Abhängigkeiten erkennen
+        \item Interaktionen planen
+    \end{itemize}
+    
+    \item \textbf{Pattern-Auswahl:}
+    \begin{itemize}
+        \item Komplementäre Patterns
+        \item Verschachtelungsmöglichkeiten
+        \item Integration planen
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Implementation}
+\begin{itemize}
+    \item \textbf{Struktur:}
+    \begin{itemize}
+        \item Klare Hierarchie
+        \item Definierte Schnittstellen
+        \item Saubere Integration
+    \end{itemize}
+    
+    \item \textbf{Qualität:}
+    \begin{itemize}
+        \item Testbarkeit sicherstellen
+        \item Komplexität kontrollieren
+        \item Dokumentation erstellen
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Pattern Kombination: Plugin System}\\
+\textbf{Aufgabe:} Implementieren Sie ein Plugin-System mit Factory, Strategy und Observer Pattern.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Plugin Interface (Strategy Pattern)
+public interface Plugin {
+    String getName();
+    void initialize();
+    void processData(Data data);
+}
+
+// Plugin Factory
+public abstract class PluginFactory {
+    public abstract Plugin createPlugin(
+        String pluginType);
+        
+    protected void validatePlugin(Plugin plugin) {
+        // Validation logic
+    }
+}
+
+// Plugin Manager (Observer Pattern)
+public class PluginManager {
+    private List<PluginObserver> observers = 
+        new ArrayList<>();
+    private Map<String, Plugin> activePlugins = 
+        new HashMap<>();
+        
+    public void registerPlugin(Plugin plugin) {
+        plugin.initialize();
+        activePlugins.put(plugin.getName(), plugin);
+        notifyObservers(
+            new PluginEvent(
+                PluginEventType.REGISTERED, 
+                plugin
+            )
+        );
+    }
+    
+    public void processData(Data data) {
+        for (Plugin plugin : activePlugins.values()) {
+            try {
+                plugin.processData(data);
+            } catch (Exception e) {
+                handlePluginError(plugin, e);
+            }
+        }
+    }
+    
+    private void notifyObservers(PluginEvent event) {
+        for (PluginObserver observer : observers) {
+            observer.onPluginEvent(event);
+        }
+    }
+}
+
+// Concrete Implementation
+public class ImageProcessingPlugin implements Plugin {
+    private ProcessingStrategy strategy;
+    
+    @Override
+    public void processData(Data data) {
+        if (data instanceof ImageData) {
+            strategy.process((ImageData) data);
+        }
+    }
+}
+
+// Usage
+public class Application {
+    public void initializePlugins() {
+        PluginManager manager = new PluginManager();
+        PluginFactory factory = new DefaultPluginFactory();
+        
+        // Load plugins
+        Plugin imagePlugin = 
+            factory.createPlugin("image-processing");
+        Plugin analyticsPlugin = 
+            factory.createPlugin("analytics");
+            
+        // Register plugins
+        manager.registerPlugin(imagePlugin);
+        manager.registerPlugin(analyticsPlugin);
+        
+        // Process data
+        Data data = loadData();
+        manager.processData(data);
+    }
+}
+\end{lstlisting}
+
+\textbf{Pattern Zusammenspiel:}
+\begin{itemize}
+    \item \textbf{Factory Pattern:}
+    \begin{itemize}
+        \item Erzeugt Plugin-Instanzen
+        \item Kapselt Erstellung
+        \item Validiert Plugins
+    \end{itemize}
+    
+    \item \textbf{Strategy Pattern:}
+    \begin{itemize}
+        \item Plugin-Interface
+        \item Austauschbare Verarbeitung
+        \item Erweiterbarkeit
+    \end{itemize}
+    
+    \item \textbf{Observer Pattern:}
+    \begin{itemize}
+        \item Plugin-Lifecycle Events
+        \item Losgelöste Beobachter
+        \item Flexible Reaktionen
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\section{Weitere KR und Beispiele für Design Patterns}
+
+\begin{KR}{Chain of Responsibility implementieren}\\
+\textbf{1. Handler Struktur}
+\begin{itemize}
+    \item \textbf{Handler Interface:}
+    \begin{itemize}
+        \item Einheitliche Methode
+        \item Nächster Handler
+        \item Behandlungslogik
+    \end{itemize}
+    
+    \item \textbf{Konkrete Handler:}
+    \begin{itemize}
+        \item Spezifische Logik
+        \item Weitergabekriterien
+        \item Fehlerbedingungen
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Kette aufbauen}
+\begin{itemize}
+    \item \textbf{Reihenfolge:}
+    \begin{itemize}
+        \item Prioritäten beachten
+        \item Abhängigkeiten prüfen
+        \item Standardhandler
+    \end{itemize}
+    
+    \item \textbf{Flexibilität:}
+    \begin{itemize}
+        \item Dynamische Kette
+        \item Konfigurierbar
+        \item Erweiterbar
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\section{Weitere KR und Beispiele für Design Patterns}
+
+\begin{KR}{Chain of Responsibility implementieren}\\
+\textbf{1. Handler Struktur}
+\begin{itemize}
+    \item \textbf{Handler Interface:}
+    \begin{itemize}
+        \item Einheitliche Methode
+        \item Nächster Handler
+        \item Behandlungslogik
+    \end{itemize}
+    
+    \item \textbf{Konkrete Handler:}
+    \begin{itemize}
+        \item Spezifische Logik
+        \item Weitergabekriterien
+        \item Fehlerbedingungen
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Kette aufbauen}
+\begin{itemize}
+    \item \textbf{Reihenfolge:}
+    \begin{itemize}
+        \item Prioritäten beachten
+        \item Abhängigkeiten prüfen
+        \item Standardhandler
+    \end{itemize}
+    
+    \item \textbf{Flexibilität:}
+    \begin{itemize}
+        \item Dynamische Kette
+        \item Konfigurierbar
+        \item Erweiterbar
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Chain of Responsibility: Authentication}\\
+\textbf{Aufgabe:} Implementieren Sie eine Authentifizierungskette mit verschiedenen Validierungen.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Handler Interface
+public interface AuthHandler {
+    void setNext(AuthHandler next);
+    void handle(AuthRequest request) 
+        throws AuthException;
+}
+
+// Abstract Base Handler
+public abstract class BaseAuthHandler 
+        implements AuthHandler {
+    protected AuthHandler nextHandler;
+    
+    @Override
+    public void setNext(AuthHandler next) {
+        this.nextHandler = next;
+    }
+    
+    protected void handleNext(AuthRequest request) 
+            throws AuthException {
+        if (nextHandler != null) {
+            nextHandler.handle(request);
+        }
+    }
+}
+
+// Concrete Handlers
+public class TokenValidationHandler 
+        extends BaseAuthHandler {
+    @Override
+    public void handle(AuthRequest request) 
+            throws AuthException {
+        String token = request.getToken();
+        if (token == null || token.isEmpty()) {
+            throw new AuthException("Missing token");
+        }
+        if (!isValidToken(token)) {
+            throw new AuthException("Invalid token");
+        }
+        handleNext(request);
+    }
+}
+
+public class RoleCheckHandler extends BaseAuthHandler {
+    private Set<String> requiredRoles;
+    
+    @Override
+    public void handle(AuthRequest request) 
+            throws AuthException {
+        Set<String> userRoles = getUserRoles(
+            request.getUserId());
+        if (!userRoles.containsAll(requiredRoles)) {
+            throw new AuthException(
+                "Insufficient privileges");
+        }
+        handleNext(request);
+    }
+}
+
+// Chain Builder
+public class AuthChainBuilder {
+    public AuthHandler buildChain() {
+        AuthHandler tokenHandler = 
+            new TokenValidationHandler();
+        AuthHandler roleHandler = 
+            new RoleCheckHandler(ADMIN_ROLES);
+        AuthHandler ipHandler = 
+            new IPValidationHandler();
+            
+        tokenHandler.setNext(roleHandler);
+        roleHandler.setNext(ipHandler);
+        
+        return tokenHandler;
+    }
+}
+
+// Usage
+public class SecurityService {
+    private AuthHandler authChain;
+    
+    public void authenticateRequest(AuthRequest request) {
+        try {
+            authChain.handle(request);
+            // Request authenticated
+            processRequest(request);
+        } catch (AuthException e) {
+            handleAuthFailure(e);
+        }
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{State Pattern implementieren}\\
+\textbf{1. Zustände modellieren}
+\begin{itemize}
+    \item \textbf{State Interface:}
+    \begin{itemize}
+        \item Gemeinsame Methoden
+        \item Zustandsübergänge
+        \item Kontextbezug
+    \end{itemize}
+    
+    \item \textbf{Konkrete Zustände:}
+    \begin{itemize}
+        \item Zustandsspezifisches Verhalten
+        \item Übergangsbedingungen
+        \item Validierungen
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Kontext implementieren}
+\begin{itemize}
+    \item \textbf{Zustandsverwaltung:}
+    \begin{itemize}
+        \item Aktueller Zustand
+        \item Zustandswechsel
+        \item Historie
+    \end{itemize}
+    
+    \item \textbf{Delegation:}
+    \begin{itemize}
+        \item Methodenweiterleitung
+        \item Zustandszugriff
+        \item Fehlerbehandlung
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{State Pattern: Document Workflow}\\
+\textbf{Aufgabe:} Implementieren Sie einen Dokumenten-Workflow mit verschiedenen Zuständen.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// State Interface
+public interface DocumentState {
+    void review(Document document);
+    void approve(Document document);
+    void reject(Document document);
+    void publish(Document document);
+}
+
+// Concrete States
+public class DraftState implements DocumentState {
+    @Override
+    public void review(Document document) {
+        // Validiere Review-Berechtigung
+        validateReviewPermission();
+        
+        // Prüfe Dokument-Vollständigkeit
+        if (!document.isComplete()) {
+            throw new IllegalStateException(
+                "Document incomplete");
+        }
+        
+        // Wechsel zu Review-Zustand
+        document.setState(new ReviewState());
+    }
+    
+    @Override
+    public void approve(Document document) {
+        throw new IllegalStateException(
+            "Draft cannot be approved");
+    }
+    
+    @Override
+    public void reject(Document document) {
+        throw new IllegalStateException(
+            "Draft cannot be rejected");
+    }
+    
+    @Override
+    public void publish(Document document) {
+        throw new IllegalStateException(
+            "Draft cannot be published");
+    }
+}
+
+public class ReviewState implements DocumentState {
+    @Override
+    public void approve(Document document) {
+        validateApprovalPermission();
+        document.setState(new ApprovedState());
+    }
+    
+    @Override
+    public void reject(Document document) {
+        document.addComment(
+            "Rejected in Review. Needs revision.");
+        document.setState(new DraftState());
+    }
+}
+
+// Context
+public class Document {
+    private DocumentState state;
+    private String content;
+    private List<String> comments;
+    private User author;
+    
+    public Document() {
+        this.state = new DraftState();
+        this.comments = new ArrayList<>();
+    }
+    
+    public void review() {
+        state.review(this);
+    }
+    
+    public void approve() {
+        state.approve(this);
+    }
+    
+    public void reject() {
+        state.reject(this);
+    }
+    
+    public void publish() {
+        state.publish(this);
+    }
+    
+    void setState(DocumentState state) {
+        this.state = state;
+        notifyStateChange();
+    }
+    
+    public boolean isComplete() {
+        return content != null && 
+               !content.isEmpty() && 
+               author != null;
+    }
+    
+    public void addComment(String comment) {
+        comments.add(comment);
+    }
+}
+
+// Usage
+public class DocumentService {
+    public void processDocument(Document doc) {
+        try {
+            doc.review();
+            // Automatische Prüfungen
+            if (automaticChecksPass(doc)) {
+                doc.approve();
+                doc.publish();
+            } else {
+                doc.reject();
+            }
+        } catch (IllegalStateException e) {
+            handleError(doc, e);
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{State Pattern Benefits:}
+\begin{itemize}
+    \item \textbf{Klare Zustandstrennung:}
+    \begin{itemize}
+        \item Jeder Zustand in eigener Klasse
+        \item Spezifisches Verhalten gekapselt
+        \item Einfach erweiterbar
+    \end{itemize}
+    
+    \item \textbf{Validierung:}
+    \begin{itemize}
+        \item Unmögliche Übergänge verhindert
+        \item Zustandsspezifische Prüfungen
+        \item Klare Fehlermeldungen
+    \end{itemize}
+    
+    \item \textbf{Wartbarkeit:}
+    \begin{itemize}
+        \item Neue Zustände einfach hinzufügbar
+        \item Zustandslogik zentralisiert
+        \item Gute Testbarkeit
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Pattern Testing}\\
+\textbf{1. Unit Tests}
+\begin{itemize}
+    \item \textbf{Einzelne Komponenten:}
+    \begin{itemize}
+        \item Pattern-Struktur testen
+        \item Verhaltensvalidierung
+        \item Edge Cases prüfen
+    \end{itemize}
+    
+    \item \textbf{Mocking:}
+    \begin{itemize}
+        \item Abhängigkeiten mocken
+        \item Interaktionen verifizieren
+        \item Zustände simulieren
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Integrationstests}
+\begin{itemize}
+    \item \textbf{Pattern-Kombination:}
+    \begin{itemize}
+        \item Zusammenspiel prüfen
+        \item End-to-End Szenarien
+        \item Fehlerszenarien
+    \end{itemize}
+    
+    \item \textbf{Systemverhalten:}
+    \begin{itemize}
+        \item Korrekte Integration
+        \item Performance-Impact
+        \item Ressourcenverbrauch
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Pattern Testing: Document Workflow}\\
+\textbf{Unit Tests für State Pattern:}
+
+\begin{lstlisting}[language=Java, style=basesmol]
+public class DocumentStateTest {
+    private Document document;
+    
+    @BeforeEach
+    void setUp() {
+        document = new Document();
+    }
+    
+    @Test
+    void draftShouldTransitionToReviewWhenComplete() {
+        // Given
+        document.setContent("Test content");
+        document.setAuthor(new User("author"));
+        
+        // When
+        document.review();
+        
+        // Then
+        assertInstanceOf(ReviewState.class, 
+            document.getState());
+    }
+    
+    @Test
+    void draftShouldNotAllowApproval() {
+        // Given
+        document = new Document(); // In Draft state
+        
+        // When/Then
+        assertThrows(IllegalStateException.class, 
+            () -> document.approve());
+    }
+    
+    @Test
+    void reviewStateShouldAllowApprovalOrRejection() {
+        // Given
+        document.setContent("Test content");
+        document.setAuthor(new User("author"));
+        document.review(); // Move to Review state
+        
+        // When/Then
+        assertDoesNotThrow(() -> document.approve());
+        
+        // Reset and test rejection
+        document.review();
+        assertDoesNotThrow(() -> document.reject());
+    }
+}
+
+// Integration Test
+public class DocumentWorkflowTest {
+    private DocumentService service;
+    private Document document;
+    
+    @Test
+    void shouldCompleteWorkflow() {
+        // Given
+        document = createValidDocument();
+        
+        // When
+        service.processDocument(document);
+        
+        // Then
+        assertInstanceOf(PublishedState.class, 
+            document.getState());
+        assertTrue(document.isPublished());
+        assertFalse(document.getComments().isEmpty());
+    }
+    
+    @Test
+    void shouldHandleInvalidDocument() {
+        // Given
+        document = new Document(); // Incomplete
+        
+        // When
+        service.processDocument(document);
+        
+        // Then
+        assertInstanceOf(DraftState.class, 
+            document.getState());
+        assertFalse(document.isPublished());
+        assertTrue(document.hasRejectionComments());
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\section{Weitere Pattern Beispiele}
+
+\begin{KR}{Observer Pattern implementieren}\\
+\textbf{1. Struktur aufbauen}
+\begin{itemize}
+    \item \textbf{Subject Interface:}
+    \begin{itemize}
+        \item Observer registrieren/entfernen
+        \item Benachrichtigungsmethode
+        \item Zustandsverwaltung
+    \end{itemize}
+    
+    \item \textbf{Observer Interface:}
+    \begin{itemize}
+        \item Update-Methode
+        \item Parameterdefinition
+        \item Fehlerbehandlung
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Implementation}
+\begin{itemize}
+    \item \textbf{Benachrichtigung:}
+    \begin{itemize}
+        \item Thread-Sicherheit
+        \item Reihenfolge beachten
+        \item Performance optimieren
+    \end{itemize}
+    
+    \item \textbf{Fehlerbehandlung:}
+    \begin{itemize}
+        \item Observer-Ausfall
+        \item Inkonsistenzen
+        \item Zyklische Updates
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Observer Pattern: Monitoring System}\\
+\textbf{Aufgabe:} Implementieren Sie ein Monitoring-System mit Observer Pattern.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Subject Interface
+public interface MonitoringSubject {
+    void addObserver(MonitoringObserver observer);
+    void removeObserver(MonitoringObserver observer);
+    void notifyObservers(SystemStatus status);
+}
+
+// Observer Interface
+public interface MonitoringObserver {
+    void update(SystemStatus status);
+}
+
+// Concrete Subject
+public class SystemMonitor implements MonitoringSubject {
+    private List<MonitoringObserver> observers = 
+        Collections.synchronizedList(new ArrayList<>());
+    private SystemStatus currentStatus;
+    
+    @Override
+    public void addObserver(MonitoringObserver observer) {
+        observers.add(observer);
+        // Send current status to new observer
+        if (currentStatus != null) {
+            observer.update(currentStatus);
+        }
+    }
+    
+    @Override
+    public void notifyObservers(SystemStatus status) {
+        this.currentStatus = status;
+        observers.forEach(observer -> {
+            try {
+                observer.update(status);
+            } catch (Exception e) {
+                handleObserverError(observer, e);
+            }
+        });
+    }
+    
+    public void checkSystem() {
+        SystemStatus status = calculateSystemStatus();
+        if (statusChanged(status)) {
+            notifyObservers(status);
+        }
+    }
+}
+
+// Concrete Observers
+public class AlertSystem implements MonitoringObserver {
+    @Override
+    public void update(SystemStatus status) {
+        if (status.isCritical()) {
+            sendAlerts(status);
+        }
+    }
+    
+    private void sendAlerts(SystemStatus status) {
+        // Send SMS, Email, etc.
+    }
+}
+
+public class DashboardUpdater implements MonitoringObserver {
+    private Dashboard dashboard;
+    
+    @Override
+    public void update(SystemStatus status) {
+        dashboard.updateMetrics(
+            status.getMetrics());
+    }
+}
+
+// Usage
+public class MonitoringService {
+    private SystemMonitor monitor;
+    
+    @Scheduled(fixedRate = 5000)
+    public void monitorSystem() {
+        monitor.checkSystem();
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Template Method implementieren}\\
+\textbf{1. Basisklasse definieren}
+\begin{itemize}
+    \item \textbf{Template Methode:}
+    \begin{itemize}
+        \item Algorithmus-Skelett
+        \item final deklarieren
+        \item Schrittabfolge
+    \end{itemize}
+    
+    \item \textbf{Abstrakte Schritte:}
+    \begin{itemize}
+        \item Muss-Implementierungen
+        \item Parameter/Rückgaben
+        \item Dokumentation
+    \end{itemize}
+    
+    \item \textbf{Hook Methoden:}
+    \begin{itemize}
+        \item Optionale Schritte
+        \item Default-Implementation
+        \item Erweiterungspunkte
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Template Method: Report Generation}\\
+\textbf{Aufgabe:} Implementieren Sie einen flexiblen Report-Generator mit Template Method.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Abstract Base Class
+public abstract class ReportGenerator {
+    
+    // Template Method
+    public final Report generateReport(ReportData data) {
+        validateData(data);
+        Report report = new Report();
+        
+        try {
+            // 1. Header
+            report.setHeader(createHeader(data));
+            
+            // 2. Content
+            List<ReportSection> sections = 
+                processData(data);
+            report.setSections(sections);
+            
+            // 3. Optional Customization
+            if (shouldCustomize()) {
+                customizeReport(report);
+            }
+            
+            // 4. Footer
+            report.setFooter(createFooter(data));
+            
+            // 5. Optional Validation
+            validateReport(report);
+            
+            return report;
+        } catch (Exception e) {
+            handleError(e);
+            throw new ReportGenerationException(e);
+        }
+    }
+    
+    // Abstract Methods (must implement)
+    protected abstract ReportHeader createHeader(
+        ReportData data);
+    protected abstract List<ReportSection> processData(
+        ReportData data);
+    protected abstract ReportFooter createFooter(
+        ReportData data);
+    
+    // Hook Methods (optional override)
+    protected boolean shouldCustomize() {
+        return false;
+    }
+    
+    protected void customizeReport(Report report) {
+        // Default empty implementation
+    }
+    
+    protected void validateReport(Report report) {
+        // Default validation
+        if (report.getSections().isEmpty()) {
+            throw new EmptyReportException();
+        }
+    }
+    
+    protected void validateData(ReportData data) {
+        if (data == null) {
+            throw new InvalidDataException("No data");
+        }
+    }
+}
+
+// Concrete Implementation
+public class SalesReport extends ReportGenerator {
+    private SalesDataAnalyzer analyzer;
+    
+    @Override
+    protected ReportHeader createHeader(ReportData data) {
+        SalesData salesData = (SalesData) data;
+        return new ReportHeader(
+            "Sales Report",
+            salesData.getPeriod(),
+            salesData.getDepartment()
+        );
+    }
+    
+    @Override
+    protected List<ReportSection> processData(
+            ReportData data) {
+        SalesData salesData = (SalesData) data;
+        
+        List<ReportSection> sections = new ArrayList<>();
+        
+        // Sales Summary
+        sections.add(
+            createSummarySection(
+                analyzer.analyzeSales(salesData)));
+                
+        // Top Products
+        sections.add(
+            createTopProductsSection(
+                analyzer.getTopProducts(salesData)));
+                
+        // Revenue Trends
+        sections.add(
+            createTrendsSection(
+                analyzer.analyzeTrends(salesData)));
+                
+        return sections;
+    }
+    
+    @Override
+    protected boolean shouldCustomize() {
+        return true;
+    }
+    
+    @Override
+    protected void customizeReport(Report report) {
+        // Add company branding
+        report.setStyle(new CorporateStyle());
+        
+        // Add charts
+        report.addCharts(createSalesCharts());
+    }
+}
+
+// Usage
+public class ReportingService {
+    private Map<ReportType, ReportGenerator> generators;
+    
+    public Report createReport(
+            ReportType type, 
+            ReportData data) {
+        ReportGenerator generator = generators.get(type);
+        if (generator == null) {
+            throw new UnknownReportTypeException(type);
+        }
+        return generator.generateReport(data);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Strategy Pattern implementieren}\\
+\textbf{1. Strategie Interface}
+\begin{itemize}
+    \item \textbf{Methode definieren:}
+    \begin{itemize}
+        \item Klare Signatur
+        \item Parameter/Rückgaben
+        \item Dokumentation
+    \end{itemize}
+    
+    \item \textbf{Kontext festlegen:}
+    \begin{itemize}
+        \item Strategiewechsel
+        \item Zustandshaltung
+        \item Fehlerbehandlung
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Implementation}
+\begin{itemize}
+    \item \textbf{Strategien:}
+    \begin{itemize}
+        \item Konkrete Algorithmen
+        \item Unabhängige Logik
+        \item Validierung
+    \end{itemize}
+    
+    \item \textbf{Konfiguration:}
+    \begin{itemize}
+        \item Strategieauswahl
+        \item Parameter
+        \item Fallback
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Strategy Pattern: Payment Processing}\\
+\textbf{Aufgabe:} Implementieren Sie ein flexibles Zahlungssystem mit verschiedenen Strategien.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Strategy Interface
+public interface PaymentStrategy {
+    PaymentResult process(PaymentRequest request);
+}
+
+// Concrete Strategies
+public class CreditCardPayment implements PaymentStrategy {
+    private CreditCardValidator validator;
+    private PaymentGateway gateway;
+    
+    @Override
+    public PaymentResult process(PaymentRequest request) {
+        // Validate credit card
+        CreditCardDetails card = request.getCardDetails();
+        if (!validator.isValid(card)) {
+            return PaymentResult.failed(
+                "Invalid card details");
+        }
+        
+        // Process payment
+        try {
+            TransactionResult result = 
+                gateway.processCard(
+                    card,
+                    request.getAmount()
+                );
+            
+            return PaymentResult.success(
+                result.getTransactionId());
+        } catch (GatewayException e) {
+            return PaymentResult.failed(
+                e.getMessage());
+        }
+    }
+}
+
+public class PayPalPayment implements PaymentStrategy {
+    private PayPalClient paypalClient;
+    
+    @Override
+    public PaymentResult process(PaymentRequest request) {
+        try {
+            String paymentId = paypalClient.createPayment(
+                request.getAmount(),
+                request.getCurrency());
+                
+            PayPalResponse response = 
+                paypalClient.executePayment(paymentId);
+                
+            return PaymentResult.success(
+                response.getTransactionId());
+        } catch (PayPalException e) {
+            return PaymentResult.failed(
+                "PayPal error: " + e.getMessage());
+        }
+    }
+}
+
+// Context
+public class PaymentProcessor {
+    private Map<PaymentType, PaymentStrategy> strategies = 
+        new EnumMap<>(PaymentType.class);
+        
+    public PaymentProcessor() {
+        strategies.put(
+            PaymentType.CREDIT_CARD, 
+            new CreditCardPayment()
+        );
+        strategies.put(
+            PaymentType.PAYPAL, 
+            new PayPalPayment()
+        );
+    }
+    
+    public PaymentResult processPayment(
+            PaymentRequest request) {
+        PaymentStrategy strategy = 
+            strategies.get(request.getType());
+            
+        if (strategy == null) {
+            return PaymentResult.failed(
+                "Unsupported payment type");
+        }
+        
+        return strategy.process(request);
+    }
+}
+
+// Usage with Error Handling
+public class CheckoutService {
+    private PaymentProcessor paymentProcessor;
+    private OrderRepository orderRepository;
+    
+    @Transactional
+    public CheckoutResult checkout(Order order) {
+        try {
+            PaymentRequest request = 
+                createPaymentRequest(order);
+                
+            PaymentResult result = 
+                paymentProcessor.processPayment(request);
+                
+            if (result.isSuccessful()) {
+                order.markAsPaid(result.getTransactionId());
+                orderRepository.save(order);
+                return CheckoutResult.success(order);
+            } else {
+                return CheckoutResult.failed(
+                    result.getErrorMessage());
+            }
+        } catch (Exception e) {
+            order.markAsFailed(e.getMessage());
+            orderRepository.save(order);
+            throw new CheckoutException(
+                "Checkout failed", e);
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{Tests:}
+\begin{lstlisting}[language=Java, style=basesmol]
+@ExtendWith(MockitoExtension.class)
+public class PaymentProcessorTest {
+    @Mock
+    private CreditCardPayment creditCardPayment;
+    
+    @Mock
+    private PayPalPayment paypalPayment;
+    
+    @InjectMocks
+    private PaymentProcessor processor;
+    
+    @Test
+    void shouldProcessCreditCardPayment() {
+        // Given
+        PaymentRequest request = new PaymentRequest(
+            PaymentType.CREDIT_CARD,
+            Money.of(100, "USD")
+        );
+        
+        PaymentResult expected = 
+            PaymentResult.success("TX123");
+            
+        when(creditCardPayment.process(request))
+            .thenReturn(expected);
+        
+        // When
+        PaymentResult result = 
+            processor.processPayment(request);
+        
+        // Then
+        assertEquals(expected, result);
+        verify(creditCardPayment).process(request);
+        verifyNoInteractions(paypalPayment);
+    }
+    
+    @Test
+    void shouldHandleUnsupportedPaymentType() {
+        // Given
+        PaymentRequest request = new PaymentRequest(
+            PaymentType.BITCOIN,
+            Money.of(100, "USD")
+        );
+        
+        // When
+        PaymentResult result = 
+            processor.processPayment(request);
+        
+        // Then
+        assertFalse(result.isSuccessful());
+        assertEquals(
+            "Unsupported payment type",
+            result.getErrorMessage()
+        );
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\section{Factory und Composite Pattern Beispiele}
+
+\begin{KR}{Factory Pattern implementieren}\\
+\textbf{1. Factory Method}
+\begin{itemize}
+    \item \textbf{Creator definieren:}
+    \begin{itemize}
+        \item Abstrakte Factory-Methode
+        \item Gemeinsame Logik
+        \item Erweiterungspunkte
+    \end{itemize}
+    
+    \item \textbf{Produkte:}
+    \begin{itemize}
+        \item Gemeinsames Interface
+        \item Konkrete Implementierungen
+        \item Produktfamilien
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Abstract Factory}
+\begin{itemize}
+    \item \textbf{Factory Interface:}
+    \begin{itemize}
+        \item Produktfamilien definieren
+        \item Erstellungsmethoden
+        \item Abhängigkeiten
+    \end{itemize}
+    
+    \item \textbf{Implementierung:}
+    \begin{itemize}
+        \item Konkrete Factories
+        \item Produktkombinationen
+        \item Konfiguration
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Factory Pattern: GUI Components}\\
+\textbf{Aufgabe:} Implementieren Sie eine Factory für GUI-Komponenten mit verschiedenen Themes.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Product Interfaces
+public interface Button {
+    void render();
+    void handleClick();
+}
+
+public interface TextField {
+    void render();
+    void handleInput(String text);
+}
+
+// Abstract Factory
+public interface ComponentFactory {
+    Button createButton();
+    TextField createTextField();
+}
+
+// Concrete Products for Light Theme
+public class LightButton implements Button {
+    @Override
+    public void render() {
+        // Render light themed button
+    }
+    
+    @Override
+    public void handleClick() {
+        // Handle click with light theme feedback
+    }
+}
+
+public class LightTextField implements TextField {
+    @Override
+    public void render() {
+        // Render light themed text field
+    }
+    
+    @Override
+    public void handleInput(String text) {
+        // Handle input with light theme styling
+    }
+}
+
+// Concrete Factory for Light Theme
+public class LightThemeFactory implements ComponentFactory {
+    @Override
+    public Button createButton() {
+        return new LightButton();
+    }
+    
+    @Override
+    public TextField createTextField() {
+        return new LightTextField();
+    }
+}
+
+// Dark Theme Implementation
+public class DarkThemeFactory implements ComponentFactory {
+    @Override
+    public Button createButton() {
+        return new DarkButton();
+    }
+    
+    @Override
+    public TextField createTextField() {
+        return new DarkTextField();
+    }
+}
+
+// Factory Provider
+public class ThemeFactory {
+    private static Map<ThemeType, ComponentFactory> 
+        factories = new EnumMap<>(ThemeType.class);
+        
+    static {
+        factories.put(ThemeType.LIGHT, 
+            new LightThemeFactory());
+        factories.put(ThemeType.DARK, 
+            new DarkThemeFactory());
+    }
+    
+    public static ComponentFactory getFactory(
+            ThemeType type) {
+        ComponentFactory factory = factories.get(type);
+        if (factory == null) {
+            throw new IllegalArgumentException(
+                "Unknown theme: " + type);
+        }
+        return factory;
+    }
+}
+
+// Usage
+public class Form {
+    private ComponentFactory factory;
+    private List<Button> buttons = new ArrayList<>();
+    private List<TextField> fields = new ArrayList<>();
+    
+    public Form(ThemeType theme) {
+        this.factory = ThemeFactory.getFactory(theme);
+    }
+    
+    public void addButton() {
+        Button button = factory.createButton();
+        buttons.add(button);
+    }
+    
+    public void addTextField() {
+        TextField field = factory.createTextField();
+        fields.add(field);
+    }
+    
+    public void render() {
+        buttons.forEach(Button::render);
+        fields.forEach(TextField::render);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Composite Pattern implementieren}\\
+\textbf{1. Komponenten-Hierarchie}
+\begin{itemize}
+    \item \textbf{Component Interface:}
+    \begin{itemize}
+        \item Gemeinsame Operationen
+        \item Kind-Management
+        \item Traversierung
+    \end{itemize}
+    
+    \item \textbf{Leaf Klassen:}
+    \begin{itemize}
+        \item Atomare Operationen
+        \item Keine Kinder
+        \item Spezifisches Verhalten
+    \end{itemize}
+    
+    \item \textbf{Composite Klassen:}
+    \begin{itemize}
+        \item Kinderverwaltung
+        \item Operation-Delegation
+        \item Aggregation
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Implementierungsaspekte}
+\begin{itemize}
+    \item \textbf{Kinderverwaltung:}
+    \begin{itemize}
+        \item Hinzufügen/Entfernen
+        \item Validierung
+        \item Traversierung
+    \end{itemize}
+    
+    \item \textbf{Operation-Ausführung:}
+    \begin{itemize}
+        \item Delegation an Kinder
+        \item Ergebnisaggregation
+        \item Fehlerbehandlung
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Composite Pattern: File System}\\
+\textbf{Aufgabe:} Implementieren Sie eine Verzeichnisstruktur mit dem Composite Pattern.
+
+\begin{lstlisting}[language=Java, style=basesmol]
+// Component Interface
+public interface FileSystemItem {
+    String getName();
+    long getSize();
+    void accept(FileSystemVisitor visitor);
+}
+
+// Leaf
+public class File implements FileSystemItem {
+    private String name;
+    private long size;
+    
+    @Override
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public long getSize() {
+        return size;
+    }
+    
+    @Override
+    public void accept(FileSystemVisitor visitor) {
+        visitor.visitFile(this);
+    }
+}
+
+// Composite
+public class Directory implements FileSystemItem {
+    private String name;
+    private List<FileSystemItem> children = 
+        new ArrayList<>();
+        
+    @Override
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public long getSize() {
+        return children.stream()
+            .mapToLong(FileSystemItem::getSize)
+            .sum();
+    }
+    
+    public void addItem(FileSystemItem item) {
+        children.add(item);
+    }
+    
+    public void removeItem(FileSystemItem item) {
+        children.remove(item);
+    }
+    
+    public List<FileSystemItem> getChildren() {
+        return Collections.unmodifiableList(children);
+    }
+    
+    @Override
+    public void accept(FileSystemVisitor visitor) {
+        visitor.visitDirectory(this);
+        children.forEach(child -> child.accept(visitor));
+    }
+}
+
+// Visitor Interface for Operations
+public interface FileSystemVisitor {
+    void visitFile(File file);
+    void visitDirectory(Directory directory);
+}
+
+// Concrete Visitor for Size Calculation
+public class SizeCalculatorVisitor 
+        implements FileSystemVisitor {
+    private long totalSize = 0;
+    
+    @Override
+    public void visitFile(File file) {
+        totalSize += file.getSize();
+    }
+    
+    @Override
+    public void visitDirectory(Directory directory) {
+        // Optional: Add directory overhead
+        totalSize += 4096; // Directory entry size
+    }
+    
+    public long getTotalSize() {
+        return totalSize;
+    }
+}
+
+// Usage
+public class FileSystemManager {
+    private Directory root;
+    
+    public long calculateTotalSize() {
+        SizeCalculatorVisitor visitor = 
+            new SizeCalculatorVisitor();
+        root.accept(visitor);
+        return visitor.getTotalSize();
+    }
+    
+    public void printStructure() {
+        printItem(root, 0);
+    }
+    
+    private void printItem(
+            FileSystemItem item, 
+            int level) {
+        String indent = "  ".repeat(level);
+        System.out.println(indent + item.getName());
+        
+        if (item instanceof Directory) {
+            Directory dir = (Directory) item;
+            dir.getChildren().forEach(child -> 
+                printItem(child, level + 1));
+        }
+    }
+}
+
+// Tests
+public class FileSystemTest {
+    private Directory root;
+    private File file1;
+    private File file2;
+    
+    @BeforeEach
+    void setUp() {
+        root = new Directory("root");
+        file1 = new File("file1", 1000);
+        file2 = new File("file2", 2000);
+        
+        Directory subDir = new Directory("subDir");
+        subDir.addItem(file2);
+        
+        root.addItem(file1);
+        root.addItem(subDir);
+    }
+    
+    @Test
+    void shouldCalculateTotalSize() {
+        // When
+        SizeCalculatorVisitor visitor = 
+            new SizeCalculatorVisitor();
+        root.accept(visitor);
+        
+        // Then
+        assertEquals(7096, visitor.getTotalSize()); 
+            // 1000 + 2000 + 2*4096
+    }
+    
+    @Test
+    void shouldTraverseStructure() {
+        // Given
+        List<String> visitedNames = new ArrayList<>();
+        
+        FileSystemVisitor nameCollector = 
+            new FileSystemVisitor() {
+                @Override
+                public void visitFile(File file) {
+                    visitedNames.add(file.getName());
+                }
+                
+                @Override
+                public void visitDirectory(
+                        Directory directory) {
+                    visitedNames.add(directory.getName());
+                }
+            };
+            
+        // When
+        root.accept(nameCollector);
+        
+        // Then
+        assertEquals(Arrays.asList(
+            "root", "file1", "subDir", "file2"), 
+            visitedNames);
+    }
+}
+\end{lstlisting}
+
+\textbf{Pattern Benefits:}
+\begin{itemize}
+    \item \textbf{Strukturelle Vorteile:}
+    \begin{itemize}
+        \item Einheitliche Behandlung von Dateien und Verzeichnissen
+        \item Beliebige Verschachtelungstiefe
+        \item Einfache Erweiterung um neue Operationen durch Visitor
+    \end{itemize}
+    
+    \item \textbf{Wartbarkeit:}
+    \begin{itemize}
+        \item Klare Trennung von Struktur und Operationen
+        \item Einfaches Hinzufügen neuer Komponententypen
+        \item Gute Testbarkeit
+    \end{itemize}
+    
+    \item \textbf{Flexibilität:}
+    \begin{itemize}
+        \item Rekursive Verarbeitung
+        \item Polymorphes Verhalten
+        \item Erweiterbare Operationen
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\section{Adapter und Bridge Pattern Beispiele}
+
+\begin{KR}{Adapter Pattern implementieren}\\
+\textbf{1. Analyse}
+\begin{itemize}
+    \item \textbf{Inkompatible Schnittstellen:}
+    \begin{itemize}
+        \item Ziel-Interface identifizieren
+        \item Adaptee-Interface analysieren
+        \item Unterschiede dokumentieren
+    \end{itemize}
+    
+    \item \textbf{Adapter-Typ wählen:}
+    \begin{itemize}
+        \item Klassen-Adapter (Vererbung)
+        \item Objekt-Adapter (Komposition)
+        \item Two-Way Adapter
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Implementation}
+\begin{itemize}
+    \item \textbf{Methodenabbildung:}
+    \begin{itemize}
+        \item Parameter-Konvertierung
+        \item Rückgabewert-Anpassung
+        \item Fehlerbehandlung
+    \end{itemize}
+    
+    \item \textbf{Zusätzliche Features:}
+    \begin{itemize}
+        \item Caching
+        \item Logging
+        \item Performance-Optimierung
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+%TODO: Add Adapter Pattern Example and Bridge Pattern Example
+
+
+

@@ -1,0 +1,260 @@
+\section{KR und Beispiele für Domänenmodellierung}
+
+\begin{KR}{Domänenmodell erstellen}\\
+\textbf{1. Konzepte identifizieren}
+\begin{itemize}
+    \item \textbf{Substantive aus Text extrahieren:}
+    \begin{itemize}
+        \item Physische oder virtuelle Objekte
+        \item Rollen und Akteure
+        \item Ereignisse und Transaktionen
+        \item Kataloge und Spezifikationen
+    \end{itemize}
+    
+    \item \textbf{Konzeptkategorien prüfen:}
+    \begin{itemize}
+        \item Geschäftsobjekte
+        \item Container/Sammlungen
+        \item Beschreibungen/Spezifikationen
+        \item Orte/Standorte
+        \item Transaktionen/Ereignisse
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Attribute zuordnen}
+\begin{itemize}
+    \item \textbf{Attributregeln:}
+    \begin{itemize}
+        \item Nur atomare Werte
+        \item Keine abgeleiteten Attribute
+        \item Keine IDs als Attribute
+        \item Keine Referenzen als Attribute
+    \end{itemize}
+    
+    \item \textbf{Typische Attribute:}
+    \begin{itemize}
+        \item Beschreibende Eigenschaften
+        \item Status und Zustände
+        \item Mengen und Werte
+        \item Zeitangaben
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Beziehungen modellieren}
+\begin{itemize}
+    \item \textbf{Assoziationstypen:}
+    \begin{itemize}
+        \item Einfache Assoziation
+        \item Aggregation/Komposition
+        \item Vererbung
+    \end{itemize}
+    
+    \item \textbf{Multiplizitäten festlegen:}
+    \begin{itemize}
+        \item 1:1, 1:n, n:m
+        \item Optionalität (0..1)
+        \item Mindest-/Maximalwerte
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Domänenmodell: Restaurant-System}\\
+\textbf{Aufgabentext aus SEP-Muster:}
+Eine Restaurantkette möchte ihr Bestellsystem modernisieren. Gäste bestellen Speisen und Getränke, die von der Küche bzw. Bar zubereitet werden. Bestellungen werden pro Tisch gesammelt und später gemeinsam oder getrennt bezahlt.
+
+\textbf{Konzept-Analyse:}
+\begin{itemize}
+    \item \textbf{Physische Objekte:}
+    \begin{itemize}
+        \item Tisch
+        \item Speisen/Getränke
+    \end{itemize}
+    
+    \item \textbf{Rollen:}
+    \begin{itemize}
+        \item Gast
+        \item Servicepersonal
+        \item Koch/Barkeeper
+    \end{itemize}
+    
+    \item \textbf{Transaktionen:}
+    \begin{itemize}
+        \item Bestellung
+        \item Bezahlung
+    \end{itemize}
+\end{itemize}
+
+\textbf{Domänenmodell:}
+%include image of the domain model here
+\includegraphics[width=\linewidth]{images/domänenmodell.png}
+
+\textbf{Begründung der Modellierungsentscheidungen:}
+\begin{itemize}
+    \item \textbf{Beschreibungsklassen:}
+    \begin{itemize}
+        \item MenueItem für Speisen/Getränke (Trennung von konkreten Bestellpositionen)
+        \item Produktkategorien für Gruppierung
+    \end{itemize}
+    
+    \item \textbf{Aggregationen:}
+    \begin{itemize}
+        \item Bestellung aggregiert Bestellpositionen
+        \item Tisch aggregiert Plätze
+    \end{itemize}
+    
+    \item \textbf{Beziehungen:}
+    \begin{itemize}
+        \item Gast sitzt an Platz (1:1)
+        \item Bestellung gehört zu Tisch (n:1)
+        \item Position referenziert MenueItem (n:1)
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Analysemuster anwenden}\\
+\textbf{1. Beschreibungsklassen}
+\begin{itemize}
+    \item \textbf{Anwendung bei:}
+    \begin{itemize}
+        \item Trennung von Typ und Instanz
+        \item Gemeinsame unveränderliche Eigenschaften
+        \item Mehrere gleichartige Objekte
+    \end{itemize}
+    
+    \item \textbf{Implementierung:}
+    \begin{itemize}
+        \item Beschreibungsklasse für Typinformationen
+        \item Instanzklasse für konkrete Objekte
+        \item 1:n Beziehung zwischen beiden
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Zustandsmodellierung}
+\begin{itemize}
+    \item \textbf{Anwendung bei:}
+    \begin{itemize}
+        \item Komplexe Zustandsübergänge
+        \item Zustandsabhängiges Verhalten
+        \item Viele verschiedene Status
+    \end{itemize}
+    
+    \item \textbf{Implementierung:}
+    \begin{itemize}
+        \item Abstrakte Zustandsklasse
+        \item Konkrete Zustände als Subklassen
+        \item Assoziationen zum Hauptobjekt
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. Rollen}
+\begin{itemize}
+    \item \textbf{Anwendung bei:}
+    \begin{itemize}
+        \item Verschiedene Funktionen eines Objekts
+        \item Dynamische Rollenzuordnung
+        \item Unterschiedliche Verantwortlichkeiten
+    \end{itemize}
+    
+    \item \textbf{Implementierung:}
+    \begin{itemize}
+        \item Rolleninterface oder abstrakte Klasse
+        \item Konkrete Rollenklassen
+        \item Assoziation zum Basisobjekt
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Analysemuster: Bibliothekssystem}\\
+\textbf{Aufgabentext:}
+Modellieren Sie ein Bibliothekssystem mit Büchern, die in mehreren Exemplaren vorliegen können. Benutzer können Bücher ausleihen und reservieren.
+
+\textbf{Musterlösung mit Analysemuster:}
+\begin{itemize}
+    \item \textbf{Beschreibungsklassen:}
+    \begin{itemize}
+        \item Book (Beschreibung: ISBN, Titel, Autor)
+        \item BookCopy (Instanz: Inventarnummer, Status)
+    \end{itemize}
+    
+    \item \textbf{Zustandsmodellierung:}
+    \begin{itemize}
+        \item LendingState (abstrakt)
+        \item Available, Borrowed, Reserved als Subklassen
+    \end{itemize}
+    
+    \item \textbf{Rollen:}
+    \begin{itemize}
+        \item Person (Basis)
+        \item Member, Librarian als Rollen
+    \end{itemize}
+\end{itemize}
+
+\textbf{Begründung der Muster:}
+\begin{itemize}
+    \item Beschreibungsklassen trennen unveränderliche Buchdaten von Exemplaren
+    \item Zustandsmuster ermöglicht komplexe Statusübergänge und -validierung
+    \item Rollenmuster erlaubt verschiedene Berechtigungen und Funktionen
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Typische Modellierungsfehler vermeiden}\\
+\textbf{1. Konzeptuelle Fehler}
+\begin{itemize}
+    \item \textbf{Vermeiden:}
+    \begin{itemize}
+        \item Technische statt fachliche Klassen
+        \item Prozesse als Klassen
+        \item Operationen im Domänenmodell
+    \end{itemize}
+    
+    \item \textbf{Richtig:}
+    \begin{itemize}
+        \item Fachliche Konzepte modellieren
+        \item Prozesse durch Beziehungen
+        \item Nur Attribute im Modell
+    \end{itemize}
+\end{itemize}
+
+\textbf{2. Strukturelle Fehler}
+\begin{itemize}
+    \item \textbf{Vermeiden:}
+    \begin{itemize}
+        \item IDs als Attribute
+        \item Referenzen als Attribute
+        \item Redundante Attribute
+    \end{itemize}
+    
+    \item \textbf{Richtig:}
+    \begin{itemize}
+        \item Assoziationen statt IDs
+        \item Abgeleitete Attribute weglassen
+        \item Informationen zentralisieren
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Modellierungsfehler erkennen}\\
+\textbf{Fehlerhaftes Modell:}
+\begin{itemize}
+    \item Klasse 'OrderManager' mit CRUD-Operationen
+    \item Attribut 'customerID' statt Assoziation
+    \item Klasse 'PaymentProcess' für Ablauf
+    \item Operation 'calculateTotal()' in Order
+\end{itemize}
+
+\textbf{Korrigiertes Modell:}
+\begin{itemize}
+    \item Klasse 'Order' mit fachlichen Attributen
+    \item Assoziation zwischen Order und Customer
+    \item Payment als eigenständiges Konzept
+    \item Keine Operationen im Modell
+\end{itemize}
+
+\textbf{Begründung:}
+\begin{itemize}
+    \item Technische Manager-Klassen gehören nicht ins Domänenmodell
+    \item IDs werden durch Assoziationen ersetzt
+    \item Prozesse werden durch Beziehungen und Status modelliert
+    \item Operationen gehören ins Designmodell
+\end{itemize}
+\end{example2}
