@@ -9,6 +9,51 @@ Number = Union[int, float]
 Vector = List[Number]
 Matrix = List[List[Number]]
 
+"""Matrix-Operationen"""
+
+def matrix_multiply(A: List[List[float]], B: List[List[float]]) -> List[List[float]]:
+    """
+    Multiply two matrices.
+    
+    Args:
+        A, B: Input matrices
+        
+    Returns:
+        List[List[float]]: Product matrix
+    """
+    n, m = len(A), len(A[0])
+    p = len(B[0])
+    
+    if len(B) != m:
+        raise ValueError("Matrix dimensions do not match")
+        
+    C = [[0.0] * p for _ in range(n)]
+    for i in range(n):
+        for j in range(p):
+            C[i][j] = sum(A[i][k] * B[k][j] for k in range(m))
+            
+    return C
+
+def matrix_subtract(A: List[List[float]], B: List[List[float]]) -> List[List[float]]:
+    """
+    Subtract two matrices.
+    
+    Args:
+        A, B: Input matrices
+        
+    Returns:
+        List[List[float]]: Difference matrix
+    """
+    n, m = len(A), len(A[0])
+    if len(B) != n or len(B[0]) != m:
+        raise ValueError("Matrix dimensions do not match")
+        
+    return [[A[i][j] - B[i][j] for j in range(m)] for i in range(n)]
+
+
+
+"""Normen und Normalisierung"""
+
 def norm_vector(v: Vector, p: int = 2) -> float:
     """
     Calculate p-norm of a vector.
@@ -52,6 +97,23 @@ def norm_matrix(A: Matrix, p: int = 2) -> float:
         return math.sqrt(max(sum(abs(x) for x in row) for row in ATA))
     
     raise ValueError(f"Norm {p} not implemented")
+
+def normalize_vector(v: List[float]) -> List[float]:
+    """
+    Normalize vector to unit length.
+    
+    Args:
+        v: Input vector
+        
+    Returns:
+        List[float]: Normalized vector
+    """
+    norm = np.sqrt(sum(x*x for x in v))
+    if norm == 0:
+        raise ValueError("Zero vector cannot be normalized")
+    return [x/norm for x in v]
+
+
 
 # Example usage
 if __name__ == "__main__":
