@@ -2,82 +2,8 @@
 
 \subsubsection{Hilfsfunktionen}
 
-\begin{examplecode}{Matrixoperationen}
-\begin{lstlisting}[language=Python, style=basesmol]
-def matrix_vector_mult(A, v): # Matrix-Vektor Mult.
-    n = len(A)
-    result = [0] * n
-    for i in range(n):
-        result[i] = sum(A[i][j] * v[j] for j in range(n))
-    return result
 
-def matrix_mult(A, B): # Matrix-Matrix Multiplikation
-    m, n = len(A), len(B[0])
-    p = len(B)
-    C = [[0.0] * n for _ in range(m)]
-    for i in range(m):
-        for j in range(n):
-            C[i][j] = sum(A[i][k] * B[k][j] for k in range(p))
-    return C
 
-def transpose(A): # Matrix transponieren
-    n = len(A)
-    return [[A[j][i] for j in range(n)] for i in range(n)]
-
-def vector_norm(v): # Euklidische Norm eines Vektors
-    return sum(x*x for x in v) ** 0.5
-
-def normalize_vector(v): # Vektor auf L. 1 normieren
-    norm = vector_norm(v)
-    return [x/norm for x in v] if norm > 0 else v
-
-def copy_matrix(A): # Tiefe Kopie einer Matrix
-    return [[A[i][j] for j in range(len(A[0]))] for i in range(len(A))]
-\end{lstlisting}
-\end{examplecode}
-
-\begin{examplecode}{is\_diagonally\_dominant} Diagonaldominanz prüfen
-\begin{lstlisting}[language=Python, style=basesmol]
-def is_diagonally_dominant(A):
-    n = len(A)
-    for i in range(n):
-        if abs(A[i][i]) <= sum(abs(A[i][j]) for j in range(n) if j != i):
-            return False
-    return True
-\end{lstlisting}
-\end{examplecode}
-
-\begin{examplecode}{convergence\_check}Konvergenzkriterien
-\begin{lstlisting}[language=Python, style=basesmol]
-def convergence_check(x_new, x_old, f_new, f_old, tol=1e-6):
-    # Absoluter Fehler im Funktionswert
-    if abs(f_new) < tol:
-        return True, "Funktionswert < tol"
-    # Relative Aenderung der x-Werte 
-    if abs(x_new - x_old) < tol * (1 + abs(x_new)):
-        return True, "Relative Aenderung < tol"
-    # Relative Aenderung der Funktionswerte
-    if abs(f_new - f_old) < tol * (1 + abs(f_new)):
-        return True, "Funktionsaenderung < tol"
-    # Divergenzcheck
-    if abs(f_new) > 2 * abs(f_old):
-        return False, "Divergenz detektiert"
-        
-    return False, "Noch nicht konvergiert"
-\end{lstlisting}
-\end{examplecode}
-
-\begin{examplecode}{error\_estimate} Fehlerabschätzung durch Vorzeichenwechsel
-\begin{lstlisting}[language=Python, style=basesmol]
-def error_estimate(f, x, eps=1e-5):
-    fx_left = f(x - eps)
-    fx_right = f(x + eps)
-    
-    if fx_left * fx_right < 0:
-        return eps  # Nullstelle liegt in (x-eps, x+eps)
-    return None
-\end{lstlisting}
-\end{examplecode}
 
 \subsection{Numerische Lösung von Nullstellenproblemen}
 

@@ -8,6 +8,9 @@ f_prime = sp.diff(f, x)
 
 # Intervall I = [0.5, 1.5]
 a, b = 0.5, 1.5
+# finding the maximum value of the derivative in the interval [0.5, 1.5]
+# consider all the values of the derivative in the interval [0.5, 1.5]
+f_prime_vals = [f_prime.subs(x, a).evalf(), f_prime.subs(x, b).evalf()]
 
 # 1. Überprüfen des Banachschen Fixpunktsatzes
 # Prüfe, ob f(I) ⊆ I

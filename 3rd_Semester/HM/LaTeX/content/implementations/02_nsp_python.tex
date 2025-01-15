@@ -1,0 +1,58 @@
+\subsection{Nullstellenprobleme}
+
+\subsubsection{Fixpunktiteration}
+
+\begin{examplecode}{Hilfsfunktionen}
+\begin{lstlisting}[language=Python, style=basesmol]
+# Intervall I = [a, b] festlegen
+a, b = 0, 1
+I = [a, b]
+I_vals = np.linspace(a, b, 1000)
+# Funktion von der die Nullstelle gesucht wird
+def F(x): 
+    return 0.5 * 2**x
+# Lipschitz-Konstante schätzen
+def lipschitz_constant(F, a, b):
+    def f(x): # Ableitung von F
+        return sp.diff(F, x)
+    return np.max(np.abs(f(I_vals))) %todo: check if this is okay
+# Banach'scher Fixpunktsatz überprüfen (F(I) in I)
+%todo
+
+\end{lstlisting}
+
+\textcolor{pink}{tbd}
+\end{examplecode}
+
+
+\begin{examplecode}{fixed\_point\_iteration} Fixpunktiteration
+\begin{lstlisting}[language=Python, style=basesmol]
+def fixed_point_iteration(x0, tolerance, max_iterations):
+    x = x0 // Startwert
+    iterations = 0
+
+    for i in range(max_iterations):
+        x_next = F(x)
+        error = abs(x_next - x)
+
+        if error < tolerance:
+            return x_next, i + 1, error
+        x = x_next
+    return x, max_iterations, results, error
+\end{examplecode}
+
+\subsubsection{Newton-Verfahren}
+
+\subsubsection{Fehlerabschätzung und Konvergenzverhalten}
+
+\begin{examplecode}{error\_estimate} Fehlerabschätzung durch Vorzeichenwechsel
+\begin{lstlisting}[language=Python, style=basesmol]
+def error_estimate(f, x, eps=1e-5):
+    fx_left = f(x - eps)
+    fx_right = f(x + eps)
+    
+    if np.sign(fx_left) != np.sign(fx_right):
+        return eps  # Nullstelle liegt in (x-eps, x+eps)
+    return None
+\end{lstlisting}
+\end{examplecode}
