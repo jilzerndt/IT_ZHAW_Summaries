@@ -2,6 +2,11 @@
 
 \section{Numerische Lösung linearer Gleichungssysteme}
 
+\begin{definition}{Linear System of Equations}
+Given $A \in \mathbb{R}^{n\times n}$ and $b \in \mathbb{R}^n$, find $x \in \mathbb{R}^n$ such that:
+$$Ax = b \quad \text{or} \quad \sum_{j=1}^n a_{ij}x_j = b_i, \quad i=1,\ldots,n$$
+\end{definition}
+
 \begin{KR}{Systematisches Vorgehen bei LGS}
 \begin{enumerate}
     \item Eigenschaften der Matrix analysieren:
@@ -26,6 +31,70 @@
     \end{itemize}
 \end{enumerate}
 \end{KR}
+
+\begin{KR}{Systematische Verfahrensauswahl für LGS}
+\begin{enumerate}
+    \item Eigenschaften der Matrix analysieren:
+    \begin{itemize}
+        \item Diagonaldominanz prüfen
+        \item Konditionszahl berechnen oder abschätzen 
+        \item Symmetrie erkennen
+    \end{itemize}
+    
+    \item Verfahren auswählen:
+    \begin{itemize}
+        \item Direkte Verfahren: für kleinere Systeme
+        \item Iterative Verfahren: für große, dünnbesetzte Systeme
+        \item Spezialverfahren: für symmetrische/bandförmige Matrizen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Verfahrensauswahl}
+Gegeben ist das LGS $Ax = b$ mit:
+$$A = \begin{pmatrix} 
+4 & -1 & 0 \\
+-1 & 4 & -1 \\
+0 & -1 & 4
+\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix}$$
+
+\paragraph{Analyse:}
+\begin{itemize}
+    \item Matrix ist symmetrisch
+    \item Streng diagonaldominant
+    \item Dünnbesetzt (tridiagonal)
+\end{itemize}
+
+\paragraph{Verfahrenswahl:}
+\begin{itemize}
+    \item Gauss: möglich wegen kleiner Dimension
+    \item Gauss-Seidel: konvergiert wegen Diagonaldominanz
+    \item LR-Zerlegung: effizient wegen Bandstruktur
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Method Selection}
+Given system $Ax=b$ with:
+$$A = \begin{pmatrix} 
+4 & -1 & 0 \\
+-1 & 4 & -1 \\
+0 & -1 & 4
+\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix}$$
+
+\paragraph{Analysis:}
+\begin{itemize}
+    \item Matrix is symmetric
+    \item Strictly diagonally dominant
+    \item Sparse (tridiagonal)
+\end{itemize}
+
+\paragraph{Method Choice:}
+\begin{itemize}
+    \item Gauss: feasible due to small size
+    \item Gauss-Seidel: converges due to diagonal dominance
+    \item LR: efficient for band structure
+\end{itemize}
+\end{example2}
 
 \begin{example2}{Verfahrensauswahl}
 Gegeben ist das LGS $Ax = b$ mit:
@@ -776,6 +845,31 @@ $x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - 
         \item Residuum: $\|Ax^{(k)}-b\| < \epsilon$
         \item Änderung: $\|x^{(k+1)}-x^{(k)}\| < \epsilon$
         \item Maximale Iterationen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{KR}{Implementation of Iterative Methods}
+\begin{enumerate}
+    \item Preparation:
+    \begin{itemize}
+        \item Split matrix $A = L + D + R$
+        \item Check diagonal dominance
+        \item Choose sensible starting values
+        \item Set tolerance $\epsilon$ and max iterations
+    \end{itemize}
+    
+    \item Execute Method:
+    \begin{itemize}
+        \item Jacobi: Compute components in parallel
+        \item Gauss-Seidel: Compute sequentially
+    \end{itemize}
+    
+    \item Check Convergence:
+    \begin{itemize}
+        \item Absolute change: $\|x^{(k+1)} - x^{(k)}\| < \epsilon$
+        \item Relative residual: $\frac{\|Ax^{(k)} - b\|}{\|b\|} < \epsilon$
+        \item Maximum iterations: $k < k_{max}$
     \end{itemize}
 \end{enumerate}
 \end{KR}
