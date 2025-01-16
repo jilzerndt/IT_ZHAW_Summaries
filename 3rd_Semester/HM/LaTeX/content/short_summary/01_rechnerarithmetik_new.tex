@@ -66,6 +66,28 @@ $ = \sum_{i=1}^n m_i B^{\hat{e}-i}, \quad \text{mit} \quad \hat{e} = \sum_{i=1}^
 \end{minipage}
 \end{concept}
 
+\begin{example2}{IEEE-754 Details}
+IEEE-754 Standard definiert zwei wichtige Eigenschaften:
+\begin{itemize}
+    \item \textbf{Overflow}: Zahlen außerhalb $[-x_{max}, x_{max}]$ führen zum Abbruch mit \texttt{inf}
+    \item \textbf{Underflow}: Zahlen in $[-x_{min}, x_{min}]$ werden zu 0 gerundet
+\end{itemize}
+
+\paragraph{Bias-Werte:}
+\begin{itemize}
+    \item Single Precision: Bias = 127 ($e_{stored} = e_{actual} + 127$)
+    \item Double Precision: Bias = 1023 ($e_{stored} = e_{actual} + 1023$)
+\end{itemize}
+
+\paragraph{Praktisches Beispiel: Ariane 5}
+Am 4. Juni 1996 explodierte die Ariane 5 Rakete aufgrund eines Überlaufs:
+\begin{itemize}
+    \item Horizontale Geschwindigkeit zu groß für 16-bit Integer
+    \item Überlauf bei Konvertierung von 64-bit Float zu 16-bit Integer
+    \item Verlust von etwa 500 Millionen Dollar
+\end{itemize}
+\end{example2}
+
 \begin{theorem}{Darstellungsbereich}
 Für jedes Gleitpunktsystem existieren:
 \begin{itemize}
@@ -73,6 +95,122 @@ Für jedes Gleitpunktsystem existieren:
     \item \normalsize{Kleinste darstellbare positive Zahl:} \large{$x_{\text{min}} = B^{e_{\text{min}}-1}$}
 \end{itemize}
 \end{theorem}
+
+\begin{KR}{Maschinenzahlen analysieren}
+\begin{enumerate}
+    \item Anzahl Maschinenzahlen bestimmen:
+    \begin{itemize}
+        \item Basis $B$ identifizieren 
+        \item Mantissenlänge $n$ bestimmen
+        \item Exponentenlänge $l$ bestimmen
+        \item Berechnen: $2 \cdot (B-1) \cdot B^{n-1} \cdot (B^l-1)$
+    \end{itemize}
+    \item Darstellungsbereich bestimmen:
+    \begin{itemize}
+        \item Größte Zahl: $x_{max} = (1-B^{-n})B^{e_{max}}$
+        \item Kleinste positive Zahl: $x_{min} = B^{e_{min}-1}$
+    \end{itemize}
+    \item Maschinengenauigkeit berechnen:
+    \begin{itemize}
+        \item Allgemein: $eps = \frac{B}{2}B^{-n}$
+        \item Dezimal: $eps = 5 \cdot 10^{-n}$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Maschinenzahlen analysieren}
+Gegeben: 15-stellige Gleitpunktzahlen mit 5-stelligem Exponenten im Dualsystem.
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Basis $B=2$, $n=15$, $l=5$
+    \item Anzahl verschiedener Zahlen:
+    \begin{itemize}
+        \item Pro Stelle: $B-1=1$ mögliche Ziffern
+        \item Mantisse: $(B-1)B^{n-1} = 2^{14}$ Kombinationen
+        \item Exponent: $B^l = 2^5 = 32$ Kombinationen
+        \item Mit Vorzeichen: $2 \cdot 2^{14} \cdot 31 = 1\,015\,808$ Zahlen
+    \end{itemize}
+    \item Maschinengenauigkeit:
+    $eps = \frac{2}{2}2^{-15} = 2^{-15} \approx 3.052 \cdot 10^{-5}$
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Vergleich von Zahlensystemen}
+\begin{enumerate}
+    \item Bestimmen Sie für beide Systeme die Maschinengenauigkeit:
+    \begin{itemize}
+        \item System 1: $eps_1 = \frac{B_1}{2}B_1^{-n_1}$ 
+        \item System 2: $eps_2 = \frac{B_2}{2}B_2^{-n_2}$
+    \end{itemize}
+    \item Vergleichen Sie die Werte:
+    \begin{itemize}
+        \item Kleinere eps bedeutet höhere Genauigkeit
+        \item Bei etwa gleicher eps: System mit kleinerer Basis ist genauer
+    \end{itemize}
+    \item Überprüfen Sie auch den Wertebereich bei Bedarf
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Systemvergleich}
+Vergleich zweier Systeme:
+\begin{itemize}
+    \item System 1: 46 Binärstellen ($B=2, n=46$)
+    \item System 2: 14 Dezimalstellen ($B=10, n=14$)
+\end{itemize}
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Maschinengenauigkeit:
+    \begin{itemize}
+        \item System 1: $eps_1 = 2^{-46} \approx 1.4 \cdot 10^{-14}$
+        \item System 2: $eps_2 = 5 \cdot 10^{-14}$
+    \end{itemize}
+    \item $eps_1 < eps_2$ → System 1 rechnet genauer
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Fehlertypen identifizieren und vermeiden}
+\begin{enumerate}
+    \item Identifizieren Sie potentielle Fehlerquellen:
+    \begin{itemize}
+        \item Auslöschung (Subtraktion ähnlicher Zahlen)
+        \item Überlauf (Zahlen > $x_{max}$)
+        \item Unterlauf (Zahlen < $x_{min}$)
+        \item Rundungsfehler (Abschneiden von Stellen)
+    \end{itemize}
+    \item Wählen Sie geeignete Gegenmaßnahmen:
+    \begin{itemize}
+        \item Umformen von Formeln
+        \item Normalisieren von Zahlen
+        \item Skalieren von Wertebereichen
+        \item Vermeiden kritischer Operationen
+    \end{itemize}
+    \item Validieren Sie das numerische Ergebnis:
+    \begin{itemize}
+        \item Plausibilitätsprüfung
+        \item Fehlerabschätzung
+        \item Vergleich verschiedener Berechnungswege
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Komplexe Fehlerfortpflanzung}
+Gegeben sei $f(x) = \ln(1+x) - \sqrt{1+x^2}$ für $x \approx 0$
+\paragraph{Analyse:}
+\begin{enumerate}
+    \item Kritische Operationen:
+    \begin{itemize}
+        \item $\ln(1+x)$ für $x \approx 0$ (Auslöschung)
+        \item $\sqrt{1+x^2}-1$ für $x \approx 0$ (Auslöschung)
+    \end{itemize}
+    \item Bessere Berechnung:
+    \begin{itemize}
+        \item $\ln(1+x) \approx x - \frac{x^2}{2}$ für kleine $x$
+        \item $\sqrt{1+x^2}-1 = \frac{x^2}{\sqrt{1+x^2}+1}$
+    \end{itemize}
+    \item Umgeformte Funktion vermeidet Auslöschung
+\end{enumerate}
+\end{example2}
 
 \subsection{Approximations- und Rundungsfehler}
 
@@ -89,6 +227,31 @@ Sei $\tilde{x}$ eine Näherung des exakten Wertes $x$:
     \begin{center} $\left|\frac{\tilde{x}-x}{x}\right| \text{ bzw. } \frac{|\tilde{x}-x|}{|x|} \text{ für } x \neq 0$ \end{center}
 \end{minipage}
 \end{definition}
+
+\begin{KR}{Fehlertypen unterscheiden und behandeln}
+\begin{enumerate}
+    \item Unterscheidung der Fehlerarten:
+    \begin{itemize}
+        \item Absoluter Fehler bei Größenordnung wichtig 
+        \item Relativer Fehler bei Genauigkeit wichtig
+        \item Bei sehr kleinen/großen Zahlen relativen Fehler verwenden
+    \end{itemize}
+    
+    \item Behandlung kritischer Fälle:
+    \begin{itemize}
+        \item Overflow: Skalierung der Werte
+        \item Underflow: Alternative Berechnungsformeln
+        \item Auslöschung: Mathematische Umformungen
+    \end{itemize}
+    
+    \item Praktische Prüfung:
+    \begin{itemize}
+        \item Plausibilitätskontrolle der Ergebnisse
+        \item Verschiedene Berechnungswege vergleichen
+        \item Fehlerabschätzungen durchführen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
 
 \begin{lemma}{Maschinengenauigkeit} 
     eps ist die kleinste positive Zahl, für die gilt:
@@ -142,6 +305,46 @@ Für alle $x \in \mathbb{R}$ mit $|x| \geq x_{\text{min}}$ gilt:
 \end{itemize}
 \end{minipage}
 \end{concept}
+
+\begin{example2}{Konditionierung berechnen}
+Für $f(x) = \sqrt{1+x^2}$ und $x_0 = 10^{-8}$:
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item $f'(x) = \frac{x}{\sqrt{1+x^2}}$
+    \item $K = \frac{|x \cdot x|}{|\sqrt{1+x^2} \cdot (1+x^2)|} = \frac{x^2}{(1+x^2)^{3/2}}$
+    \item Für $x_0 = 10^{-8}$:
+    \begin{itemize}
+        \item $K(10^{-8}) \approx 10^{-16}$ (gut konditioniert)
+        \item Relativer Fehler wird um Faktor $10^{-16}$ verkleinert
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+\begin{example2}{Wilson-Polynom}
+Betrachten Sie das Wilson-Polynom:
+$$P(x) = \prod_{k=1}^{20} (x-k)$$
+
+\paragraph{Originalform:}
+\begin{itemize}
+    \item Nullstellen: $x_k = k$ für $k = 1,\ldots,20$
+    \item Koeffizient von $x^{19}$: $-210$
+\end{itemize}
+
+\paragraph{Gestörte Form:}
+\begin{itemize}
+    \item Änderung des $x^{19}$-Koeffizienten um $2^{-23}$
+    \item Neue Nullstellen teilweise komplex
+    \item Beispiel für extreme Konditionierung
+\end{itemize}
+
+\paragraph{Konsequenz:}
+\begin{itemize}
+    \item Kleine Störungen → große Auswirkungen
+    \item Numerisch instabil
+    \item Alternative Darstellung nötig
+\end{itemize}
+\end{example2}
 
 \begin{theorem}{Fehlerfortpflanzung}
 Für $f$ (differenzierbar) gilt näherungsweise:
@@ -207,6 +410,13 @@ $$
     \item Prüfen Sie alternative Berechnungswege
     \item Verwenden Sie Taylorentwicklungen für kleine Werte
 \end{enumerate}
+
+Beispiele für bessere Formeln:
+    \begin{itemize}
+        \item $\sqrt{1+x^2}-1 \rightarrow \frac{x^2}{\sqrt{1+x^2}+1}$
+        \item $1-\cos(x) \rightarrow 2\sin^2(x/2)$
+        \item $\ln(1+x) \rightarrow x-\frac{x^2}{2}$ für kleine $x$
+    \end{itemize}
 \end{KR}
 
 \begin{example2}{Auslöschung} Kritische Berechnungen für kleine x (Auslöschung):
