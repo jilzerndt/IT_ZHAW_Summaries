@@ -724,7 +724,31 @@ $$A = \begin{psmallmatrix}
 \end{enumerate}
 \end{example2}
 
-\subsubsection{Allgemeine Hinweise}
+
+\subsubsection{Vergleich der Eigenwertverfahren}
+
+
+
+
+
+\begin{concept}{Vergleich der Eigenwertverfahren}
+\begin{enumerate}
+    \item Von-Mises Iteration: Findet betragsmäßig größten Eigenwert
+    \begin{itemize}
+        \item Einfach zu implementieren, Langsame lineare Konvergenz
+    \end{itemize}
+    
+    \item Inverse Iteration: Braucht Näherung für Eigenwert
+    \begin{itemize}
+        \item Schnelle Konvergenz, LR-Zerlegung pro Schritt nötig
+    \end{itemize}
+    
+    \item QR-Verfahren: Berechnet alle Eigenwerte
+    \begin{itemize}
+        \item Kubischer Aufwand pro Iteration, Globale und stabile Konvergenz
+    \end{itemize}
+\end{enumerate}
+\end{concept}
 
 \begin{corollary}{Numerische Aspekte der Verfahren}
 \begin{itemize}
@@ -743,57 +767,6 @@ $$A = \begin{psmallmatrix}
     \end{itemize}
 \end{itemize}
 \end{corollary}
-
-\pagebreak
-\raggedcolumns
-
-\subsection{Vergleich der Eigenwertverfahren}
-
-\begin{concept}{Vergleich der Eigenwertverfahren}
-\begin{enumerate}
-    \item Von-Mises Iteration:
-    \begin{itemize}
-        \item Findet betragsmäßig größten Eigenwert
-        \item Einfach zu implementieren
-        \item Langsame lineare Konvergenz
-    \end{itemize}
-    
-    \item Inverse Iteration:
-    \begin{itemize}
-        \item Braucht Näherung für Eigenwert
-        \item Schnelle Konvergenz
-        \item LR-Zerlegung pro Schritt nötig
-    \end{itemize}
-    
-    \item QR-Verfahren:
-    \begin{itemize}
-        \item Berechnet alle Eigenwerte 
-        \item Kubischer Aufwand pro Iteration
-        \item Globale und stabile Konvergenz
-    \end{itemize}
-\end{enumerate}
-\end{concept}
-
-\begin{example2}{Numerischer Vergleich}
-\small
-Matrix $A = \begin{psmallmatrix} 4 & -1 \\ 1 & 3 \end{psmallmatrix}$ mit $\lambda_1 = 5, \lambda_2 = 2$
-\begin{center}
-\begin{tabular}{l|c|c|c}
-Verfahren & Iterationen & Genauigkeit & Zeit\\
-\hline
-Von-Mises & 23 & $10^{-8}$ & 1.0\\
-Inverse Iteration & 6 & $10^{-8}$ & 1.5\\  
-QR & 8 & $10^{-12}$ & 2.3\\
-\end{tabular}
-\end{center}
-
-\paragraph{Beobachtungen:}
-\begin{itemize}
-    \item Von-Mises braucht viele Iterationen
-    \item Inverse Iteration konvergiert schnell
-    \item QR liefert höchste Genauigkeit
-\end{itemize}
-\end{example2}
 
 \subsubsection{Spektralradius und Konvergenz}
 
@@ -859,31 +832,24 @@ Für eine Matrix $A \in \mathbb{R}^{n\times n}$ sind äquivalent:
     \item Matrixreihen:
     \begin{itemize}
         \item Konvergenz von $\sum_{k=0}^\infty A^k$
-        \item Existenz von $(I-A)^{-1}$
+        und Existenz von $(I-A)^{-1}$
         \item Abschätzung der Reihensumme
-    \end{itemize}
-    
-    \item Stabilitätsanalyse:
-    \begin{itemize}
-        \item Diskrete dynamische Systeme
-        \item Numerische Integration
-        \item Differenzenverfahren
     \end{itemize}
 \end{enumerate}
 \end{KR}
 
 \begin{example2}{Spektralradius und Konvergenz}
 Untersuchen Sie die Konvergenz des Jacobi-Verfahrens für:
-$$A = \begin{psmallmatrix}
+$A = \begin{psmallmatrix}
 4 & -1 & 0 \\
 -1 & 4 & -1 \\
 0 & -1 & 4
-\end{psmallmatrix}$$
+\end{psmallmatrix}$
 
 \paragraph{Lösung:}
 \begin{enumerate}
     \item Zerlegung $A = D + L + R$:
-    $$D = \begin{psmallmatrix}
+    $D = \begin{psmallmatrix}
     4 & 0 & 0 \\
     0 & 4 & 0 \\
     0 & 0 & 4
@@ -891,14 +857,14 @@ $$A = \begin{psmallmatrix}
     0 & -1 & 0 \\
     -1 & 0 & -1 \\
     0 & -1 & 0
-    \end{psmallmatrix}$$
+    \end{psmallmatrix}$
     
     \item Jacobi-Matrix $M = -D^{-1}(L+R)$:
-    $$M = \begin{psmallmatrix}
+    $M = \begin{psmallmatrix}
     0 & 1/4 & 0 \\
     1/4 & 0 & 1/4 \\
     0 & 1/4 & 0
-    \end{psmallmatrix}$$
+    \end{psmallmatrix}$
     
     \item Eigenwerte von $M$: $\lambda_1 = 0.5$, $\lambda_2 = 0$, $\lambda_3 = -0.5$
     
@@ -906,9 +872,8 @@ $$A = \begin{psmallmatrix}
     
     \item Schlussfolgerung:
     \begin{itemize}
-        \item Jacobi-Verfahren konvergiert
+        \item Jacobi-Verfahren konvergiert (Konvergenzrate ist linear)
         \item Fehler reduziert sich pro Iteration etwa um Faktor 0.5
-        \item Konvergenzrate ist linear
     \end{itemize}
 \end{enumerate}
 \end{example2}
