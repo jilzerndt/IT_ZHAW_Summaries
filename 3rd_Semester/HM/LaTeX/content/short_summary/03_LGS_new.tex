@@ -2,122 +2,7 @@
 
 \section{Numerische Lösung linearer Gleichungssysteme}
 
-\begin{definition}{Linear System of Equations}
-Given $A \in \mathbb{R}^{n\times n}$ and $b \in \mathbb{R}^n$, find $x \in \mathbb{R}^n$ such that:
-$$Ax = b \quad \text{or} \quad \sum_{j=1}^n a_{ij}x_j = b_i, \quad i=1,\ldots,n$$
-\end{definition}
 
-\begin{KR}{Systematisches Vorgehen bei LGS}
-\begin{enumerate}
-    \item Eigenschaften der Matrix analysieren:
-    \begin{itemize}
-        \item Diagonaldominanz prüfen
-        \item Konditionszahl berechnen oder abschätzen
-        \item Symmetrie erkennen
-    \end{itemize}
-    
-    \item Verfahren auswählen:
-    \begin{itemize}
-        \item Direkte Verfahren: für kleinere Systeme
-        \item Iterative Verfahren: für große, dünnbesetzte Systeme
-        \item Spezialverfahren: für symmetrische/bandförmige Matrizen
-    \end{itemize}
-    
-    \item Implementation planen:
-    \begin{itemize}
-        \item Pivotisierung bei Gauss berücksichtigen
-        \item Speicherbedarf beachten
-        \item Abbruchkriterien festlegen
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-\begin{KR}{Systematische Verfahrensauswahl für LGS}
-\begin{enumerate}
-    \item Eigenschaften der Matrix analysieren:
-    \begin{itemize}
-        \item Diagonaldominanz prüfen
-        \item Konditionszahl berechnen oder abschätzen 
-        \item Symmetrie erkennen
-    \end{itemize}
-    
-    \item Verfahren auswählen:
-    \begin{itemize}
-        \item Direkte Verfahren: für kleinere Systeme
-        \item Iterative Verfahren: für große, dünnbesetzte Systeme
-        \item Spezialverfahren: für symmetrische/bandförmige Matrizen
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-\begin{example2}{Verfahrensauswahl}
-Gegeben ist das LGS $Ax = b$ mit:
-$$A = \begin{pmatrix} 
-4 & -1 & 0 \\
--1 & 4 & -1 \\
-0 & -1 & 4
-\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix}$$
-
-\paragraph{Analyse:}
-\begin{itemize}
-    \item Matrix ist symmetrisch
-    \item Streng diagonaldominant
-    \item Dünnbesetzt (tridiagonal)
-\end{itemize}
-
-\paragraph{Verfahrenswahl:}
-\begin{itemize}
-    \item Gauss: möglich wegen kleiner Dimension
-    \item Gauss-Seidel: konvergiert wegen Diagonaldominanz
-    \item LR-Zerlegung: effizient wegen Bandstruktur
-\end{itemize}
-\end{example2}
-
-\begin{example2}{Method Selection}
-Given system $Ax=b$ with:
-$$A = \begin{pmatrix} 
-4 & -1 & 0 \\
--1 & 4 & -1 \\
-0 & -1 & 4
-\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix}$$
-
-\paragraph{Analysis:}
-\begin{itemize}
-    \item Matrix is symmetric
-    \item Strictly diagonally dominant
-    \item Sparse (tridiagonal)
-\end{itemize}
-
-\paragraph{Method Choice:}
-\begin{itemize}
-    \item Gauss: feasible due to small size
-    \item Gauss-Seidel: converges due to diagonal dominance
-    \item LR: efficient for band structure
-\end{itemize}
-\end{example2}
-
-\begin{example2}{Verfahrensauswahl}
-Gegeben ist das LGS $Ax = b$ mit:
-$$A = \begin{pmatrix} 
-4 & -1 & 0 \\
--1 & 4 & -1 \\
-0 & -1 & 4
-\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix}$$
-
-\paragraph{Analyse:}
-\begin{itemize}
-    \item Matrix ist symmetrisch
-    \item Streng diagonaldominant
-    \item Dünnbesetzt (tridiagonal)
-\end{itemize}
-
-\paragraph{Verfahrenswahl:}
-\begin{itemize}
-    \item Gauss: möglich wegen kleiner Dimension
-    \item Gauss-Seidel: konvergiert wegen Diagonaldominanz
-    \item LR-Zerlegung: effizient wegen Bandstruktur
-\end{itemize}
-\end{example2}
 
 \begin{concept}{Permutationsmatrix} $P$ ist eine Matrix, die aus der Einheitsmatrix durch Zeilenvertauschungen entsteht. 
     \vspace{1mm}\\
@@ -249,87 +134,9 @@ $
     \end{itemize}
 \end{concept}
 
-\begin{KR}{Zeilenvertauschungen verfolgen}
-\begin{enumerate}
-    \item Initialisiere $P = I_n$
-    \item Für jede Vertauschung von Zeile $i$ und $j$:
-    \begin{itemize}
-        \item Erstelle $P_k$ durch Vertauschen von Zeilen $i,j$ in $I_n$
-        \item Aktualisiere $P = P_k \cdot P$
-        \item Wende Vertauschung auf Matrix an: $A := P_kA$
-    \end{itemize}
-    \item Bei der LR-Zerlegung mit Pivotisierung:
-    \begin{itemize}
-        \item $PA = LR$ 
-        \item Löse $Ly = Pb$ und $Rx = y$
-    \end{itemize}
-\end{enumerate}
-\end{KR}
 
-\begin{KR}{Gauss-Algorithmus mit Pivotisierung}
-\begin{enumerate}
-    \item Vorbereitung:
-    \begin{itemize}
-        \item Erweiterte Matrix $(A|b)$ aufstellen
-        \item Pivotisierungsstrategie wählen
-    \end{itemize}
-    
-    \item Elimination:
-    \begin{itemize}
-        \item Für jede Spalte $i$:
-        \item Pivotelement in Spalte $i$ bestimmen
-        \item Zeilenvertauschung falls nötig
-        \item Nullen unterhalb erzeugen
-    \end{itemize}
-    
-    \item Rückwärtseinsetzen:
-    $$x_i = \frac{b_i - \sum_{j=i+1}^n a_{ij}x_j}{a_{ii}}, \quad i=n,n-1,\ldots,1$$
-    
-    \item Kontrolle:
-    \begin{itemize}
-        \item Residuum $\|Ax-b\|$ berechnen
-        \item Pivotisierungsschritte protokollieren
-    \end{itemize}
-\end{enumerate}
-\end{KR}
 
-\begin{example2}{Gauss mit Pivotisierung}
-Lösen Sie $Ax = b$ mit:
-$$A = \begin{pmatrix} 
-1 & 2 & 1 \\
-2 & 4 & -1 \\
-4 & -2 & 1
-\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 2 \\ 0 \end{pmatrix}$$
 
-\paragraph{Lösung:}
-\begin{enumerate}
-    \item Erste Spalte: Pivot $a_{31} = 4$ $\rightarrow$ Z1 $\leftrightarrow $ Z3
-    $$\begin{pmatrix} 
-    4 & -2 & 1 & | & 0 \\
-    2 & 4 & -1 & | & 2 \\
-    1 & 2 & 1 & | & 1
-    \end{pmatrix}$$
-    
-    \item Eliminationsschritte:
-    $$\begin{pmatrix} 
-    4 & -2 & 1 & | & 0 \\
-    0 & 5 & -1.5 & | & 2 \\
-    0 & 2.5 & 0.75 & | & 1
-    \end{pmatrix}$$
-    $$\begin{pmatrix} 
-    4 & -2 & 1 & | & 0 \\
-    0 & 5 & -1.5 & | & 2 \\
-    0 & 0 & 1.5 & | & 0.2
-    \end{pmatrix}$$
-    
-    \item Rückwärtseinsetzen:
-    \begin{align*}
-        x_3 &= 0.2/1.5 = \frac{2}{15} \\
-        x_2 &= (2 + 1.5 \cdot \frac{2}{15})/5 = 0.5 \\
-        x_1 &= (0 + 2 \cdot 0.5 - 1 \cdot \frac{2}{15})/4 = 0.2
-    \end{align*}
-\end{enumerate}
-\end{example2}
 
 \subsection{Matrix-Zerlegungen}
 
@@ -358,109 +165,14 @@ $A = LR$
 wobei $L$ eine normierte untere und $R$ eine obere Dreiecksmatrix ist.
 \end{theorem}
 
-\begin{KR}{Berechnung der LR-Zerlegung}\\
-So berechnen Sie die LR-Zerlegung:
-\begin{enumerate}
-    \item Führen Sie Gauss-Elimination durch
-    \item $R$ ist die resultierende obere Dreiecksmatrix
-    \item Die Eliminationsfaktoren $-\frac{a_{ji}}{a_{ii}}$ bilden $L$
-    \item Lösen Sie dann nacheinander:
-        \begin{itemize}
-            \item $Ly = b$ (Vorwärtseinsetzen)
-            \item $Rx = y$ (Rückwärtseinsetzen)
-        \end{itemize}
-\end{enumerate}
-\end{KR}
-
-\begin{example2}[breakable]{LR-Zerlegung}
-    %TODO: check if this is correct and/or relevant - either correct or replace with better example
-$A = \begin{psmallmatrix}
--1 & 1 & 1\\
-1 & -3 & -2\\
-5 & 1 & 4
-\end{psmallmatrix}, \quad b = \begin{psmallmatrix}
-0\\
-5\\
-3
-\end{psmallmatrix}$
-
-\paragraph{Schritt 1: Erste Spalte}
-Max. Element in 1. Spalte: $|a_{31}| = 5$, also Z1 und Z3 tauschen:
-$$P_1 = \begin{psmallmatrix}
-0 & 0 & 1\\
-0 & 1 & 0\\
-1 & 0 & 0
-\end{psmallmatrix}, \quad A^{(1)} = \begin{psmallmatrix}
-5 & 1 & 4\\
-1 & -3 & -2\\
--1 & 1 & 1
-\end{psmallmatrix}$$
-Berechne Eliminationsfaktoren:
-$l_{21} = \frac{1}{5}, \quad l_{31} = -\frac{1}{5}$
-\vspace{2mm}\\
-Nach Elimination:
-$A^{(2)} = \begin{psmallmatrix}
-5 & 1 & 4\\
-0 & -3.2 & -2.8\\
-0 & 1.2 & 1.8
-\end{psmallmatrix}$
-
-\paragraph{Schritt 2: Zweite Spalte}
-Max. Element in 2. Spalte unter Diagonale: $|-3.2| > |1.2|$, \\ keine Vertauschung nötig.
-\vspace{2mm}\\
-Berechne Eliminationsfaktor:
-$l_{32} = \frac{1.2}{-3.2} = -\frac{3}{8}$
-\vspace{2mm}\\
-Nach Elimination:
-$R = \begin{psmallmatrix}
-5 & 1 & 4\\
-0 & -3.2 & -2.8\\
-0 & 0 & 0.75
-\end{psmallmatrix}$
-
-\paragraph{Endergebnis}
-Die LR-Zerlegung mit $PA = LR$ ist:
-\vspace{2mm}\\
-$P = P_1 = \begin{psmallmatrix}
-0 & 0 & 1\\
-0 & 1 & 0\\
-1 & 0 & 0
-\end{psmallmatrix}$, 
-$L = \begin{psmallmatrix}
-1 & 0 & 0\\
-\frac{1}{5} & 1 & 0\\
--\frac{1}{5} & -\frac{3}{8} & 1
-\end{psmallmatrix}, 
-R = \begin{psmallmatrix}
-5 & 1 & 4\\
-0 & -3.2 & -2.8\\
-0 & 0 & 0.75
-\end{psmallmatrix}$
-
-\paragraph{Lösung des Systems}
-\begin{enumerate}
-    \item $Pb = \begin{psmallmatrix} 3\\ 5\\ 0 \end{psmallmatrix}$
-    \item Löse $Ly = Pb$ durch Vorwärtseinsetzen:
-    $y = \begin{psmallmatrix} 3\\ 4.4\\ 2.25 \end{psmallmatrix}$
-    \item Löse $Rx = y$ durch Rückwärtseinsetzen:
-    $x = \begin{psmallmatrix} -1\\ -4\\ 3 \end{psmallmatrix}$
-\end{enumerate}
-
-\paragraph{Probe}
-$$Ax = \begin{psmallmatrix}
--1 & 1 & 1\\
-1 & -3 & -2\\
-5 & 1 & 4
-\end{psmallmatrix} \begin{psmallmatrix} -1\\ -4\\ 3 \end{psmallmatrix} = \begin{psmallmatrix} 0\\ 5\\ 3 \end{psmallmatrix} = b$$
-\end{example2}
-
 \begin{KR}{LR-Zerlegung durchführen}
+    $(E | A | E) \underbrace{\leadsto}_{Gauss} (P | R | L)$
 \begin{enumerate}
     \item Zerlegung bestimmen:
     \begin{itemize}
-        \item Gauss-Schritte durchführen
-        \item Eliminationsfaktoren in $L$ speichern
-        \item Resultierende Dreiecksmatrix ist $R$
+        \item Gauss-Elimination durchführen
+        \item Eliminationsfaktoren $-\frac{a_{ji}}{a_{ii}}$ in $L$ speichern
+        \item Resultierende obere Dreiecksmatrix ist $R$
     \end{itemize}
     
     \item System lösen:
@@ -478,35 +190,114 @@ $$Ax = \begin{psmallmatrix}
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{LR-Zerlegung}
-Bestimmen Sie die LR-Zerlegung von:
-$$A = \begin{pmatrix}
-2 & 1 & 1 \\
-4 & -2 & -1 \\
--2 & 3 & -1
-\end{pmatrix}$$
+\begin{remark}
+    $E$ = Einheitsmatrix, $P$ = Permutationsmatrix
+\end{remark}
 
-\paragraph{Lösung:}
+
+\begin{example2}[breakable]{LR-Zerlegung}
+$\underbrace{\begin{psmallmatrix}
+-1 & 1 & 1\\
+1 & -3 & -2\\
+5 & 1 & 4
+\end{psmallmatrix}}_{A}, \underbrace{\begin{psmallmatrix}
+0\\
+5\\
+3
+\end{psmallmatrix}}_{b}
+\rightarrow \begin{vsmallmatrix}
+0 & 0 & 1\\
+0 & 1 & 0\\
+1 & 0 & 0
+\end{vsmallmatrix} \begin{vsmallmatrix}
+-1 & 1 & 1\\
+1 & -3 & -2\\
+5 & 1 & 4
+\end{vsmallmatrix}
+\begin{vsmallmatrix}
+1 & 0 & 0\\
+0 & 1 & 0\\
+0 & 0 & 1
+\end{vsmallmatrix}$
+
+\paragraph{Schritt 1: Erste Spalte}
+Max. Element in 1. Spalte: $|a_{31}| = 5$, also Z1 und Z3 tauschen:
+
+\begin{minipage}{0.5\textwidth}
+$$\begin{vsmallmatrix}
+0 & 0 & 1\\
+0 & 1 & 0\\
+1 & 0 & 0
+\end{vsmallmatrix} \begin{vsmallmatrix}
+5 & 1 & 4\\
+1 & -3 & -2\\
+-1 & 1 & 1
+\end{vsmallmatrix}
+\begin{vsmallmatrix}
+1 & 0 & 0\\
+0 & 1 & 0\\
+0 & 0 & 1
+\end{vsmallmatrix}$$
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+    \vspace{2mm}
+    Eliminationsfaktoren:\\
+    $l_{21} = \frac{1}{5}, \quad l_{31} = -\frac{1}{5}$
+\end{minipage}
+
+
+Nach Elimination:
+$\begin{vsmallmatrix}
+0 & 0 & 1\\
+0 & 1 & 0\\
+1 & 0 & 0
+\end{vsmallmatrix} \begin{vsmallmatrix}
+5 & 1 & 4\\
+0 & -3.2 & -2.8\\
+0 & 1.2 & 1.8
+\end{vsmallmatrix}
+\begin{vsmallmatrix}
+1 & 0 & 0\\
+\frac{1}{5} & 1 & 0\\
+-\frac{1}{5} & 0 & 1
+\end{vsmallmatrix}$
+
+\paragraph{Schritt 2: Zweite Spalte}
+Max. Element in 2. Spalte unter Diagonale: $|-3.2| > |1.2|$, \\ keine Vertauschung nötig.
+Eliminationsfaktor:
+$l_{32} = \frac{1.2}{-3.2} = -\frac{3}{8}$
+\vspace{2mm}\\
+Nach Elimination:
+$\underbrace{\begin{vsmallmatrix}
+0 & 0 & 1\\
+0 & 1 & 0\\
+1 & 0 & 0
+\end{vsmallmatrix}}_{P} \underbrace{\begin{vsmallmatrix}
+5 & 1 & 4\\
+0 & -3.2 & -2.8\\
+0 & 0 & 0.75
+\end{vsmallmatrix}}_{R}
+\underbrace{\begin{vsmallmatrix}
+1 & 0 & 0\\
+\frac{1}{5} & 1 & 0\\
+-\frac{1}{5} & -\frac{3}{8} & 1
+\end{vsmallmatrix}}_{L}$
+
+\paragraph{Lösung des Systems}
 \begin{enumerate}
-    \item Eliminationsfaktoren:
-    \begin{itemize}
-        \item $l_{21} = 4/2 = 2$
-        \item $l_{31} = -2/2 = -1$
-        \item $l_{32} = 1/(-4) = -0.25$
-    \end{itemize}
-    
-    \item Zerlegung:
-    $$L = \begin{pmatrix}
-    1 & 0 & 0 \\
-    2 & 1 & 0 \\
-    -1 & -0.25 & 1
-    \end{pmatrix}$$
-    $$R = \begin{pmatrix}
-    2 & 1 & 1 \\
-    0 & -4 & -3 \\
-    0 & 0 & -0.25
-    \end{pmatrix}$$
+    \item $Pb = \begin{psmallmatrix} 3\\ 5\\ 0 \end{psmallmatrix}$
+    \item Löse $Ly = Pb$ durch Vorwärtseinsetzen:
+    $y = \begin{psmallmatrix} 3\\ 4.4\\ 2.25 \end{psmallmatrix}$
+    \item Löse $Rx = y$ durch Rückwärtseinsetzen:
+    $x = \begin{psmallmatrix} -1\\ -4\\ 3 \end{psmallmatrix}$
 \end{enumerate}
+
+Probe:
+$Ax = \begin{psmallmatrix}
+-1 & 1 & 1\\
+1 & -3 & -2\\
+5 & 1 & 4
+\end{psmallmatrix} \begin{psmallmatrix} -1\\ -4\\ 3 \end{psmallmatrix} = \begin{psmallmatrix} 0\\ 5\\ 3 \end{psmallmatrix} = b$
 \end{example2}
 
 \columnbreak
@@ -654,6 +445,81 @@ R = \begin{psmallmatrix}
 
 
 
+\subsubsection{Iterative Verfahren}
+
+\begin{definition}{Zerlegung der Systemmatrix} $A$ zerlegt in: $A = L + D + R$
+    \small
+\begin{itemize}
+    \item $L$: streng untere Dreiecksmatrix
+    \item $D$: Diagonalmatrix
+    \item $R$: streng obere Dreiecksmatrix
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Jacobi-Verfahren}
+Gesamtschrittverfahren 
+\vspace{1mm}\\
+Iteration: $x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$
+\vspace{1mm}\\
+Komponentenweise:
+$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$
+\end{concept}
+
+\begin{concept}{Gauss-Seidel-Verfahren}
+Einzelschrittverfahren 
+\vspace{1mm}\\
+Iteration: $x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$
+\vspace{1mm}\\
+Komponentenweise:\\
+$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$
+\end{concept}
+
+\begin{theorem}{Konvergenzkriterien}
+Ein iteratives Verfahren konvergiert, wenn:
+\begin{enumerate}
+    \item Die Matrix $A$ diagonaldominant ist:\\
+    $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
+    \item Der Spektralradius der Iterationsmatrix kleiner 1 ist:\\
+    $\rho(B) < 1$ mit $B$ als jeweilige Iterationsmatrix
+\end{enumerate}
+\end{theorem}
+
+\begin{KR}{Implementierung von Jacobi- und Gauss-Seidel-Verfahren}
+    \paragraph{Vorbereitungsphase}
+    \begin{itemize}
+        \item Matrix zerlegen in $A = L + D + R$
+        \item Diagonaldominanz prüfen: $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
+        \item Sinnvolle Startwerte wählen (z.B. $x^{(0)}=0$ oder $x^{(0)}=b$)
+        \item Toleranz $\epsilon$ und max. Iterationszahl $n_{max}$ festlegen
+    \end{itemize}
+
+    \paragraph{Verfahren durchführen}
+    \begin{itemize}
+        \item \textbf{Jacobi}: Komponentenweise parallel berechnen 
+        \item \textbf{Gauss-Seidel}: Komponentenweise sequentiell berechnen 
+    \end{itemize}
+
+    \paragraph{Konvergenzprüfung/Abbruchkriterien}
+    \begin{itemize}
+        \item Absolute Änderung: $\|x^{(k+1)} - x^{(k)}\| < \epsilon$
+        \item Relatives Residuum: $\frac{\|Ax^{(k)} - b\|}{\|b\|} < \epsilon$
+        \item Maximale Iterationszahl: $k < n_{max}$
+    \end{itemize}
+
+    \paragraph{A-priori Fehlerabschätzung}
+    \begin{itemize}
+        \item Spektralradius $\rho$ der Iterationsmatrix bestimmen
+        \item Benötigte Iterationen $n$ für Genauigkeit $\epsilon$:\\
+        $n \geq \frac{\ln(\epsilon(1-\rho)/\|x^{(1)}-x^{(0)}\|)}{\ln(\rho)}$
+    \end{itemize}
+\end{KR}
+
+
+
+
+
+
+
 \subsubsection{Fehleranalyse}
 
 \begin{definition}{Matrix- und Vektornormen}\\
@@ -759,162 +625,6 @@ Gauss-Seidel & 7 & $1.0\cdot10^{-6}$ & 1.4\\
 \end{itemize}
 \end{KR}
 
-\columnbreak
-
-\subsubsection{Iterative Verfahren}
-
-\begin{definition}{Zerlegung der Systemmatrix} $A$ zerlegt in: $A = L + D + R$
-    \small
-\begin{itemize}
-    \item $L$: streng untere Dreiecksmatrix
-    \item $D$: Diagonalmatrix
-    \item $R$: streng obere Dreiecksmatrix
-\end{itemize}
-\end{definition}
-
-\begin{concept}{Jacobi-Verfahren}
-Gesamtschrittverfahren 
-\vspace{1mm}\\
-Iteration: $x^{(k+1)} = -D^{-1}(L + R)x^{(k)} + D^{-1}b$
-\vspace{1mm}\\
-Komponentenweise:
-$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)}\right)$
-\end{concept}
-
-\begin{concept}{Gauss-Seidel-Verfahren}
-Einzelschrittverfahren 
-\vspace{1mm}\\
-Iteration: $x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$
-\vspace{1mm}\\
-Komponentenweise:\\
-$x_i^{(k+1)} = \frac{1}{a_{ii}}\left(b_i - \sum_{j=1}^{i-1} a_{ij}x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij}x_j^{(k)}\right)$
-\end{concept}
-
-\begin{KR}{Implementierung von Jacobi- und Gauss-Seidel-Verfahren}
-    \paragraph{Vorbereitungsphase}
-    \begin{itemize}
-        \item Matrix zerlegen in $A = L + D + R$
-        \item Diagonaldominanz prüfen: $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
-        \item Sinnvolle Startwerte wählen (z.B. $x^{(0)}=0$ oder $x^{(0)}=b$)
-        \item Toleranz $\epsilon$ und max. Iterationszahl $n_{max}$ festlegen
-    \end{itemize}
-
-    \paragraph{Verfahren durchführen}
-    \begin{itemize}
-        \item \textbf{Jacobi}: Komponentenweise parallel berechnen 
-        \item \textbf{Gauss-Seidel}: Komponentenweise sequentiell berechnen 
-    \end{itemize}
-
-    \paragraph{Konvergenzprüfung}
-    \begin{itemize}
-        \item Absolute Änderung: $\|x^{(k+1)} - x^{(k)}\| < \epsilon$
-        \item Relatives Residuum: $\frac{\|Ax^{(k)} - b\|}{\|b\|} < \epsilon$
-        \item Maximale Iterationszahl: $k < n_{max}$
-    \end{itemize}
-
-    \paragraph{A-priori Fehlerabschätzung}
-    \begin{itemize}
-        \item Spektralradius $\rho$ der Iterationsmatrix bestimmen
-        \item Benötigte Iterationen $n$ für Genauigkeit $\epsilon$:\\
-        $n \geq \frac{\ln(\epsilon(1-\rho)/\|x^{(1)}-x^{(0)}\|)}{\ln(\rho)}$
-    \end{itemize}
-\end{KR}
-
-\begin{KR}{Iterative Verfahren implementieren}
-\begin{enumerate}
-    \item Matrix zerlegen:
-    \begin{itemize}
-        \item $A = L + D + R$ für Jacobi
-        \item $A = (L+D) + R$ für Gauss-Seidel
-    \end{itemize}
-    
-    \item Konvergenz prüfen:
-    \begin{itemize}
-        \item Diagonaldominanz
-        \item Spektralradius der Iterationsmatrix
-    \end{itemize}
-    
-    \item Iteration durchführen:
-    \begin{itemize}
-        \item Jacobi: $x^{(k+1)} = -D^{-1}(L+R)x^{(k)} + D^{-1}b$
-        \item Gauss-Seidel: $x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$
-    \end{itemize}
-    
-    \item Abbruchkriterien:
-    \begin{itemize}
-        \item Residuum: $\|Ax^{(k)}-b\| < \epsilon$
-        \item Änderung: $\|x^{(k+1)}-x^{(k)}\| < \epsilon$
-        \item Maximale Iterationen
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-\begin{KR}{Implementation of Iterative Methods}
-\begin{enumerate}
-    \item Preparation:
-    \begin{itemize}
-        \item Split matrix $A = L + D + R$
-        \item Check diagonal dominance
-        \item Choose sensible starting values
-        \item Set tolerance $\epsilon$ and max iterations
-    \end{itemize}
-    
-    \item Execute Method:
-    \begin{itemize}
-        \item Jacobi: Compute components in parallel
-        \item Gauss-Seidel: Compute sequentially
-    \end{itemize}
-    
-    \item Check Convergence:
-    \begin{itemize}
-        \item Absolute change: $\|x^{(k+1)} - x^{(k)}\| < \epsilon$
-        \item Relative residual: $\frac{\|Ax^{(k)} - b\|}{\|b\|} < \epsilon$
-        \item Maximum iterations: $k < k_{max}$
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-\begin{example2}{Jacobi vs Gauss-Seidel}
-Gegeben sei das System:
-$$\begin{pmatrix}
-4 & -1 & 0 \\
--1 & 4 & -1 \\
-0 & -1 & 4
-\end{pmatrix} x = \begin{pmatrix}
-1 \\
-0 \\
-1
-\end{pmatrix}$$
-
-\paragraph{Vergleich nach 4 Iterationen:}
-\begin{center}
-\begin{tabular}{c|cc}
-k & Jacobi & Gauss-Seidel \\\hline
-1 & 0.250 & 0.250 \\
-2 & 0.281 & 0.297 \\
-3 & 0.295 & 0.299 \\
-4 & 0.298 & 0.300
-\end{tabular}
-\end{center}
-
-\paragraph{Beobachtungen:}
-\begin{itemize}
-    \item Gauss-Seidel konvergiert schneller
-    \item Beide Verfahren konvergieren monoton
-    \item Konvergenz gegen $x_1 = 0.3$
-\end{itemize}
-\end{example2}
-
-\begin{theorem}{Konvergenzkriterien}
-Ein iteratives Verfahren konvergiert, wenn:
-\begin{enumerate}
-    \item Die Matrix $A$ diagonaldominant ist:\\
-    $|a_{ii}| > \sum_{j\neq i} |a_{ij}|$ für alle $i$
-    \item Der Spektralradius der Iterationsmatrix kleiner 1 ist:\\
-    $\rho(B) < 1$ mit $B$ als jeweilige Iterationsmatrix
-\end{enumerate}
-\end{theorem}
-
 \begin{example2}{Konvergenzverhalten}
 $\begin{psmallmatrix}
 4 & 1 & 0\\
@@ -955,129 +665,51 @@ k & \multicolumn{2}{c|}{Residuum} & \multicolumn{2}{c}{Rel. Fehler}\\
 \end{itemize}
 \end{example2}
 
-\subsection{Aufwandsabschätzung}
+\subsubsection{Vorgehen und Implementation}
 
-\begin{concept}{Rechenaufwand}
-Anzahl benötigter Gleitkommaoperationen für n×n Systeme:
-\begin{itemize}
-    \item Gauss-Elimination: $\frac{2}{3}n^3 + \frac{3}{2}n^2 - \frac{13}{6}n$
-    \item LR-Zerlegung: $\frac{2}{3}n^3 + \frac{7}{2}n^2 - \frac{13}{6}n$
-    \item QR-Zerlegung: $\frac{5}{3}n^3 + 4n^2 + \frac{7}{3}n - 7$
-    \item Cramer'sche Regel: $n(n+1)! - 1$ (nicht praktikabel)
-\end{itemize}
-\end{concept}
-
-\begin{KR}{Aufwand für n×n Systeme abschätzen}
+\begin{KR}{Systematisches Vorgehen bei LGS}
 \begin{enumerate}
-    \item Hauptterm identifizieren:
+    \item Eigenschaften der Matrix analysieren:
     \begin{itemize}
-        \item Kubische Terme dominieren für große n
-        \item Niedrigere Terme vernachlässigbar
+        \item Diagonaldominanz prüfen
+        \item Konditionszahl berechnen oder abschätzen
+        \item Symmetrie erkennen
     \end{itemize}
     
-    \item Ordnung bestimmen:
+    \item Verfahren auswählen:
     \begin{itemize}
-        \item Gauss/LR: $\mathcal{O}(n^3)$
-        \item QR: $\mathcal{O}(n^3)$ aber höherer Vorfaktor
-        \item Iterative Verfahren: $\mathcal{O}(n^2)$ pro Iteration
+        \item Direkte Verfahren: für kleinere Systeme
+        \item Iterative Verfahren: für große, dünnbesetzte Systeme
+        \item Spezialverfahren: für symmetrische/bandförmige Matrizen
     \end{itemize}
     
-    \item Speicherbedarf berücksichtigen:
+    \item Implementation planen:
     \begin{itemize}
-        \item Direkte Verfahren: $\mathcal{O}(n^2)$
-        \item Iterative Verfahren: $\mathcal{O}(n)$ für dünnbesetzte Matrizen
+        \item Pivotisierung bei Gauss berücksichtigen
+        \item Speicherbedarf beachten
+        \item Abbruchkriterien festlegen
     \end{itemize}
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{Rechenzeit-Vergleich}
-System mit $n=1000$ auf einem 100 GFLOPS Rechner:
-\begin{center}
-\begin{tabular}{l|cc}
-Verfahren & Operationen & Zeit \\
-\hline
-Gauss & $0.67\cdot10^9$ & 6.7 ms \\
-LR & $0.67\cdot10^9$ & 6.7 ms \\
-QR & $1.67\cdot10^9$ & 16.7 ms \\
-Cramer & $>10^{2567}$ & >Jahre
-\end{tabular}
-\end{center}
-\end{example2}
-
-\subsection{Spezialfälle}
-
-\begin{concept}{Bandmatrizen}
-Matrizen mit $a_{ij}=0$ für $|i-j|>m$ (Bandbreite $2m+1$)
-\begin{itemize}
-    \item Speicheraufwand: $\mathcal{O}(mn)$ statt $\mathcal{O}(n^2)$
-    \item Rechenaufwand: $\mathcal{O}(mn^2)$ statt $\mathcal{O}(n^3)$
-    \item Häufig bei FEM/Differentialgleichungen
-\end{itemize}
-\end{concept}
-
-\begin{KR}{Bandmatrizen effizient lösen}
+\begin{KR}{Zeilenvertauschungen verfolgen}
 \begin{enumerate}
-    \item Speicherformat wählen:
+    \item Initialisiere $P = I_n$
+    \item Für jede Vertauschung von Zeile $i$ und $j$:
     \begin{itemize}
-        \item Nur Diagonalen speichern
-        \item Komprimierte Speicherung
-        \item Spezielle Datenstrukturen
+        \item Erstelle $P_k$ durch Vertauschen von Zeilen $i,j$ in $I_n$
+        \item Aktualisiere $P = P_k \cdot P$
+        \item Wende Vertauschung auf Matrix an: $A := P_kA$
     \end{itemize}
-    
-    \item Algorithmen anpassen:
+    \item Bei der LR-Zerlegung mit Pivotisierung:
     \begin{itemize}
-        \item Nullen außerhalb des Bandes ignorieren
-        \item Pivotisierung nur innerhalb Band
-        \item Bandstruktur erhalten
-    \end{itemize}
-    
-    \item Effizienz prüfen:
-    \begin{itemize}
-        \item Bandbreite vs. Systemgröße
-        \item Direktes vs. iteratives Verfahren
-        \item Speicherverbrauch kontrollieren
+        \item $PA = LR$ 
+        \item Löse $Ly = Pb$ und $Rx = y$
     \end{itemize}
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{Tridiagonales System}
-Bandmatrix mit $m=1$ (Bandbreite 3):
-$$\begin{pmatrix}
-b_1 & c_1 & 0 & 0 \\
-a_2 & b_2 & c_2 & 0 \\
-0 & a_3 & b_3 & c_3 \\
-0 & 0 & a_4 & b_4
-\end{pmatrix}
-\begin{pmatrix}
-x_1 \\ x_2 \\ x_3 \\ x_4
-\end{pmatrix} = 
-\begin{pmatrix}
-d_1 \\ d_2 \\ d_3 \\ d_4
-\end{pmatrix}$$
 
-\paragraph{Effizienter Thomas-Algorithmus:}
-\begin{enumerate}
-    \item Vorwärtselimination:
-    \begin{align*}
-        c'_1 &= c_1/b_1, \quad d'_1 = d_1/b_1 \\
-        b'_i &= b_i - a_ic'_{i-1} \\
-        c'_i &= c_i/b'_i \\
-        d'_i &= (d_i - a_id'_{i-1})/b'_i
-    \end{align*}
-    
-    \item Rückwärtssubstitution:
-    \begin{align*}
-        x_n &= d'_n \\
-        x_i &= d'_i - c'_ix_{i+1}
-    \end{align*}
-\end{enumerate}
-
-\paragraph{Komplexität:}
-\begin{itemize}
-    \item Speicher: $\mathcal{O}(n)$ statt $\mathcal{O}(n^2)$
-    \item Rechenzeit: $\mathcal{O}(n)$ statt $\mathcal{O}(n^3)$
-\end{itemize}
-\end{example2}
 
 
 

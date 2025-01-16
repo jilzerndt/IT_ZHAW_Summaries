@@ -43,3 +43,40 @@
     \item Führen Sie Iteration durch bis Kriterien erfüllt
 \end{enumerate}
 \end{KR}
+
+\begin{KR}{Implementation von Nullstellenverfahren}
+\begin{enumerate}
+    \item Grundstruktur:
+    \begin{itemize}
+        \item Funktion $f(x)$ definieren
+        \item Ableitung $f'(x)$ falls nötig
+        \item Abbruchkriterien festlegen
+        \item Iterations-Schleife implementieren
+    \end{itemize}
+    
+    \item Abbruchkriterien:
+    \begin{lstlisting}[language=Python, style=base]
+def newton(f, df, x0, eps=1e-6, maxiter=100):
+    x = x0
+    for i in range(maxiter):
+        fx = f(x)
+        if abs(fx) < eps:  # Funktionswert klein genug
+            return x
+        dfx = df(x)
+        if abs(dfx) < eps:  # Division durch Null vermeiden
+            raise ValueError("Ableitung nahe Null")
+        x_new = x - fx/dfx
+        if abs(x_new - x) < eps:  # Aenderung klein genug
+            return x_new
+        x = x_new
+    raise RuntimeError("Keine Konvergenz")
+    \end{lstlisting}
+    
+    \item Fehlerbehandlung beachten:
+    \begin{itemize}
+        \item Division durch Null bei $f'(x) = 0$
+        \item Keine Konvergenz
+        \item Über-/Unterlauf bei großen Zahlen
+    \end{itemize}
+\end{enumerate}
+\end{KR}

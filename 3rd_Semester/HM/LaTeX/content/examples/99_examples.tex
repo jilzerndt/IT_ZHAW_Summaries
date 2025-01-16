@@ -92,6 +92,33 @@ Nullstellenproblem: $f(x)=x^3-2$
 \end{minipage}
 \end{example2}
 
+\begin{example2}{Newton vs Sekanten}
+Bestimmen Sie $\sqrt{2}$ mit beiden Verfahren.
+
+\paragraph{Newton-Verfahren:} $f(x) = x^2-2$
+\begin{itemize}
+    \item $f'(x) = 2x$
+    \item $x_0 = 1.5$
+    \item $x_1 = 1.5 - \frac{1.5^2-2}{2\cdot1.5} = 1.4167$
+    \item $x_2 = 1.4167 - \frac{1.4167^2-2}{2\cdot1.4167} = 1.4142$
+\end{itemize}
+
+\paragraph{Sekantenverfahren:}
+\begin{itemize}
+    \item $x_0 = 1$, $x_1 = 2$
+    \item $x_2 = x_1 - \frac{x_1-x_0}{f(x_1)-f(x_0)}f(x_1) = 1.5$
+    \item $x_3 = 1.5 - \frac{1.5-2}{1.5^2-2}1.5 = 1.4545$
+    \item $x_4 = 1.4545 - \frac{1.4545-1.5}{1.4545^2-2}1.4545 = 1.4143$
+\end{itemize}
+
+\paragraph{Vergleich:}
+\begin{itemize}
+    \item Newton: Schnellere Konvergenz (quadratisch)
+    \item Sekanten: Keine Ableitungsberechnung nötig
+    \item Beide erreichen $10^{-4}$ Genauigkeit in 4-5 Schritten
+\end{itemize}
+\end{example2}
+
 \subsection{Numerische Lösung von LGS}
 
 \begin{example2}{Pivotisierung in der Praxis}
@@ -128,6 +155,44 @@ x_2
 1
 \end{psmallmatrix}$$
 Liefert stabile Lösung: $x_1 = 1$, $x_2 = 1$
+\end{example2}
+
+\begin{example2}{Gauss mit Pivotisierung}
+Lösen Sie $Ax = b$ mit:
+$$A = \begin{pmatrix} 
+1 & 2 & 1 \\
+2 & 4 & -1 \\
+4 & -2 & 1
+\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 2 \\ 0 \end{pmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Erste Spalte: Pivot $a_{31} = 4$ $\rightarrow$ Z1 $\leftrightarrow $ Z3
+    $$\begin{pmatrix} 
+    4 & -2 & 1 & | & 0 \\
+    2 & 4 & -1 & | & 2 \\
+    1 & 2 & 1 & | & 1
+    \end{pmatrix}$$
+    
+    \item Eliminationsschritte:
+    $$\begin{pmatrix} 
+    4 & -2 & 1 & | & 0 \\
+    0 & 5 & -1.5 & | & 2 \\
+    0 & 2.5 & 0.75 & | & 1
+    \end{pmatrix}$$
+    $$\begin{pmatrix} 
+    4 & -2 & 1 & | & 0 \\
+    0 & 5 & -1.5 & | & 2 \\
+    0 & 0 & 1.5 & | & 0.2
+    \end{pmatrix}$$
+    
+    \item Rückwärtseinsetzen:
+    \begin{align*}
+        x_3 &= 0.2/1.5 = \frac{2}{15} \\
+        x_2 &= (2 + 1.5 \cdot \frac{2}{15})/5 = 0.5 \\
+        x_1 &= (0 + 2 \cdot 0.5 - 1 \cdot \frac{2}{15})/4 = 0.2
+    \end{align*}
+\end{enumerate}
 \end{example2}
 
 \begin{example2}{LR-Zerlegung mit Pivotisierung}
@@ -365,6 +430,32 @@ k & $v^{(k)}$ & $\lambda^{(k)}$ \\\hline
 \end{center}
 
 Konvergenz gegen $\lambda_1 \approx 5$ \\ Eigenvektor $v \approx (0.952, -0.245, 0.182)^T$
+\end{example2}
+
+\begin{example2}{Von-Mises-Iteration}
+Bestimmen Sie den betragsmäßig größten Eigenwert von:
+$$A = \begin{psmallmatrix}
+3 & 1 \\
+1 & 3
+\end{psmallmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Start mit $v^{(0)} = \frac{1}{\sqrt{2}}\begin{psmallmatrix} 1 \\ 1 \end{psmallmatrix}$
+    
+    \item Erste Iteration:
+    \begin{itemize}
+        \item $w^{(0)} = \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix}$
+        \item $v^{(1)} = \frac{1}{\sqrt{2}}\begin{psmallmatrix} 1 \\ 1 \end{psmallmatrix}$
+        \item $\lambda^{(1)} = 4$
+    \end{itemize}
+    
+    \item Ergebnis:
+    \begin{itemize}
+        \item Eigenvektor bereits gefunden
+        \item Eigenwert $\lambda = 4$ ist korrekt
+    \end{itemize}
+\end{enumerate}
 \end{example2}
 
 \begin{example2}{QR-Verfahren}

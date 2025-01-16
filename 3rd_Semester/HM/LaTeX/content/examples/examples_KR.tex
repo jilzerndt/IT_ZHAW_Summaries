@@ -1,0 +1,788 @@
+\section{Kochrezepte und Beispiele}
+
+\subsection{Rechnerarithmetik}
+
+\begin{KR}{Maschinenzahlen analysieren}
+\begin{enumerate}
+    \item Anzahl Maschinenzahlen bestimmen:
+    \begin{itemize}
+        \item Basis $B$ identifizieren 
+        \item Mantissenlänge $n$ bestimmen
+        \item Exponentenlänge $l$ bestimmen
+        \item Berechnen: $2 \cdot (B-1) \cdot B^{n-1} \cdot (B^l-1)$
+    \end{itemize}
+    \item Darstellungsbereich bestimmen:
+    \begin{itemize}
+        \item Größte Zahl: $x_{max} = (1-B^{-n})B^{e_{max}}$
+        \item Kleinste positive Zahl: $x_{min} = B^{e_{min}-1}$
+    \end{itemize}
+    \item Maschinengenauigkeit berechnen:
+    \begin{itemize}
+        \item Allgemein: $eps = \frac{B}{2}B^{-n}$
+        \item Dezimal: $eps = 5 \cdot 10^{-n}$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Maschinenzahlen analysieren}
+Gegeben: 15-stellige Gleitpunktzahlen mit 5-stelligem Exponenten im Dualsystem.
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Basis $B=2$, $n=15$, $l=5$
+    \item Anzahl verschiedener Zahlen:
+    \begin{itemize}
+        \item Pro Stelle: $B-1=1$ mögliche Ziffern
+        \item Mantisse: $(B-1)B^{n-1} = 2^{14}$ Kombinationen
+        \item Exponent: $B^l = 2^5 = 32$ Kombinationen
+        \item Mit Vorzeichen: $2 \cdot 2^{14} \cdot 31 = 1\,015\,808$ Zahlen
+    \end{itemize}
+    \item Maschinengenauigkeit:
+    $eps = \frac{2}{2}2^{-15} = 2^{-15} \approx 3.052 \cdot 10^{-5}$
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Konditionierung analysieren}
+\begin{enumerate}
+    \item Ableitung $f'(x)$ bestimmen
+    \item Konditionszahl berechnen:
+    $$K = \frac{|f'(x)| \cdot |x|}{|f(x)|}$$
+    \item Fehler abschätzen:
+    \begin{itemize}
+        \item Absolut: $|f(\tilde{x})-f(x)| \approx |f'(x)| \cdot |\tilde{x}-x|$
+        \item Relativ: $\frac{|f(\tilde{x})-f(x)|}{|f(x)|} \approx K \cdot \frac{|\tilde{x}-x|}{|x|}$
+    \end{itemize}
+    \item Konditionierung beurteilen:
+    \begin{itemize}
+        \item $K \leq 1$: gut konditioniert
+        \item $K > 1$: schlecht konditioniert
+        \item $K \gg 1$: sehr schlecht konditioniert
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Konditionierung berechnen}
+Für $f(x) = \sqrt{1+x^2}$ und $x_0 = 10^{-8}$:
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item $f'(x) = \frac{x}{\sqrt{1+x^2}}$
+    \item $K = \frac{|x \cdot x|}{|\sqrt{1+x^2} \cdot (1+x^2)|} = \frac{x^2}{(1+x^2)^{3/2}}$
+    \item Für $x_0 = 10^{-8}$:
+    \begin{itemize}
+        \item $K(10^{-8}) \approx 10^{-16}$ (gut konditioniert)
+        \item Relativer Fehler wird um Faktor $10^{-16}$ verkleinert
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Auslöschung erkennen und vermeiden}
+\begin{enumerate}
+    \item Auslöschung identifizieren:
+    \begin{itemize}
+        \item Subtraktion ähnlich großer Zahlen
+        \item Viele signifikante Stellen verschwinden
+    \end{itemize}
+    \item Alternative Berechnungen:
+    \begin{itemize}
+        \item Algebraische Umformungen
+        \item Andere mathematische Identitäten
+        \item Taylorentwicklung für kleine Werte
+    \end{itemize}
+    \item Beispiele für bessere Formeln:
+    \begin{itemize}
+        \item $\sqrt{1+x^2}-1 \rightarrow \frac{x^2}{\sqrt{1+x^2}+1}$
+        \item $1-\cos(x) \rightarrow 2\sin^2(x/2)$
+        \item $\ln(1+x) \rightarrow x-\frac{x^2}{2}$ für kleine $x$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Auslöschung vermeiden}
+Berechnen Sie $\sqrt{1+10^{-16}}-1$ mit 16 Dezimalstellen.
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Direkte Berechnung:
+    \begin{itemize}
+        \item $\sqrt{1+10^{-16}} \approx 1.0000000000000000$
+        \item $\sqrt{1+10^{-16}}-1 \approx 0.0000000000000000$
+        \item Alle signifikanten Stellen gehen verloren
+    \end{itemize}
+    \item Alternative Formel:
+    \begin{itemize}
+        \item $\frac{10^{-16}}{\sqrt{1+10^{-16}}+1} \approx 5 \cdot 10^{-17}$
+        \item Korrekte signifikante Stellen bleiben erhalten
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+\raggedcolumns
+
+\subsection{Nullstellenprobleme}
+
+\begin{KR}{Nullstellenproblem systematisch lösen}
+\begin{enumerate}
+    \item Existenz prüfen:
+    \begin{itemize}
+        \item Intervall $[a,b]$ identifizieren
+        \item Vorzeichenwechsel prüfen: $f(a) \cdot f(b) < 0$ 
+        \item Stetigkeit von $f$ sicherstellen
+    \end{itemize}
+    
+    \item Verfahren auswählen:
+    \begin{itemize}
+        \item Fixpunktiteration: wenn einfache Umformung $x = F(x)$ möglich
+        \item Newton: wenn $f'(x)$ leicht berechenbar
+        \item Sekantenverfahren: wenn $f'(x)$ schwer berechenbar
+    \end{itemize}
+    
+    \item Konvergenz sicherstellen:
+    \begin{itemize}
+        \item Fixpunktiteration: $|F'(x)| < 1$ im relevanten Bereich
+        \item Newton: $|\frac{f(x)f''(x)}{[f'(x)]^2}| < 1$ im relevanten Bereich
+        \item Geeigneten Startwert wählen
+    \end{itemize}
+    
+    \item Abbruchkriterien festlegen:
+    \begin{itemize}
+        \item Funktionswert: $|f(x_n)| < \epsilon_1$
+        \item Iterationsschritte: $|x_{n+1}-x_n| < \epsilon_2$
+        \item Maximale Iterationszahl
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Verfahrensauswahl}
+Finden Sie die positive Nullstelle von $f(x) = x^3 - 2x - 5$
+
+\paragraph{Vorgehen:}
+\begin{enumerate}
+    \item Existenz:
+    \begin{itemize}
+        \item $f(2) = -1 < 0$ und $f(3) = 16 > 0$
+        \item $\Rightarrow$ Nullstelle in $[2,3]$
+    \end{itemize}
+    
+    \item Verfahrenswahl:
+    \begin{itemize}
+        \item $f'(x) = 3x^2 - 2$ leicht berechenbar
+        \item $\Rightarrow$ Newton-Verfahren geeignet
+    \end{itemize}
+    
+    \item Konvergenzcheck:
+    \begin{itemize}
+        \item $f'(x) > 0$ für $x > 0.82$
+        \item $f''(x) = 6x$ monoton
+        \item $\Rightarrow$ Newton-Verfahren konvergiert
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Fixpunktiteration anwenden}
+\begin{enumerate}
+    \item Umformung vorbereiten:
+    \begin{itemize}
+        \item $f(x) = 0$ in $x = F(x)$ umformen
+        \item Verschiedene Umformungen testen
+        \item Form mit kleinstem $|F'(x)|$ wählen
+    \end{itemize}
+    
+    \item Konvergenznachweis:
+    \begin{itemize}
+        \item Intervall $[a,b]$ bestimmen mit $F([a,b]) \subseteq [a,b]$
+        \item $\alpha = \max_{x \in [a,b]} |F'(x)|$ berechnen
+        \item Prüfen ob $\alpha < 1$
+    \end{itemize}
+    
+    \item Fehlerabschätzung:
+    \begin{itemize}
+        \item A-priori: $|x_n-\bar{x}| \leq \frac{\alpha^n}{1-\alpha}|x_1-x_0|$
+        \item A-posteriori: $|x_n-\bar{x}| \leq \frac{\alpha}{1-\alpha}|x_n-x_{n-1}|$
+    \end{itemize}
+    
+    \item Iterationszahl bestimmen:
+    $$n \geq \frac{\ln(\frac{\text{tol}(1-\alpha)}{|x_1-x_0|})}{\ln \alpha}$$
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Fixpunktiteration}
+Bestimmen Sie $\sqrt{3}$ mittels Fixpunktiteration.
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Umformung: $x^2 = 3 \Rightarrow x = \frac{x^2+3}{2x} =: F(x)$
+    
+    \item Konvergenznachweis für $[1,2]$:
+    \begin{itemize}
+        \item $F'(x) = \frac{x^2-3}{2x^2}$
+        \item $|F'(x)| \leq \alpha = 0.25 < 1$ für $x \in [1,2]$
+        \item $F([1,2]) \subseteq [1,2]$
+    \end{itemize}
+    
+    \item Für Genauigkeit $10^{-6}$:
+    \begin{itemize}
+        \item $|x_1-x_0| = |1.5-2| = 0.5$
+        \item $n \geq \frac{\ln(10^{-6} \cdot 0.75/0.5)}{\ln 0.25} \approx 12$
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Newton-Verfahren anwenden}
+\begin{enumerate}
+    \item Vorbereitung:
+    \begin{itemize}
+        \item $f'(x)$ bestimmen
+        \item Startwert $x_0$ nahe der Nullstelle wählen
+        \item $f'(x_0) \neq 0$ prüfen
+    \end{itemize}
+    
+    \item Iteration durchführen:
+    $$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
+    
+    \item Konvergenz prüfen:
+    \begin{itemize}
+        \item $|\frac{f(x)f''(x)}{[f'(x)]^2}| < 1$ im relevanten Bereich
+        \item Quadratische Konvergenz erwarten
+    \end{itemize}
+    
+    \item Fehlerabschätzung:
+    \begin{itemize}
+        \item $|x_n-\bar{x}| < \epsilon$ falls
+        \item $f(x_n-\epsilon) \cdot f(x_n+\epsilon) < 0$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Newton vs Sekanten}
+Bestimmen Sie $\sqrt{2}$ mit beiden Verfahren.
+
+\paragraph{Newton-Verfahren:} $f(x) = x^2-2$
+\begin{itemize}
+    \item $f'(x) = 2x$
+    \item $x_0 = 1.5$
+    \item $x_1 = 1.5 - \frac{1.5^2-2}{2\cdot1.5} = 1.4167$
+    \item $x_2 = 1.4167 - \frac{1.4167^2-2}{2\cdot1.4167} = 1.4142$
+\end{itemize}
+
+\paragraph{Sekantenverfahren:}
+\begin{itemize}
+    \item $x_0 = 1$, $x_1 = 2$
+    \item $x_2 = x_1 - \frac{x_1-x_0}{f(x_1)-f(x_0)}f(x_1) = 1.5$
+    \item $x_3 = 1.5 - \frac{1.5-2}{1.5^2-2}1.5 = 1.4545$
+    \item $x_4 = 1.4545 - \frac{1.4545-1.5}{1.4545^2-2}1.4545 = 1.4143$
+\end{itemize}
+
+\paragraph{Vergleich:}
+\begin{itemize}
+    \item Newton: Schnellere Konvergenz (quadratisch)
+    \item Sekanten: Keine Ableitungsberechnung nötig
+    \item Beide erreichen $10^{-4}$ Genauigkeit in 4-5 Schritten
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Typische Prüfungsaufgaben lösen}
+\begin{enumerate}
+    \item Theorieaufgaben:
+    \begin{itemize}
+        \item Konvergenzordnungen vergleichen
+        \item Konvergenzbeweise durchführen
+        \item Fehlerabschätzungen herleiten
+    \end{itemize}
+    
+    \item Praktische Aufgaben:
+    \begin{itemize}
+        \item Existenz von Nullstellen nachweisen
+        \item Geeignetes Verfahren auswählen
+        \item 2-3 Iterationsschritte durchführen
+        \item Konvergenzgeschwindigkeit vergleichen
+    \end{itemize}
+    
+    \item Implementierungsaufgaben:
+    \begin{itemize}
+        \item Verfahren in Python implementieren
+        \item Abbruchkriterien einbauen
+        \item Konvergenzverhalten visualisieren
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\subsection{Lineare Gleichungssysteme}
+
+\begin{KR}{Systematisches Vorgehen bei LGS}
+\begin{enumerate}
+    \item Eigenschaften der Matrix analysieren:
+    \begin{itemize}
+        \item Diagonaldominanz prüfen
+        \item Konditionszahl berechnen oder abschätzen
+        \item Symmetrie erkennen
+    \end{itemize}
+    
+    \item Verfahren auswählen:
+    \begin{itemize}
+        \item Direkte Verfahren: für kleinere Systeme
+        \item Iterative Verfahren: für große, dünnbesetzte Systeme
+        \item Spezialverfahren: für symmetrische/bandförmige Matrizen
+    \end{itemize}
+    
+    \item Implementation planen:
+    \begin{itemize}
+        \item Pivotisierung bei Gauss berücksichtigen
+        \item Speicherbedarf beachten
+        \item Abbruchkriterien festlegen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Verfahrensauswahl}
+Gegeben ist das LGS $Ax = b$ mit:
+$$A = \begin{pmatrix} 
+4 & -1 & 0 \\
+-1 & 4 & -1 \\
+0 & -1 & 4
+\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix}$$
+
+\paragraph{Analyse:}
+\begin{itemize}
+    \item Matrix ist symmetrisch
+    \item Streng diagonaldominant
+    \item Dünnbesetzt (tridiagonal)
+\end{itemize}
+
+\paragraph{Verfahrenswahl:}
+\begin{itemize}
+    \item Gauss: möglich wegen kleiner Dimension
+    \item Gauss-Seidel: konvergiert wegen Diagonaldominanz
+    \item LR-Zerlegung: effizient wegen Bandstruktur
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Gauss-Algorithmus mit Pivotisierung}
+\begin{enumerate}
+    \item Vorbereitung:
+    \begin{itemize}
+        \item Erweiterte Matrix $(A|b)$ aufstellen
+        \item Pivotisierungsstrategie wählen
+    \end{itemize}
+    
+    \item Elimination:
+    \begin{itemize}
+        \item Für jede Spalte $i$:
+        \item Pivotelement in Spalte $i$ bestimmen
+        \item Zeilenvertauschung falls nötig
+        \item Nullen unterhalb erzeugen
+    \end{itemize}
+    
+    \item Rückwärtseinsetzen:
+    $$x_i = \frac{b_i - \sum_{j=i+1}^n a_{ij}x_j}{a_{ii}}, \quad i=n,n-1,\ldots,1$$
+    
+    \item Kontrolle:
+    \begin{itemize}
+        \item Residuum $\|Ax-b\|$ berechnen
+        \item Pivotisierungsschritte protokollieren
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Gauss mit Pivotisierung}
+Lösen Sie $Ax = b$ mit:
+$$A = \begin{pmatrix} 
+1 & 2 & 1 \\
+2 & 4 & -1 \\
+4 & -2 & 1
+\end{pmatrix}, \quad b = \begin{pmatrix} 1 \\ 2 \\ 0 \end{pmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Erste Spalte: Pivot $a_{31} = 4$ $\rightarrow$ Z1 $\leftrightarrow $ Z3
+    $$\begin{pmatrix} 
+    4 & -2 & 1 & | & 0 \\
+    2 & 4 & -1 & | & 2 \\
+    1 & 2 & 1 & | & 1
+    \end{pmatrix}$$
+    
+    \item Eliminationsschritte:
+    $$\begin{pmatrix} 
+    4 & -2 & 1 & | & 0 \\
+    0 & 5 & -1.5 & | & 2 \\
+    0 & 2.5 & 0.75 & | & 1
+    \end{pmatrix}$$
+    $$\begin{pmatrix} 
+    4 & -2 & 1 & | & 0 \\
+    0 & 5 & -1.5 & | & 2 \\
+    0 & 0 & 1.5 & | & 0.2
+    \end{pmatrix}$$
+    
+    \item Rückwärtseinsetzen:
+    \begin{align*}
+        x_3 &= 0.2/1.5 = \frac{2}{15} \\
+        x_2 &= (2 + 1.5 \cdot \frac{2}{15})/5 = 0.5 \\
+        x_1 &= (0 + 2 \cdot 0.5 - 1 \cdot \frac{2}{15})/4 = 0.2
+    \end{align*}
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{LR-Zerlegung durchführen}
+\begin{enumerate}
+    \item Zerlegung bestimmen:
+    \begin{itemize}
+        \item Gauss-Schritte durchführen
+        \item Eliminationsfaktoren in $L$ speichern
+        \item Resultierende Dreiecksmatrix ist $R$
+    \end{itemize}
+    
+    \item System lösen:
+    \begin{itemize}
+        \item Vorwärtseinsetzen: $Ly = b$
+        \item Rückwärtseinsetzen: $Rx = y$
+    \end{itemize}
+    
+    \item Bei Pivotisierung:
+    \begin{itemize}
+        \item Permutationsmatrix $P$ erstellen
+        \item $PA = LR$ speichern
+        \item $Ly = Pb$ lösen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{LR-Zerlegung}
+Bestimmen Sie die LR-Zerlegung von:
+$$A = \begin{pmatrix}
+2 & 1 & 1 \\
+4 & -2 & -1 \\
+-2 & 3 & -1
+\end{pmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Eliminationsfaktoren:
+    \begin{itemize}
+        \item $l_{21} = 4/2 = 2$
+        \item $l_{31} = -2/2 = -1$
+        \item $l_{32} = 1/(-4) = -0.25$
+    \end{itemize}
+    
+    \item Zerlegung:
+    $$L = \begin{pmatrix}
+    1 & 0 & 0 \\
+    2 & 1 & 0 \\
+    -1 & -0.25 & 1
+    \end{pmatrix}$$
+    $$R = \begin{pmatrix}
+    2 & 1 & 1 \\
+    0 & -4 & -3 \\
+    0 & 0 & -0.25
+    \end{pmatrix}$$
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Iterative Verfahren implementieren}
+\begin{enumerate}
+    \item Matrix zerlegen:
+    \begin{itemize}
+        \item $A = L + D + R$ für Jacobi
+        \item $A = (L+D) + R$ für Gauss-Seidel
+    \end{itemize}
+    
+    \item Konvergenz prüfen:
+    \begin{itemize}
+        \item Diagonaldominanz
+        \item Spektralradius der Iterationsmatrix
+    \end{itemize}
+    
+    \item Iteration durchführen:
+    \begin{itemize}
+        \item Jacobi: $x^{(k+1)} = -D^{-1}(L+R)x^{(k)} + D^{-1}b$
+        \item Gauss-Seidel: $x^{(k+1)} = -(D+L)^{-1}Rx^{(k)} + (D+L)^{-1}b$
+    \end{itemize}
+    
+    \item Abbruchkriterien:
+    \begin{itemize}
+        \item Residuum: $\|Ax^{(k)}-b\| < \epsilon$
+        \item Änderung: $\|x^{(k+1)}-x^{(k)}\| < \epsilon$
+        \item Maximale Iterationen
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Jacobi vs Gauss-Seidel}
+Gegeben sei das System:
+$$\begin{pmatrix}
+4 & -1 & 0 \\
+-1 & 4 & -1 \\
+0 & -1 & 4
+\end{pmatrix} x = \begin{pmatrix}
+1 \\
+0 \\
+1
+\end{pmatrix}$$
+
+\paragraph{Vergleich nach 4 Iterationen:}
+\begin{center}
+\begin{tabular}{c|cc}
+k & Jacobi & Gauss-Seidel \\\hline
+1 & 0.250 & 0.250 \\
+2 & 0.281 & 0.297 \\
+3 & 0.295 & 0.299 \\
+4 & 0.298 & 0.300
+\end{tabular}
+\end{center}
+
+\paragraph{Beobachtungen:}
+\begin{itemize}
+    \item Gauss-Seidel konvergiert schneller
+    \item Beide Verfahren konvergieren monoton
+    \item Konvergenz gegen $x_1 = 0.3$
+\end{itemize}
+\end{example2}
+
+\subsection{Komplexe Zahlen und Eigenwertprobleme}
+
+\begin{KR}{Komplexe Zahlen umrechnen}
+\begin{enumerate}
+    \item Normalform $\leftrightarrow$ Polarform:
+    \begin{itemize}
+        \item Betrag: $r = \sqrt{x^2 + y^2}$
+        \item Winkel: $\varphi = \arctan(\frac{y}{x})$ (Quadrant beachten!)
+        \item Normalform: $z = x + iy$
+        \item Polarform: $z = r(\cos\varphi + i\sin\varphi) = re^{i\varphi}$
+    \end{itemize}
+    
+    \item Rechenoperationen:
+    \begin{itemize}
+        \item Addition: $(x_1 + iy_1) + (x_2 + iy_2) = (x_1+x_2) + i(y_1+y_2)$
+        \item Multiplikation: $r_1r_2e^{i(\varphi_1 + \varphi_2)}$
+        \item Division: $\frac{r_1}{r_2}e^{i(\varphi_1 - \varphi_2)}$
+        \item n-te Potenz: $r^ne^{in\varphi}$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Komplexe Operationen}
+Gegeben $z_1 = 1+i$ und $z_2 = 2-i$:
+
+\paragraph{Umrechnung in Polarform:}
+\begin{itemize}
+    \item $z_1: r_1 = \sqrt{2}$, $\varphi_1 = \frac{\pi}{4}$
+    \item $z_2: r_2 = \sqrt{5}$, $\varphi_2 = -\arctan(\frac{1}{2})$
+\end{itemize}
+
+\paragraph{Berechnungen:}
+\begin{itemize}
+    \item $z_1 \cdot z_2 = (2-i)(1+i) = (2+1) + i(2-1) = 3+i$
+    \item $z_1^3 = (\sqrt{2})^3(\cos(\frac{3\pi}{4}) + i\sin(\frac{3\pi}{4}))$
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Eigenwerte bestimmen}
+\begin{enumerate}
+    \item Charakteristisches Polynom aufstellen:
+    \begin{itemize}
+        \item $p(\lambda) = \det(A-\lambda I)$ berechnen
+        \item Auf Standardform bringen
+    \end{itemize}
+    
+    \item Nullstellen bestimmen:
+    \begin{itemize}
+        \item Quadratische Formel für $n=2$
+        \item Cardano-Formel für $n=3$
+        \item Numerische Verfahren für $n>3$
+    \end{itemize}
+    
+    \item Vielfachheiten bestimmen:
+    \begin{itemize}
+        \item Algebraische Vielfachheit: Nullstellenordnung
+        \item Geometrische Vielfachheit: $n-\operatorname{rang}(A-\lambda I)$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Charakteristisches Polynom}
+Bestimmen Sie die Eigenwerte von:
+$$A = \begin{pmatrix}
+2 & -1 & 0 \\
+-1 & 2 & -1 \\
+0 & -1 & 2
+\end{pmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item $p(\lambda) = \det(A-\lambda I)$:
+    $$\begin{vmatrix}
+    2-\lambda & -1 & 0 \\
+    -1 & 2-\lambda & -1 \\
+    0 & -1 & 2-\lambda
+    \end{vmatrix}$$
+    
+    \item Determinante entwickeln:
+    $$p(\lambda) = (2-\lambda)^3 - 2(2-\lambda) = -\lambda^3 + 6\lambda^2 - 11\lambda + 6$$
+    
+    \item Nullstellen:
+    $$\lambda_1 = 1, \lambda_2 = 2, \lambda_3 = 3$$
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Eigenvektoren bestimmen}
+\begin{enumerate}
+    \item Für jeden Eigenwert $\lambda$:
+    \begin{itemize}
+        \item $(A-\lambda I)x = 0$ aufstellen
+        \item Homogenes LGS lösen
+        \item Lösungsvektor normieren
+    \end{itemize}
+    
+    \item Bei mehrfachen Eigenwerten:
+    \begin{itemize}
+        \item Geometrische Vielfachheit bestimmen
+        \item Basis des Eigenraums finden
+    \end{itemize}
+    
+    \item Kontrolle:
+    \begin{itemize}
+        \item $Ax = \lambda x$ überprüfen
+        \item Orthogonalität bei symmetrischen Matrizen
+        \item Linear unabhängig?
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Eigenvektoren}
+Bestimmen Sie die Eigenvektoren zum Eigenwert $\lambda=2$ der Matrix:
+$$A = \begin{pmatrix}
+2 & 1 & 0 \\
+0 & 2 & 0 \\
+0 & -1 & 2
+\end{pmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item $(A-2I)x = 0$:
+    $$\begin{pmatrix}
+    0 & 1 & 0 \\
+    0 & 0 & 0 \\
+    0 & -1 & 0
+    \end{pmatrix} \begin{pmatrix}
+    x_1 \\ x_2 \\ x_3
+    \end{pmatrix} = \begin{pmatrix}
+    0 \\ 0 \\ 0
+    \end{pmatrix}$$
+    
+    \item Homogenes System lösen:
+    \begin{itemize}
+        \item $x_2 = 0$ (aus 1. Zeile)
+        \item $x_1, x_3$ frei wählbar
+    \end{itemize}
+    
+    \item Basis des Eigenraums:
+    $$v_1 = \begin{pmatrix} 1 \\ 0 \\ 0 \end{pmatrix}, 
+    v_2 = \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix}$$
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{QR-Algorithmus anwenden}
+\begin{enumerate}
+    \item Initialisierung:
+    \begin{itemize}
+        \item $A_0 := A$
+        \item $Q_0 := I_n$
+    \end{itemize}
+    
+    \item Iteration:
+    \begin{itemize}
+        \item QR-Zerlegung: $A_k = Q_kR_k$
+        \item Neue Matrix: $A_{k+1} = R_kQ_k$
+        \item Update: $P_{k+1} = P_kQ_k$
+    \end{itemize}
+    
+    \item Abbruch wenn:
+    \begin{itemize}
+        \item Subdiagonalelemente klein
+        \item Diagonalelemente konvergieren
+        \item Maximale Iterationen erreicht
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{QR-Iteration}
+Führen Sie eine QR-Iteration durch für:
+$$A = \begin{pmatrix}
+1 & 1 \\
+1 & 0
+\end{pmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item QR-Zerlegung von $A$:
+    $$Q_1 = \frac{1}{\sqrt{2}}\begin{pmatrix}
+    1 & -1 \\
+    1 & 1
+    \end{pmatrix}, 
+    R_1 = \frac{1}{\sqrt{2}}\begin{pmatrix}
+    \sqrt{2} & 1 \\
+    0 & -1
+    \end{pmatrix}$$
+    
+    \item Neue Matrix:
+    $$A_1 = R_1Q_1 = \begin{pmatrix}
+    1.5 & 0.5 \\
+    0.5 & -0.5
+    \end{pmatrix}$$
+    
+    \item Konvergenz nach mehreren Iterationen gegen:
+    $$A_\infty \approx \begin{pmatrix}
+    \phi & 0 \\
+    0 & -\phi^{-1}
+    \end{pmatrix}$$
+    mit $\phi = \frac{1+\sqrt{5}}{2}$
+\end{enumerate}
+\end{example2}
+
+\begin{KR}{Vektoriteration durchführen}
+\begin{enumerate}
+    \item Voraussetzungen prüfen:
+    \begin{itemize}
+        \item Matrix diagonalisierbar
+        \item $|\lambda_1| > |\lambda_2|$
+    \end{itemize}
+    
+    \item Iteration:
+    \begin{itemize}
+        \item $w^{(k)} = Av^{(k)}$
+        \item $v^{(k+1)} = \frac{w^{(k)}}{\|w^{(k)}\|}$
+        \item $\lambda^{(k+1)} = \frac{(v^{(k)})^TAv^{(k)}}{(v^{(k)})^Tv^{(k)}}$
+    \end{itemize}
+    
+    \item Konvergenz:
+    \begin{itemize}
+        \item $v^{(k)} \to$ Eigenvektor zu $|\lambda_1|$
+        \item $\lambda^{(k)} \to |\lambda_1|$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Von-Mises-Iteration}
+Bestimmen Sie den betragsmäßig größten Eigenwert von:
+$$A = \begin{pmatrix}
+3 & 1 \\
+1 & 3
+\end{pmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Start mit $v^{(0)} = \frac{1}{\sqrt{2}}\begin{pmatrix} 1 \\ 1 \end{pmatrix}$
+    
+    \item Erste Iteration:
+    \begin{itemize}
+        \item $w^{(0)} = \begin{pmatrix} 4 \\ 4 \end{pmatrix}$
+        \item $v^{(1)} = \frac{1}{\sqrt{2}}\begin{pmatrix} 1 \\ 1 \end{pmatrix}$
+        \item $\lambda^{(1)} = 4$
+    \end{itemize}
+    
+    \item Ergebnis:
+    \begin{itemize}
+        \item Eigenvektor bereits gefunden
+        \item Eigenwert $\lambda = 4$ ist korrekt
+    \end{itemize}
+\end{enumerate}
+\end{example2}

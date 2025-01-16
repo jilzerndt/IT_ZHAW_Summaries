@@ -30,11 +30,20 @@ dann existiert mindestens eine Nullstelle $\xi \in (a,b)$.
     \begin{itemize}
         \item Fixpunktiteration: $|F'(x)| < 1$ im relevanten Bereich
         \item Newton: $|\frac{f(x)f''(x)}{[f'(x)]^2}| < 1$ im relevanten Bereich
-        \item Geeigneten Startwert wählen:
+        \item Sekanten: Konvergenzgeschwindigkeit beachten
+    \end{itemize}
+
+    \item Geeigneten Startwert wählen:
+    \begin{itemize}
+        \item Fixpunkt: $x_0$ im Intervall und nahe Fixpunkt ($|f'(x)| < 1$)
+        \item Newton: $f'(x_0) \neq 0$
         \begin{itemize}
-            \item Fixpunkt: $x_0$ nahe Fixpunkt
-            \item Newton: $f'(x_0) \neq 0$
-            \item Sekanten: Zwei Startwerte $x_0$ und $x_1$: $f(x_0) \neq f(x_1)$
+            \item Bei mehrfachen Nullstellen: Start zwischen Wendepunkt und Nullstelle
+            \item Für Polynome: Startwerte zwischen -1 und 1 oft geeignet
+        \end{itemize}
+        \item Sekanten: Zwei Startwerte $x_0$ und $x_1$: $f(x_0) \neq f(x_1)$
+        \begin{itemize}
+            \item Idealerweise auf verschiedenen Seiten der Nullstelle
         \end{itemize}
     \end{itemize}
     
@@ -47,7 +56,9 @@ dann existiert mindestens eine Nullstelle $\xi \in (a,b)$.
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{Verfahrensauswahl}
+
+
+\begin{example2}{Verfahrensauswahl}\\
 Finden Sie die positive Nullstelle von $f(x) = x^3 - 2x - 5$
 
 \paragraph{Vorgehen:}
@@ -73,72 +84,10 @@ Finden Sie die positive Nullstelle von $f(x) = x^3 - 2x - 5$
 \end{enumerate}
 \end{example2}
 
-\begin{remark}
-    NSP: Nullstellenproblem, NS: Nullstelle
-\end{remark}
 
-\begin{KR}{Typische Prüfungsaufgaben lösen}
-\begin{enumerate}
-    \item Theorieaufgaben:
-    \begin{itemize}
-        \item Konvergenzordnungen vergleichen
-        \item Konvergenzbeweise durchführen
-        \item Fehlerabschätzungen herleiten
-    \end{itemize}
-    
-    \item Praktische Aufgaben:
-    \begin{itemize}
-        \item Existenz von Nullstellen nachweisen
-        \item Geeignetes Verfahren auswählen
-        \item 2-3 Iterationsschritte durchführen
-        \item Konvergenzgeschwindigkeit vergleichen
-    \end{itemize}
-    
-    \item Implementierungsaufgaben:
-    \begin{itemize}
-        \item Verfahren in Python implementieren
-        \item Abbruchkriterien einbauen
-        \item Konvergenzverhalten visualisieren
-    \end{itemize}
-\end{enumerate}
-\end{KR}
 
-\begin{KR}{Implementation von Nullstellenverfahren}
-\begin{enumerate}
-    \item Grundstruktur:
-    \begin{itemize}
-        \item Funktion $f(x)$ definieren
-        \item Ableitung $f'(x)$ falls nötig
-        \item Abbruchkriterien festlegen
-        \item Iterations-Schleife implementieren
-    \end{itemize}
-    
-    \item Abbruchkriterien:
-    \begin{lstlisting}[language=Python, style=base]
-def newton(f, df, x0, eps=1e-6, maxiter=100):
-    x = x0
-    for i in range(maxiter):
-        fx = f(x)
-        if abs(fx) < eps:  # Funktionswert klein genug
-            return x
-        dfx = df(x)
-        if abs(dfx) < eps:  # Division durch Null vermeiden
-            raise ValueError("Ableitung nahe Null")
-        x_new = x - fx/dfx
-        if abs(x_new - x) < eps:  # Aenderung klein genug
-            return x_new
-        x = x_new
-    raise RuntimeError("Keine Konvergenz")
-    \end{lstlisting}
-    
-    \item Fehlerbehandlung beachten:
-    \begin{itemize}
-        \item Division durch Null bei $f'(x) = 0$
-        \item Keine Konvergenz
-        \item Über-/Unterlauf bei großen Zahlen
-    \end{itemize}
-\end{enumerate}
-\end{KR}
+
+
 
 \subsubsection{Fixpunktiteration}
 
@@ -155,54 +104,7 @@ $$\text{Die rekursive Folge }x_{n+1} \equiv F(x_n), \quad n=0,1,2,\ldots$$
 heisst Fixpunktiteration von $F$ zum Startwert $x_0$.
 \end{concept}
 
-\begin{KR}{Fixpunktiteration anwenden}
-\begin{enumerate}
-    \item Umformung vorbereiten:
-    \begin{itemize}
-        \item $f(x) = 0$ in $x = F(x)$ umformen
-        \item Verschiedene Umformungen testen
-        \item Form mit kleinstem $|F'(x)|$ wählen
-    \end{itemize}
-    
-    \item Konvergenznachweis:
-    \begin{itemize}
-        \item Intervall $[a,b]$ bestimmen mit $F([a,b]) \subseteq [a,b]$
-        \item $\alpha = \max_{x \in [a,b]} |F'(x)|$ berechnen
-        \item Prüfen ob $\alpha < 1$
-    \end{itemize}
-    
-    \item Fehlerabschätzung:
-    \begin{itemize}
-        \item A-priori: $|x_n-\bar{x}| \leq \frac{\alpha^n}{1-\alpha}|x_1-x_0|$
-        \item A-posteriori: $|x_n-\bar{x}| \leq \frac{\alpha}{1-\alpha}|x_n-x_{n-1}|$
-    \end{itemize}
-    
-    \item Iterationszahl bestimmen:
-    $$n \geq \frac{\ln(\frac{\text{tol}(1-\alpha)}{|x_1-x_0|})}{\ln \alpha}$$
-\end{enumerate}
-\end{KR}
 
-\begin{example2}{Fixpunktiteration}
-Bestimmen Sie $\sqrt{3}$ mittels Fixpunktiteration.
-
-\paragraph{Lösung:}
-\begin{enumerate}
-    \item Umformung: $x^2 = 3 \Rightarrow x = \frac{x^2+3}{2x} =: F(x)$
-    
-    \item Konvergenznachweis für $[1,2]$:
-    \begin{itemize}
-        \item $F'(x) = \frac{x^2-3}{2x^2}$
-        \item $|F'(x)| \leq \alpha = 0.25 < 1$ für $x \in [1,2]$
-        \item $F([1,2]) \subseteq [1,2]$
-    \end{itemize}
-    
-    \item Für Genauigkeit $10^{-6}$:
-    \begin{itemize}
-        \item $|x_1-x_0| = |1.5-2| = 0.5$
-        \item $n \geq \frac{\ln(10^{-6} \cdot 0.75/0.5)}{\ln 0.25} \approx 12$
-    \end{itemize}
-\end{enumerate}
-\end{example2}
 
 \begin{theorem}{Konvergenzverhalten}\\
 Sei $F:[a,b] \rightarrow \mathbb{R}$ mit stetiger Ableitung $F'$ und $\bar{x} \in [a,b]$ ein Fixpunkt von $F$. Dann gilt für die Fixpunktiteration $x_{n+1}=F(x_n)$:
@@ -254,6 +156,9 @@ $F:[a,b] \rightarrow [a,b]$ und $\exists$ Konstante $\alpha$:
 \begin{KR}{Konvergenznachweis für Fixpunktiteration}
 \begin{enumerate}
     \item Bringe die Gleichung in Fixpunktform: $f(x)=0 \Rightarrow x = F(x)$
+    \begin{itemize}
+        \item Form mit kleinstem $|F'(x)|$ wählen
+    \end{itemize}
     \item Prüfe, ob $F$ das Intervall $[a,b]$ in sich abbildet:
     \begin{itemize}
         \item Wähle geeignetes Intervall ($[a,b]$ $F(a) \geq a$ und $F(b) \leq b$)
@@ -261,6 +166,11 @@ $F:[a,b] \rightarrow [a,b]$ und $\exists$ Konstante $\alpha$:
     \item Bestimme die Lipschitz-Konstante $\alpha$: $\rightarrow$ Berechne $F'(x)$
     \begin{itemize}
         \item Finde $\alpha = \max_{x \in [a,b]} |F'(x)|$ und prüfe $\alpha < 1$
+    \end{itemize}
+    \item Fehlerabschätzung:
+    \begin{itemize}
+        \item A-priori: $|x_n-\bar{x}| \leq \frac{\alpha^n}{1-\alpha}|x_1-x_0|$
+        \item A-posteriori: $|x_n-\bar{x}| \leq \frac{\alpha}{1-\alpha}|x_n-x_{n-1}|$
     \end{itemize}
 \end{enumerate}
 
@@ -282,6 +192,24 @@ Umformung in Fixpunktform: $x = \ln(x+2)$, also $F(x)=\ln(x+2)$
     \item $\alpha = \max_{x \in [1,2]} |\frac{1}{x+2}| = \frac{1}{3} < 1$
     \item Konvergenz für Startwerte in $[1,2]$ gesichert
     \item Für Genauigkeit $10^{-6}$ benötigt: $n \geq 12$ Iterationen
+\end{enumerate}
+\end{example2}
+
+
+\begin{example2}{Fixpunktiteration}
+Bestimmen Sie $\sqrt{3}$ mittels Fixpunktiteration.
+\begin{enumerate}
+    \item Umformung: $x^2 = 3 \Rightarrow x = \frac{x^2+3}{2x} =: F(x)$
+    
+    \item Konvergenznachweis für $[1,2]$: $F'(x) = \frac{x^2-3}{2x^2}$
+
+    \item $F([1,2]) \subseteq [1,2]$ und $|F'(x)| \leq \alpha = 0.25 < 1$ für $x \in [1,2]$
+    
+    \item Für Genauigkeit $10^{-6}$:
+    \begin{itemize}
+        \item $|x_1-x_0| = |1.5-2| = 0.5$
+        \item $n \geq \frac{\ln(10^{-6} \cdot 0.75/0.5)}{\ln 0.25} \approx 12$
+    \end{itemize}
 \end{enumerate}
 \end{example2}
 
@@ -323,6 +251,11 @@ Umformung in Fixpunktform: $x = \ln(x+2)$, also $F(x)=\ln(x+2)$
         \item Änderung aufeinanderfolgenden Werte: $|x_{n+1}-x_n| < \epsilon_2$
         \item Maximale Iterationszahl nicht überschritten
     \end{itemize}
+    \item Fehlerabschätzung:
+    \begin{itemize}
+        \item $|x_n-\bar{x}| < \epsilon$ falls
+        \item $f(x_n-\epsilon) \cdot f(x_n+\epsilon) < 0$
+    \end{itemize}
 \end{enumerate}
 \end{KR}
 
@@ -342,58 +275,9 @@ Ableitung: $f'(x) = 2x$, Startwert $x_0 = 1$
 \end{minipage}
 \end{example2}
 
-\begin{KR}{Newton-Verfahren anwenden}
-\begin{enumerate}
-    \item Vorbereitung:
-    \begin{itemize}
-        \item $f'(x)$ bestimmen
-        \item Startwert $x_0$ nahe der Nullstelle wählen
-        \item $f'(x_0) \neq 0$ prüfen
-    \end{itemize}
-    
-    \item Iteration durchführen:
-    $$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
-    
-    \item Konvergenz prüfen:
-    \begin{itemize}
-        \item $|\frac{f(x)f''(x)}{[f'(x)]^2}| < 1$ im relevanten Bereich
-        \item Quadratische Konvergenz erwarten
-    \end{itemize}
-    
-    \item Fehlerabschätzung:
-    \begin{itemize}
-        \item $|x_n-\bar{x}| < \epsilon$ falls
-        \item $f(x_n-\epsilon) \cdot f(x_n+\epsilon) < 0$
-    \end{itemize}
-\end{enumerate}
-\end{KR}
 
-\begin{example2}{Newton vs Sekanten}
-Bestimmen Sie $\sqrt{2}$ mit beiden Verfahren.
 
-\paragraph{Newton-Verfahren:} $f(x) = x^2-2$
-\begin{itemize}
-    \item $f'(x) = 2x$
-    \item $x_0 = 1.5$
-    \item $x_1 = 1.5 - \frac{1.5^2-2}{2\cdot1.5} = 1.4167$
-    \item $x_2 = 1.4167 - \frac{1.4167^2-2}{2\cdot1.4167} = 1.4142$
-\end{itemize}
 
-\paragraph{Sekantenverfahren:}
-\begin{itemize}
-    \item $x_0 = 1$, $x_1 = 2$
-    \item $x_2 = x_1 - \frac{x_1-x_0}{f(x_1)-f(x_0)}f(x_1) = 1.5$
-    \item $x_3 = 1.5 - \frac{1.5-2}{1.5^2-2}1.5 = 1.4545$
-    \item $x_4 = 1.4545 - \frac{1.4545-1.5}{1.4545^2-2}1.4545 = 1.4143$
-\end{itemize}
-
-\paragraph{Vergleich:}
-\begin{itemize}
-    \item Newton: Schnellere Konvergenz (quadratisch)
-    \item Sekanten: Keine Ableitungsberechnung nötig
-    \item Beide erreichen $10^{-4}$ Genauigkeit in 4-5 Schritten
-\end{itemize}
-\end{example2}
 
 \begin{theorem}{Vereinfachtes Newton-Verfahren}\\
     \begin{minipage}{0.5\textwidth}
@@ -442,129 +326,26 @@ $f_2(x,y) = y - x^2 = 0$
 \paragraph{Lösung:}
 \begin{enumerate}
     \item Jacobi-Matrix aufstellen:
-    $$J = \begin{pmatrix} 
+    $J = \begin{psmallmatrix} 
     2x & 2y \\
     -2x & 1
-    \end{pmatrix}$$
+    \end{psmallmatrix}$
     
-    \item Newton-Iteration:
-    $$\begin{pmatrix} x_{k+1} \\ y_{k+1} \end{pmatrix} = 
+    \item Newton-Iteration:\\
+    $\begin{pmatrix} x_{k+1} \\ y_{k+1} \end{pmatrix} = 
     \begin{pmatrix} x_k \\ y_k \end{pmatrix} - 
-    J^{-1}(x_k,y_k) \begin{pmatrix} f_1(x_k,y_k) \\ f_2(x_k,y_k) \end{pmatrix}$$
+    J^{-1}(x_k,y_k) \begin{pmatrix} f_1(x_k,y_k) \\ f_2(x_k,y_k) \end{pmatrix}$
     
     \item Mit Startwert $(0.5, 0.25)$ erste Iteration durchführen
 \end{enumerate}
 \end{example2}
 
-\begin{KR}{Implementierung von Nullstellenverfahren}
-\begin{enumerate}
-    \item Grundstruktur:
-    \begin{itemize}
-        \item Funktion $f(x)$ definieren
-        \item Ableitung $f'(x)$ falls nötig
-        \item Abbruchkriterien festlegen
-        \item Iterations-Schleife implementieren
-    \end{itemize}
-    
-    \item Abbruchkriterien:
-    \begin{lstlisting}[language=Python, style=base]
-def newton(f, df, x0, eps=1e-6, maxiter=100):
-    x = x0
-    for i in range(maxiter):
-        fx = f(x)
-        if abs(fx) < eps:  # Funktionswert klein genug
-            return x
-        dfx = df(x)
-        if abs(dfx) < eps:  # Division durch Null vermeiden
-            raise ValueError("Ableitung nahe Null")
-        x_new = x - fx/dfx
-        if abs(x_new - x) < eps:  # Aenderung klein genug
-            return x_new
-        x = x_new
-    raise RuntimeError("Keine Konvergenz")
-    \end{lstlisting}
-    
-    \item Fehlerbehandlung beachten:
-    \begin{itemize}
-        \item Division durch Null bei $f'(x) = 0$
-        \item Keine Konvergenz
-        \item Über-/Unterlauf bei großen Zahlen
-    \end{itemize}
-\end{enumerate}
-\end{KR}
 
-\begin{example2}{Fehleranalyse der Verfahren}
-Vergleich der Fehlerkonvergenz für $f(x) = e^x - x - 2$:
 
-\paragraph{Theoretisch:}
-\begin{itemize}
-    \item Newton: $|e_{n+1}| \leq C|e_n|^2$ mit $e_n = x_n - \xi$
-    \item Sekanten: $|e_{n+1}| \leq C|e_n|^{1.618}$
-    \item Fixpunkt: $|e_{n+1}| \leq \alpha|e_n|$ mit $\alpha < 1$
-\end{itemize}
 
-\paragraph{Praktisch:} Mit $x_0 = 1$:
-\begin{center}
-\begin{tabular}{l|c|c|c}
-n & $|x_n-\xi|_{Newton}$ & $|x_n-\xi|_{Sekanten}$ & $|x_n-\xi|_{Fixpunkt}$ \\\hline
-1 & 1.0e-1 & 2.3e-1 & 3.1e-1 \\
-2 & 5.2e-3 & 4.5e-2 & 9.6e-2 \\
-3 & 1.4e-5 & 3.8e-3 & 3.0e-2
-\end{tabular}
-\end{center}
-\end{example2}
-
-\begin{KR}{Vergleichende Fehleranalyse}
-\begin{enumerate}
-    \item Theoretische Analyse:
-    \begin{itemize}
-        \item Konvergenzordnung bestimmen
-        \item Fehlerabschätzungen herleiten
-        \item Konvergenzbereich identifizieren
-    \end{itemize}
-    
-    \item Praktische Analyse:
-    \begin{itemize}
-        \item Iterationsschritte zählen
-        \item Relative Fehler berechnen
-        \item Konvergenzgeschwindigkeit visualisieren
-    \end{itemize}
-    
-    \item Vergleichskriterien:
-    \begin{itemize}
-        \item Rechenaufwand pro Iteration
-        \item Anzahl benötigter Iterationen
-        \item Robustheit/Zuverlässigkeit
-        \item Konvergenzbereich
-    \end{itemize}
-\end{enumerate}
-\end{KR}
-
-\begin{example2}{Fehleranalyse der Verfahren}
-Vergleich der Fehlerkonvergenz für $f(x) = e^x - x - 2$:
-
-\paragraph{Theoretisch:}
-\begin{itemize}
-    \item Newton: $|e_{n+1}| \leq C|e_n|^2$ mit $e_n = x_n - \xi$
-    \item Sekanten: $|e_{n+1}| \leq C|e_n|^{1.618}$
-    \item Fixpunkt: $|e_{n+1}| \leq \alpha|e_n|$ mit $\alpha < 1$
-\end{itemize}
-
-\paragraph{Praktisch:} Mit $x_0 = 1$:
-\begin{center}
-\begin{tabular}{l|c|c|c}
-n & $|x_n-\xi|_{Newton}$ & $|x_n-\xi|_{Sekanten}$ & $|x_n-\xi|_{Fixpunkt}$ \\\hline
-1 & 1.0e-1 & 2.3e-1 & 3.1e-1 \\
-2 & 5.2e-3 & 4.5e-2 & 9.6e-2 \\
-3 & 1.4e-5 & 3.8e-3 & 3.0e-2
-\end{tabular}
-\end{center}
-\end{example2}
 
 
 \subsubsection{Fehlerabschätzung}
-
-
 
 \begin{KR}{Fehlerabschätzung für Nullstellen}\\
 So schätzen Sie den Fehler einer Näherungslösung ab:
@@ -627,5 +408,28 @@ So schätzen Sie den Fehler einer Näherungslösung ab:
     4 & 1.4142136 & 1.4125000 & 1.4142136
     \end{tabular}
     \end{center}
+\end{example2}
+
+
+
+\begin{example2}{Fehleranalyse der Verfahren}
+Vergleich der Fehlerkonvergenz für $f(x) = e^x - x - 2$:
+
+\paragraph{Theoretisch:}
+\begin{itemize}
+    \item Newton: $|e_{n+1}| \leq C|e_n|^2$ mit $e_n = x_n - \xi$
+    \item Sekanten: $|e_{n+1}| \leq C|e_n|^{1.618}$
+    \item Fixpunkt: $|e_{n+1}| \leq \alpha|e_n|$ mit $\alpha < 1$
+\end{itemize}
+
+\paragraph{Praktisch:} Mit $x_0 = 1$:
+\begin{center}
+\begin{tabular}{l|c|c|c}
+n & $|x_n-\xi|_{Newton}$ & $|x_n-\xi|_{Sekanten}$ & $|x_n-\xi|_{Fixpunkt}$ \\\hline
+1 & 1.0e-1 & 2.3e-1 & 3.1e-1 \\
+2 & 5.2e-3 & 4.5e-2 & 9.6e-2 \\
+3 & 1.4e-5 & 3.8e-3 & 3.0e-2
+\end{tabular}
+\end{center}
 \end{example2}
 
