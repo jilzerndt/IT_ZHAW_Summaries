@@ -1,28 +1,9 @@
+
 \section{Implementation, Refactoring und Testing}
 
-\subsection{Design to Code}
+\subsection{Von Design zu Code}
 
-\begin{concept}{Umsetzungsstrategien}
-\textbf{Code-Driven Development:}
-\begin{itemize}
-    \item Direkte Implementierung der Klassen
-    \item Nachträgliches Testing
-\end{itemize}
-
-\textbf{Test-Driven Development (TDD):}
-\begin{itemize}
-    \item Tests vor Implementation
-    \item Red-Green-Refactor Zyklus
-\end{itemize}
-
-\textbf{Behavior-Driven Development (BDD):}
-\begin{itemize}
-    \item Testbeschreibung aus Anwendersicht
-    \item Gherkin-Syntax für Szenarios
-\end{itemize}
-\end{concept}
-
-\begin{KR}{Implementation Grundsätze}
+\begin{KR}{Clean Code}\\
 \textbf{1. Code-Guidelines:}
 \begin{itemize}
     \item Einheitliche Formatierung
@@ -45,13 +26,85 @@
 \end{itemize}
 \end{KR}
 
+\begin{concept}{Implementierungsstrategien}\\
+\textbf{1. Bottom-Up Entwicklung:}
+\begin{itemize}
+    \item Implementierung beginnt mit Basisbausteinen
+    \item Schrittweise Integration zu größeren Komponenten
+    \item \textbf{Vorteile:} Gründlich, solide Basis
+    \item \textbf{Nachteile:} Spätes Feedback
+\end{itemize}
+
+\textbf{2. Agile Entwicklung:}
+\begin{itemize}
+    \item Inkrementelle Entwicklung in Sprints
+    \item Kontinuierliche Integration und Auslieferung
+    \item \textbf{Vorteile:} Flexibilität, schnelles Feedback
+    \item \textbf{Nachteile:} Mögliche Restrukturierung nötig
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Entwicklungsansätze}\\
+\textbf{Code-Driven Development (CDD):}
+\begin{itemize}
+    \item Direkte Implementierung der Klassen
+    \item Nachträgliches Testing
+\end{itemize}
+
+\textbf{Test-Driven Development (TDD):}
+\begin{itemize}
+    \item Tests vor Implementation
+    \item Red-Green-Refactor Zyklus
+\end{itemize}
+
+\textbf{Behavior-Driven Development (BDD):}
+\begin{itemize}
+    \item Testbeschreibung aus Anwendersicht
+    \item Gherkin-Syntax für Szenarios
+\end{itemize}
+\end{definition}
+
+\begin{example2}{Prüfungsaufgabe: Entwicklungsansätze vergleichen}
+\textbf{Szenario:}
+Ein Team soll eine neue Webanwendung entwickeln. Diskutieren Sie die Vor- und Nachteile 
+von TDD gegenüber CDD für dieses Projekt.
+
+\textbf{Musterlösung:}
+\begin{itemize}
+    \item \textbf{TDD Vorteile:}
+    \begin{itemize}
+        \item Testbare Architektur von Anfang an
+        \item Frühe Fehlererkennung
+        \item Dokumentation durch Tests
+        \item Sicherheit bei Refactoring
+    \end{itemize}
+    
+    \item \textbf{TDD Nachteile:}
+    \begin{itemize}
+        \item Initial höherer Zeitaufwand
+        \item Lernkurve für das Team
+        \item Schwierig bei unklaren Anforderungen
+    \end{itemize}
+    
+    \item \textbf{Empfehlung:}
+    \begin{itemize}
+        \item TDD für kritische Kernkomponenten
+        \item CDD für Prototypen und UI
+        \item Hybridansatz je nach Modulkritikalität
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\columnbreak
+
+
 \subsection{Refactoring}
 
-\begin{definition}{Refactoring Grundlagen}
+\begin{definition}{Refactoring Grundlagen}\\
 Strukturierte Verbesserung des Codes ohne Änderung des externen Verhaltens:
 \begin{itemize}
     \item Kleine, kontrollierte Schritte
-    \item Erhaltung der Funktionalität 
+    \item Erhaltung der Funktionalität (Externes Verhalten bleibt gleich)
     \item Verbesserung der Codequalität und interner Struktur
     \item Ziel: Bessere Wartbarkeit und Erweiterbarkeit
 \end{itemize}
@@ -60,17 +113,51 @@ Strukturierte Verbesserung des Codes ohne Änderung des externen Verhaltens:
 \begin{definition}{Code Smells}
 Anzeichen für mögliche Probleme im Code:
 \begin{itemize}
-    \item Duplizierter Code
-    \item Lange Methoden
-    \item Klassen mit vielen Instanzvariablen
-    \item Klassen mit sehr viel Code
-    \item Auffällig ähnliche Unterklassen
-    \item Keine Interfaces
-    \item Hohe Kopplung zwischen Klassen
+    \item \textbf{Duplizierter Code:} Gleicher Code an mehreren Stellen
+    \item \textbf{Lange Methoden:} Methoden mit zu vielen Verantwortlichkeiten
+    \item \textbf{Große Klassen:} Klassen mit vielen Instanzvariablen
+    \item \textbf{Auffällig ähnliche Unterklassen:} Potential für Abstraktion
+    \item \textbf{Hohe Kopplung:} Zu viele Abhängigkeiten zwischen Klassen
+    \item \textbf{Keine Interfaces:} Mangelnde Abstraktion
 \end{itemize}
 \end{definition}
 
-\begin{KR}{Refactoring Patterns}
+\begin{concept}{Laufzeit-Optimierung}\\
+\textbf{Grundregeln:}
+\begin{itemize}
+    \item Zuerst messen, dann optimieren
+    \item Performance-Profile nutzen
+    \item Bottlenecks identifizieren
+\end{itemize}
+
+\textbf{Häufige Probleme:}
+\begin{itemize}
+    \item Datenbank-Zugriffe
+    \item Ineffiziente Algorithmen
+    \item Speicherlecks
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Refactoring Durchführung}\\
+\textbf{1. Code Smells identifizieren:}
+\begin{itemize}
+    \item Duplizierter Code
+    \item Lange Methoden
+    \item Große Klassen
+    \item Hohe Kopplung
+\end{itemize}
+
+\textbf{2. Refactoring durchführen:}
+\begin{itemize}
+    \item Tests sicherstellen
+    \item Änderungen vornehmen
+    \item Tests ausführen
+\end{itemize}
+
+\textbf{3. Patterns anwenden}
+\end{KR}
+
+\begin{formula}{Refactoring Patterns}\\
 \textbf{1. Extract Method}
 \begin{itemize}
     \item Code in eigene Methode auslagern
@@ -80,7 +167,7 @@ Anzeichen für mögliche Probleme im Code:
 
 \textbf{2. Move Method/Field}
 \begin{itemize}
-    \item Methode/Feld in andere Klasse verschieben
+    \item Methode/Feld in andere Klasse verschieben 
     \item Verbessert Kohäsion
     \item Folgt Information Expert
 \end{itemize}
@@ -98,64 +185,139 @@ Anzeichen für mögliche Probleme im Code:
     \item Dokumentiert Zweck
     \item Erleichtert Wartung
 \end{itemize}
-\end{KR}
+\end{formula}
+
+
+\begin{example2}{Typische Prüfungsaufgabe: Code Smells}\\
+\textbf{Analysieren Sie folgenden Code auf Code Smells:}
+
+\textbf{Problematischer Code:}
+\begin{itemize}
+    \item Klasse "UserManager" mit 1000 Zeilen
+    \item Methode "processData" mit 200 Zeilen
+    \item Variable "data" wird in 15 Methoden verwendet
+    \item Duplizierte Validierungslogik in mehreren Klassen
+\end{itemize}
+
+\textbf{Identifizierte Smells:}
+\begin{itemize}
+    \item \textbf{God Class:} UserManager zu groß
+    \item \textbf{Long Method:} processData zu komplex
+    \item \textbf{Global Variable:} data zu weit verbreitet
+    \item \textbf{Duplicate Code:} Validierungslogik
+\end{itemize}
+
+\textbf{Refactoring-Vorschläge:}
+\begin{itemize}
+    \item Aufteilen in spezialisierte Klassen
+    \item Extract Method für processData
+    \item Einführen einer Validierungsklasse
+    \item Dependency Injection für data
+\end{itemize}
+\end{example2}
+
+
+
+
+\begin{example2}{Refactoring: Extract Method}
+\textbf{Vor dem Refactoring:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public void printOwing() {
+    // print banner
+    System.out.println("*****************");
+    System.out.println("**Customer Owes**");
+    System.out.println("*****************");
+    
+    // calculate total
+    double total = 0;
+    for (Order order : orders) {
+        total += order.getAmount();
+    }
+    
+    // print details
+    System.out.println("name: " + name);
+    System.out.println("amount: " + total);
+}
+\end{lstlisting}
+
+\textbf{Nach dem Refactoring:}
+\begin{lstlisting}[language=Java, style=basesmol]
+public void printOwing() {
+    printBanner();
+    double total = calculateTotal();
+    printDetails(total);
+}
+
+private void printBanner() {
+    System.out.println("*****************");
+    System.out.println("**Customer Owes**");
+    System.out.println("*****************");
+}
+
+private double calculateTotal() {
+    double total = 0;
+    for (Order order : orders) {
+        total += order.getAmount();
+    }
+    return total;
+}
+
+private void printDetails(double total) {
+    System.out.println("name: " + name);
+    System.out.println("amount: " + total);
+}
+\end{lstlisting}
+\end{example2}
+
+\pagebreak
 
 \subsection{Testing}
 
-\begin{concept}{Teststufen}
+\begin{definition}{Testarten} (Nach Sicht)
 \begin{itemize}
-\item \textbf{Unit Tests:} 
+    \item \textbf{Funktionaler Test (Black-Box Verfahren):} 
+    \begin{itemize}
+        \item Test aus Benutzersicht
+        \item Ohne Codekenntnis (Kenntnis der internen Implementation)
+        \item Fokus auf Input/Output
+    \end{itemize}
+    \item \textbf{Strukturbezogener Test (White-Box Verfahren):}
+    \begin{itemize}
+        \item Test mit Codekenntnis (Kenntnis der Implementation)
+        \item Code Coverage Pfadtests
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Teststufen} (Nach Umfang)
 \begin{itemize}
-    \item Einzelne Komponenten
+\item \textbf{1. Unit Tests} Einzelne Komponenten
+\begin{itemize}
     \item Isolation durch Mocks/Stubs
-    \item Schnelle Ausführung
+    \item Schnelle Ausführung und Automatisierte Tests
 \end{itemize}
 
-\item \textbf{Integrationstests:} 
+\item \textbf{2. Integrationstests} Zusammenspiel mehrer Komponenten
 \begin{itemize} 
-    \item Zusammenspiel mehrerer Komponenten
-    \item Schnittstellen-Tests
-    \item Externe Systeme
+    \item Fokus auf Schnittstellen
+    \item Kann externe Systeme einbeziehen
 \end{itemize}
 
-\item \textbf{Systemtests:} 
+\item \textbf{3. Systemtests} Gesamtsystem testen
 \begin{itemize}
     \item End-to-End Szenarien
-    \item Nicht-funktionale Anforderungen
+    \item Auch nicht-funktionale Anforderungen
 \end{itemize}
 
-\item \textbf{Abnahmetests:} 
+\item \textbf{4. Abnahmetests} Gegen Kundenanforderungen
 \begin{itemize}
-    \item Gegen Kundenanforderungen
+    \item Oft manuelle Tests
     \item User Acceptance Testing (UAT)
 \end{itemize}
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Testdesign}
-\textbf{1. Funktionaler Test (Black-Box)}
-\begin{itemize}
-    \item Test aus Benutzersicht
-    \item Ohne Codekenntnis
-    \item Fokus auf Input/Output
-\end{itemize}
-
-\textbf{2. Strukturbezogener Test (White-Box)}
-\begin{itemize}
-    \item Test mit Codekenntnis
-    \item Code Coverage
-    \item Pfadtests
-\end{itemize}
-
-\textbf{3. Änderungsbezogener Test}
-\begin{itemize}
-    \item Regressionstest
-    \item Verifizierung von Änderungen
-    \item Sicherstellung der Gesamtfunktionalität
-\end{itemize}
-\end{KR}
-
-\begin{definition}{Testbegriffe}
+\begin{theorem}{Wichtige Testbegriffe}
 \begin{itemize}
     \item \textbf{Testling/Testobjekt:} Das zu testende Element
     \item \textbf{Fehler:} Fehler des Entwicklers bei der Implementation
@@ -163,10 +325,433 @@ Anzeichen für mögliche Probleme im Code:
     \item \textbf{Testfall:} Spezifische Testkonfiguration mit Testdaten
     \item \textbf{Testtreiber:} Programm zur Testausführung
 \end{itemize}
-\end{definition}
+\end{theorem}
 
-%todo: Add examples for:
-% - Refactoring before/after
-% - Unit test with mocks
-% - Integration test setup
-% - Test case design examples
+\begin{corollary}{Testmerkmale}
+\textbf{Was wird getestet?}
+\begin{itemize}
+    \item Eine Einheit/Klasse (Unit-Test)
+    \item Zusammenarbeit mehrerer Klassen
+    \item Die gesamte Applikationslogik (ohne UI)
+    \item Die gesamte Anwendung (über UI)
+\end{itemize}
+
+\textbf{Wie wird getestet?}
+\begin{itemize}
+    \item Dynamisch: Testfall wird ausgeführt
+    \begin{itemize}
+        \item Black-Box Test oder White-Box Test
+    \end{itemize}
+    \item Statisch: Quelltext wird analysiert
+    \begin{itemize}
+        \item Walkthrough
+        \item Review
+        \item Inspektion
+    \end{itemize}
+\end{itemize}
+
+\textbf{Wann wird der Test geschrieben?}
+\begin{itemize}
+    \item Vor dem Implementieren (Test-Driven Development) oder nachher
+\end{itemize}
+
+\textbf{Wer testet?}
+\begin{itemize}
+    \item Entwickler
+    \item Tester, Qualitätssicherungsabteilung
+    \item Kunde, Endbenutzer
+\end{itemize}
+\end{corollary}
+
+\begin{KR}{Testentwicklung}\\
+\textbf{1. Testfall definieren:}
+\begin{itemize}
+    \item Vorbedingungen festlegen, Testdaten vorbereiten, erwartetes Ergebnis definieren
+\end{itemize}
+
+\textbf{2. Test implementieren:}
+\begin{itemize}
+    \item Setup vorbereiten, Testlogik schreiben, Assertions definieren
+\end{itemize}
+
+\textbf{3. Test ausführen:}
+\begin{itemize}
+    \item Automatisiert ausführen, Ergebnisse prüfen, Fehler beheben, Dokumentation erstellen
+\end{itemize}
+\end{KR}
+
+
+
+\begin{KR}{Testabdeckung optimieren}\\
+
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{1. Analyse der Testabdeckung}
+\begin{itemize}
+    \item Code Coverage messen
+    \item Kritische Pfade identifizieren
+    \item Lücken dokumentieren
+\end{itemize}
+
+\textbf{2. Priorisierung}
+\begin{itemize}
+    \item Geschäftskritische Funktionen
+    \item Fehleranfällige Bereiche
+    \item Komplexe Algorithmen
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{3. Ergänzung der Tests}
+\begin{itemize}
+    \item Randfall-Tests
+    \item Negativtests
+    \item Performance-Tests
+\end{itemize}
+
+\textbf{4. Wartung}
+\begin{itemize}
+    \item Regelmäßige Überprüfung
+    \item Anpassung an Änderungen
+    \item Entfernung veralteter Tests
+\end{itemize}
+\end{minipage}
+\end{KR}
+
+\subsubsection{Teststufen}
+
+\begin{KR}{Unit Testing}\\
+\textbf{Testing Frameworks and Tools}
+\begin{itemize}
+   \item \textbf{JUnit:}
+   \begin{itemize}
+       \item Assertions für Vergleiche
+       \item Test Lifecycle (@Before, @After)
+       \item Test Suites organisieren
+   \end{itemize}
+   \item \textbf{Mockito:}
+   \begin{itemize}
+       \item Mocking von Abhängigkeiten
+       \item Verifikation von Aufrufen
+       \item Stubbing von Verhalten
+   \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{corollary}{Unit Testing Best Practices}\\
+\textbf{FIRST Prinzipien:}
+\begin{itemize}
+   \item \textbf{Fast:} Tests müssen schnell ausführbar sein
+   \item \textbf{Independent:} Tests dürfen nicht voneinander abhängen
+   \item \textbf{Repeatable:} Gleiche Ergebnisse bei mehrfacher Ausführung
+   \item \textbf{Self-validating:} Automatische Ergebnisüberprüfung
+   \item \textbf{Timely:} Tests werden zeitnah geschrieben
+\end{itemize}
+\end{corollary}
+
+
+
+\begin{KR}{Integration Testing}
+
+\textbf{1. Teststrategie:} Bottom-up, Top-down oder Big Bang Integration
+
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{2. Testumfang:}
+\begin{itemize}
+   \item Komponenteninteraktion
+   \item Schnittstellentests
+   \item Datenfluss
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{3. Testaufbau:}
+\begin{itemize}
+   \item Testdaten vorbereiten
+   \item Testumgebung konfigurieren
+   \item Testfälle ausführen
+\end{itemize}
+\end{minipage}
+\end{KR}
+
+
+
+\begin{KR}{Continuous Integration Testing}
+
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{1. Build Pipeline}
+\begin{itemize}
+   \item Compile und Unit Tests
+   \item Integration Tests
+   \item Code Quality Checks
+   \item Security Scans
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{2. Test Automatisierung}
+\begin{itemize}
+   \item Smoke Tests
+   \item Regression Tests
+   \item Performance Tests
+\end{itemize}
+\end{minipage}
+
+\textbf{3. Reporting}
+\begin{itemize}
+   \item Test Coverage Reports, Performance Metrics, Error Logs
+\end{itemize}
+\end{KR}
+
+
+
+\begin{KR}{System Testing}
+
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{1. Funktionale Tests:}
+\begin{itemize}
+   \item End-to-End Szenarien
+   \item Geschäftsprozesse
+   \item Use Case Tests
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{2. Nicht-funktionale Tests:}
+\begin{itemize}
+   \item Performance Tests
+   \item Last Tests
+   \item Sicherheitstests
+   \item Usability Tests
+\end{itemize}
+\end{minipage}
+
+\textbf{3. Dokumentation:}
+\begin{itemize}
+   \item Testfälle, Testdaten, Testergebnisse, Fehlerberichte
+\end{itemize}
+\end{KR}
+
+
+\begin{KR}{Performance Testing}\\
+\textbf{1. Last Tests (Load Testing)}
+\begin{itemize}
+   \item Normales Benutzerverhalten simulieren
+   \item Durchschnittliche Antwortzeiten messen
+   \item Ressourcenverbrauch überwachen
+\end{itemize}
+
+\textbf{2. Stress Tests}
+\begin{itemize}
+   \item System an Grenzen bringen
+   \item Verhalten bei Überlast prüfen
+   \item Wiederherstellung testen
+\end{itemize}
+
+\textbf{3. Endurance Tests}
+\begin{itemize}
+   \item Langzeitverhalten prüfen
+   \item Memory Leaks aufdecken
+   \item Ressourcenverbrauch über Zeit
+\end{itemize}
+\end{KR}
+
+
+
+
+
+\subsection{Testing Beispiele}
+
+\begin{example2}{Prüfungsaufgabe: Teststrategie}\\
+\textbf{Szenario:}
+Ein Onlineshop-System soll getestet werden. Entwickeln Sie eine Teststrategie.
+
+\textbf{Lösung:}
+\begin{itemize}
+    \item \textbf{Unit Tests:}
+    \begin{itemize}
+        \item Warenkorb-Berechnungen
+        \item Preis-Kalkulationen
+        \item Validierungsfunktionen
+    \end{itemize}
+    
+    \item \textbf{Integrationstests:}
+    \begin{itemize}
+        \item Bestellprozess
+        \item Zahlungsabwicklung
+        \item Lagerverwaltung
+    \end{itemize}
+    
+    \item \textbf{System Tests:}
+    \begin{itemize}
+        \item Performance unter Last
+        \item Sicherheitsaspekte
+        \item Datenbankinteraktionen
+    \end{itemize}
+    
+    \item \textbf{Akzeptanztests:}
+    \begin{itemize}
+        \item Benutzerszenarien
+        \item Geschäftsprozesse
+        \item Reporting
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Prüfungsaufgabe: Testfälle entwerfen}\\
+\textbf{Aufgabe:}
+Entwickeln Sie Testfälle für eine Methode zur Validierung einer Email-Adresse.
+
+\textbf{Testfälle:}
+\begin{itemize}
+    \item \textbf{Positive Tests:}
+    \begin{itemize}
+        \item Standard Email (user@domain.com)
+        \item Subdomain (user@sub.domain.com)
+        \item Mit Punkten (first.last@domain.com)
+    \end{itemize}
+    
+    \item \textbf{Negative Tests:}
+    \begin{itemize}
+        \item Fehlende @ (userdomain.com)
+        \item Mehrere @ (user@@domain.com)
+        \item Ungültige Zeichen (user\#@domain.com)
+    \end{itemize}
+    
+    \item \textbf{Randfälle:}
+    \begin{itemize}
+        \item Leerer String
+        \item Nur Whitespace
+        \item Sehr lange Adressen
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Common Testing Pitfalls}\\
+\textbf{1. Flaky Tests}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Schlecht: Test koennte fehlschlagen
+@Test
+public void testAsyncOperation() throws Exception {
+   service.startAsyncOperation();
+   Thread.sleep(1000); // Fragil!
+   assertTrue(service.isOperationComplete());
+}
+// Besser: Explizites Warten
+@Test
+public void testAsyncOperation() {
+   service.startAsyncOperation();
+   await()
+       .atMost(5, TimeUnit.SECONDS)
+       .until(() -> service.isOperationComplete());
+   assertTrue(service.isOperationComplete());
+}
+\end{lstlisting}
+
+\textbf{2. Zu viele Mocks}
+\begin{lstlisting}[language=Java, style=basesmol]
+// Schlecht: Uebermassiges Mocking
+@Test
+public void testOverMocked() {
+   Database db = mock(Database.class);
+   Logger logger = mock(Logger.class);
+   EmailService email = mock(EmailService.class);
+   UserService users = mock(UserService.class);
+   
+   // Test wird unuebersichtlich und fragil
+}
+
+// Besser: Sociable Unit Testing
+@Test
+public void testSociable() {
+   // Nur externe Abhaengigkeiten mocken
+   EmailService email = mock(EmailService.class);
+   UserService service = new UserService(email);
+   
+   User user = service.createUser("test@test.com");
+   assertNotNull(user.getId());
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Test Coverage Analysis mit Unit Tests}\\
+\textbf{1. Line Coverage}
+\begin{lstlisting}[language=Java, style=basesmol]
+public class PaymentProcessor {
+   public boolean processPayment(Payment payment) {
+       if (payment == null) {         // Covered
+           return false;              // Covered
+       }
+       
+       if (payment.getAmount() <= 0) { // Not covered
+           return false;               // Not covered
+       }
+       
+       return doProcessPayment(payment); // Covered
+   }
+}
+\end{lstlisting}
+
+\textbf{2. Branch Coverage}
+\begin{lstlisting}[language=Java, style=basesmol]
+@Test
+public void testPaymentProcessing() {
+   // Test 1: null payment
+   assertFalse(processor.processPayment(null));
+   
+   // Test 2: valid payment
+   Payment payment = new Payment(100.00);
+   assertTrue(processor.processPayment(payment));
+   
+   // Missing: Test fuer payment.getAmount() <= 0
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Integration Testing Frameworks}\\
+\begin{lstlisting}[language=Java, style=basesmol]
+@SpringBootTest
+public class OrderIntegrationTest {
+   @Autowired
+   private OrderService orderService;
+   
+   @Autowired
+   private CustomerService customerService;
+   
+   @Test
+   public void shouldProcessOrderEndToEnd() {
+       // Setup test data
+       Customer customer = customerService.createCustomer(
+           "Test Customer", "test@example.com");
+       
+       Order order = new Order(customer);
+       order.addItem(new OrderItem("Test Product", 29.99, 1));
+       
+       // Execute process
+       OrderResult result = orderService.processOrder(order);
+       
+       // Verify results
+       assertTrue(result.isSuccess());
+       assertEquals("COMPLETED", result.getStatus());
+       // Verify database state
+       Order savedOrder = orderService.findOrder(result.getOrderId());
+       assertEquals("COMPLETED", savedOrder.getStatus());
+   }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Beispiel JMeter Test Plan:} Performance Test
+    
+\begin{lstlisting}[language=Java, style=basesmol]
+// Thread Group Configuration
+Number of Threads (Users): 100
+Ramp-up Period: 60 seconds
+Loop Count: 10
+
+// HTTP Request
+GET /api/products
+Headers:
+ Content-Type: application/json
+ Authorization: Bearer ${token}
+
+// Response Assertions
+Response Code: 200
+Response Time: < 500ms
+\end{lstlisting}
+\end{example2}
