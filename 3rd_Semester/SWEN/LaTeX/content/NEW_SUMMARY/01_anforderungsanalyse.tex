@@ -4,7 +4,7 @@
 \begin{itemize}
     \item \textbf{Disziplinen:} 
     Anforderungen, Architektur, Implementierung, Test und Wartung
-    \item \textbf{Ziel:} 
+    \item \textbf{Ziel:}  
     Strukturierte Prozesse für Qualität, Risiko- \& Fehlerminimierung
 \end{itemize}
 \end{definition} 
@@ -802,14 +802,63 @@ und das System speichert die Änderungen in der Datenbank."
 \end{example2}
 
 
+
 \columnbreak
+
+\subsection{Use Case Diagrams}
+
+\begin{definition}{Use Case Diagramm}\\
+    Zeigt:
+    \begin{itemize}
+        \item Systemabgrenzung
+        \item Akteure: Primärakteure initiieren UCs, unterstützende sind beteiligt
+    \end{itemize}
+    Liste der Anwendungsfälle:
+    \begin{itemize}
+        \item Process Sale
+        \item Cash in
+        \item Cash out
+        \item Handle Returns
+        \item Manage Users
+    \end{itemize}
+    \includegraphics[width=\linewidth]{uc_diagram.png}
+\end{definition}
+
+\begin{concept}
+    {Zusätzliche Beziehungen im UC-Diagramm}
+
+    <<include>>
+    \begin{itemize}
+        \item Ein UC kann ein anderes UC inkludieren
+        \item Wiederverwendung von Funktionalität
+        \item Obligatorische Beziehung
+        \item UC „Process Sale" inkludiert UC „Handle Cash Payment"
+        \item UC „Process Sale" inkludiert UC „Handle TWINT Payment"
+        \item Sie sind hier aber keine eigenständigen UCs (keine Verbindung zu Akteuren)
+        \item Included UCs können auch selbständige UC sein.
+    \end{itemize}
+    \includegraphics[width=\linewidth]{includebez.png}
+
+    <<extends>>
+    \begin{itemize}
+        \item Eigenständiger UC, der eine Erweiterung eines anderen darstellt, und
+        \item ursprünglicher UC nicht verändert werden soll
+        \item Sonst besser als Erweiterung im UC-Text einfügen
+        \item Akteur-Generalisierung
+        \item Um Akteure zusammenzufassen
+        \item Kann als „ist-ein"-Beziehung modelliert werden
+    \end{itemize}
+    \includegraphics[width=\linewidth]{extendbez.png}
+\end{concept}
+
+\pagebreak
 
 \subsection{System Sequence Diagrams}
 
 \begin{definition}{Systemsequenzdiagramm (SSD)}\\
 Formalisierte Darstellung der System-Interaktionen:
 
-\includegraphics[width=\linewidth]{images/ssd.png}
+\includegraphics[width=\linewidth]{ssed.png}
 \end{definition}
 
 \begin{concept}{System Sequence Diagram}\\
@@ -898,7 +947,7 @@ updateOrderItemList(items: ArrayList)
 \end{lstlisting}
 \end{KR}
 
-\begin{KR}{Contracts für Systemoperationen}\\
+\begin{KR}{Operation Contracts}\\
 Ein Contract definiert die Vor- und Nachbedingungen einer Systemoperation:
 
 \textbf{1. Struktur}
@@ -924,6 +973,18 @@ Ein Contract definiert die Vor- und Nachbedingungen einer Systemoperation:
 \end{itemize}
 \end{KR}
 
+\begin{remark}
+    Wann Operation Contracts?
+
+    - Nur wenn aus einem Anwendungsfall nicht klar wird, was die Systemoperation genau machen muss
+    
+    - Meist nur bei sehr komplizierten Operationen und/oder
+    
+    - Wenn Entwicklung der Systemoperation ausgelagert wird (anderes Team, externe Entwickler)
+    
+    - Erst gegen Ende des Meilensteins Lösungsarchitektur oder kurz vor Start des Designs der Systemoperation
+\end{remark}
+
 \begin{example2}{Contract für enterItem()}\\
 \textbf{Operation:} enterItem(itemId: ItemID, quantity: int)
 
@@ -944,7 +1005,10 @@ Ein Contract definiert die Vor- und Nachbedingungen einer Systemoperation:
 \end{itemize}
 \end{example2}
 
-\columnbreak
+\begin{example2}{SSD für Interaktion zwischen 2 Systemen}\\
+    \includegraphics[width=\linewidth]{ssdzweisysteme.png}
+\end{example2}
+
 
 \begin{example2}{SSD Übungsaufgabe}\\
 \textbf{Aufgabe:} Erstellen Sie ein Systemsequenzdiagramm für den Use Case 'Geld abheben' an einem Bankautomaten.
@@ -971,7 +1035,6 @@ Ein Contract definiert die Vor- und Nachbedingungen einer Systemoperation:
 \textcolor{pink}{\textbf{TO BE ADDED}}
 \end{example2}
 
-\columnbreak
 
 \begin{example2}{SSD: Online-Banking Überweisung}\\
 \textbf{Use Case:} Überweisung durchführen
@@ -1007,7 +1070,6 @@ confirmTransfer(transferId: TransferId,
 \textcolor{pink}{\textbf{TO BE ADDED}}
 \end{example2}
 
-\columnbreak
 
 \begin{example2}{SSD: Typische Prüfungsaufgabe}\\
 \textbf{Aufgabe:} Erstellen Sie ein SSD für den Use Case "Produkt bestellen" in einem Webshop.
@@ -1041,7 +1103,6 @@ confirmTransfer(transferId: TransferId,
 \textcolor{pink}{\textbf{TO BE ADDED}}
 \end{example2}
 
-\columnbreak
 
 \begin{example2}{SSD: Integration mit externen Systemen}\\
 \textbf{Use Case:} Kreditkartenzahlung durchführen
