@@ -1,0 +1,137 @@
+\section{Die Methode der kleinsten Quadrate}
+
+\subsection{Einführung}
+\begin{concept}{Einführung}\\
+Die Methode der kleinsten Quadrate ist eine weit verbreitete Optimierungsmethode zur Modellierung mathematischer Zusammenhänge in großen Datenmengen. Das Ziel ist es, optimale Parameter zu finden, die den funktionalen Zusammenhang zwischen Messdaten am besten beschreiben. Bei der linearen Regression wird beispielsweise ein linearer Zusammenhang zwischen den Daten vermutet und versucht, eine optimale Gerade in die Datenmenge einzupassen.
+\end{concept}
+
+\subsection{Lineare Regression}
+
+\begin{definition}{Lineare Regression}\\
+Gegeben sind Datenpunkte $(x_i; y_i)$ mit $1 \leq i \leq n$, die näherungsweise auf einer Geraden liegen. Die Residuen oder Fehler $\epsilon_i = y_i - g(x_i)$ dieser Datenpunkte sind die Abstände in $y$-Richtung zwischen $y_i$ und der Geraden $g$.\\
+
+Die "bestmögliche" Gerade, die Ausgleichs- oder Regressionsgerade, ist diejenige Gerade, für die die Summe der quadrierten Residuen $\sum_{i=1}^n \epsilon_i^2$ am kleinsten ist:
+
+\[\sum_{i=1}^n (y_i - g(x_i))^2 = \sum_{i=1}^n (y_i - \hat{y}_i)^2\]
+
+mit:\\
+$y_i$: beobachtete $y$-Werte\\
+$\hat{y}_i$: prognostizierte bzw. erklärte $y$-Werte\\
+$\epsilon_i$: Residuen (oder auch Fehler)\\
+\end{definition}
+
+\begin{theorem}{Parameter der Regressionsgerade}\\
+Die Regressionsgerade $g(x) = mx + d$ mit den Parametern $m$ und $d$ ist die Gerade, für die die Residualvarianz $\tilde{s}_\epsilon^2$ minimal ist.
+
+\textbf{Parameter:}\\
+Steigung: $m = \frac{\tilde{s}_{xy}}{\tilde{s}_x^2}$\\
+y-Achsenabschnitt: $d = \bar{y} - m\bar{x}$\\
+
+\textbf{Wichtige Kenngrößen:}\\
+Arithmetische Mittel: $\bar{x} = \frac{1}{n}\sum_{i=1}^n x_i$ und $\bar{y} = \frac{1}{n}\sum_{i=1}^n y_i$\\
+
+Varianz der $x_i$-Werte:\\
+$\tilde{s}_x^2 = \frac{1}{n}\sum_{i=1}^n (x_i-\bar{x})^2 = (\frac{1}{n}\sum_{i=1}^n x_i^2) - \bar{x}^2$\\
+
+Varianz der $y_i$-Werte:\\
+$\tilde{s}_y^2 = \frac{1}{n}\sum_{i=1}^n (y_i-\bar{y})^2 = (\frac{1}{n}\sum_{i=1}^n y_i^2) - \bar{y}^2$\\
+
+Kovarianz:\\
+$\tilde{s}_{xy} = \frac{1}{n}\sum_{i=1}^n (x_i-\bar{x})(y_i-\bar{y}) = (\frac{1}{n}\sum_{i=1}^n x_iy_i) - \bar{x}\bar{y}$\\
+
+Residualvarianz:\\
+$\tilde{s}_\epsilon^2 = \tilde{s}_y^2 - \frac{\tilde{s}_{xy}^2}{\tilde{s}_x^2}$\\
+\end{theorem}
+
+\subsubsection{Varianzzerlegung und Bestimmtheitsmass}
+
+\begin{concept}{Varianzzerlegung}\\
+Die Totale Varianz setzt sich zusammen aus der Residualvarianz und der Varianz der prognostizierten Werte:
+
+$\tilde{s}_y^2 = \tilde{s}_\epsilon^2 + \tilde{s}_{\hat{y}}^2$
+
+mit:\\
+$\tilde{s}_y^2$: Totale Varianz\\
+$\tilde{s}_{\hat{y}}^2$: prognostizierte (erklärte) Varianz\\
+$\tilde{s}_\epsilon^2$: Residualvarianz
+\end{concept}
+
+\begin{theorem}{Bestimmtheitsmass}\\
+Das Bestimmtheitsmass $R^2$ beurteilt die globale Anpassungsgüte einer Regression über den Anteil der prognostizierten Varianz $\tilde{s}_{\hat{y}}^2$ an der totalen Varianz $\tilde{s}_y^2$:
+
+\[R^2 = \frac{\tilde{s}_{\hat{y}}^2}{\tilde{s}_y^2} = \frac{\tilde{s}_{xy}^2}{\tilde{s}_x^2\tilde{s}_y^2} = r_{xy}^2\]
+
+Das Bestimmtheitsmass $R^2$ stimmt überein mit dem Quadrat des Korrelationskoeffizienten (nach Bravais-Pearson).
+
+Interpretation:\\
+- $R^2 = 0.75$ bedeutet, dass 75\% der gesamten Varianz durch die Regression erklärt sind\\
+- Die restlichen 25\% sind Zufallsstreuung
+\end{theorem}
+
+\subsubsection{Residuenbetrachtung}
+
+\begin{concept}{Residuenplot}\\
+Die Residuen werden bezogen auf die prognostizierten y-Werte $\hat{y}$ dargestellt. Auf der horizontalen Achse werden die prognostizierten y-Werte $\hat{y}$ und auf der vertikalen Achse die Residuen angetragen.
+
+Beurteilungskriterien:\\
+- Residuen sollten unsystematisch (d.h. zufällig) streuen\\
+- Überall etwa gleich um die horizontale Achse streuen\\
+- Betragsmäßig kleine Residuen sollten häufiger sein als große
+\end{concept}
+
+\subsection{Nichtlineares Verhalten}
+
+\begin{concept}{Linearisierung}\\
+Oft können nichtlineare Regressionsmodelle durch geeignete Transformation auf ein lineares Modell zurückgeführt werden.
+
+Wichtige Transformationen:\\
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+Ausgangsfunktion & Transformation \\
+\hline
+$y = q \cdot x^m$ & $\log(y) = \log(q) + m \cdot \log(x)$ \\
+\hline
+$y = q \cdot m^x$ & $\log(y) = \log(q) + \log(m) \cdot x$ \\
+\hline
+$y = q \cdot e^{m \cdot x}$ & $\ln(y) = \ln(q) + m \cdot x$ \\
+\hline
+$y = \frac{1}{q+m \cdot x}$ & $V = q + m \cdot x; V = \frac{1}{y}$ \\
+\hline
+$y = q + m \cdot \ln(x)$ & $y = q + m \cdot U; U = \ln(x)$ \\
+\hline
+$y = \frac{1}{q \cdot m^x}$ & $\log(\frac{1}{y}) = \log(q) + \log(m) \cdot x$ \\
+\hline
+\end{tabular}
+\end{center}
+\end{concept}
+
+\subsection{Allgemeines Vorgehen}
+
+\begin{concept}{Matrix-Darstellung}\\
+Für die Methode der kleinsten Quadrate mit mehreren Variablen wird ein lineares Gleichungssystem aufgestellt:
+
+$y = Xp + \epsilon$
+
+mit:\\
+$p$: Vektor der Parameter\\
+$y$: Vektor der Messwerte\\
+$\epsilon$: Vektor der Residuen\\
+$X$: Matrix der Eingangswerte\\
+
+Die Lösung ist:\\
+$p = (X^TX)^{-1}X^Ty$\\
+falls $(X^TX)$ invertierbar
+\end{concept}
+
+\begin{KR}{Vorgehen bei Mehrfachregression}\\
+1. Aufstellen der Matrix $X$ mit den Eingangswerten
+2. Berechnung der Parameter $p = (X^TX)^{-1}X^Ty$
+3. Berechnung der Residuen $\epsilon = y - Xp$
+4. Überprüfung der Modellgüte durch:
+   \begin{itemize}
+     \item Bestimmtheitsmass $R^2$
+     \item Residuenanalyse
+     \item Plausibilität der Parameter
+   \end{itemize}
+\end{KR}
