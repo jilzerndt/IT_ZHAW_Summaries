@@ -59,58 +59,6 @@ typeof 'number'    // 'string'
 \end{lstlisting}
 \end{KR}
 
-\begin{definition}{Strings}
-    Strings in JavaScript sind:
-    \begin{itemize}
-        \item Sequenz von 16-Bit-Unicode-Zeichen
-        \item Kein spezieller char-Typ vorhanden
-        \item Definition mit einfachen ('...') oder doppelten ("...") Anführungszeichen möglich
-        \item Escape-Sequenzen mit \textbackslash:
-        \begin{itemize}
-            \item \texttt{\textbackslash n} für Zeilenumbruch
-            \item \texttt{\textbackslash\textbackslash} für Backslash
-            \item \texttt{\textbackslash'} und \texttt{\textbackslash"} für Anführungszeichen
-        \end{itemize}
-        \item Verkettung mit + Operator
-    \end{itemize}
-\end{definition}
-
-\begin{concept}{Template Strings}
-    Template Strings (mit Backticks) bieten erweiterte Funktionalität:
-    \begin{itemize}
-		\item Definition mit Backticks (\`{} ...\`{} )
-        \item Mehrzeilige Strings möglich
-        \item String-Interpolation mit \${...}
-		\item Backslash wird als \textbackslash interpretiert (außer vor \textbackslash \`{}, \textbackslash \$ und Leerzeichen)
-    \end{itemize}
-
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// String Interpolation
-`half of 100 is ${100 / 2}`  // "half of 100 is 50"
-
-// Mehrzeilige Strings
-`erste Zeile
-zweite Zeile`  // "erste Zeile\nzweite Zeile"
-\end{lstlisting}
-\end{concept}
-
-\begin{KR}{String Operationen}
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// String Verkettung
-"con" + "cat" + "enate"  // "concatenate"
-
-// Template String mit Interpolation
-const name = "World"
-`Hello ${name}!`  // "Hello World!"
-
-// Mehrzeiliger Template String
-const text = `
-  Erste Zeile
-  Zweite Zeile
-`
-\end{lstlisting}
-\end{KR}
-
 \begin{theorem}{Variablenbindung}\\
     JavaScript kennt drei Arten der Variablendeklaration:
     \begin{itemize}
@@ -207,6 +155,65 @@ for (let key in object) {
 }
 \end{lstlisting}
 \end{examplecode}
+
+\subsubsection{Strings und reguläre Ausdrücke}
+
+\begin{definition}{Strings}
+    Strings in JavaScript sind:
+    \begin{itemize}
+        \item Sequenz von 16-Bit-Unicode-Zeichen
+        \item Kein spezieller char-Typ vorhanden
+        \item Definition mit einfachen ('...') oder doppelten ("...") Anführungszeichen möglich
+        \item Escape-Sequenzen mit \textbackslash:
+        \begin{itemize}
+            \item \texttt{\textbackslash n} für Zeilenumbruch
+            \item \texttt{\textbackslash\textbackslash} für Backslash
+            \item \texttt{\textbackslash'} und \texttt{\textbackslash"} für Anführungszeichen
+        \end{itemize}
+        \item Verkettung mit + Operator
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Template Strings}
+    (mit Backticks) bieten erweiterte Funktionalität:
+    \begin{itemize}
+		\item Definition mit Backticks (\`{} ...\`{} )
+        \item Mehrzeilige Strings möglich
+        \item String-Interpolation mit \${...}
+		\item Backslash wird als \textbackslash interpretiert (außer vor \textbackslash \`{}, \textbackslash \$ und Leerzeichen)
+    \end{itemize}
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// String Interpolation
+`half of 100 is ${100 / 2}`  // "half of 100 is 50"
+
+// Mehrzeilige Strings
+`erste Zeile
+zweite Zeile`  // "erste Zeile\nzweite Zeile"
+\end{lstlisting}
+\end{concept}
+
+\begin{KR}{String Operationen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// String Verkettung
+"con" + "cat" + "enate"  // "concatenate"
+
+// Template String mit Interpolation
+const name = "World"
+`Hello ${name}!`  // "Hello World!"
+
+// Mehrzeiliger Template String
+const text = `
+  Erste Zeile
+  Zweite Zeile
+`
+\end{lstlisting}
+\end{KR}
+
+\raggedcolumns
+
+\columnbreak
+
 
 \subsection{Objekte und Arrays}
 
@@ -312,6 +319,11 @@ let parsed = JSON.parse(json);
 
 
 
+
+
+
+
+
 \subsection{Funktionen}
 
 \begin{definition}{Funktionen}
@@ -399,7 +411,7 @@ myCounter.decrement(); // 1
 \end{lstlisting}
 \end{KR}
 
-\subsubsection{Modulsystem - EVTL ANDERER ORT IN ZSMF}
+
 
 \begin{concept}{Modulsystem in JavaScript}
     \begin{itemize}
@@ -503,9 +515,23 @@ console.log(e18.salary) /* \ 4500 */
 \end{lstlisting}
 \end{examplecode}
 
-\columnbreak
+\begin{definition}{Statische Methoden}
+    \begin{itemize}
+        \item Statische Methoden gehören zur Klasse, nicht zur Instanz
+        \item Werden mit \texttt{static} deklariert
+    \end{itemize}
 
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+class Person {
+    static create (name) {
+        return new Person(name)
+    }
+}
+let p36 = Person.create("John")
+\end{lstlisting}
+\end{definition}
 
+\pagebreak
 
 \subsection{Asynchrone Programmierung}
 
@@ -697,6 +723,8 @@ setImmediate(() => {
 \end{lstlisting}
 \end{code}
 
+\pagebreak
+
 \subsubsection{Events und Promises}
 
 \begin{definition}{Event-Modul (EventMitter)}
@@ -723,7 +751,6 @@ door.on('open', () => {
 door.on('open', (speed) => {
     console.log(`Door was opened, speed: ${speed || 'unknown'}`)
 })
-
 door.emit('open')
 door.emit('open', 'slow')
 \end{lstlisting}
@@ -743,43 +770,9 @@ function readFilePromise(file) {
     return promise;
 }
 \end{lstlisting}
-Gibt nun ein Promise-Object zurück
 \end{definition}
 
-\begin{KR}{Promises}
-\begin{lstlisting}[language=JavaScript, style=basesmol]
-// Promise erstellen
-const myPromise = new Promise((resolve, reject) => {
-    // Asynchrone Operation
-    if (success) {
-        resolve(result);
-    } else {
-        reject(error);
-    }
-});
-// Promise verwenden
-myPromise
-    .then(result => {
-        // Erfolgsfall
-    })
-    .catch(error => {
-        // Fehlerfall
-    })
-    .finally(() => {
-        // Wird immer ausgefuehrt
-    });
-// Promise.all
-Promise.all([promise1, promise2])
-    .then(results => {
-        // Array mit allen Ergebnissen
-    });
-// Promise.race
-Promise.race([promise1, promise2])
-    .then(firstResult => {
-        // Erstes erfuelltes Promise
-    });
-\end{lstlisting}
-\end{KR}
+
 
 \begin{KR}{Promise Erstellung und Verwendung}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -805,15 +798,6 @@ myPromise
     .finally(() => {
         // Wird immer ausgefuhrt
     });
-// Async/Await Syntax
-async function myAsync() {
-    try {
-        const result = await myPromise;
-        // Erfolgsfall
-    } catch (error) {
-        // Fehlerfall
-    }
-}
 \end{lstlisting}
 \end{KR}
 
@@ -870,8 +854,47 @@ readFilePromise('/etc/hosts')
 \end{itemize}
 \end{definition}
 
+\begin{KR}{Promise.all() und Promise.race()}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Promise.all
+Promise.all([promise1, promise2])
+    .then(results => {
+        // Array mit allen Ergebnissen
+    });
+
+// Promise.race
+Promise.race([promise1, promise2])
+    .then(firstResult => {
+        // Erstes erfuelltes Promise
+    });
+\end{lstlisting}
+\end{KR}
+
+\begin{definition}{Async/Await}
+\begin{itemize}
+  \item Syntaktischer Zucker für Promises
+  \item Ersetzt Promise-Verkettung durch sequentielle Ausführung
+  \item \texttt{async} markiert Funktion als asynchron
+  \item \texttt{await} wartet auf Promise-Resolution
+  \item \texttt{try/catch} für Fehlerbehandlung
+  \item \texttt{Promise.all} kann durch parallele \texttt{await} ersetzt werden
+  \item \texttt{await} gibt Wert von Promise zurück
+  \item \texttt{await} kann nur in \texttt{async}-Funktionen verwendet werden
+\end{itemize}
+\end{definition}
+
 \begin{KR}{Async/Await}
 \begin{lstlisting}[language=JavaScript, style=basesmol]
+// Async/Await Syntax
+async function myAsync() {
+    try {
+        const result = await myPromise;
+        // Erfolgsfall
+    } catch (error) {
+        // Fehlerfall
+    }
+}
+
 // Async Funktion
 async function getData() {
     try {
@@ -932,13 +955,14 @@ add1(10).then(console.log)
 \end{lstlisting}
 \end{code}
 
-
+%TODO: add more examples for async/await and promises and event loop
 
 \pagebreak
 
 \subsection{Webserver}
 
 \subsubsection{Server im Internet}
+%TODO: add information about server in the internet
 
 \subsubsection{File-Transfer (File Server)}
 
@@ -1031,6 +1055,7 @@ add1(10).then(console.log)
     \end{tabular}
     \end{center}
 \end{corollary}
+\columnbreak
 
 \subsubsection{Node.js und Module}
 
