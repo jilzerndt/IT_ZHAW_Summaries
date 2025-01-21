@@ -1,48 +1,82 @@
 \section{Kombinatorik}
 
-Bei vielen Wahrscheinlichkeitsproblemen ist es möglich, durch geschicktes Abzählen Wahrscheinlichkeiten zu ermitteln. Dazu sind kombinatorische Überlegungen erforderlich.
 
 \subsection{Grundbegriffe}
 
 \begin{definition}{Fakultät}
-Die Fakultät $n!$ ist für eine natürliche Zahl $n$ rekursiv definiert:
+$n!$ einer natürlichen Zahl $n$ ist definiert als das Produkt aller positiven ganzen Zahlen bis zu dieser Zahl:
+\vspace{-2mm}\\
+$$
+n!=1 \cdot 2 \cdot \ldots \cdot n=\prod_{a=1}^{n} a \text{ mit } 0! = 1 \text{ als Definitionsvereinbarung}
+$$
+\vspace{-4mm}\\
+\textbf{Parameter:}
 \begin{itemize}
-    \item Startwert: $0! = 1$
-    \item Für $n \geq 1$: $n! = n \cdot (n-1)!$
+    \item $n$ = Die positive ganze Zahl, für die die Fakultät berechnet wird
+    \item $a$ = Laufvariable in der Produktnotation
+    \item $\prod$ = Produkt aller Terme von $a=1$ bis $n$
 \end{itemize}
-Beispiel: $4! = 4 \cdot 3! = 4 \cdot 3 \cdot 2! = 4 \cdot 3 \cdot 2 \cdot 1! = 4 \cdot 3 \cdot 2 \cdot 1 \cdot 0! = 24$
 \end{definition}
 
 \begin{definition}{Binomialkoeffizient}
-Der Binomialkoeffizient $\binom{n}{k}$ ist für natürliche Zahlen $0 \leq k \leq n$ definiert als:
+$\binom{n}{k}$ für natürliche Zahlen $0 \leq k \leq n$:
+
+\begin{minipage}{0.5\textwidth}
 $$\binom{n}{k} = \frac{n!}{(n-k)! \cdot k!}$$
-Er gibt die Anzahl Möglichkeiten an, aus $n$ Objekten $k$ Objekte auszuwählen.
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+$\rightarrow$ Anzahl Möglichkeiten, aus \\$n$ Objekten $k$ Objekte auszuwählen.
+\end{minipage}
 \end{definition}
 
-\subsection{Grundlegende Abzählmethoden}
+\begin{theorem}{Eigenschaften}
+Für den Binomialkoeffizienten gelten:
+
+\begin{minipage}{0.5\textwidth}
+   \textbf{Leere Menge:} $\binom{n}{0} = \binom{n}{n} = 1$
+   \vspace{1mm}\\
+   \textbf{Symmetrie:} $\binom{n}{k} = \binom{n}{n-k}$
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+   $$\text{\textbf{Summe:}} \sum_{k=0}^n \binom{n}{k} = 2^n$$
+\end{minipage}
+
+\textbf{Pascal'sche Rekursion:} $\binom{n+1}{k+1} = \binom{n}{k} + \binom{n}{k+1}$
+
+\end{theorem}
+
+\begin{KR}{Berechnung von Binomialkoeffizienten}\\
+1. \textbf{Prüfe Spezialfälle:} $\binom{n}{0} = \binom{n}{n} = 1$ und $\binom{n}{1} = n$
+
+2. \textbf{Nutze Symmetrie:} $\binom{n}{k} = \binom{n}{n-k}$
+
+3. \textbf{Pascal'sches Dreieck:} Baue schrittweise auf, nutze Rekursionsformel
+
+4. \textbf{Direkte Berechnung:} Nur wenn nötig, kürze vor dem Ausrechnen
+\end{KR}
+
+\subsubsection{Grundlegende Abzählmethoden}
 
 \begin{concept}{Systematik der Kombinatorik}
-Man unterscheidet vier grundlegende Abzählprobleme:
-\begin{center}
+\vspace{1mm}\\
+\resizebox{\textwidth}{!}{
 \begin{tabular}{|l|c|c|}
 \hline 
 & \textbf{Mit Wiederholung} & \textbf{Ohne Wiederholung} \\
 \hline
-\textbf{Variation} & $n^k$ & $\frac{n!}{(n-k)!}$ \\
+\textbf{Variation} & \multirow{2}{3mm}{$n^k$} & \multirow{2}{3mm}{$\frac{n!}{(n-k)!}$} \\
 (Reihenfolge wichtig) & & \\
 \hline
-\textbf{Kombination} & $\binom{n+k-1}{k}$ & $\binom{n}{k}$ \\
+\textbf{Kombination} & \multirow{2}{3mm}{$\binom{n+k-1}{k}$} & \multirow{2}{3mm}{$\binom{n}{k}$} \\
 (Reihenfolge unwichtig) & & \\
 \hline
-\end{tabular}
-\end{center}
+\end{tabular}}
 \end{concept}
 
-\begin{KR}{Bestimmung der Abzählmethode}
+\begin{KR}{Bestimmung der Abzählmethode}\\
 1. \textbf{Analysiere das Problem:}
    \begin{itemize}
-   \item $n$: Anzahl verfügbarer Objekte
-   \item $k$: Anzahl auszuwählender Objekte
+   \item $n$: Anzahl verfügbarer Objekte, $k$: Anzahl auszuwählender Objekte
    \end{itemize}
 
 2. \textbf{Prüfe die Reihenfolge:}
@@ -56,87 +90,24 @@ Man unterscheidet vier grundlegende Abzählprobleme:
    \item Dürfen Objekte mehrfach vorkommen? → Mit Wiederholung
    \item Darf jedes Objekt nur einmal? → Ohne Wiederholung
    \end{itemize}
-
-4. \textbf{Wähle die passende Formel}
 \end{KR}
 
-\begin{example2}{Variation mit Wiederholung}
-\textbf{Zahlenschloss:} 6 Stellen, Ziffern 0-9 möglich
-\begin{itemize}
-    \item $n=10$ Ziffern
-    \item $k=6$ Stellen
-    \item Reihenfolge wichtig
-    \item Wiederholung erlaubt
-    \item Lösung: $10^6 = 1\,000\,000$ Möglichkeiten
-\end{itemize}
-\end{example2}
-
-\begin{example2}{Variation ohne Wiederholung}
-\textbf{Schwimmwettkampf:} Erste 3 Plätze bei 10 Schwimmern
-\begin{itemize}
-    \item $n=10$ Schwimmer
-    \item $k=3$ Plätze
-    \item Reihenfolge wichtig
-    \item Keine Wiederholung möglich
-    \item Lösung: $\frac{10!}{7!} = 720$ Möglichkeiten
-\end{itemize}
-\end{example2}
-
-\begin{example2}{Kombination mit Wiederholung}
-\textbf{Zahnarzt:} 3 Spielzeuge aus 5 verschiedenen Arten
-\begin{itemize}
-    \item $n=5$ Arten
-    \item $k=3$ Spielzeuge
-    \item Reihenfolge unwichtig
-    \item Wiederholung möglich
-    \item Lösung: $\binom{7}{3} = 35$ Möglichkeiten
-\end{itemize}
-\end{example2}
-
-\begin{example2}{Kombination ohne Wiederholung}
-\textbf{Lotto:} 6 aus 49
-\begin{itemize}
-    \item $n=49$ Zahlen
-    \item $k=6$ Auswahl
-    \item Reihenfolge unwichtig
-    \item Keine Wiederholung
-    \item Lösung: $\binom{49}{6} = 13\,983\,816$ Möglichkeiten
-\end{itemize}
-\end{example2}
-
-\subsection{Eigenschaften der Binomialkoeffizienten}
-
-\begin{theorem}{Eigenschaften}
-Für den Binomialkoeffizienten gelten:
-\begin{itemize}
-    \item Leere Menge: $\binom{n}{0} = 1$
-    \item Symmetrie: $\binom{n}{k} = \binom{n}{n-k}$
-    \item Pascal'sche Rekursion: $\binom{n+1}{k+1} = \binom{n}{k} + \binom{n}{k+1}$
-    \item Summe: $\sum_{k=0}^n \binom{n}{k} = 2^n$
-\end{itemize}
-\end{theorem}
-
-\begin{KR}{Berechnung von Binomialkoeffizienten}
-1. \textbf{Prüfe Spezialfälle:}
+\begin{KR}{Lösen komplexer kombinatorischer Probleme}\\
+1. \textbf{Problem zerlegen}
    \begin{itemize}
-   \item $\binom{n}{0} = \binom{n}{n} = 1$
-   \item $\binom{n}{1} = n$
+   \item Teile das Problem in unabhängige Teilprobleme
+   \item Identifiziere abhängige Entscheidungen
    \end{itemize}
 
-2. \textbf{Nutze Symmetrie:}
-   \begin{itemize}
-   \item $\binom{n}{k} = \binom{n}{n-k}$
-   \end{itemize}
+2. \textbf{Für jedes Teilproblem:} Wähle passende Abzählmethode
 
-3. \textbf{Pascal'sches Dreieck}
+3. \textbf{Kombiniere Teillösungen}
    \begin{itemize}
-   \item Baue schrittweise auf
-   \item Nutze Rekursionsformel
-   \end{itemize}
-
-4. \textbf{Direkte Berechnung}
-   \begin{itemize}
-   \item Nur wenn nötig
-   \item Kürze vor dem Ausrechnen
+   \item Unabhängige Ereignisse: Multipliziere
+   \item Sich ausschließende Ereignisse: Addiere
+   \item Prüfe Überlappungen (Inklusions-Exclusions)
    \end{itemize}
 \end{KR}
+
+
+
