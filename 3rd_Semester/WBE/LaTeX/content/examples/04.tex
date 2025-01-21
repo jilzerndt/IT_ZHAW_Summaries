@@ -1,0 +1,168 @@
+\subsection{Integration and Final Concepts Exam Preparation}
+
+\begin{concept}{Key Integration Concepts}
+    Essential topics to focus on:
+    \begin{itemize}
+        \item Full-stack JavaScript applications
+        \item Modern web development workflow
+        \item Client-server architecture
+        \item REST API principles
+        \item Security considerations
+        \item Performance optimization
+        \item Testing strategies
+        \item Best practices and patterns
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Common Integration Patterns}
+    Key patterns to remember:
+    \begin{itemize}
+        \item MVC architecture
+        \item Component-based development
+        \item Event-driven architecture
+        \item Asynchronous communication
+        \item State management patterns
+        \item Module bundling
+        \item Progressive enhancement
+        \item Responsive design
+    \end{itemize}
+\end{formula}
+
+\begin{theorem}{Final Exam Strategies}
+    \begin{itemize}
+        \item Connect concepts across different areas
+        \item Understand full request/response cycle
+        \item Know security best practices
+        \item Recognize performance optimization techniques
+        \item Understand testing approaches
+        \item Know common architectural patterns
+        \item Remember REST API principles
+    \end{itemize}
+\end{theorem}
+
+\begin{concept}{Cross-Cutting Concerns}
+    Key aspects that span multiple areas:
+    \begin{itemize}
+        \item Error handling strategies
+        \item Authentication and authorization
+        \item Data management
+        \item State synchronization
+        \item Loading and error states
+        \item Component communication
+        \item API integration patterns
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Sample Multiple Choice Questions}
+
+\paragraph{Architecture}
+Which statement about SPAs is correct?
+\begin{itemize}
+    \item a) They always require a page reload for navigation
+    \item b) They can't work without a backend server
+    \item c) They manage routing on the client side - correct
+    \item d) They don't support deep linking
+\end{itemize}
+Explanation: SPAs handle routing client-side without full page reloads
+
+\paragraph{REST API}
+Which HTTP method is idempotent?
+\begin{itemize}
+    \item a) POST
+    \item b) PUT - correct
+    \item c) PATCH
+    \item d) None of the above
+\end{itemize}
+Explanation: PUT operations can be repeated without changing the result
+
+\paragraph{Security}
+What prevents XSS attacks?
+\begin{itemize}
+    \item a) CORS
+    \item b) Content Security Policy - correct
+    \item c) HTTPS
+    \item d) Same-origin policy
+\end{itemize}
+Explanation: CSP helps prevent cross-site scripting attacks
+
+\paragraph{Performance}
+What improves initial load time?
+\begin{itemize}
+    \item a) Using more components
+    \item b) Code splitting - correct
+    \item c) Including all JavaScript in one file
+    \item d) Disabling caching
+\end{itemize}
+Explanation: Code splitting allows loading only necessary code initially
+
+\paragraph{Testing}
+Which testing approach tests components in isolation?
+\begin{itemize}
+    \item a) End-to-end testing
+    \item b) Integration testing
+    \item c) Unit testing - correct
+    \item d) System testing
+\end{itemize}
+Explanation: Unit tests focus on testing individual components in isolation
+\end{KR}
+
+\begin{examplecode}{Critical Integration Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// REST API Integration
+const api = {
+    async getUser(id) {
+        const response = await fetch(`/api/users/${id}`);
+        if (!response.ok) throw new Error('User not found');
+        return response.json();
+    },
+    
+    async updateUser(id, data) {
+        const response = await fetch(`/api/users/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    }
+};
+
+// Component with API Integration
+const UserProfile = () => {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        api.getUser(1)
+            .then(setUser)
+            .catch(setError)
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) return ["div", {}, "Loading..."];
+    if (error) return ["div", {}, error.message];
+    return ["div", {}, user.name];
+};
+
+// Error Boundary Pattern
+class ErrorBoundary {
+    constructor() {
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return ["div", {}, "Something went wrong"];
+        }
+        return this.props.children;
+    }
+}
+\end{lstlisting}
+\end{examplecode}
+

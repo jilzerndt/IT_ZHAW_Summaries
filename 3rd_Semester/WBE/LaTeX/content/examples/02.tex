@@ -1,3 +1,168 @@
+\subsection{Browser Technologies Exam Preparation}
+
+\begin{concept}{Key Browser API Concepts}
+    Essential topics to focus on:
+    \begin{itemize}
+        \item DOM structure and manipulation
+        \item Event handling and bubbling
+        \item Browser storage mechanisms (localStorage, cookies, sessions)
+        \item Window and document objects
+        \item Browser events lifecycle
+        \item Form handling and validation
+        \item Canvas vs SVG
+        \item AJAX and Fetch API
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Common Pitfalls}
+    Watch out for these tricky areas:
+    \begin{itemize}
+        \item Event propagation order (capturing vs bubbling)
+        \item Storage API limitations and restrictions
+        \item DOM traversal methods and returns
+        \item Event delegation vs direct binding
+        \item Canvas context state management
+        \item Async nature of fetch requests
+        \item CORS and same-origin policy
+    \end{itemize}
+\end{formula}
+
+\begin{KR}{Sample Multiple Choice Questions}
+
+\paragraph{DOM Manipulation}
+What is returned by this code?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+document.querySelectorAll('div').length;
+document.getElementsByTagName('div').length;
+// When a new div is added dynamically
+\end{lstlisting}
+\begin{itemize}
+    \item a) Both stay the same
+    \item b) QuerySelectorAll stays same, getElementsByTagName updates - correct
+    \item c) Both update
+    \item d) Both throw error
+\end{itemize}
+Explanation: getElementsByTagName returns a live NodeList, querySelectorAll returns a static NodeList
+
+\paragraph{Event Handling}
+In what order are the events logged?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<div onclick="console.log('1')">
+    <button onclick="console.log('2')">Click</button>
+</div>
+\end{lstlisting}
+\begin{itemize}
+    \item a) 1, 2
+    \item b) 2, 1 - correct
+    \item c) Just 2
+    \item d) Just 1
+\end{itemize}
+Explanation: Events bubble up from target to ancestors by default
+
+\paragraph{Local Storage}
+What happens here?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+localStorage.setItem('number', 42);
+console.log(typeof localStorage.getItem('number'));
+\end{lstlisting}
+\begin{itemize}
+    \item a) "number"
+    \item b) "string" - correct
+    \item c) "object"
+    \item d) "undefined"
+\end{itemize}
+Explanation: localStorage always stores values as strings
+\end{KR}
+
+\begin{KR}{MC}
+\paragraph{Canvas vs SVG}
+Which statement is true?
+\begin{itemize}
+    \item a) SVG elements can have event listeners - correct
+    \item b) Canvas elements maintain separate elements for shapes
+    \item c) SVG is pixel-based
+    \item d) Canvas is better for complex animations
+\end{itemize}
+Explanation: SVG elements become part of the DOM and can have event listeners attached
+
+\paragraph{Fetch API}
+What is logged?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+fetch('/api/data')
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(err => console.log('Error'));
+// When server returns 404
+\end{lstlisting}
+\begin{itemize}
+    \item a) Error
+    \item b) undefined
+    \item c) null
+    \item d) The response body - correct
+\end{itemize}
+Explanation: fetch() only rejects on network failure, not HTTP errors
+\end{KR}
+
+\begin{concept}{Common Exam Patterns}
+Look for questions about:
+\begin{itemize}
+    \item DOM method return types (NodeList vs HTMLCollection)
+    \item Event propagation and prevention
+    \item Storage API value types and limitations
+    \item Differences between Canvas and SVG
+    \item Asynchronous operations with fetch
+    \item CORS and security restrictions
+    \item Form validation and submission
+\end{itemize}
+\end{concept}
+
+\begin{examplecode}{Critical Code Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Event Delegation
+document.getElementById('parent').addEventListener('click', (e) => {
+    if (e.target.matches('.child')) {
+        console.log('Child clicked');
+    }
+});
+
+// Storage with Objects
+const user = { name: 'John', age: 30 };
+localStorage.setItem('user', JSON.stringify(user));
+const savedUser = JSON.parse(localStorage.getItem('user'));
+
+// Async Form Submission
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    try {
+        const response = await fetch('/api/submit', {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const result = await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+\end{lstlisting}
+\end{examplecode}
+
+\begin{theorem}{Key Exam Strategies}
+    \begin{itemize}
+        \item Understand DOM live vs static collections
+        \item Know event propagation phases
+        \item Remember storage API limitations
+        \item Understand async operation order
+        \item Know security restrictions (CORS, same-origin)
+        \item Recognize Canvas vs SVG use cases
+        \item Consider browser compatibility issues
+    \end{itemize}
+\end{theorem}
+
+\subsection{more examples}
+
+
 \begin{code}{Event abonnieren/entfernen}
     Mit der Methode addEventListener() wird ein Event abonniert. Mit removeEventListener kann das Event entfernt werden.
   \begin{lstlisting}[language=JavaScript, style=basesmol]
@@ -12,3 +177,213 @@
   </script>
   \end{lstlisting}
   \end{code}
+
+  \begin{KR}{Class und Prototype Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// 1. Class Definition
+class Animal {
+    constructor(name) {
+        this.name = name;
+    }
+    
+    speak() {
+        return `${this.name} makes a sound`;
+    }
+}
+
+// 2. Inheritance
+class Dog extends Animal {
+    constructor(name, breed) {
+        super(name);
+        this.breed = breed;
+    }
+    
+    speak() {
+        return `${this.name} barks`;
+    }
+}
+
+// 3. Getter/Setter
+class Circle {
+    constructor(radius) {
+        this._radius = radius;
+    }
+    
+    get radius() {
+        return this._radius;
+    }
+    
+    set radius(value) {
+        if (value <= 0) throw new Error('Invalid radius');
+        this._radius = value;
+    }
+    
+    get area() {
+        return Math.PI * this._radius ** 2;
+    }
+}
+
+// 4. Static Methods
+class MathUtils {
+    static add(x, y) {
+        return x + y;
+    }
+    
+    static multiply(x, y) {
+        return x * y;
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Error Handling Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// 1. Try-Catch mit spezifischen Errors
+try {
+    JSON.parse(invalidJson);
+} catch (error) {
+    if (error instanceof SyntaxError) {
+        console.error('Invalid JSON');
+    } else {
+        console.error('Unknown error:', error);
+    }
+}
+
+// 2. Custom Error Classes
+class ValidationError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'ValidationError';
+    }
+}
+
+// 3. Async Error Handling
+async function fetchData() {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Fetch failed:', error);
+        throw error; // Re-throw fuer weitere Verarbeitung
+    }
+}
+
+// 4. Promise Error Chain
+fetchData()
+    .then(processData)
+    .then(saveData)
+    .catch(error => {
+        if (error instanceof NetworkError) {
+            retryOperation();
+        } else {
+            logError(error);
+        }
+    })
+    .finally(() => cleanup());
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Module Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// 1. ES6 Module Export/Import
+// math.js
+export const add = (x, y) => x + y;
+export const multiply = (x, y) => x * y;
+export default class Calculator {
+    // ... 
+}
+
+// main.js
+import Calculator, { add, multiply } from './math.js';
+import * as mathUtils from './math.js';
+
+// 2. CommonJS Module Pattern (Node.js)
+// utils.js
+module.exports = {
+    formatDate(date) {
+        return date.toISOString();
+    },
+    calculateTotal(items) {
+        return items.reduce((sum, item) => sum + item.price, 0);
+    }
+};
+
+// app.js
+const utils = require('./utils.js');
+
+// 3. Revealing Module Pattern
+const counterModule = (() => {
+    let count = 0;
+    
+    const increment = () => ++count;
+    const decrement = () => --count;
+    const getCount = () => count;
+    
+    return {
+        increment,
+        decrement,
+        getCount
+    };
+})();
+\end{lstlisting}
+\end{KR}
+
+\begin{examplecode}{REST API Implementation}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Express REST API Example
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+// GET Collection
+app.get('/api/users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET Single Resource
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST New Resource
+app.post('/api/users', async (req, res) => {
+    try {
+        const user = new User(req.body);
+        await user.save();
+        res.status(201).json(user);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// PUT Update Resource
+app.put('/api/users/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.params.id, 
+            req.body,
+            { new: true }
+        );
+        res.json(user);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+\end{lstlisting}
+\end{examplecode}

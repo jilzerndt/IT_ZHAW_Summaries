@@ -1,4 +1,178 @@
-\section{UI Technologien}
+\subsection{UI Libraries and Components Exam Preparation}
+
+\begin{concept}{Key UI Development Concepts}
+    Essential topics to focus on:
+    \begin{itemize}
+        \item Framework vs Library differences
+        \item Component lifecycle
+        \item State management
+        \item Props vs State
+        \item Virtual DOM
+        \item JSX and SJDON syntax
+        \item Component composition
+        \item Event handling in components
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Common Pitfalls}
+    Watch out for these tricky areas:
+    \begin{itemize}
+        \item State mutation vs immutable updates
+        \item Props drilling
+        \item Component re-rendering conditions
+        \item Event handler binding
+        \item Asynchronous state updates
+        \item JSX conditional rendering
+        \item Component key prop usage
+    \end{itemize}
+\end{formula}
+
+\begin{KR}{Sample Multiple Choice Questions}
+
+\paragraph{Framework vs Library}
+Which statement is true?
+\begin{itemize}
+    \item a) Libraries control the application flow
+    \item b) Frameworks are more flexible than libraries
+    \item c) Frameworks follow the "Hollywood Principle" - correct
+    \item d) Libraries require more boilerplate code than frameworks
+\end{itemize}
+Explanation: Frameworks follow "Don't call us, we'll call you" principle
+
+\paragraph{State Updates}
+What will be logged?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const [count, setCount] = useState(0);
+setCount(count + 1);
+setCount(count + 1);
+console.log(count);
+\end{lstlisting}
+\begin{itemize}
+    \item a) 2
+    \item b) 1
+    \item c) 0 - correct
+    \item d) undefined
+\end{itemize}
+Explanation: State updates are asynchronous, and the log shows the current state value
+
+\paragraph{JSX Syntax}
+Which is correct JSX?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Options:
+a) <div class="container">Hello</div>
+b) <div className="container">Hello</div>
+c) <div classname="container">Hello</div>
+d) <div class-name="container">Hello</div>
+\end{lstlisting}
+\begin{itemize}
+    \item a) Option a
+    \item b) Option b - correct
+    \item c) Option c
+    \item d) Option d
+\end{itemize}
+Explanation: JSX uses className instead of class for CSS classes
+\end{KR}
+
+\begin{KR}{MC}
+\paragraph{SJDON Syntax}
+What's the equivalent SJDON for this JSX?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+<div className="header">
+    <h1>Title</h1>
+</div>
+\end{lstlisting}
+
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+a) ["div", {className: "header"}, ["h1", "Title"]] - correct
+b) ["div", "header", ["h1", "Title"]]
+c) ["div", {"class": "header"}, ["h1", "Title"]]
+d) ["div", ["h1", "Title"], {className: "header"}]
+\end{lstlisting}
+Explanation: SJDON uses arrays with element, props, and children
+
+\paragraph{Component Props}
+What happens here?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function Welcome(props) {
+    props.name = "Alice";
+    return <h1>Hello, {props.name}</h1>;
+}
+\end{lstlisting}
+\begin{itemize}
+    \item a) Renders "Hello, Alice"
+    \item b) Throws an error - correct
+    \item c) Renders nothing
+    \item d) Renders with original prop value
+\end{itemize}
+Explanation: Props are read-only and cannot be modified
+\end{KR}
+
+\begin{concept}{Common Exam Patterns}
+Look for questions about:
+\begin{itemize}
+    \item Component lifecycle methods
+    \item State update batching
+    \item Event handling in components
+    \item Virtual DOM diffing
+    \item Props vs State usage
+    \item Component composition patterns
+    \item Performance optimization
+\end{itemize}
+\end{concept}
+
+\begin{examplecode}{Critical Code Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Component with State
+const Counter = () => {
+    const [count, setCount] = useState(0);
+    
+    // Correct state update
+    const increment = () => {
+        setCount(prev => prev + 1);
+    };
+    
+    return ["div", {}, 
+        ["button", {onclick: increment}, "Increment"],
+        ["span", {}, count]
+    ];
+};
+
+// Props and Event Handling
+const Button = ({onClick, children}) => [
+    "button",
+    {
+        onclick: onClick,
+        className: "button"
+    },
+    children
+];
+
+// Container Component
+const UserContainer = () => {
+    const [user, setUser] = useState(null);
+    
+    if (!user) {
+        fetchUser().then(setUser);
+    }
+    
+    return [UserProfile, {user}];
+};
+\end{lstlisting}
+\end{examplecode}
+
+\begin{theorem}{Key Exam Strategies}
+    \begin{itemize}
+        \item Understand component lifecycle flow
+        \item Know state update behavior
+        \item Recognize correct JSX/SJDON syntax
+        \item Understand prop immutability
+        \item Know component composition patterns
+        \item Remember event handling patterns
+        \item Understand state vs props usage
+    \end{itemize}
+\end{theorem}
+
+\subsection{more examples}
 
 \begin{example2}{Warum SuiWeb und nicht gleich React?}
     Konzeption von WBE vor ein paar Jahren mit zwei Kollegen (beide IT-Firma aufgebaut, einer in Glarus, einer in Zürich). Sie hatten die Idee, ein eigenes Framework aufzubauen und nicht ein weit verbreitetes Tool zu nehmen, und zwar aus verschiedenen Gründen:
@@ -23,3 +197,153 @@
         \item Für Leute mit Lisp-Erfahrung ist SJDON eh die natürliche Art und Weise, hierarchische Strukturen darzustellen...
     \end{itemize}
 \end{example2}
+
+\begin{KR}{Promise Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// 1. Promise Erstellen
+const myPromise = new Promise((resolve, reject) => {
+    // Async operation
+    if (success) {
+        resolve(result);
+    } else {
+        reject(new Error('Failed'));
+    }
+});
+
+// 2. Promise Verkettung
+fetchUser(id)
+    .then(user => fetchUserPosts(user.id))
+    .then(posts => displayPosts(posts))
+    .catch(error => console.error(error));
+
+// 3. Promise.all fuer parallele Ausfuehrung
+Promise.all([
+    fetchUser(id),
+    fetchPosts(id),
+    fetchComments(id)
+])
+    .then(([user, posts, comments]) => {
+        // Alle Promises erfuellt
+    })
+    .catch(error => {
+        // Ein Promise wurde abgelehnt
+    });
+
+// 4. Promise.race
+Promise.race([
+    fetch('/endpoint1'),
+    fetch('/endpoint2')
+])
+    .then(firstResult => {
+        // Schnellste Response verarbeiten
+    });
+
+// 5. Async/Await Pattern
+async function fetchData() {
+    try {
+        const user = await fetchUser(id);
+        const posts = await fetchUserPosts(user.id);
+        return posts;
+    } catch (error) {
+        console.error(error);
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{examplecode}{Event Loop - Typische Fragen}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Was ist die Reihenfolge der Ausgaben?
+console.log('Start');
+
+setTimeout(() => {
+    console.log('Timeout 1');
+}, 0);
+
+Promise.resolve()
+    .then(() => console.log('Promise 1'))
+    .then(() => console.log('Promise 2'));
+
+setTimeout(() => {
+    console.log('Timeout 2');
+}, 0);
+
+console.log('End');
+
+// Ausgabe:
+// Start
+// End
+// Promise 1
+// Promise 2
+// Timeout 1
+// Timeout 2
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{DOM Manipulation Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// 1. Elemente finden
+const elem = document.getElementById('myId');
+const elems = document.getElementsByClassName('myClass');
+const elem = document.querySelector('.class #id');
+const elems = document.querySelectorAll('div.class');
+
+// 2. Element erstellen und einfuegen
+const newElem = document.createElement('div');
+newElem.textContent = 'New Element';
+newElem.classList.add('myClass');
+parentElem.appendChild(newElem);
+
+// 3. Event Handling
+element.addEventListener('click', (e) => {
+    e.preventDefault();  // Default verhindern
+    e.stopPropagation(); // Bubbling stoppen
+});
+
+// 4. Attribute manipulieren
+element.setAttribute('class', 'newClass');
+element.getAttribute('class');
+element.hasAttribute('class');
+element.removeAttribute('class');
+
+// 5. Style manipulieren
+element.style.backgroundColor = 'red';
+element.classList.add('highlight');
+element.classList.remove('old');
+element.classList.toggle('active');
+\end{lstlisting}
+\end{KR}
+
+\begin{examplecode}{Node.js Server Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// 1. Basic HTTP Server
+const http = require('http');
+const server = http.createServer((req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('Hello World\n');
+});
+server.listen(8000);
+
+// 2. File System Operations
+const fs = require('fs').promises;
+
+async function readAndProcessFile(filename) {
+    try {
+        const data = await fs.readFile(filename, 'utf8');
+        await fs.writeFile('output.txt', processData(data));
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// 3. Express Route Handler
+app.get('/api/items', async (req, res) => {
+    try {
+        const items = await db.getItems();
+        res.json(items);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+\end{lstlisting}
+\end{examplecode}

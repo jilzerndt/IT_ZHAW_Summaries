@@ -1,0 +1,298 @@
+\subsection{JavaScript Exam Preparation}
+
+\begin{concept}{Key Concepts for Exam}
+    Essential topics to focus on:
+    \begin{itemize}
+        \item Data types and type coercion
+        \item Variable scoping (var, let, const)
+        \item Functions (declaration vs expression)
+        \item Objects and prototypes
+        \item Asynchronous programming
+        \item Promise chains and async/await
+        \item Event loop understanding
+        \item Array methods and manipulation
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Common Pitfalls}
+    Watch out for these tricky areas:
+    \begin{itemize}
+        \item typeof null returns 'object'
+        \item Hoisting behavior differences between var and let
+        \item this keyword behavior in different contexts
+        \item Promise resolution order
+        \item Event loop execution order
+        \item Closure scope understanding
+        \item Array method return values
+    \end{itemize}
+\end{formula}
+
+\begin{KR}{Sample Multiple Choice Questions}
+
+\paragraph{Data Types and Coercion}
+What is the output of the following code?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+console.log(typeof typeof 42);
+\end{lstlisting}
+\begin{itemize}
+    \item a) "number"
+    \item b) "string" -correct
+    \item c) "undefined"
+    \item d) "object"
+\end{itemize}
+Explanation: typeof 42 returns "number", and typeof "number" returns "string"
+
+\paragraph{Variable Scope}
+What is logged to the console?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+for(var i = 0; i < 3; i++) {
+    setTimeout(() => console.log(i), 1);
+}
+\end{lstlisting}
+\begin{itemize}
+    \item a) 0, 1, 2
+    \item b) 3, 3, 3 - correct
+    \item c) undefined, undefined, undefined
+    \item d) Error
+\end{itemize}
+Explanation: var creates one shared binding, loop finishes before timeouts execute
+
+\paragraph{Promises}
+What is the output sequence?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+console.log('1');
+Promise.resolve().then(() => console.log('2'));
+setTimeout(() => console.log('3'), 0);
+console.log('4');
+\end{lstlisting}
+\begin{itemize}
+    \item a) 1, 2, 3, 4
+    \item b) 1, 4, 2, 3 - correct
+    \item c) 1, 4, 3, 2
+    \item d) 1, 2, 4, 3
+\end{itemize}
+Explanation: Microtasks (Promises) execute before macrotasks (setTimeout)
+\end{KR}
+
+\begin{KR}{MC exercises}
+\paragraph{Objects and Prototypes}
+What is logged?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+const proto = { value: 42 };
+const obj = Object.create(proto);
+obj.value = undefined;
+console.log('value' in obj);
+\end{lstlisting}
+\begin{itemize}
+    \item a) false
+    \item b) true - correct
+    \item c) undefined
+    \item d) 42
+\end{itemize}
+Explanation: 'in' operator checks own and inherited properties
+
+\paragraph{Array Methods}
+What is returned?
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+[1, 2, 3].map(x => x * 2).filter(x => x > 4);
+\end{lstlisting}
+\begin{itemize}
+    \item a) [6]  - correct
+    \item b) [4, 6]
+    \item c) [2, 4, 6]
+    \item d) []
+\end{itemize}
+Explanation: map creates [2,4,6], filter keeps only values > 4
+\end{KR}
+
+\begin{concept}{Common Exam Patterns}
+Look for questions about:
+\begin{itemize}
+    \item Type coercion in comparisons (== vs ===)
+    \item Scope and closure behavior
+    \item Promise and async execution order
+    \item Object property inheritance
+    \item Array method chaining results
+    \item Event loop and task queue order
+    \item this context in different situations
+\end{itemize}
+\end{concept}
+
+\begin{examplecode}{Critical Code Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Closure Example
+function counter() {
+    let count = 0;
+    return () => ++count;
+}
+
+// Promise Chain
+Promise.resolve(1)
+    .then(x => x + 1)
+    .then(x => Promise.resolve(x + 1))
+    .then(console.log); // 3
+
+// Event Loop Order
+console.log(1);
+setTimeout(() => console.log(2), 0);
+Promise.resolve().then(() => console.log(3));
+console.log(4);
+// Outputs: 1, 4, 3, 2
+
+// Prototype Chain
+function Animal(name) {
+    this.name = name;
+}
+Animal.prototype.speak = function() {
+    return `${this.name} makes a sound.`;
+};
+\end{lstlisting}
+\end{examplecode}
+
+\begin{theorem}{Key Exam Strategies}
+    \begin{itemize}
+        \item Read code examples carefully for edge cases
+        \item Consider asynchronous execution order
+        \item Check for scope and closure effects
+        \item Remember type coercion rules
+        \item Understand prototype chain inheritance
+        \item Know common array method behaviors
+        \item Consider the event loop for timing questions
+    \end{itemize}
+\end{theorem}
+
+\subsection{more examples}
+
+\begin{KR}{Typische JavaScript-Aufgaben}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// 1. Type Checking und Konvertierung
+typeof(someVariable)                // Typ pruefen
+Number("123")                       // String zu Number
+String(123)                         // Number zu String
+Boolean(expression)                 // zu Boolean
+Array.isArray(arr)                 // Array pruefen
+
+// 2. Array Manipulation
+array.push(item)                   // am Ende hinzufuegen
+array.pop()                        // letztes Element entfernen
+array.unshift(item)                // am Anfang hinzufuegen
+array.shift()                      // erstes Element entfernen
+array.splice(start, deleteCount)   // Elemente entfernen
+array.slice(start, end)           // Teil-Array erstellen
+
+// 3. Object Handling
+Object.keys(obj)                   // Array von Keys
+Object.values(obj)                 // Array von Values
+Object.entries(obj)                // Array von [key, value] Paaren
+Object.assign({}, obj1, obj2)      // Objekte zusammenfuehren
+{...obj1, ...obj2}                // Spread Operator
+
+// 4. String Manipulation
+str.split(delimiter)              // String zu Array
+arr.join(delimiter)               // Array zu String
+str.substring(start, end)         // Teilstring
+str.replace(search, replace)      // Ersetzen
+str.trim()                        // Whitespace entfernen
+\end{lstlisting}
+\end{KR}
+
+\begin{examplecode}{Typische Prüfungsaufgaben}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// Was ist die Ausgabe?
+console.log(typeof null)           // "object"
+console.log(typeof undefined)      // "undefined"
+console.log(typeof [])             // "object"
+console.log(typeof (() => {}))     // "function"
+
+// Vergleiche
+console.log(null == undefined)     // true
+console.log(null === undefined)    // false
+console.log([1,2] == [1,2])       // false
+console.log("5" == 5)             // true
+console.log("5" === 5)            // false
+
+// Array-Methoden
+let arr = [1, 2, 3];
+arr.push(4);                      // [1,2,3,4]
+arr.pop();                        // [1,2,3]
+arr.unshift(0);                   // [0,1,2,3]
+arr.shift();                      // [1,2,3]
+\end{lstlisting}
+\end{examplecode}
+
+\begin{KR}{Funktions-Patterns}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+// 1. Default Parameter
+function greet(name = 'User') {
+    return `Hello ${name}!`;
+}
+
+// 2. Rest Parameter
+function sum(...numbers) {
+    return numbers.reduce((a, b) => a + b, 0);
+}
+
+// 3. Closure
+function counter() {
+    let count = 0;
+    return {
+        increment: () => ++count,
+        getCount: () => count
+    };
+}
+
+// 4. IIFE (Immediately Invoked Function Expression)
+const counter = (() => {
+    let count = 0;
+    return {
+        increment: () => ++count,
+        getCount: () => count
+    };
+})();
+
+// 5. Callback Pattern
+function fetchData(callback) {
+    setTimeout(() => {
+        callback('Data');
+    }, 1000);
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{code}{ASYNC/AWAIT}
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+/* Bekanntes Beispiel */
+const readHosts =() => {
+    readFilePromise('/etc/hosts')
+        .then(console.log)
+        . catch(() => {
+            console.log("Error reading file")
+        })
+}
+/* Mit async/await */
+const readHosts = async () => {
+    try {
+        console.log(await readFilePromise('/etc/hosts'))
+    }
+    catch (err) {
+        console.log("Error reading file")
+    }
+}
+\end{lstlisting}
+Beispiel 2:
+\begin{lstlisting}[language=JavaScript, style=basesmol]
+function resolveAfter2Seconds (x) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(x)
+        }, 2000)
+    })
+}
+async function add1(x) {
+    var a = resolveAfter2Seconds(20)
+    var b = resolveAfter2Seconds(30)
+    return x + await a + await b
+}
+add1(10).then(console.log)
+\end{lstlisting}
+\end{code}
