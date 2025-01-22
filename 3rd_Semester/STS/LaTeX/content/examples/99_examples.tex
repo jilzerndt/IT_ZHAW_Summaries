@@ -1,28 +1,194 @@
 \section{Beispiele}
 
-\begin{example}{Erwartungstreue Schätzfunktion}
-Grundgesamtheit mit Erwartungswert $\mu$, Varianz $\sigma^2$ und Zufallsstichprobe $X_1, X_2, X_3$. Die folgende Schätzfunktion ist gegeben:
-$$
-\Theta_1=\frac{1}{3} \cdot(2X_1+X_2)
-$$
-$\Theta_1$ = Schätzfunktion\\
-$X_1, X_2$ = Zufallsvariablen aus der Stichprobe\\
+\subsubsection{Kombinatorik}
 
-Ist diese Schätzfunktion erwartungstreu (Parameter: $\mu$)?
-$$
-\begin{gathered}
-E(\Theta_1)=E(\frac{1}{3} \cdot(2X_1+X_2))=\frac{1}{3} \cdot(2E(X_1)+E(X_2)) \\
-E(\Theta_1)=\frac{1}{3} \cdot(2\mu+\mu)=\frac{3\mu}{3}=\mu
-\end{gathered}
-$$
-$E(\Theta_1)$ = Erwartungswert der Schätzfunktion\\
-$E(X_1), E(X_2)$ = Erwartungswerte der einzelnen Zufallsvariablen\\
-$\mu$ = Wahrer Parameterwert\\
+\begin{example}{Komplexeres Beispiel: Passwörter}\\
+\textbf{Aufgabe:} Ein Passwort muss bestehen aus:
+\begin{itemize}
+\item Genau 8 Zeichen
+\item Mindestens ein Großbuchstabe (26 mögliche)
+\item Mindestens eine Ziffer (10 mögliche)
+\item Kleine Buchstaben erlaubt (26 mögliche)
+\end{itemize}
 
-Da $E(\Theta_1)=\mu$ ist die Funktion erwartungstreu.
+\textbf{Lösung:}
+1. Gesamtzahl aller möglichen 8-stelligen Passwörter mit den Zeichen:
+   \begin{itemize}
+   \item $n = 26 + 26 + 10 = 62$ Zeichen
+   \item Variation mit Wiederholung: $62^8$
+   \end{itemize}
+
+2. Abziehen der ungültigen Kombinationen:
+   \begin{itemize}
+   \item Ohne Großbuchstaben: $(36)^8$
+   \item Ohne Ziffern: $(52)^8$
+   \item Ohne beide: $(26)^8$
+   \end{itemize}
+
+3. Nach dem Inklusions-Exclusions-Prinzip:
+   $\text{Gültige Passwörter} = 62^8 - 36^8 - 52^8 + 26^8$
 \end{example}
 
-\begin{example}{Intervallschätzung für die Varianz} Für die Varianz $\sigma^2$ einer Normalverteilung mit Stichprobenumfang $n=10$ und Stichprobenvarianz $s^2=16$ soll ein $99\%$-Vertrauensintervall berechnet werden.
+\subsubsection{Wahrscheinlichkeitsrechnung Beispiele}
+
+\begin{example}{Lotterie mit bedingten Gewinnen}\\
+\textbf{Aufgabe:} Bei einer Lotterie gewinnt man zunächst mit p = 0.1 einen Bonus-Los. Mit diesem Los kann man dann mit p = 0.2 den Hauptpreis von 1000€ gewinnen. Berechne den Erwartungswert.
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Ereignisbaum erstellen:}
+   \begin{itemize}
+   \item P(Bonus) = 0.1
+   \item P(Hauptgewinn|Bonus) = 0.2
+   \end{itemize}
+
+\item \textbf{Mögliche Ausgänge:}
+   \begin{itemize}
+   \item 1000€: P = 0.1 · 0.2 = 0.02
+   \item 0€: P = 0.98
+   \end{itemize}
+
+\item \textbf{Erwartungswert:}
+   $E(X) = 1000 \cdot 0.02 + 0 \cdot 0.98 = 20$
+\end{enumerate}
+\end{example}
+
+\begin{example}{Aktienportfolio}
+\textbf{Aufgabe:} Ein Portfolio besteht aus:
+\begin{itemize}
+\item Aktie A: 60\% Anteil, E(A) = 8\%, V(A) = 25
+\item Aktie B: 40\% Anteil, E(B) = 12\%, V(B) = 36
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Erwartungswert des Portfolios:}
+   \begin{align*}
+   E(P) &= 0.6 \cdot E(A) + 0.4 \cdot E(B) \\
+   &= 0.6 \cdot 8\% + 0.4 \cdot 12\% \\
+   &= 4.8\% + 4.8\% = 9.6\%
+   \end{align*}
+
+\item \textbf{Varianz des Portfolios} (bei Unabhängigkeit):
+   \begin{align*}
+   V(P) &= (0.6)^2 \cdot V(A) + (0.4)^2 \cdot V(B) \\
+   &= 0.36 \cdot 25 + 0.16 \cdot 36 \\
+   &= 9 + 5.76 = 14.76
+   \end{align*}
+
+\item \textbf{Standardabweichung:}
+   $S(P) = \sqrt{14.76} \approx 3.84\%$
+\end{enumerate}
+\end{example}
+
+\subsubsection{Hypergeometrische Verteilung}
+
+\begin{example}{Ziehung ohne Zurücklegen}
+\textbf{Aufgabe:} In einer Urne sind 20 Kugeln, davon 8 rot. Es werden 5 Kugeln ohne Zurücklegen gezogen. 
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Parameter:} N = 20 (Gesamtanzahl), M = 8 (rote Kugeln), n = 5 (Ziehungen)
+
+\item \textbf{Erwartungswert:}
+   $$E(X) = 5 \cdot \frac{8}{20} = 2$$
+
+\item \textbf{Varianz:}
+   $$V(X) = 5 \cdot \frac{8}{20} \cdot \frac{12}{20} \cdot \frac{15}{19} \approx 1.184$$
+
+\item \textbf{P(genau 2 rote):}
+   $P(X=2) = \frac{\binom{8}{2}\binom{12}{3}}{\binom{20}{5}} \approx 0.3682$
+\end{enumerate}
+\end{example}
+
+\columnbreak
+
+
+\subsubsection{Bernoulli-Verteilung}
+
+\begin{example}{Münzwurf}\\
+\textbf{Aufgabe:} Faire Münze wird geworfen. X = 1 bei Kopf, X = 0 bei Zahl.
+
+\textbf{Lösung:}
+\begin{itemize}
+\item p = 0.5 (faire Münze)
+\item $E(X) = 0.5$
+\item $V(X) = 0.5 \cdot 0.5 = 0.25$
+\item $P(X=1) = 0.5$
+\item $P(X=0) = 0.5$
+\end{itemize}
+\end{example}
+
+\subsubsection{Binomialverteilung}
+
+\begin{example}{Qualitätskontrolle mit Binomialverteilung}\\
+\textbf{Aufgabe:} Eine Maschine produziert Teile mit Ausschussquote 5\%. In einer Stichprobe von 100 Teilen:
+\begin{itemize}
+\item a) Wie viele defekte Teile sind zu erwarten?
+\item b) Wie groß ist die Wahrscheinlichkeit für genau 3 defekte Teile?
+\item c) Wie groß ist die Wahrscheinlichkeit für höchstens 2 defekte Teile?
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Parameter:}
+   \begin{itemize}
+   \item n = 100 (Stichprobenumfang)
+   \item p = 0.05 (Ausschusswahrscheinlichkeit)
+   \item X $\thicksim$ B(100, 0.05)
+   \end{itemize}
+
+\item \textbf{Erwartungswert:}
+   $$E(X) = np = 100 \cdot 0.05 = 5$$
+
+\item \textbf{Genau 3 defekte:}
+   $$P(X=3) = \binom{100}{3}(0.05)^3(0.95)^{97} \approx 0.1404$$
+
+\item \textbf{Höchstens 2 defekte:}
+   $$P(X \leq 2) = \sum_{k=0}^2 \binom{100}{k}(0.05)^k(0.95)^{100-k} \approx 0.0861$$
+\end{enumerate}
+\end{example}
+
+\subsubsection{Poisson-Verteilung}
+
+
+
+\begin{example}{Poisson-Verteilung in der Praxis}\\
+\textbf{Aufgabe:} Ein Callcenter erhält durchschnittlich 3 Anrufe pro 10 Minuten.
+\begin{itemize}
+\item a) Wahrscheinlichkeit für genau 2 Anrufe in 10 Minuten?
+\item b) Wahrscheinlichkeit für mehr als 4 Anrufe?
+\end{itemize}
+
+\textbf{Lösung:}
+\begin{enumerate}
+\item \textbf{Parameter:} $\lambda = 3$ (Erwartungswert), X $\thicksim$ Poi(3)
+
+\item \textbf{Genau 2 Anrufe:}
+   $$P(X=2) = \frac{3^2}{2!}e^{-3} \approx 0.2240$$ 
+
+\item \textbf{Mehr als 4 Anrufe:}
+   $P(X>4) = 1 - \sum_{k=0}^4 \frac{3^k}{k!}e^{-3} \approx 0.1847$
+\end{enumerate}
+\end{example}
+
+\subsubsection{Normalverteilung}
+
+\begin{example}{Körpergrößen}\\
+\textbf{Aufgabe:} Körpergrößen in einer Population sind normalverteilt mit $\mu = 175$ cm und $\sigma = 10$ cm.
+
+\textbf{Berechnung:}
+\begin{itemize}
+\item $P(X \leq 185) = \phi(\frac{185-175}{10}) = \phi(1) \approx 0.8413$
+\item $P(165 \leq X \leq 185) = \phi(1) - \phi(-1) \approx 0.6826$
+\item $P(X > 195) = 1 - \phi(2) \approx 0.0228$
+\end{itemize}
+\end{example}
+
+\subsubsection{Parameter-/Intervallschätzung}
+
+\begin{example}{Intervallschätzung für die Varianz} \\
+  Für die Varianz $\sigma^2$ einer Normalverteilung mit Stichprobenumfang $n=10$ und Stichprobenvarianz $s^2=16$ soll ein $99\%$-Vertrauensintervall berechnet werden.
 
 \begin{enumerate}
   \item Verteilungstyp: Chi-Quadrat-Verteilung
@@ -45,7 +211,7 @@ Da $E(\Theta_1)=\mu$ ist die Funktion erwartungstreu.
 \end{enumerate}
 \end{example}
 
-\begin{example}{Bernoulli-Anteilsschätzung}
+\begin{example}{Bernoulli-Anteilsschätzung}\\
 Ein Vertrauensintervall für den Parameter $p$ einer Bernoulli-Verteilung soll aus einer Stichprobe mit $n=100$ und $\bar{x}=0.42$ bei einem Vertrauensniveau von $95\%$ berechnet werden.
 
 \begin{enumerate}
