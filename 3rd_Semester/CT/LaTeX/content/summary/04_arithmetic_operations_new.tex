@@ -129,7 +129,7 @@ Steps for arithmetic operations:
 \begin{definition}{Two's Complement}
 For negative numbers:
 \begin{itemize}
-  \item Two's complement: $A = !A + 1$
+  \item Two's complement: $A = !A + 1$ (Invert all bits and add 1 to result)
   \item Used for representing signed numbers
   \item Enables using same hardware for addition and subtraction
 \end{itemize}
@@ -138,7 +138,7 @@ For negative numbers:
 \begin{concept}{Carry and Overflow}\\
 \textbf{Unsigned Operations:}
 \begin{itemize}
-  \item Addition: C = 1 indicates carry (result too large)
+  \item Addition: C = 1 indicates carry (result too large for available bits)
   \item Subtraction: C = 0 indicates borrow (result negative)
 \end{itemize}
 
@@ -151,25 +151,49 @@ For negative numbers:
 
 \begin{concept}{Number Circles and Two's Complement}\\
 Understanding arithmetic wrap-around:
-\begin{itemize}
-  \item Fixed number of bits creates circular number space
-  \item Addition moves clockwise on number circle
-  \item Subtraction moves counter-clockwise
-  \item Two's complement:
-    \begin{itemize}
-      \item Invert all bits (one's complement)
-      \item Add 1 to result
-      \item Enables using addition hardware for subtraction
-    \end{itemize}
-\end{itemize}
-\includegraphics[width=0.6\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-04(2)}
 
-Example for 4-bit numbers:
-\begin{verbatim}
-Positive: 0000 to 0111 (0 to 7)
-Negative: 1000 to 1111 (-8 to -1)
-\end{verbatim}
+\begin{minipage}{0.45\linewidth}
+\begin{itemize}
+  \item Fixed number of bits creates \\circular number space
+  \item Addition moves clockwise \\on number circle
+  \item Subtraction moves \\counter-clockwise
+\end{itemize}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-04(2)}
+\end{minipage}
+\vspace{2mm}\\
+\begin{minipage}[t]{0.4\linewidth}
+Addition: C = 1 $\rightarrow$ Carry
+
+\includegraphics[width=\linewidth]{images/addcarry.png}
+\end{minipage}
+\begin{minipage}[t]{0.55\linewidth}
+Subtraction: C = 0 $\rightarrow$ Borrow
+
+\includegraphics[width=\linewidth]{images/subborrow.png}
+\end{minipage}
 \end{concept}
+
+\begin{example2}{Integer Ranges by Word Size}\\
+\textbf{8-bit integers:}
+\begin{itemize}
+  \item Unsigned: 0 to 255 (0x00 to 0xFF)
+  \item Signed: -128 to 127 (0x80 to 0x7F)
+\end{itemize}
+
+\textbf{16-bit integers:}
+\begin{itemize}
+  \item Unsigned: 0 to 65,535 (0x0000 to 0xFFFF)
+  \item Signed: -32,768 to 32,767 (0x8000 to 0x7FFF)
+\end{itemize}
+
+\textbf{32-bit integers:}
+\begin{itemize}
+  \item Unsigned: 0 to 4,294,967,295 (0x00000000 to 0xFFFFFFFF)
+  \item Signed: -2,147,483,648 to 2,147,483,647 (0x80000000 to 0x7FFFFFFF)
+\end{itemize}
+\end{example2}
 
 \begin{KR}{Multi-Word Arithmetic}\\
 Guidelines for operations on large numbers:
@@ -200,7 +224,7 @@ Guidelines for operations on large numbers:
 \begin{example2}{Multi-Word Addition}
 Adding 96-bit values using ADCS:
 
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-04}
+\includegraphics[width=\linewidth]{images/multiwordadd.png}
 
 \begin{lstlisting}[language=armasm, style=basesmol]
 ADDS R1, R1, R4    ; Add least significant words
@@ -212,7 +236,7 @@ ADCS R3, R3, R6    ; Add most significant words with carry
 \begin{example2}{Multi-Word Subtraction}
 Subtracting 96-bit values using SBCS:
 
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-04(1)}
+\includegraphics[width=\linewidth]{images/multiwordsub.png}
 
 \begin{lstlisting}[language=armasm, style=basesmol]
 SUBS R1, R1, R4    ; Subtract least significant words

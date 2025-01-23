@@ -13,6 +13,30 @@ Data can be passed between functions through:
 \end{itemize}
 \end{concept}
 
+\begin{example2}{Parameter Passing Methods}\\
+Global variable approach (not recommended):
+\begin{lstlisting}[language=armasm, style=basesmol]
+    .data
+value   DCD     0           ; Global variable
+
+    .text
+func    LDR     R0, =value  ; Load address
+        LDR     R1, [R0]    ; Get value
+        ; Process value
+        STR     R1, [R0]    ; Store result
+\end{lstlisting}
+
+Register-based approach (preferred):
+\begin{lstlisting}[language=armasm, style=basesmol]
+func    PUSH    {R4, LR}    ; Save registers
+        ; R0 contains input parameter
+        MOV     R4, R0      ; Save parameter
+        ; Process value in R4
+        MOV     R0, R4      ; Set return value
+        POP     {R4, PC}    ; Restore and return
+\end{lstlisting}
+\end{example2}
+
 \begin{definition}{ARM Procedure Call Standard}\\
 \textbf{Parameter Passing:}
 \begin{itemize}
@@ -49,68 +73,15 @@ Data can be passed between functions through:
 \includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-09(3)}
 \end{definition}
 
-\begin{concept}{Reentrancy}\\
-Handling recursive function calls:
-\begin{itemize}
-  \item Each call needs its own data set
-  \item Registers/globals get overwritten
-  \item Solution: Use stack for local storage
-\end{itemize}
-\end{concept}
 
-\begin{example2}{Parameter Passing Methods}
-Global variable approach (not recommended):
-\begin{lstlisting}[language=armasm, style=basesmol]
-    .data
-value   DCD     0           ; Global variable
 
-    .text
-func    LDR     R0, =value  ; Load address
-        LDR     R1, [R0]    ; Get value
-        ; Process value
-        STR     R1, [R0]    ; Store result
-\end{lstlisting}
 
-Register-based approach (preferred):
-\begin{lstlisting}[language=armasm, style=basesmol]
-func    PUSH    {R4, LR}    ; Save registers
-        ; R0 contains input parameter
-        MOV     R4, R0      ; Save parameter
-        ; Process value in R4
-        MOV     R0, R4      ; Set return value
-        POP     {R4, PC}    ; Restore and return
-\end{lstlisting}
-\end{example2}
 
-\begin{KR}{Implementing Function Calls}\\
-Steps for calling functions:
-\begin{enumerate}
-  \item Caller's responsibilities:
-    \begin{itemize}
-      \item Place parameters in R0-R3
-      \item Push additional parameters on stack
-      \item Save caller-saved registers if needed
-    \end{itemize}
-  \item Callee's responsibilities:
-    \begin{itemize}
-      \item Save callee-saved registers used
-      \item Save LR if making other calls
-      \item Process parameters
-      \item Place return value in R0
-      \item Restore saved registers
-    \end{itemize}
-\end{enumerate}
-\end{KR}
 
-\begin{remark}
-Important considerations:
-\begin{itemize}
-  \item Avoid global variables for parameter passing
-  \item Use registers for efficiency
-  \item Follow ARM calling convention strictly
-  \item Consider stack usage in recursive functions
-\end{itemize}
-\end{remark}
+
+
+
+
 
 \begin{KR}{Parameter Passing by Value vs. Reference}\\
 Two main approaches:
@@ -147,57 +118,12 @@ func2   PUSH    {LR}
 \end{lstlisting}
 \end{KR}
 
-\begin{example2}{Data Structure Access}
-Working with structures and arrays:
-\begin{lstlisting}[language=C, style=basesmol]
-typedef struct {
-    uint32_t minutes;
-    uint32_t seconds;
-} time_t;
-
-time_t time;
-\end{lstlisting}
-
-Assembly implementation:
-\begin{lstlisting}[language=armasm, style=basesmol]
-    ; Access structure members
-    LDR     R0, =time       ; Get structure address
-    LDR     R1, [R0, #0]    ; Load minutes
-    LDR     R2, [R0, #4]    ; Load seconds
-    
-    ; Modify structure
-    ADDS    R2, #1          ; Increment seconds
-    CMP     R2, #60         ; Check for overflow
-    BLT     store_back
-    MOVS    R2, #0          ; Reset seconds
-    ADDS    R1, #1          ; Increment minutes
-store_back
-    STR     R1, [R0, #0]    ; Store minutes
-    STR     R2, [R0, #4]    ; Store seconds
-\end{lstlisting}
-\end{example2}
-
-\begin{concept}{Stack Frame Organization}\\
-Complete stack frame layout:
-
+\begin{concept}{Reentrancy}
+Handling recursive function calls:
 \begin{itemize}
-  \item \textbf{Previous Stack Frame:}
-    \begin{itemize}
-      \item Local variables
-      \item Saved registers
-    \end{itemize}
-  \item \textbf{Current Frame:}
-    \begin{itemize}
-      \item Arguments 5+
-      \item Return address (LR)
-      \item Saved registers (R4-R11)
-      \item Local variables
-      \item Temporary storage
-    \end{itemize}
-  \item \textbf{Next Frame:}
-    \begin{itemize}
-      \item Space for called functions
-    \end{itemize}
+  \item Each call needs its own data set
+  \item Registers/globals get overwritten
+  \item Solution: Use stack for local storage
 \end{itemize}
 \end{concept}
 
@@ -220,6 +146,39 @@ fact_end
     POP     {R4, PC}        ; Restore and return
 \end{lstlisting}
 \end{example2}
+
+\begin{KR}{Implementing Function Calls}
+Steps for calling functions:
+
+\begin{minipage}[t]{0.5\textwidth}
+  \textbf{Caller's responsibilities:}
+    \begin{itemize}
+      \item Place parameters in R0-R3
+      \item Push additional parameters \\on stack
+      \item Save caller-saved registers \\if needed
+    \end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}  
+  \textbf{Callee's responsibilities:}
+    \begin{itemize}
+      \item Save callee-saved registers used
+      \item Save LR if making other calls
+      \item Process parameters
+      \item Place return value in R0
+      \item Restore saved registers
+    \end{itemize}
+\end{minipage}
+\end{KR}
+
+\begin{remark}
+Important considerations:
+\begin{itemize}
+  \item Avoid global variables for parameter passing
+  \item Use registers for efficiency
+  \item Follow ARM calling convention strictly
+  \item Consider stack usage in recursive functions
+\end{itemize}
+\end{remark}
 
 \begin{KR}{Function Parameter Guidelines}\\
 Best practices for parameter passing:
@@ -299,4 +258,67 @@ calculate
     POP     {R4-R5, PC}     ; Return
 \end{lstlisting}
 \end{example2}
+
+
+
+
+
+
+\begin{concept}{Stack Frame Organization}\\
+Complete stack frame layout:
+
+\begin{itemize}
+  \item \textbf{Previous Stack Frame:}
+    \begin{itemize}
+      \item Local variables
+      \item Saved registers
+    \end{itemize}
+  \item \textbf{Current Frame:}
+    \begin{itemize}
+      \item Arguments 5+
+      \item Return address (LR)
+      \item Saved registers (R4-R11)
+      \item Local variables
+      \item Temporary storage
+    \end{itemize}
+  \item \textbf{Next Frame:}
+    \begin{itemize}
+      \item Space for called functions
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Data Structure Access}
+Working with structures and arrays:
+\begin{lstlisting}[language=C, style=basesmol]
+typedef struct {
+    uint32_t minutes;
+    uint32_t seconds;
+} time_t;
+
+time_t time;
+\end{lstlisting}
+
+Assembly implementation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Access structure members
+    LDR     R0, =time       ; Get structure address
+    LDR     R1, [R0, #0]    ; Load minutes
+    LDR     R2, [R0, #4]    ; Load seconds
+    
+    ; Modify structure
+    ADDS    R2, #1          ; Increment seconds
+    CMP     R2, #60         ; Check for overflow
+    BLT     store_back
+    MOVS    R2, #0          ; Reset seconds
+    ADDS    R1, #1          ; Increment minutes
+store_back
+    STR     R1, [R0, #0]    ; Store minutes
+    STR     R2, [R0, #4]    ; Store seconds
+\end{lstlisting}
+\end{example2}
+
+
+
+
 

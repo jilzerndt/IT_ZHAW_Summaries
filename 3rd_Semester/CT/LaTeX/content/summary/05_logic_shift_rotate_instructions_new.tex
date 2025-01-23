@@ -11,6 +11,24 @@ Base logic operations (affect only N and Z flags):
 \end{itemize}
 \end{concept}
 
+\begin{example2}{Logical Operations}
+Common logic operations:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Logic operations
+ANDS R0, R1         ; R0 = R0 AND R1
+BICS R0, R1         ; R0 = R0 AND NOT R1
+EORS R0, R1         ; R0 = R0 XOR R1
+MVNS R0, R1         ; R0 = NOT R1
+ORRS R0, R1         ; R0 = R0 OR R1
+
+; Shift operations
+LSLS R0, R1, #2     ; R0 = R1 << 2 (multiply by 4)
+LSRS R0, R1, #1     ; R0 = R1 >> 1 (divide by 2)
+ASRS R0, R1, #2     ; R0 = R1 >> 2 (signed divide by 4)
+RORS R0, R1, #1     ; Rotate R1 right by 1 bit
+\end{lstlisting}
+\end{example2}
+
 \begin{concept}{Shift and Rotate Instructions}\\
 Shift operations for binary manipulation:
 \begin{itemize}
@@ -23,65 +41,26 @@ Shift operations for binary manipulation:
 \includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-06}
 \end{concept}
 
-\begin{definition}{Integer Casting}\\
-\textbf{Extension (adding bits):}
-\begin{itemize}
-  \item \textbf{Zero Extension} (unsigned):
-    \begin{itemize}
-      \item Fill left bits with zero
-      \item Example: 1011 → 00001011
-    \end{itemize}
-  \item \textbf{Sign Extension} (signed):
-    \begin{itemize}
-      \item Copy sign bit to the left
-      \item Example: 1011 → 11111011
-    \end{itemize}
-\end{itemize}
-
-\textbf{Truncation (removing bits):}
-\begin{itemize}
-  \item Signed: May change sign
-  \item Unsigned: Results in modulo operation
-\end{itemize}
-\end{definition}
-
-\begin{example2}{Integer Ranges by Word Size}
-\textbf{8-bit integers:}
-\begin{itemize}
-  \item Unsigned: 0 to 255 (0x00 to 0xFF)
-  \item Signed: -128 to 127 (0x80 to 0x7F)
-\end{itemize}
-
-\textbf{16-bit integers:}
-\begin{itemize}
-  \item Unsigned: 0 to 65,535 (0x0000 to 0xFFFF)
-  \item Signed: -32,768 to 32,767 (0x8000 to 0x7FFF)
-\end{itemize}
-
-\textbf{32-bit integers:}
-\begin{itemize}
-  \item Unsigned: 0 to 4,294,967,295 (0x00000000 to 0xFFFFFFFF)
-  \item Signed: -2,147,483,648 to 2,147,483,647 (0x80000000 to 0x7FFFFFFF)
-\end{itemize}
-\end{example2}
-
-\begin{example2}{Logical Operations}
-Common logic operations:
+\begin{example2}{Shift Operations for Arithmetic}
+Using shifts for multiplication and division:
 \begin{lstlisting}[language=armasm, style=basesmol]
-    ; Logic operations
-    ANDS R0, R1         ; R0 = R0 AND R1
-    BICS R0, R1         ; R0 = R0 AND NOT R1
-    EORS R0, R1         ; R0 = R0 XOR R1
-    MVNS R0, R1         ; R0 = NOT R1
-    ORRS R0, R1         ; R0 = R0 OR R1
-    
-    ; Shift operations
-    LSLS R0, R1, #2     ; R0 = R1 << 2 (multiply by 4)
-    LSRS R0, R1, #1     ; R0 = R1 >> 1 (divide by 2)
-    ASRS R0, R1, #2     ; R0 = R1 >> 2 (signed divide by 4)
-    RORS R0, R1, #1     ; Rotate R1 right by 1 bit
+; Multiplication by powers of 2
+LSLS    R0, R0, #1      ; R0 = R0 * 2
+LSLS    R0, R0, #2      ; R0 = R0 * 4
+LSLS    R0, R0, #3      ; R0 = R0 * 8
+
+; Division by powers of 2
+LSRS    R0, R0, #1      ; R0 = R0 / 2 (unsigned)
+ASRS    R0, R0, #1      ; R0 = R0 / 2 (signed)
+
+; Multiply by 10 (8 + 2)
+LSLS    R1, R0, #3      ; R1 = R0 * 8
+ADDS    R0, R0, R1      ; R0 = R0 + (R0 * 8) = R0 * 9
+ADDS    R0, R0, R0      ; R0 = R0 * 2 = R0 * 10
 \end{lstlisting}
 \end{example2}
+
+
 
 \begin{KR}{Using Logic and Shift Instructions}\\
 Steps for bit manipulation:
@@ -155,71 +134,91 @@ Common operations on individual bits:
 \end{lstlisting}
 \end{KR}
 
-\begin{example2}{Shift Operations for Arithmetic}
-Using shifts for multiplication and division:
-\begin{lstlisting}[language=armasm, style=basesmol]
-    ; Multiplication by powers of 2
-    LSLS    R0, R0, #1      ; R0 = R0 * 2
-    LSLS    R0, R0, #2      ; R0 = R0 * 4
-    LSLS    R0, R0, #3      ; R0 = R0 * 8
-    
-    ; Division by powers of 2
-    LSRS    R0, R0, #1      ; R0 = R0 / 2 (unsigned)
-    ASRS    R0, R0, #1      ; R0 = R0 / 2 (signed)
-    
-    ; Multiply by 10 (8 + 2)
-    LSLS    R1, R0, #3      ; R1 = R0 * 8
-    ADDS    R0, R0, R1      ; R0 = R0 + (R0 * 8) = R0 * 9
-    ADDS    R0, R0, R0      ; R0 = R0 * 2 = R0 * 10
-\end{lstlisting}
-\end{example2}
+
+
+\subsubsection{Casting, Sign Extension and Type Conversion}
+
+\begin{definition}{Integer Casting}\\
+\textbf{Extension (adding bits):}
+
+\begin{minipage}{0.5\textwidth}
+\begin{itemize}
+  \item \textbf{Zero Extension} (unsigned):
+    \begin{itemize}
+      \item Fill left bits with zero
+      \item Example: 1011 → 00001011
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{itemize}
+  \item \textbf{Sign Extension} (signed):
+    \begin{itemize}
+      \item Copy sign bit to the left
+      \item Example: 1011 → 11111011
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+
+\textbf{Truncation (removing bits):}
+\begin{itemize}
+  \item Signed: May change sign
+  \item Unsigned: Results in modulo operation
+\end{itemize}
+\end{definition}
+
+
 
 \begin{concept}{Sign Extension Instructions}\\
 Instructions for extending smaller values:
-\begin{itemize}
-  \item \textbf{SXTB}: Sign extend byte to word
+
+\begin{minipage}{0.5\textwidth}
+\textbf{SXTB}: Sign extend byte to word
     \begin{itemize}
       \item Takes lowest byte
       \item Copies bit 7 to bits 31-8
     \end{itemize}
-  \item \textbf{SXTH}: Sign extend half-word to word
+\textbf{SXTH}: \\Sign extend half-word to word
     \begin{itemize}
       \item Takes lowest half-word
       \item Copies bit 15 to bits 31-16
     \end{itemize}
-  \item \textbf{UXTB}: Zero extend byte to word
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\textbf{UXTB}: Zero extend byte to word
     \begin{itemize}
       \item Takes lowest byte
       \item Sets bits 31-8 to zero
     \end{itemize}
-  \item \textbf{UXTH}: Zero extend half-word to word
+\textbf{UXTH}:\\ Zero extend half-word to word
     \begin{itemize}
       \item Takes lowest half-word
       \item Sets bits 31-16 to zero
     \end{itemize}
-\end{itemize}
+\end{minipage}
 \end{concept}
 
 \begin{example2}{Type Conversion Examples}
 Examples of common type conversions:
 \begin{lstlisting}[language=armasm, style=basesmol]
-    ; Sign extension examples
-    SXTB    R0, R1          ; Sign extend byte
-    SXTH    R0, R1          ; Sign extend half-word
-    
-    ; Zero extension examples
-    UXTB    R0, R1          ; Zero extend byte
-    UXTH    R0, R1          ; Zero extend half-word
-    
-    ; Manual sign extension
-    LSLS    R0, R0, #24     ; Shift left 24 bits
-    ASRS    R0, R0, #24     ; Arithmetic shift right 24
+; Sign extension examples
+SXTB    R0, R1          ; Sign extend byte
+SXTH    R0, R1          ; Sign extend half-word
+
+; Zero extension examples
+UXTB    R0, R1          ; Zero extend byte
+UXTH    R0, R1          ; Zero extend half-word
+
+; Manual sign extension
+LSLS    R0, R0, #24     ; Shift left 24 bits
+ASRS    R0, R0, #24     ; Arithmetic shift right 24
 \end{lstlisting}
 \end{example2}
 
 \begin{KR}{Type Conversion Guidelines}\\
 Steps for safe type conversion:
 
+\begin{minipage}[t]{0.58\textwidth}
 1. For unsigned to larger unsigned:
 \begin{itemize}
   \item Use zero extension (UXTB, UXTH)
@@ -231,13 +230,15 @@ Steps for safe type conversion:
   \item Use sign extension (SXTB, SXTH)
   \item Or use LSLS followed by ASRS
 \end{itemize}
-
-3. For reducing size (truncation):
+\end{minipage}
+\begin{minipage}[t]{0.4\textwidth}
+3. Reducing size (truncation):
 \begin{itemize}
-  \item Use AND with appropriate mask
-  \item Or store using STRB/STRH
-  \item Check for potential data loss
+  \item Use AND with \\appropriate mask
+  \item Or store using\\ STRB/STRH
+  \item Check for potential\\ data loss
 \end{itemize}
+\end{minipage}
 
 Example:
 \begin{lstlisting}[language=armasm, style=basesmol]
