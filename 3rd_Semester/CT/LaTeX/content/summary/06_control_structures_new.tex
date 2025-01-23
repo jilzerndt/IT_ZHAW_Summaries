@@ -152,7 +152,7 @@ Classification of branch instructions:
 Guidelines for implementing if-then-else structures:
 
 1. Simple if-then:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; if (x > 0) { x++; }
     CMP     R0, #0          ; Compare x with 0
     BLE     endif           ; Skip if x <= 0
@@ -161,7 +161,7 @@ endif
 \end{lstlisting}
 
 2. if-then-else:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; if (x > y) { x = y; } else { y = x; }
     CMP     R0, R1          ; Compare x and y
     BLE     else_part       ; Branch if x <= y
@@ -173,7 +173,7 @@ endif
 \end{lstlisting}
 
 3. Nested if:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; if (x > 0) {
     ;     if (y > 0) {
     ;         x = y;
@@ -193,7 +193,7 @@ endif_outer
 Templates for different loop types:
 
 1. While loop:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; while (x < 10) { x++; }
     B       while_cond      ; Jump to condition
 while_loop
@@ -204,7 +204,7 @@ while_cond
 \end{lstlisting}
 
 2. Do-while loop:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; do { x++; } while (x < 10);
 do_loop
     ADDS    R0, #1          ; x++
@@ -213,7 +213,7 @@ do_loop
 \end{lstlisting}
 
 3. For loop:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; for (i = 0; i < 10; i++)
     MOVS    R0, #0          ; i = 0
     B       for_cond
@@ -230,7 +230,7 @@ for_cond
 Steps for implementing switch statements:
 
 1. Range check and table access:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     CMP     R0, #MAX_CASES  ; Check range
     BHS     default_case    ; If too high, default
     LSLS    R0, #2          ; Multiply by 4
@@ -241,7 +241,7 @@ Steps for implementing switch statements:
 \end{lstlisting}
 
 2. Jump table structure:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
 jump_table
     DCD     case_0          ; Case 0 handler
     DCD     case_1          ; Case 1 handler
@@ -250,7 +250,7 @@ jump_table
 \end{lstlisting}
 
 3. Case handlers:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
 case_0
     ; Handle case 0
     B       switch_end
@@ -265,7 +265,7 @@ switch_end
 
 \begin{example2}{Complex Control Structure}
 Implementing nested loops with conditions:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; for (i = 0; i < 5; i++) {
     ;     if (i == 2) continue;
     ;     for (j = 0; j < 3; j++) {
@@ -298,179 +298,3 @@ outer_continue
 \end{lstlisting}
 \end{example2}
 
-\begin{formula}{Branch Instruction Types}\\
-Classification of branch instructions:
-
-\textbf{1. Based on Condition:}
-\begin{itemize}
-  \item \textbf{Unconditional:}
-    \begin{itemize}
-      \item B - Branch always
-      \item BL - Branch with Link
-      \item BX - Branch and Exchange
-    \end{itemize}
-  \item \textbf{Conditional:}
-    \begin{itemize}
-      \item Flag-dependent (EQ, NE, CS, CC, etc.)
-      \item Arithmetic (HI, LS, GE, LT, etc.)
-    \end{itemize}
-\end{itemize}
-
-\textbf{2. Based on Target Address:}
-\begin{itemize}
-  \item \textbf{Direct:} Target address in instruction
-  \item \textbf{Indirect:} Target address in register
-  \item \textbf{Relative:} Offset from current PC
-  \item \textbf{Absolute:} Complete target address
-\end{itemize}
-\end{formula}
-
-\begin{KR}{Selection Implementation}\\
-Guidelines for implementing if-then-else structures:
-
-1. Simple if-then:
-\begin{lstlisting}[language=armasm, style=base]
-    ; if (x > 0) { x++; }
-    CMP     R0, #0          ; Compare x with 0
-    BLE     endif           ; Skip if x <= 0
-    ADDS    R0, #1          ; x++
-endif
-\end{lstlisting}
-
-2. if-then-else:
-\begin{lstlisting}[language=armasm, style=base]
-    ; if (x > y) { x = y; } else { y = x; }
-    CMP     R0, R1          ; Compare x and y
-    BLE     else_part       ; Branch if x <= y
-    MOVS    R0, R1          ; Then part: x = y
-    B       endif           ; Skip else part
-else_part
-    MOVS    R1, R0          ; Else part: y = x
-endif
-\end{lstlisting}
-
-3. Nested if:
-\begin{lstlisting}[language=armasm, style=base]
-    ; if (x > 0) {
-    ;     if (y > 0) {
-    ;         x = y;
-    ;     }
-    ; }
-    CMP     R0, #0          ; Check x > 0
-    BLE     endif_outer
-    CMP     R1, #0          ; Check y > 0
-    BLE     endif_inner
-    MOVS    R0, R1          ; x = y
-endif_inner
-endif_outer
-\end{lstlisting}
-\end{KR}
-
-\begin{KR}{Loop Implementation}\\
-Templates for different loop types:
-
-1. While loop:
-\begin{lstlisting}[language=armasm, style=base]
-    ; while (x < 10) { x++; }
-    B       while_cond      ; Jump to condition
-while_loop
-    ADDS    R0, #1          ; x++
-while_cond
-    CMP     R0, #10         ; Check x < 10
-    BLT     while_loop      ; Continue if true
-\end{lstlisting}
-
-2. Do-while loop:
-\begin{lstlisting}[language=armasm, style=base]
-    ; do { x++; } while (x < 10);
-do_loop
-    ADDS    R0, #1          ; x++
-    CMP     R0, #10         ; Check x < 10
-    BLT     do_loop         ; Continue if true
-\end{lstlisting}
-
-3. For loop:
-\begin{lstlisting}[language=armasm, style=base]
-    ; for (i = 0; i < 10; i++)
-    MOVS    R0, #0          ; i = 0
-    B       for_cond
-for_loop
-    ; Loop body
-    ADDS    R0, #1          ; i++
-for_cond
-    CMP     R0, #10         ; Check i < 10
-    BLT     for_loop        ; Continue if true
-\end{lstlisting}
-\end{KR}
-
-\begin{KR}{Switch Implementation}\\
-Steps for implementing switch statements:
-
-1. Range check and table access:
-\begin{lstlisting}[language=armasm, style=base]
-    CMP     R0, #MAX_CASES  ; Check range
-    BHS     default_case    ; If too high, default
-    LSLS    R0, #2          ; Multiply by 4
-    LDR     R1, =jump_table ; Load table address
-    ADD     R1, R0          ; Add offset
-    LDR     R1, [R1]        ; Load target address
-    BX      R1              ; Branch to case
-\end{lstlisting}
-
-2. Jump table structure:
-\begin{lstlisting}[language=armasm, style=base]
-jump_table
-    DCD     case_0          ; Case 0 handler
-    DCD     case_1          ; Case 1 handler
-    DCD     default_case    ; Default handler
-    ; ... more cases
-\end{lstlisting}
-
-3. Case handlers:
-\begin{lstlisting}[language=armasm, style=base]
-case_0
-    ; Handle case 0
-    B       switch_end
-case_1
-    ; Handle case 1
-    B       switch_end
-default_case
-    ; Handle default case
-switch_end
-\end{lstlisting}
-\end{KR}
-
-\begin{example2}{Complex Control Structure}
-Implementing nested loops with conditions:
-\begin{lstlisting}[language=armasm, style=base]
-    ; for (i = 0; i < 5; i++) {
-    ;     if (i == 2) continue;
-    ;     for (j = 0; j < 3; j++) {
-    ;         if (j == 1) break;
-    ;         sum += i + j;
-    ;     }
-    ; }
-    
-    MOVS    R0, #0          ; i = 0
-outer_loop
-    CMP     R0, #2          ; Check i == 2
-    BEQ     outer_continue  ; Skip if i == 2
-    
-    MOVS    R1, #0          ; j = 0
-inner_loop
-    CMP     R1, #1          ; Check j == 1
-    BEQ     outer_continue  ; Break to outer loop
-    
-    ADDS    R2, R0, R1      ; Calculate i + j
-    ADDS    R4, R4, R2      ; Add to sum
-    
-    ADDS    R1, #1          ; j++
-    CMP     R1, #3          ; Check j < 3
-    BLT     inner_loop      ; Continue inner loop
-    
-outer_continue
-    ADDS    R0, #1          ; i++
-    CMP     R0, #5          ; Check i < 5
-    BLT     outer_loop      ; Continue outer loop
-\end{lstlisting}
-\end{example2}

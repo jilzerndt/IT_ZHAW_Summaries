@@ -126,28 +126,28 @@ Special case for shift/rotate:
 Common operations on individual bits:
 
 1. Set specific bits:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; Set bits 0 and 4
     MOVS    R1, #0x11       ; Mask: 0001 0001
     ORRS    R0, R1          ; Set bits in R0
 \end{lstlisting}
 
 2. Clear specific bits:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; Clear bits 1 and 5
     MOVS    R1, #0x22       ; Mask: 0010 0010
     BICS    R0, R1          ; Clear bits in R0
 \end{lstlisting}
 
 3. Toggle specific bits:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; Toggle bits 2,3,4
     MOVS    R1, #0x1C       ; Mask: 0001 1100
     EORS    R0, R1          ; Toggle bits in R0
 \end{lstlisting}
 
 4. Test specific bits:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; Test bit 3
     MOVS    R1, #0x08       ; Mask: 0000 1000
     ANDS    R2, R0, R1      ; Test bit
@@ -157,7 +157,7 @@ Common operations on individual bits:
 
 \begin{example2}{Shift Operations for Arithmetic}
 Using shifts for multiplication and division:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; Multiplication by powers of 2
     LSLS    R0, R0, #1      ; R0 = R0 * 2
     LSLS    R0, R0, #2      ; R0 = R0 * 4
@@ -202,7 +202,7 @@ Instructions for extending smaller values:
 
 \begin{example2}{Type Conversion Examples}
 Examples of common type conversions:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; Sign extension examples
     SXTB    R0, R1          ; Sign extend byte
     SXTH    R0, R1          ; Sign extend half-word
@@ -240,7 +240,7 @@ Steps for safe type conversion:
 \end{itemize}
 
 Example:
-\begin{lstlisting}[language=armasm, style=base]
+\begin{lstlisting}[language=armasm, style=basesmol]
     ; Convert 8-bit to 32-bit
     MOVS    R0, #0xFF       ; Load 8-bit value
     SXTB    R1, R0          ; Signed extension
@@ -263,160 +263,3 @@ Important considerations:
 \end{itemize}
 \end{remark}
 
-\begin{concept}{Flag Behavior with Logic Instructions}\\
-Logic instructions only affect N and Z flags:
-\begin{itemize}
-  \item \textbf{N flag}: Set to bit 31 of result (MSB)
-  \item \textbf{Z flag}: Set if result is zero
-  \item \textbf{C flag}: Unchanged
-  \item \textbf{V flag}: Unchanged
-\end{itemize}
-
-Special case for shift/rotate:
-\begin{itemize}
-  \item \textbf{C flag}: Set to last bit shifted out
-  \item \textbf{N,Z flags}: Set based on result
-  \item \textbf{V flag}: Unchanged
-\end{itemize}
-\end{concept}
-
-\begin{KR}{Bit Manipulation Techniques}\\
-Common operations on individual bits:
-
-1. Set specific bits:
-\begin{lstlisting}[language=armasm, style=base]
-    ; Set bits 0 and 4
-    MOVS    R1, #0x11       ; Mask: 0001 0001
-    ORRS    R0, R1          ; Set bits in R0
-\end{lstlisting}
-
-2. Clear specific bits:
-\begin{lstlisting}[language=armasm, style=base]
-    ; Clear bits 1 and 5
-    MOVS    R1, #0x22       ; Mask: 0010 0010
-    BICS    R0, R1          ; Clear bits in R0
-\end{lstlisting}
-
-3. Toggle specific bits:
-\begin{lstlisting}[language=armasm, style=base]
-    ; Toggle bits 2,3,4
-    MOVS    R1, #0x1C       ; Mask: 0001 1100
-    EORS    R0, R1          ; Toggle bits in R0
-\end{lstlisting}
-
-4. Test specific bits:
-\begin{lstlisting}[language=armasm, style=base]
-    ; Test bit 3
-    MOVS    R1, #0x08       ; Mask: 0000 1000
-    ANDS    R2, R0, R1      ; Test bit
-    BEQ     bit_is_clear    ; Branch if bit was 0
-\end{lstlisting}
-\end{KR}
-
-\begin{example2}{Shift Operations for Arithmetic}
-Using shifts for multiplication and division:
-\begin{lstlisting}[language=armasm, style=base]
-    ; Multiplication by powers of 2
-    LSLS    R0, R0, #1      ; R0 = R0 * 2
-    LSLS    R0, R0, #2      ; R0 = R0 * 4
-    LSLS    R0, R0, #3      ; R0 = R0 * 8
-    
-    ; Division by powers of 2
-    LSRS    R0, R0, #1      ; R0 = R0 / 2 (unsigned)
-    ASRS    R0, R0, #1      ; R0 = R0 / 2 (signed)
-    
-    ; Multiply by 10 (8 + 2)
-    LSLS    R1, R0, #3      ; R1 = R0 * 8
-    ADDS    R0, R0, R1      ; R0 = R0 + (R0 * 8) = R0 * 9
-    ADDS    R0, R0, R0      ; R0 = R0 * 2 = R0 * 10
-\end{lstlisting}
-\end{example2}
-
-\begin{concept}{Sign Extension Instructions}\\
-Instructions for extending smaller values:
-\begin{itemize}
-  \item \textbf{SXTB}: Sign extend byte to word
-    \begin{itemize}
-      \item Takes lowest byte
-      \item Copies bit 7 to bits 31-8
-    \end{itemize}
-  \item \textbf{SXTH}: Sign extend half-word to word
-    \begin{itemize}
-      \item Takes lowest half-word
-      \item Copies bit 15 to bits 31-16
-    \end{itemize}
-  \item \textbf{UXTB}: Zero extend byte to word
-    \begin{itemize}
-      \item Takes lowest byte
-      \item Sets bits 31-8 to zero
-    \end{itemize}
-  \item \textbf{UXTH}: Zero extend half-word to word
-    \begin{itemize}
-      \item Takes lowest half-word
-      \item Sets bits 31-16 to zero
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{example2}{Type Conversion Examples}
-Examples of common type conversions:
-\begin{lstlisting}[language=armasm, style=base]
-    ; Sign extension examples
-    SXTB    R0, R1          ; Sign extend byte
-    SXTH    R0, R1          ; Sign extend half-word
-    
-    ; Zero extension examples
-    UXTB    R0, R1          ; Zero extend byte
-    UXTH    R0, R1          ; Zero extend half-word
-    
-    ; Manual sign extension
-    LSLS    R0, R0, #24     ; Shift left 24 bits
-    ASRS    R0, R0, #24     ; Arithmetic shift right 24
-\end{lstlisting}
-\end{example2}
-
-\begin{KR}{Type Conversion Guidelines}\\
-Steps for safe type conversion:
-
-1. For unsigned to larger unsigned:
-\begin{itemize}
-  \item Use zero extension (UXTB, UXTH)
-  \item Or use LSLS followed by LSRS
-\end{itemize}
-
-2. For signed to larger signed:
-\begin{itemize}
-  \item Use sign extension (SXTB, SXTH)
-  \item Or use LSLS followed by ASRS
-\end{itemize}
-
-3. For reducing size (truncation):
-\begin{itemize}
-  \item Use AND with appropriate mask
-  \item Or store using STRB/STRH
-  \item Check for potential data loss
-\end{itemize}
-
-Example:
-\begin{lstlisting}[language=armasm, style=base]
-    ; Convert 8-bit to 32-bit
-    MOVS    R0, #0xFF       ; Load 8-bit value
-    SXTB    R1, R0          ; Signed extension
-    UXTB    R2, R0          ; Unsigned extension
-    
-    ; Truncate 32-bit to 8-bit
-    MOVS    R1, #0xFF       ; Create mask
-    ANDS    R0, R1          ; Truncate to 8 bits
-\end{lstlisting}
-\end{KR}
-
-\begin{remark}
-Important considerations:
-\begin{itemize}
-  \item Always consider signedness of values
-  \item Check for potential overflow in arithmetic shifts
-  \item Remember carry flag behavior in shifts
-  \item Use appropriate extension for data type
-  \item Consider performance impact of shifts vs multiply
-\end{itemize}
-\end{remark}
