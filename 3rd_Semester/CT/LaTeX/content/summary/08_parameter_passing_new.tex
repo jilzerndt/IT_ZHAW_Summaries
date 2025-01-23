@@ -1,32 +1,38 @@
 \section{Parameter Passing}
 
-\begin{concept}{Parameter Passing Methods}\\
+\begin{definition}{Parameter Passing Methods}\\
 Data can be passed between functions through:
 \begin{itemize}
-  \item \textbf{Registers}: Fast, limited number available
+  \item \textbf{Registers}: Fast, limited number available \\ $\rightarrow$ Caller and Callee use the same register
   \item \textbf{Global Variables}: Shared memory space
   \item \textbf{Stack}: 
     \begin{itemize}
       \item Caller: PUSH parameters onto stack
-      \item Callee: Access via LDR from stack
+      \item Callee: Access parameter via LDR from stack
     \end{itemize}
 \end{itemize}
+\end{definition}
+
+\begin{concept}{Global variable approach}
+
+\begin{minipage}{0.5\linewidth}
+NOT recommended!!
+\vspace{2mm}\\
+\begin{itemize}
+  \item Shared variables in dara area
+  \item Overhead to access variable
+  \item Error prone, unmaintainable
+\end{itemize}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+  \vspace{-4mm}
+\includegraphics[width=0.8\linewidth]{images/global_variables.png}
+\end{minipage}
 \end{concept}
 
-\begin{example2}{Parameter Passing Methods}\\
-Global variable approach (not recommended):
-\begin{lstlisting}[language=armasm, style=basesmol]
-    .data
-value   DCD     0           ; Global variable
-
-    .text
-func    LDR     R0, =value  ; Load address
-        LDR     R1, [R0]    ; Get value
-        ; Process value
-        STR     R1, [R0]    ; Store result
-\end{lstlisting}
-
-Register-based approach (preferred):
+\begin{concept}{Register-based approach} (preferred):
+  There are two main approaches in Register-based approach:
+  by value or by reference
 \begin{lstlisting}[language=armasm, style=basesmol]
 func    PUSH    {R4, LR}    ; Save registers
         ; R0 contains input parameter
@@ -35,28 +41,73 @@ func    PUSH    {R4, LR}    ; Save registers
         MOV     R0, R4      ; Set return value
         POP     {R4, PC}    ; Restore and return
 \end{lstlisting}
-\end{example2}
+\end{concept}
+
+\begin{KR}{Parameter Passing by Value vs. Reference}
+
+\begin{minipage}{0.5\linewidth}
+\begin{itemize}
+  \item \textbf{Pass by Value}:
+    \begin{itemize}
+      \item Copies value to function
+      \item Changes don't affect original
+      \item Default in C
+      \item Example: \\Simple types, integers
+      \item Limited numbers of registers
+    \end{itemize}
+  \item \textbf{Pass by Reference}:
+    \begin{itemize}
+      \item Passes memory address
+      \item Changes affect original value
+      \item In C: Using pointers
+      \item Example: \\Arrays, large structures
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+  \center
+pass by value:
+
+\includegraphics[width=\linewidth]{images/register_passbyval.png}
+\end{minipage}
+
+Example implementation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Pass by value
+func1   PUSH    {LR}
+        ADDS    R0, #1      ; Modify parameter
+        POP     {PC}        ; Original unchanged
+; Pass by reference
+func2   PUSH    {LR}
+        LDR     R1, [R0]    ; Load from address
+        ADDS    R1, #1      ; Modify value
+        STR     R1, [R0]    ; Store back to address
+        POP     {PC}        ; Original changed
+\end{lstlisting}
+\end{KR}
+
 
 \begin{definition}{ARM Procedure Call Standard}\\
 \textbf{Parameter Passing:}
 \begin{itemize}
-  \item First four arguments use R0-R3
-  \item Additional parameters go on stack
+  \item Caller copies parameters from R0 to R3
+  \item Caller copies additional parameters to stack
 \end{itemize}
 
 \textbf{Return Values:}
 \begin{itemize}
-  \item \textbf{Small Values} ($\leqslant$ 32 bits): 
+  \item \textbf{Small Values} ($\leq$ 32 bits $\rightarrow$ smaller than word size): 
     \begin{itemize}
       \item Return in R0
-      \item Zero/sign extend if needed
+      \item Zero/sign extend to word if needed
     \end{itemize}
-  \item \textbf{Double Word} (64 bits): R0/R1
-  \item \textbf{128-bit Values}: R0-R3
-  \item \textbf{Larger Values}: 
+  \item \textbf{Word} (32 bits): return in R0
+  \item \textbf{Double Word} (64 bits): return in R0/R1
+  \item \textbf{128-bit Values}: return in R0-R3
+  \item \textbf{Composite data types} (structs, arrays): 
     \begin{itemize}
-      \item Store in memory
-      \item Return pointer in R0
+      \item Up to 4 bytes: return in R0
+      \item Larger: return pointer in R0 (stored in data area)
     \end{itemize}
 \end{itemize}
 
@@ -70,82 +121,36 @@ func    PUSH    {R4, LR}    ; Save registers
   \item \textbf{R15}: PC - program counter
 \end{itemize}
 
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-09(3)}
+\includegraphics[width=\linewidth]{images/register-usage.png}
 \end{definition}
 
+\begin{concept}{Stack Frame Organization}
+Complete stack frame layout:
 
-
-
-
-
-
-
-
-
-
-\begin{KR}{Parameter Passing by Value vs. Reference}\\
-Two main approaches:
-\begin{itemize}
-  \item \textbf{Pass by Value}:
+\begin{minipage}[t]{0.5\textwidth}
+\textbf{Current Frame:}
     \begin{itemize}
-      \item Copies value to function
-      \item Changes don't affect original
-      \item Default in C
-      \item Example: Simple types, integers
+      \item Arguments 5+
+      \item Return address (LR)
+      \item Saved registers (R4-R11)
+      \item Local variables
+      \item Temporary storage
     \end{itemize}
-  \item \textbf{Pass by Reference}:
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+  \item \textbf{Previous Stack Frame:}
     \begin{itemize}
-      \item Passes memory address
-      \item Changes affect original value
-      \item In C: Using pointers
-      \item Example: Arrays, large structures
+      \item Local variables
+      \item Saved registers
+    \end{itemize}
+  \item \textbf{Next Frame:}
+    \begin{itemize}
+      \item Space for called functions
     \end{itemize}
 \end{itemize}
-
-Example implementation:
-\begin{lstlisting}[language=armasm, style=basesmol]
-; Pass by value
-func1   PUSH    {LR}
-        ADDS    R0, #1      ; Modify parameter
-        POP     {PC}        ; Original unchanged
-
-; Pass by reference
-func2   PUSH    {LR}
-        LDR     R1, [R0]    ; Load from address
-        ADDS    R1, #1      ; Modify value
-        STR     R1, [R0]    ; Store back to address
-        POP     {PC}        ; Original changed
-\end{lstlisting}
-\end{KR}
-
-\begin{concept}{Reentrancy}
-Handling recursive function calls:
-\begin{itemize}
-  \item Each call needs its own data set
-  \item Registers/globals get overwritten
-  \item Solution: Use stack for local storage
-\end{itemize}
+\end{minipage}
 \end{concept}
-
-\begin{example2}{Recursive Function Implementation}
-Factorial calculation:
-\begin{lstlisting}[language=armasm, style=basesmol]
-; uint32_t factorial(uint32_t n)
-; Input in R0, result in R0
-factorial
-    PUSH    {R4, LR}        ; Save registers
-    MOVS    R4, R0          ; Save n
-    CMP     R4, #1          ; Check base case
-    BLE     fact_end        ; Return 1 if n <= 1
-    
-    SUBS    R0, R4, #1      ; n-1
-    BL      factorial       ; Recursive call
-    MULS    R0, R4, R0      ; n * factorial(n-1)
-    
-fact_end
-    POP     {R4, PC}        ; Restore and return
-\end{lstlisting}
-\end{example2}
 
 \begin{KR}{Implementing Function Calls}
 Steps for calling functions:
@@ -180,36 +185,47 @@ Important considerations:
 \end{itemize}
 \end{remark}
 
-\begin{KR}{Function Parameter Guidelines}\\
+\begin{definition}{Subroutine Call} Caller Side\\
+Pattern as used by the compiler. Manually written code may differ.
+
+  \includegraphics[width=\linewidth]{images/subroutine_call_callerside.png}
+\end{definition}
+
+
+\begin{KR}{Function Parameter Guidelines}
 Best practices for parameter passing:
 
-1. Register Usage:
+\begin{minipage}[t]{0.45\textwidth}  
+\textbf{1. Register Usage:}
 \begin{itemize}
   \item R0-R3: First four parameters
   \item R0: Return value
   \item R4-R11: Preserve if used
 \end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.54\textwidth}
+  \textbf{3. Memory Structures:}
+\begin{itemize}
+  \item Pass pointers for large structures
+  \item Use registers for small values
+  \item Consider alignment requirements
+\end{itemize}
+\end{minipage}
 
-2. Stack Usage:
+\textbf{2. Stack Usage:}
 \begin{itemize}
   \item Additional parameters pushed right to left
   \item Maintain 8-byte alignment
   \item Caller responsible for cleaning up stack
 \end{itemize}
 
-3. Memory Structures:
-\begin{itemize}
-  \item Pass pointers for large structures
-  \item Use registers for small values
-  \item Consider alignment requirements
-\end{itemize}
+
 
 Example implementation:
 \begin{lstlisting}[language=armasm, style=basesmol]
 ; void func(int a, int b, int c, int d, int e)
 ; First four params in R0-R3, fifth on stack
 func    PUSH    {R4-R6, LR} ; Save registers
-        
         ; Save parameters
         MOV     R4, R0      ; Save a
         MOV     R5, R1      ; Save b
@@ -218,10 +234,41 @@ func    PUSH    {R4-R6, LR} ; Save registers
         LDR     R0, [SP, #16] ; Load e from stack
         
         ; Function body
-        
         POP     {R4-R6, PC} ; Return
 \end{lstlisting}
 \end{KR}
+
+\begin{concept}{Reentrancy}
+Handling recursive function calls:
+\begin{itemize}
+  \item Each call needs its own data set
+  \item Registers/globals get overwritten
+  \item Solution: ARM Procedure Call Standard
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Recursive Function Implementation}
+Factorial calculation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; uint32_t factorial(uint32_t n)
+; Input in R0, result in R0
+factorial
+    PUSH    {R4, LR}        ; Save registers
+    MOVS    R4, R0          ; Save n
+    CMP     R4, #1          ; Check base case
+    BLE     fact_end        ; Return 1 if n <= 1
+    
+    SUBS    R0, R4, #1      ; n-1
+    BL      factorial       ; Recursive call
+    MULS    R0, R4, R0      ; n * factorial(n-1)
+    
+fact_end
+    POP     {R4, PC}        ; Restore and return
+\end{lstlisting}
+\end{example2}
+
+
+\subsubsection{Parameter Passing Examples}
 
 \begin{example2}{Complex Parameter Example}
 Function with mixed parameter types:
@@ -260,33 +307,6 @@ calculate
 \end{example2}
 
 
-
-
-
-
-\begin{concept}{Stack Frame Organization}\\
-Complete stack frame layout:
-
-\begin{itemize}
-  \item \textbf{Previous Stack Frame:}
-    \begin{itemize}
-      \item Local variables
-      \item Saved registers
-    \end{itemize}
-  \item \textbf{Current Frame:}
-    \begin{itemize}
-      \item Arguments 5+
-      \item Return address (LR)
-      \item Saved registers (R4-R11)
-      \item Local variables
-      \item Temporary storage
-    \end{itemize}
-  \item \textbf{Next Frame:}
-    \begin{itemize}
-      \item Space for called functions
-    \end{itemize}
-\end{itemize}
-\end{concept}
 
 \begin{example2}{Data Structure Access}
 Working with structures and arrays:

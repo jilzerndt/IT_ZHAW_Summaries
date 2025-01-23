@@ -11,7 +11,7 @@ Key elements of subroutines:
 \end{itemize}
 \end{concept}
 
-\begin{example2}{Simple Subroutine}
+\begin{example2}{Subroutine Call and Return}\\
 Multiply by 3 implementation:
 \begin{lstlisting}[language=armasm, style=basesmol]
 MulBy3  MOV     R4, R0      ; Save input value
@@ -19,6 +19,14 @@ MulBy3  MOV     R4, R0      ; Save input value
         ADD     R0, R4      ; Add original value
         BX      LR          ; Return
 \end{lstlisting}
+
+in detail:
+\begin{itemize}
+  \item Label with name \textcolor{darkred}{\textbf{MulBy3}}
+  \item Return Statement \textcolor{darkblue}{\textbf{BX LR}}
+\end{itemize}
+
+\includegraphics[width=0.7\linewidth]{images/subroutine.png}
 \end{example2}
 
 \begin{concept}{Call and Return Mechanism}\\
@@ -68,11 +76,10 @@ proc_c
 
 \subsubsection{Stack}
 
-\begin{definition}{Stack Operations}\\
-Stack characteristics:
+\begin{definition}{Stack}characteristics:
 \begin{itemize}
-  \item \textbf{Stack Area}: Continuous RAM section
-  \item \textbf{Stack Pointer (SP)}: R13, points to last written value
+  \item \textcolor{darkblue}{\textbf{Stack Area}} (Section): Continuous RAM section
+  \item \textcolor{darkred}{\textbf{Stack Pointer (SP)}}: R13, points to last written value
   \item \textbf{Direction}: Full-descending (grows toward lower addresses)
   \item \textbf{Alignment}: Word-aligned (4 bytes)
   \item \textbf{Data Size}: 32-bit words only
@@ -80,21 +87,30 @@ Stack characteristics:
 
 Main operations:
 \begin{itemize}
-  \item \textbf{PUSH}: Decrements SP, then stores words
-  \item \textbf{POP}: Loads words, then increments SP
+  \item \textcolor{darkgreen}{\textbf{PUSH}}: Decrements SP, then stores words
+  \item \textcolor{darkgreen}{\textbf{POP}}: Loads words, then increments SP
 \end{itemize}
 
 Stack constraints:
 \begin{itemize}
   \item Number of PUSH and POP operations must match
-  \item SP must stay between stack-limit and stack-base
+  \item SP must stay between stack-limit and stack-base\\
+  $\rightarrow$ \textcolor{darkgreen}{Stack-limit} $\leq$ SP $\leq$ \textcolor{darkpurple}{Stack-base}
 \end{itemize}
 
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-08}
+\includegraphics[width=\linewidth]{images/stack_overview.png}
+
+
 \end{definition}
 
-\begin{concept}{Stack Instructions}\\
+\begin{concept}{Stack Instructions}
+
+\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-08}
+
+
 Special stack manipulation instructions:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.5\linewidth}
 \begin{itemize}
   \item \textbf{ADD/SUB SP}:
     \begin{itemize}
@@ -106,6 +122,10 @@ Special stack manipulation instructions:
       \item Immediate offset 0-1020
       \item Used for frame access
     \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.5\linewidth}
+\begin{itemize}
   \item \textbf{PUSH/POP}:
     \begin{itemize}
       \item Multiple register transfer
@@ -113,20 +133,17 @@ Special stack manipulation instructions:
       \item Can include PC/LR
     \end{itemize}
 \end{itemize}
+\end{minipage}
 \end{concept}
 
-\begin{example2}{Stack Operations Implementation}\\
-PUSH implementation:
+\begin{example2}{PUSH/POP Implementation}
 \begin{lstlisting}[language=armasm, style=basesmol]
     ; PUSH {R2,R3,R6}
     SUB     SP, SP, #12     ; Reserve stack space
     STR     R2, [SP]        ; Store R2
     STR     R3, [SP, #4]    ; Store R3
     STR     R6, [SP, #8]    ; Store R6
-\end{lstlisting}
 
-POP implementation:
-\begin{lstlisting}[language=armasm, style=basesmol]
     ; POP {R2,R3,R6}
     LDR     R2, [SP]        ; Restore R2
     LDR     R3, [SP, #4]    ; Restore R3
