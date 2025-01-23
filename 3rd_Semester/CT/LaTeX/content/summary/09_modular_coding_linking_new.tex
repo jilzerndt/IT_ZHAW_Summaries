@@ -314,3 +314,187 @@ Important considerations:
   \item Document build requirements
 \end{itemize}
 \end{remark}
+
+\begin{concept}{Guidelines for Modular Programming}\\
+Key design principles:
+\begin{itemize}
+  \item \textbf{High Cohesion}:
+    \begin{itemize}
+      \item Group related functionality together
+      \item Each module fulfills a single defined task
+      \item Lean external interface
+    \end{itemize}
+  \item \textbf{Low Coupling}:
+    \begin{itemize}
+      \item Minimize dependencies between modules
+      \item Clear and minimal interfaces
+      \item Easy to modify individual modules
+    \end{itemize}
+  \item \textbf{Information Hiding}:
+    \begin{itemize}
+      \item Split interface from implementation
+      \item Don't expose unnecessary details
+      \item Maintain freedom to change internals
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Symbol Resolution and Relocation}\\
+Steps in linking process:
+
+1. Symbol Resolution:
+\begin{lstlisting}[language=armasm, style=base]
+    ; In module1.s
+    AREA |.text|, CODE, READONLY
+    EXPORT func1
+func1
+    ; function code
+    
+    ; In module2.s
+    AREA |.text|, CODE, READONLY
+    IMPORT func1
+    BL      func1    ; Reference to resolve
+\end{lstlisting}
+
+2. Relocation:
+\begin{lstlisting}[language=armasm, style=base]
+    ; Before relocation
+    BL      func1    ; Relative offset
+    
+    ; After relocation
+    BL      0x08000234  ; Absolute address
+\end{lstlisting}
+\end{KR}
+
+\begin{formula}{Linkage Types in C}\\
+Three types of linkage:
+\begin{itemize}
+  \item \textbf{External Linkage}:
+    \begin{itemize}
+      \item Global names available to all modules
+      \item Default for functions and global variables
+      \item Example:
+\begin{lstlisting}[language=C, style=base]
+int global_var;           // External linkage
+void global_func(void);   // External linkage
+\end{lstlisting}
+    \end{itemize}
+  \item \textbf{Internal Linkage}:
+    \begin{itemize}
+      \item Names only available within module
+      \item Created using 'static' keyword
+      \item Example:
+\begin{lstlisting}[language=C, style=base]
+static int module_var;    // Internal linkage
+static void local_func(void); // Internal linkage
+\end{lstlisting}
+    \end{itemize}
+  \item \textbf{No Linkage}:
+    \begin{itemize}
+      \item Local variables and function parameters
+      \item Scope limited to block
+      \item Example:
+\begin{lstlisting}[language=C, style=base]
+void func(void) {
+    int local_var;       // No linkage
+    static int static_var; // Internal linkage
+}
+\end{lstlisting}
+    \end{itemize}
+\end{itemize}
+\end{formula}
+
+\begin{example2}{Object File Structure}
+Example of complete object file:
+\begin{lstlisting}[style=base]
+File sections:
+1. '.text' section (Code):
+0x00000000: 4604  MOV     r4,r0
+0x00000002: 0040  LSLS    r0,r0,#1
+0x00000004: 4420  ADD     r0,r4
+
+2. '.data' section:
+0x00000000: Initial values for global data
+
+3. Symbol table:
+#  Name      Value    Type   Binding
+6  myFunc    0x0000  CODE   Global
+7  extVar    0x0000  DATA   Reference
+
+4. Relocation entries:
+Offset   Type         Symbol
+0x0006   R_ARM_REL32  extVar
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Library Creation and Use}\\
+Steps for creating and using libraries:
+
+1. Create library source files:
+\begin{lstlisting}[language=C, style=base]
+// lib.h
+void lib_func(int x);
+
+// lib.c
+void lib_func(int x) {
+    // Implementation
+}
+\end{lstlisting}
+
+2. Compile to object files:
+\begin{lstlisting}[style=base]
+armcc -c lib.c -o lib.o
+\end{lstlisting}
+
+3. Create static library:
+\begin{lstlisting}[style=base]
+armar --create libmy.a lib.o
+\end{lstlisting}
+
+4. Link with library:
+\begin{lstlisting}[style=base]
+armlink main.o libmy.a -o program.axf
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Tool Chain Components}\\
+Essential tools for development:
+\begin{itemize}
+  \item \textbf{Compiler (armcc)}:
+    \begin{itemize}
+      \item Translates C to assembly
+      \item Performs optimizations
+      \item Generates object files
+    \end{itemize}
+  \item \textbf{Assembler (armasm)}:
+    \begin{itemize}
+      \item Processes assembly code
+      \item Creates object files
+      \item Handles directives
+    \end{itemize}
+  \item \textbf{Linker (armlink)}:
+    \begin{itemize}
+      \item Combines object files
+      \item Resolves references
+      \item Creates executable
+    \end{itemize}
+  \item \textbf{Library Manager (armar)}:
+    \begin{itemize}
+      \item Creates/maintains libraries
+      \item Adds/removes object files
+      \item Archives multiple objects
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{remark}
+Important considerations:
+\begin{itemize}
+  \item Use consistent naming conventions
+  \item Document module interfaces clearly
+  \item Consider initialization dependencies
+  \item Test modules independently
+  \item Maintain version control
+  \item Document build requirements
+\end{itemize}
+\end{remark}

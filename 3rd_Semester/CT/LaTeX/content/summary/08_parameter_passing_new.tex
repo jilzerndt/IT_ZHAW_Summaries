@@ -299,3 +299,191 @@ calculate
     POP     {R4-R5, PC}     ; Return
 \end{lstlisting}
 \end{example2}
+
+\begin{KR}{Parameter Passing by Value vs. Reference}\\
+Two main approaches:
+\begin{itemize}
+  \item \textbf{Pass by Value}:
+    \begin{itemize}
+      \item Copies value to function
+      \item Changes don't affect original
+      \item Default in C
+      \item Example: Simple types, integers
+    \end{itemize}
+  \item \textbf{Pass by Reference}:
+    \begin{itemize}
+      \item Passes memory address
+      \item Changes affect original value
+      \item In C: Using pointers
+      \item Example: Arrays, large structures
+    \end{itemize}
+\end{itemize}
+
+Example implementation:
+\begin{lstlisting}[language=armasm, style=base]
+; Pass by value
+func1   PUSH    {LR}
+        ADDS    R0, #1      ; Modify parameter
+        POP     {PC}        ; Original unchanged
+
+; Pass by reference
+func2   PUSH    {LR}
+        LDR     R1, [R0]    ; Load from address
+        ADDS    R1, #1      ; Modify value
+        STR     R1, [R0]    ; Store back to address
+        POP     {PC}        ; Original changed
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Data Structure Access}
+Working with structures and arrays:
+\begin{lstlisting}[language=C, style=base]
+typedef struct {
+    uint32_t minutes;
+    uint32_t seconds;
+} time_t;
+
+time_t time;
+\end{lstlisting}
+
+Assembly implementation:
+\begin{lstlisting}[language=armasm, style=base]
+    ; Access structure members
+    LDR     R0, =time       ; Get structure address
+    LDR     R1, [R0, #0]    ; Load minutes
+    LDR     R2, [R0, #4]    ; Load seconds
+    
+    ; Modify structure
+    ADDS    R2, #1          ; Increment seconds
+    CMP     R2, #60         ; Check for overflow
+    BLT     store_back
+    MOVS    R2, #0          ; Reset seconds
+    ADDS    R1, #1          ; Increment minutes
+store_back
+    STR     R1, [R0, #0]    ; Store minutes
+    STR     R2, [R0, #4]    ; Store seconds
+\end{lstlisting}
+\end{example2}
+
+\begin{concept}{Stack Frame Organization}\\
+Complete stack frame layout:
+
+\begin{itemize}
+  \item \textbf{Previous Stack Frame:}
+    \begin{itemize}
+      \item Local variables
+      \item Saved registers
+    \end{itemize}
+  \item \textbf{Current Frame:}
+    \begin{itemize}
+      \item Arguments 5+
+      \item Return address (LR)
+      \item Saved registers (R4-R11)
+      \item Local variables
+      \item Temporary storage
+    \end{itemize}
+  \item \textbf{Next Frame:}
+    \begin{itemize}
+      \item Space for called functions
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Recursive Function Implementation}
+Factorial calculation:
+\begin{lstlisting}[language=armasm, style=base]
+; uint32_t factorial(uint32_t n)
+; Input in R0, result in R0
+factorial
+    PUSH    {R4, LR}        ; Save registers
+    MOVS    R4, R0          ; Save n
+    CMP     R4, #1          ; Check base case
+    BLE     fact_end        ; Return 1 if n <= 1
+    
+    SUBS    R0, R4, #1      ; n-1
+    BL      factorial       ; Recursive call
+    MULS    R0, R4, R0      ; n * factorial(n-1)
+    
+fact_end
+    POP     {R4, PC}        ; Restore and return
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Function Parameter Guidelines}\\
+Best practices for parameter passing:
+
+1. Register Usage:
+\begin{itemize}
+  \item R0-R3: First four parameters
+  \item R0: Return value
+  \item R4-R11: Preserve if used
+\end{itemize}
+
+2. Stack Usage:
+\begin{itemize}
+  \item Additional parameters pushed right to left
+  \item Maintain 8-byte alignment
+  \item Caller responsible for cleaning up stack
+\end{itemize}
+
+3. Memory Structures:
+\begin{itemize}
+  \item Pass pointers for large structures
+  \item Use registers for small values
+  \item Consider alignment requirements
+\end{itemize}
+
+Example implementation:
+\begin{lstlisting}[language=armasm, style=base]
+; void func(int a, int b, int c, int d, int e)
+; First four params in R0-R3, fifth on stack
+func    PUSH    {R4-R6, LR} ; Save registers
+        
+        ; Save parameters
+        MOV     R4, R0      ; Save a
+        MOV     R5, R1      ; Save b
+        MOV     R6, R2      ; Save c
+        ; R3 contains d
+        LDR     R0, [SP, #16] ; Load e from stack
+        
+        ; Function body
+        
+        POP     {R4-R6, PC} ; Return
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Complex Parameter Example}
+Function with mixed parameter types:
+\begin{lstlisting}[language=C, style=base]
+typedef struct {
+    int32_t x;
+    int32_t y;
+} point_t;
+
+int32_t calculate(point_t* p, int32_t scale, 
+                  int32_t* result);
+\end{lstlisting}
+
+Assembly implementation:
+\begin{lstlisting}[language=armasm, style=base]
+; R0 = point_t* p
+; R1 = scale
+; R2 = result pointer
+calculate
+    PUSH    {R4-R5, LR}     ; Save registers
+    
+    ; Load structure members
+    LDR     R4, [R0, #0]    ; Load p->x
+    LDR     R5, [R0, #4]    ; Load p->y
+    
+    ; Perform calculation
+    MULS    R4, R1, R4      ; x * scale
+    MULS    R5, R1, R5      ; y * scale
+    
+    ; Store result
+    STR     R4, [R2, #0]    ; *result = x
+    ADDS    R0, R4, R5      ; Return sum
+    
+    POP     {R4-R5, PC}     ; Return
+\end{lstlisting}
+\end{example2}
