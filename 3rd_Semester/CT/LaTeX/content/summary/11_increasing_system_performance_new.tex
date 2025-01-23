@@ -1,6 +1,7 @@
 \section{Increasing System Performance}
 
-\begin{concept}{Performance Optimization Trade-offs}\\
+\begin{concept}{Performance Optimization Trade-offs}
+  \vspace{2mm}\\
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Optimizing for} & \textbf{Drawbacks on} \\
@@ -27,78 +28,83 @@ Temperature range & Power, cost, lifetime \\
   \item More chip space for registers (up to 256)
   \item Load-store architecture reduces memory access
   \item CPU works at full speed on registers
-  \item Enables shorter, efficient pipelines 
+  \item Enables shorter, efficient pipelines (instruction size/duration)
 \end{itemize}
-
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-13(1)}
 
 \textbf{CISC (Complex Instruction Set Computer):}
 \begin{itemize}
-  \item More complex instruction set
-  \item Lower memory usage for programs
+  \item More complex and more instructions
+  \item Lower memory usage for complex programs
   \item Potential performance gain for short programs
   \item More complex hardware required
 \end{itemize}
+
+\includegraphics[width=\linewidth]{images/risc_cisc.png}
 \end{concept}
 
-\begin{definition}{Computer Architectures}\\
-\textbf{Von Neumann Architecture:}
+\begin{definition}{Von Neumann Architectures}
 \begin{itemize}
   \item Single memory for program and data
   \item Single bus system between CPU and memory
 \end{itemize}
 
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-13}
+\includegraphics[width=0.7\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-13}
+\end{definition}
 
-\textbf{Harvard Architecture:}
+\begin{definition}{Harvard Architecture:}
 \begin{itemize}
   \item Separate program and data memories
   \item Two sets of address/data buses
   \item Originally from Harvard Mark I
 \end{itemize}
 
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-13(2)}
+\includegraphics[width=0.7\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-13(2)}
 \end{definition}
 
-\begin{concept}{Pipelining}\\
+\begin{theorem}{How to increase system speed?}\\
+  \includegraphics[width=\linewidth]{images/howtoincrease.png}
+\end{theorem}
+
+\subsubsection{Pipelining}
+
+\begin{concept}{Sequential vs. Pipelined Execution}\\
+\textbf{Sequential Execution:}\\
+\includegraphics[width=\linewidth]{images/sequentialexec.png}
+
+\textbf{Pipelined Execution:}\\
+\includegraphics[width=\linewidth]{images/pipelinedexec.png}
+\end{concept}
+
+\begin{definition}{Pipelining}\\
 Process of fetching next instruction while current one decodes:
 
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-14(2)}
+\includegraphics[width=\linewidth]{images/fetchwhiledecode.png}
 
-\textbf{Pipeline Stages (Example):}
+\textbf{Advantages:}
+\begin{itemize}
+  \item Uniform execution time per stage
+  \item Significant performance improvement
+  \item Simpler hardware per stage allows higher clock rates
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+  \item Blocking stages affect whole pipeline
+  \item Possible Memory access conflicts between stages
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Pipeline Stages} (Example)
 \begin{itemize}
   \item Fetch (Fe): Read instruction - 3ns
   \item Decode (De): Process instruction - 4ns
   \item Execute (Ex): Execute and writeback - 5ns
 \end{itemize}
 
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-14(1)}
-
-\textbf{Advantages:}
-\begin{itemize}
-  \item Uniform execution time per stage
-  \item Significant performance improvement
-  \item Simpler hardware per stage
-\end{itemize}
-
-\textbf{Disadvantages:}
-\begin{itemize}
-  \item Blocking stages affect whole pipeline
-  \item Memory access conflicts between stages
-\end{itemize}
+\includegraphics[width=0.8\linewidth]{images/pipelinestages.png}
 \end{concept}
 
-\begin{definition}{Pipeline Performance}\\
-Without pipelining:
-\[\frac{\text{Instructions}}{\text{second}} = \frac{1}{\text{Instruction delay}}\]
-
-With pipelining:
-\[\frac{\text{Instructions}}{\text{second}} = \frac{1}{\text{Max stage delay}}\]
-
-Note: Pipeline must be filled first
-\end{definition}
-
-\begin{example2}{Pipeline Execution}\\
+\begin{concept}{Pipeline Execution}\\
 \textbf{Optimal Case:}
 \begin{itemize}
   \item Register-only operations
@@ -114,40 +120,187 @@ Note: Pipeline must be filled first
   \item Pipeline stalls for memory read
   \item CPI = 1.2
 \end{itemize}
+
+\includegraphics[width=\linewidth]{images/ldrpipelinespecialcase.png}
+\end{concept}
+
+\begin{corollary}{Pipeline important definitions}
+\begin{itemize}
+  \item \textbf{CPI}: Cycles per instruction
+  \item \textbf{IPC}: Instructions per cycle
+  \item \textbf{Fe, De, Ex}: Stage delays
+  \item \textbf{Cycles}: Number of cycles for instruction
+  \item \textbf{Performance}: $\frac{1}{\text{Total delay}}$
+  \item \textbf{Throughput}: $\frac{1}{\text{Max stage delay}}$
+  \item \textbf{Initial latency}: Number of cycles until pipeline is filled
+  \item \textbf{Performance improvement}: $\frac{\text{Without pipeline delay}}{\text{With pipeline delay}}$
+  \item \textbf{Pipeline stalls}: Delay due to memory access
+\end{itemize}  
+\end{corollary}
+
+
+\begin{formula}{Pipeline Performance Calculation}\\
+For a processor with n pipeline stages:
+
+\textbf{Without pipelining:}
+\begin{itemize}
+  \item Time per instruction = Sum of all stage delays
+  \item Performance (Instructions/Second) = $$\frac{1}{\text{Total delay}}$$
+\end{itemize}
+
+\textbf{With pipelining:}
+\begin{itemize}
+  \item Time per instruction = Longest stage delay
+  \item Initial latency = n cycles
+  \item Throughput (Instructions/Second) = $$\frac{1}{\text{Max stage delay}}$$
+\end{itemize}
+
+Note: Pipeline must be filled first! After filling, instructions are executed after every stage.
+\end{formula}
+
+\begin{example2}{Pipeline Performance Calculation}
+\begin{itemize}
+  \item Stage delays: Fe=3ns, De=4ns, Ex=5ns
+  \item Without pipeline: 12ns per instruction
+  \item With pipeline: 5ns per instruction after filling
+  \item Performance improvement: 2.4×
+\end{itemize}
 \end{example2}
+
+\columnbreak
 
 \begin{concept}{Pipeline Hazards and Optimization}\\
 \textbf{Control Hazards:}
 \begin{itemize}
-  \item Branch decisions in execute stage
+  \item Branch/jump decisions in execute stage (stage 3)
+  \item Worst case scenario: conditional branch taken
   \item Pipeline stalls for taken branches
 \end{itemize}
 
 \includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-15}
 
+\textbf{Reduce control hazards:} Use loop fusion!
+\end{concept}
+
+\begin{example2}{Pipeline Hazards}
+Three types of pipeline hazards:
+
+1. \textbf{Structural Hazards}:
+\begin{lstlisting}[style=basesmol]
+LDR  R0, [R1]    ; Needs memory access
+LDR  R2, [R3]    ; Also needs memory access
+; Memory system can't handle both at once
+\end{lstlisting}
+
+2. \textbf{Data Hazards}:
+\begin{lstlisting}[style=basesmol]
+ADDS R0, R1, R2  ; R0 gets new value
+ADDS R3, R0, R4  ; Uses R0 before ready
+; Second instruction must wait
+\end{lstlisting}
+
+3. \textbf{Control Hazards}:
+\begin{lstlisting}[style=basesmol]
+CMP  R0, #0      ; Compare
+BEQ  target      ; Branch if equal
+ADD  R1, R2, R3  ; May be unnecessary
+SUB  R4, R5, R6  ; May be unnecessary
+target
+; Pipeline must flush if branch taken
+\end{lstlisting}
+\end{example2}
+
+\begin{corollary}{Pipeline Optimization}\\
 \textbf{Optimization Techniques:}
 \begin{itemize}
   \item Branch prediction based on history
+  \begin{itemize}
+    \item Store last decisions made for each conditional branch
+    \item $\rightarrow$ probability is high that the same decision will be made again
+  \end{itemize}
   \item Instruction prefetch
+  \begin{itemize}
+    \item Fetch several instructions in advance
+    \item $\rightarrow$ reduces pipeline stalls
+    \item $\rightarrow$ better use of system bus
+    \item $\rightarrow$ possibility of ''Out-of-order execution''
+  \end{itemize}
   \item Out-of-order execution
+  \begin{itemize}
+    \item If one instruction stalls, it might be possible to already execute next instruction
+    \item $\rightarrow$ requires complex hardware
+  \end{itemize}
 \end{itemize}
 
 \textbf{Optimization Limits:}
 \begin{itemize}
-  \item Security vulnerabilities (Meltdown, Spectre)
-  \item Complex optimizations increase risk
+  \item Complex optimizations $\rightarrow$ severe security problems 
+  \item Instructions executed, that would throw access violations under ''In Order'' circumstances
+  \item ''Meltdwon'' and ''Spectre'' attacks: allow process to access memory of other processes
 \end{itemize}
-\end{concept}
+\end{corollary}
+
+
+
+\pagebreak
+
+\subsubsection{Parallel Computing}
 
 \begin{concept}{Parallel Computing}\\
 Different approaches to parallelism:
 \begin{itemize}
-  \item \textbf{Vector Processing}: Single instruction processes multiple data
-  \item \textbf{Multithreading}: Multiple threads share CPU
-  \item \textbf{Multicore}: Multiple CPU cores on one chip
-  \item \textbf{Multiprocessor}: Multiple CPUs in system
+  \item \textbf{Streaming/Vector Processing}: Single instruction processes multiple data items simultaneously
+  \item \textbf{Multithreading}: Multiple programs/threads share a single CPU
+  \item \textbf{Multicore}: One processor with multiple CPU cores
+  \item \textbf{Multiprocessor}: A computer system containing multiple processors
 \end{itemize}
 \end{concept}
+
+\begin{example2}{Multicore vs Multiprocessor}
+Key differences:
+\begin{itemize}
+  \item \textbf{Multicore}:
+    \begin{itemize}
+      \item Multiple CPU cores on single chip
+      \item Shared cache and memory interface
+      \item Lower communication overhead
+      \item More power efficient
+    \end{itemize}
+  \item \textbf{Multiprocessor}:
+    \begin{itemize}
+      \item Multiple separate CPU chips
+      \item Independent caches
+      \item Higher communication overhead
+      \item More scalable for large systems
+    \end{itemize}
+\end{itemize}
+\end{example2}
+
+
+\begin{concept}{Parallel Processing Models}\\
+\textbf{SISD (Single Instruction Single Data):}
+\begin{itemize}
+  \item Traditional sequential processing
+  \item One instruction processes one data item
+  \item Example: Basic scalar processor
+\end{itemize}
+
+\textbf{SIMD (Single Instruction Multiple Data):}
+\begin{itemize}
+  \item Vector processing
+  \item One instruction processes multiple data items
+  \item Examples: MMX, SSE, AVX instructions
+\end{itemize}
+
+\textbf{MIMD (Multiple Instruction Multiple Data):}
+\begin{itemize}
+  \item True parallel processing
+  \item Multiple processors execute different instructions
+  \item Example: Multicore systems
+\end{itemize}
+\end{concept}
+
+\subsubsection{Conclusion on Performance Optimization}
 
 \begin{KR}{Optimizing System Performance}\\
 Steps for performance optimization:
@@ -193,7 +346,7 @@ Historical development:
 \end{itemize}
 \end{concept}
 
-\begin{concept}{System Level Optimization}\\
+\begin{corollary}{System Level Optimization}\\
 Different approaches to improve performance:
 \begin{itemize}
   \item \textbf{External Factors}:
@@ -219,83 +372,7 @@ Different approaches to improve performance:
       \item Out-of-Order Execution
     \end{itemize}
 \end{itemize}
-\end{concept}
-
-\begin{formula}{Pipeline Performance Calculation}\\
-For a processor with n pipeline stages:
-
-\textbf{Without pipelining:}
-\begin{itemize}
-  \item Time per instruction = Sum of all stage delays
-  \item Performance = $\frac{1}{\text{Total delay}}$
-\end{itemize}
-
-\textbf{With pipelining:}
-\begin{itemize}
-  \item Time per instruction = Longest stage delay
-  \item Initial latency = n cycles
-  \item Throughput = $\frac{1}{\text{Max stage delay}}$
-\end{itemize}
-
-Example calculation:
-\begin{itemize}
-  \item Stage delays: Fe=3ns, De=4ns, Ex=5ns
-  \item Without pipeline: 12ns per instruction
-  \item With pipeline: 5ns per instruction after filling
-  \item Performance improvement: 2.4×
-\end{itemize}
-\end{formula}
-
-\begin{example2}{Pipeline Hazards}
-Three types of pipeline hazards:
-
-1. \textbf{Structural Hazards}:
-\begin{lstlisting}[style=basesmol]
-LDR  R0, [R1]    ; Needs memory access
-LDR  R2, [R3]    ; Also needs memory access
-; Memory system can't handle both at once
-\end{lstlisting}
-
-2. \textbf{Data Hazards}:
-\begin{lstlisting}[style=basesmol]
-ADDS R0, R1, R2  ; R0 gets new value
-ADDS R3, R0, R4  ; Uses R0 before ready
-; Second instruction must wait
-\end{lstlisting}
-
-3. \textbf{Control Hazards}:
-\begin{lstlisting}[style=basesmol]
-CMP  R0, #0      ; Compare
-BEQ  target      ; Branch if equal
-ADD  R1, R2, R3  ; May be unnecessary
-SUB  R4, R5, R6  ; May be unnecessary
-target
-; Pipeline must flush if branch taken
-\end{lstlisting}
-\end{example2}
-
-\begin{concept}{Parallel Processing Models}\\
-\textbf{SISD (Single Instruction Single Data):}
-\begin{itemize}
-  \item Traditional sequential processing
-  \item One instruction processes one data item
-  \item Example: Basic scalar processor
-\end{itemize}
-
-\textbf{SIMD (Single Instruction Multiple Data):}
-\begin{itemize}
-  \item Vector processing
-  \item One instruction processes multiple data items
-  \item Examples: MMX, SSE, AVX instructions
-\end{itemize}
-
-\textbf{MIMD (Multiple Instruction Multiple Data):}
-\begin{itemize}
-  \item True parallel processing
-  \item Multiple processors execute different instructions
-  \item Example: Multicore systems
-\end{itemize}
-\end{concept}
+\end{corollary}
 
 \begin{KR}{Performance Optimization Guidelines}\\
 Steps for system optimization:
@@ -332,23 +409,5 @@ Steps for system optimization:
 \end{itemize}
 \end{KR}
 
-\begin{example2}{Multicore vs Multiprocessor}
-Key differences:
-\begin{itemize}
-  \item \textbf{Multicore}:
-    \begin{itemize}
-      \item Multiple CPU cores on single chip
-      \item Shared cache and memory interface
-      \item Lower communication overhead
-      \item More power efficient
-    \end{itemize}
-  \item \textbf{Multiprocessor}:
-    \begin{itemize}
-      \item Multiple separate CPU chips
-      \item Independent caches
-      \item Higher communication overhead
-      \item More scalable for large systems
-    \end{itemize}
-\end{itemize}
-\end{example2}
+
 
