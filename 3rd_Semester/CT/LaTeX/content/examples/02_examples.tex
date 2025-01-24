@@ -343,4 +343,106 @@ We are not told if 25 / 213 form a unit or not. Therefore, it can be both ways.
 \end{example2}
 
 
+\begin{KR}{Calculating Memory Usage in Assembly}
+
+1. Code Section (ROM/Flash) Calculation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Each instruction is either:
+; - 16 bits (2 bytes) for Thumb instructions
+; - 32 bits (4 bytes) for special cases
+
+; Example calculation:
+MOVS    R0, #42         ; 2 bytes (16-bit instruction)
+LDR     R0, =0x1234     ; 2 bytes + 4 bytes literal
+ADDS    R0, R1          ; 2 bytes
+BX      LR              ; 2 bytes
+------------------------------------
+Total code:             12 bytes
+\end{lstlisting}
+
+2. Data Section (RAM) Calculation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Data directives memory usage:
+var1    DCB     0x42        ; 1 byte
+var2    DCW     0x1234      ; 2 bytes
+var3    DCD     0x12345678  ; 4 bytes
+array1  SPACE   10          ; 10 bytes
+string1 DCB     "Hello",0   ; 6 bytes (including null)
+        ALIGN   4           ; 2 padding bytes
+------------------------------------
+Total data:                 25 bytes
+\end{lstlisting}
+
+3. Common Memory Units:
+\begin{itemize}
+  \item \textbf{DCB} (Define Constant Byte): 1 byte per value
+  \item \textbf{DCW} (Define Constant HalfWord): 2 bytes per value
+  \item \textbf{DCD} (Define Constant Word): 4 bytes per value
+  \item \textbf{SPACE}: Reserves specified number of bytes
+  \item \textbf{ALIGN}: Adds padding bytes for alignment
+\end{itemize}
+
+4. Stack Usage Calculation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+my_function
+    PUSH    {R4-R7, LR}     ; 5 registers * 4 bytes = 20 bytes
+    SUB     SP, SP, #16     ; Local array = 16 bytes
+    ; ... function body ...
+    ADD     SP, SP, #16     ; Deallocate array
+    POP     {R4-R7, PC}     ; Restore 20 bytes
+------------------------------------
+Maximum stack usage:         36 bytes
+\end{lstlisting}
+\end{KR}
+
+\columnbreak
+
+\begin{concept}{Memory Calculation Checklist}
+\begin{itemize}
+  \item \textbf{Code Memory}:
+    \begin{itemize}
+      \item Count instructions (mostly 2 bytes each)
+      \item Add literal pool entries (4 bytes each)
+      \item Include alignment padding
+    \end{itemize}
+  \item \textbf{Static Data}:
+    \begin{itemize}
+      \item Sum all DCB/DCW/DCD/SPACE directives
+      \item Account for string terminators
+      \item Include alignment requirements
+    \end{itemize}
+  \item \textbf{Stack Memory}:
+    \begin{itemize}
+      \item Count PUSH/POP register pairs
+      \item Add local variable allocations
+      \item Consider nested function calls
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Memory Usage Calculation}
+\begin{lstlisting}[language=armasm, style=basesmol]
+    AREA    |.text|, CODE, READONLY
+    EXPORT  process_data
+    
+process_data                 ; Code memory:
+    PUSH    {R4,LR}         ; 2 bytes
+    LDR     R0, =data_buf   ; 2 + 4 bytes (literal)
+    MOVS    R1, #10         ; 2 bytes
+    BL      helper_func     ; 2 bytes
+    POP     {R4,PC}         ; 2 bytes
+
+    AREA    |.data|, DATA, READWRITE
+data_buf    SPACE   20      ; Data memory: 20 bytes
+count       DCD     0       ; Data memory: 4 bytes
+            ALIGN   4       ; Padding: 0 bytes
+
+Total Memory Usage:
+Code:   14 bytes (ROM)
+Data:   24 bytes (RAM)
+Stack:  8 bytes (temporary)
+\end{lstlisting}
+\end{example2}
+
+
 

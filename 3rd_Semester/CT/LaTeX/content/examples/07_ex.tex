@@ -6,7 +6,72 @@
 
 
 
+\begin{KR}{Stack Initialization and Memory Layout}
 
+1. Stack Organization:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Memory Layout
+0x20030000  Stack-base (initial SP value)
+           | Stack grows downward
+0x20020000  |
+           | Available stack space
+0x20010000  |
+0x20000000  Start of SRAM (Stack-limit)
+\end{lstlisting}
+
+2. Initialization Process:
+\begin{itemize}
+  \item At reset, processor loads initial SP from address 0x00000000
+  \item Vector table first entry contains Stack-base address
+  \item SP initialized to this value before any code execution
+\end{itemize}
+
+3. Setting Stack Base Address:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    AREA    RESET, DATA, READONLY
+    EXPORT  __Vectors
+__Vectors
+    DCD     0x20030000      ; Initial SP value
+    DCD     Reset_Handler   ; Reset vector
+    ; Rest of vector table...
+\end{lstlisting}
+
+4. Determining Stack Size:
+\begin{itemize}
+  \item Calculate maximum stack depth:
+    \begin{itemize}
+      \item Count local variables
+      \item Consider nested function calls
+      \item Include interrupt handler needs
+    \end{itemize}
+  \item Add safety margin (e.g., 20\%)
+  \item Ensure stack stays within SRAM bounds
+\end{itemize}
+
+5. Stack Pointer Rules:
+\begin{itemize}
+  \item Must be word-aligned (multiple of 4)
+  \item Must point to valid SRAM
+  \item Must not overlap with other memory regions
+  \item Stack-limit < SP <= Stack-base always true
+\end{itemize}
+
+6. Example Stack Size Calculation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Example for a simple program
+Local vars:        20 bytes
+Function params:   16 bytes
+Saved registers:   32 bytes
+Nested calls:      24 bytes
+ISR overhead:      32 bytes
+Safety margin:     25 bytes (20%)
+------------------------
+Total needed:     149 bytes
+
+; Round up to nearest word boundary
+Actual allocation: 152 bytes (38 words)
+\end{lstlisting}
+\end{KR}
 
 
 
@@ -75,3 +140,140 @@ Z3: Stack from top (higher address):
 SP = 0x20001FE0
 \end{lstlisting}
 \end{example2}
+
+\begin{KR}{Stack Frame Management Patterns}
+Guidelines for managing stack frames:
+
+1. Basic frame setup:
+\begin{lstlisting}[language=armasm, style=basesmol]
+function_start
+    ; Save registers and create frame
+    PUSH    {R4-R7, LR}     ; Save modified registers
+    SUB     SP, SP, #12     ; Allocate local variables
+    
+    ; Function body...
+    
+    ; Clean up frame and return
+    ADD     SP, SP, #12     ; Deallocate locals
+    POP     {R4-R7, PC}     ; Restore and return
+\end{lstlisting}
+
+2. Accessing stack variables:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Local variable access
+    STR     R0, [SP, #0]    ; First local variable
+    STR     R1, [SP, #4]    ; Second local variable
+    
+    ; Later access
+    LDR     R0, [SP, #0]    ; Load first variable
+    LDR     R1, [SP, #4]    ; Load second variable
+\end{lstlisting}
+
+3. Nested function calls:
+\begin{lstlisting}[language=armasm, style=basesmol]
+outer_func
+    PUSH    {R4-R6, LR}     ; Save registers
+    ; Function body...
+    BL      inner_func      ; Call inner function
+    ; Continue processing...
+    POP     {R4-R6, PC}     ; Return
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Stack-Based Local Variables}
+Example of managing local array on stack:
+\begin{lstlisting}[language=armasm, style=basesmol]
+process_data
+    PUSH    {R4-R7, LR}     ; Save registers
+    SUB     SP, SP, #16     ; Space for 4-word array
+    
+    ; Initialize array on stack
+    MOVS    R0, #1          
+    STR     R0, [SP, #0]    ; array[0] = 1
+    MOVS    R0, #2
+    STR     R0, [SP, #4]    ; array[1] = 2
+    
+    ; Process array elements
+    LDR     R1, [SP, #0]    ; Load array[0]
+    LDR     R2, [SP, #4]    ; Load array[1]
+    ADDS    R0, R1, R2      ; Compute sum
+    
+    ; Clean up and return
+    ADD     SP, SP, #16     ; Remove local array
+    POP     {R4-R7, PC}     ; Return
+\end{lstlisting}
+
+Key points:
+\begin{itemize}
+  \item Allocate space with SUB SP
+  \item Access relative to SP
+  \item Clean up stack before return
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Reentrant Function Implementation}
+Guidelines for writing reentrant functions:
+
+1. Save all modified registers:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; R0-R3 are caller-saved
+    PUSH    {R4-R7, LR}     ; Save callee-saved
+    
+    ; Use R4-R7 for local variables
+    MOV     R4, R0          ; Save parameter
+    
+    ; Restore before return
+    POP     {R4-R7, PC}
+\end{lstlisting}
+
+2. Use stack for local storage:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Allocate local storage
+    SUB     SP, SP, #8      ; Two local variables
+    STR     R0, [SP, #0]    ; Save first value
+    STR     R1, [SP, #4]    ; Save second value
+    
+    ; Access locals via SP
+    LDR     R0, [SP, #0]    ; Load first value
+\end{lstlisting}
+
+3. Handle nested calls:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Save state before nested call
+    PUSH    {R4, LR}        ; Save working register
+    BL      other_func      ; Make nested call
+    POP     {R4, PC}        ; Restore and return
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Recursive Function}
+Implementation of recursive factorial calculation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+factorial
+    ; Input in R0, result in R0
+    PUSH    {R4, LR}        ; Save registers
+    MOVS    R4, R0          ; Save n
+    
+    CMP     R0, #1          ; Check base case
+    BLE     fact_end        ; Return 1 if n <= 1
+    
+    SUBS    R0, R0, #1      ; n-1
+    BL      factorial       ; Recursive call
+    MULS    R0, R4, R0      ; n * factorial(n-1)
+    B       fact_return
+    
+fact_end
+    MOVS    R0, #1          ; Return 1
+    
+fact_return
+    POP     {R4, PC}        ; Return
+\end{lstlisting}
+
+Stack growth pattern:
+\begin{itemize}
+  \item Each call adds 8 bytes (R4, LR)
+  \item Maximum depth = n-1 calls
+  \item Stack unwinds on returns
+\end{itemize}
+\end{example2}
+

@@ -190,7 +190,158 @@ Literal can be an address (a position in the memory)\\
 Literal can be a constant (the value is known at assembling time)
 \end{example2}
 
+\raggedcolumns
+\columnbreak
 
+\subsubsection{Memory Access Patterns}
+
+\begin{theorem}{Memory Access Patterns}
+Tracking memory and register contents:
+\begin{enumerate}
+  \item Track register contents:
+    \begin{itemize}
+      \item Note initial values and update after each instruction
+      \item Pay attention to flags if MOVS/ADDS used
+    \end{itemize}
+  \item Track memory changes: Consider byte ordering! (little-endian)
+    \begin{itemize}
+      \item Note memory layout before operations
+      \item Update after each store instruction
+    \end{itemize}
+\end{enumerate}
+\end{theorem}
+
+\begin{KR}{Analyzing Register Contents and Memory Positions}
+
+1. General Rules for Analysis:
+\begin{itemize}
+  \item Follow sequential execution order
+  \item Track register changes for each instruction
+  \item Note immediate values vs. memory loads
+  \item Remember ARM is little-endian
+  \item Consider word alignment requirements
+  \item Account for PC-relative addressing (PC+4)
+\end{itemize}
+
+2. Loading Immediate Values:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    MOVS    R0, #0x42       ; R0 = 0x00000042
+    MOVS    R1, #0xFF       ; R1 = 0x000000FF
+    
+    ; For larger values:
+    LDR     R0, =0x12345678 ; Creates literal pool entry
+    ; R0 = 0x12345678 (after loading from literal pool)
+\end{lstlisting}
+
+3. Direct Memory Access:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Given memory at 0x20000000:
+; 0x20000000: 78 56 34 12
+; 0x20000004: AA BB CC DD
+
+    LDR     R1, =0x20000000 ; R1 = 0x20000000
+    LDR     R0, [R1]        ; R0 = 0x12345678 (little-endian!)
+    LDR     R2, [R1, #4]    ; R2 = 0xDDCCBBAA
+    
+    LDRB    R3, [R1]        ; R3 = 0x00000078 (byte access)
+    LDRH    R4, [R1]        ; R4 = 0x00005678 (halfword)
+\end{lstlisting}
+
+4. PC-Relative Loading:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; At address 0x1000:
+    LDR     R0, [PC, #12]   ; PC = 0x1004 for offset
+                            ; Loads from 0x1010
+    B       next            ; Branch over literal
+    DCD     0x12345678      ; At 0x1010
+next
+    ; R0 = 0x12345678
+\end{lstlisting}
+
+5. Register Tracking Table:
+
+\begin{tabular}{|l|l|l|l|}
+\hline
+Address & Instruction & Register Changes & Memory Changes \\
+\hline
+0x1000 & MOVS R0,\#1 & R0 = 0x00000001 & None \\
+0x1002 & MOVS R1,\#2 & R1 = 0x00000002 & None \\
+0x1004 & ADDS R0,R1  & R0 = 0x00000003 & None \\
+\hline
+\end{tabular}
+
+\end{KR}
+
+\begin{KR}{Analyzing Register Contents and Memory Positions - Continued}
+
+6. Memory Access Patterns:
+
+a) Base + Offset:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; R0 = 0x20000000
+    LDR     R1, [R0, #4]    ; Load from 0x20000004
+    STR     R2, [R0, #8]    ; Store to 0x20000008
+\end{lstlisting}
+
+b) Pre-indexed:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; R0 = 0x20000000
+    LDR     R1, [R0, #4]!   ; First updates R0 = 0x20000004
+                            ; Then loads from there
+\end{lstlisting}
+
+c) Post-indexed:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; R0 = 0x20000000
+    LDR     R1, [R0], #4    ; First loads from 0x20000000
+                            ; Then updates R0 = 0x20000004
+\end{lstlisting}
+
+7. Array Access Analysis:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Array at 0x20000000: [1,2,3,4]
+    ; Memory contents:
+    ; 0x20000000: 01 00 00 00 (1 in little-endian)
+    ; 0x20000004: 02 00 00 00 (2 in little-endian)
+    ; 0x20000008: 03 00 00 00 (3 in little-endian)
+    ; 0x2000000C: 04 00 00 00 (4 in little-endian)
+    
+    LDR     R0, =0x20000000 ; R0 = 0x20000000
+    MOVS    R1, #2          ; R1 = 2 (index)
+    LSLS    R2, R1, #2      ; R2 = 8 (offset = index * 4)
+    LDR     R3, [R0, R2]    ; R3 = 3 (array[2])
+\end{lstlisting}
+
+8. Literal Pool Analysis:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; At address 0x1000:
+    LDR     R0, =0x12345678 ; Assembler creates:
+    B       skip_lit        ; Branch over literal
+lit_pool
+    DCD     0x12345678      ; Literal pool entry
+skip_lit                    ; Continues here
+    
+    ; Actual machine code:
+    ; 0x1000: LDR R0, [PC, #4]  (points to lit_pool)
+    ; 0x1002: B skip_lit
+    ; 0x1004: 0x12345678        (literal pool)
+    ; 0x1008: next instruction   (skip_lit)
+\end{lstlisting}
+
+9. Stack Analysis:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Initial SP = 0x20001000
+    PUSH    {R0, R1}        ; SP = 0x20000FF8
+                            ; [0x20000FF8] = R0
+                            ; [0x20000FFC] = R1
+    
+    SUB     SP, SP, #8      ; SP = 0x20000FF0
+                            ; Allocates 8 bytes
+    
+    STR     R2, [SP, #0]    ; [0x20000FF0] = R2
+    STR     R3, [SP, #4]    ; [0x20000FF4] = R3
+\end{lstlisting}
+\end{KR}
 
 
 
@@ -277,30 +428,39 @@ Var4 & DCD & 0xE4568900 &  \\
 \end{center}
 \end{example2}
 
-\begin{KR}{Memory Access Patterns}
-Tracking memory and register contents:
-\begin{enumerate}
-  \item Track register contents:
-    \begin{itemize}
-      \item Note initial values and update after each instruction
-      \item Pay attention to flags if MOVS/ADDS used
-    \end{itemize}
-  \item Track memory changes: Consider byte ordering! (little-endian)
-    \begin{itemize}
-      \item Note memory layout before operations
-      \item Update after each store instruction
-    \end{itemize}
-\end{enumerate}
-\end{KR}
 
-\begin{example2}{Memory Operation Example} 
+
+\begin{formula}
+{Common Analysis Mistakes to Avoid}
+  \begin{itemize}
+    \item \textbf{PC Value}: Remember PC is instruction + 4
+    \item \textbf{Endianness}: Memory values are little-endian
+    \item \textbf{Alignment}: Check for word/halfword alignment
+    \item \textbf{Register Width}: All registers are 32-bit
+    \item \textbf{Sign Extension}: Consider for LDR[S]B/LDR[S]H
+    \item \textbf{Zero Extension}: Default for regular loads
+  \end{itemize}
+\end{formula}
+
+\begin{example2}{Memory Access Pattern Example}
+Working with arrays and pointers:
 \begin{lstlisting}[language=armasm, style=basesmol]
-LDR     R0,=0x20001000    ; R0 = 0x20001000
-MOVS    R1,#42            ; R1 = 0x0000002A
-STR     R1,[R0]    ; Mem[0x20001000] = 0x0000002A
-LDRB    R2,[R0]    ; R2 = 0x0000002A (byte access)
+; Array base in R0, index in R1
+; Element size 4 bytes (word)
+    LSLS    R2, R1, #2      ; R2 = index * 4
+    LDR     R3, [R0, R2]    ; Load word from array[index]
+    ADDS    R3, #1          ; Increment value
+    STR     R3, [R0, R2]    ; Store back to array[index]
 \end{lstlisting}
+\small
+Key points:
+\begin{itemize}
+  \item Calculate offset = index * element\_size
+  \item Use index register for flexible access
+  \item Mind alignment requirements
+\end{itemize}
 \end{example2}
+
 
 
 \begin{KR}{PC-Relative Calculations} ex. 8 from exercise sheet\\
@@ -315,9 +475,6 @@ Steps for calculating PC-relative offsets:
     \end{itemize}
   \item Compute offset = target - (PC + 4)
 \end{enumerate}
-\end{KR}
-
-\begin{example2}{PC-Relative Example}
 \begin{lstlisting}[language=armasm, style=basesmol]
 ; At address 0x1000:
 LDR     R0,[PC,#12]       ; PC = 0x1004, loads from 0x1010
@@ -325,36 +482,7 @@ LDR     R0,[PC,#12]       ; PC = 0x1004, loads from 0x1010
 ALIGN   4
 DCD     0x12345678        ; At 0x1010
 \end{lstlisting}
-\end{example2}
-
-\begin{KR}{Array Access} ex. 10 from exercise sheet\\
-Steps for array manipulation:
-\begin{enumerate}
-  \item Calculate array element offset
-    \begin{itemize}
-      \item Byte arrays: index * 1
-      \item Half-word arrays: index * 2
-      \item Word arrays: index * 4
-    \end{itemize}
-  \item Access elements
-    \begin{itemize}
-      \item LDRB/STRB for bytes
-      \item LDRH/STRH for half-words
-      \item LDR/STR for words
-    \end{itemize}
-\end{enumerate}
 \end{KR}
-
-\begin{example2}{Array Example}
-\begin{lstlisting}[language=armasm, style=basesmol]
-LDR     R0,=array         ; Get array base address
-MOVS    R1,#1             ; Array index
-LSLS    R2,R1,#2         ; Multiply index by 4 (word array)
-LDR     R3,[R0,R2]       ; Load array[1]
-\end{lstlisting}
-\end{example2}
-
-
 
 \begin{KR}{Literal Pool Usage} ex. 11 from exercise sheet\\
 Steps for working with literals:
@@ -370,9 +498,6 @@ Steps for working with literals:
       \item LDR Rx,=label loads address of label
     \end{itemize}
 \end{enumerate}
-\end{KR}
-
-\begin{example2}{Literal Example}
 \begin{lstlisting}[language=armasm, style=basesmol]
     LDR     R0,=0x12345678    ; Load constant from literal pool
     LDR     R1,myvar          ; Load value at myvar
@@ -380,9 +505,133 @@ Steps for working with literals:
     
 myvar   DCD     0x11223344     ; Define variable
 \end{lstlisting}
+\end{KR}
+
+\begin{example2}{String Operations}
+Example of byte-wise string copying:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; R0 = source, R1 = destination
+copy_loop
+    LDRB    R2, [R0]        ; Load byte from source
+    ADDS    R0, #1          ; Increment source ptr
+    STRB    R2, [R1]        ; Store to destination
+    ADDS    R1, #1          ; Increment dest ptr
+    CMP     R2, #0          ; Check for null term
+    BNE     copy_loop      ; Continue if not done
+\end{lstlisting}
+\small
+Key points: Byte-wise operations, no alignment requirements, null terminator check
 \end{example2}
 
+\begin{KR}{Array Traversal Patterns}
+Guidelines for iterating through arrays:
 
+1. Forward traversal:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; R0 = array base, R1 = count
+    MOVS    R2, #0          ; Initialize index
+loop
+    LDR     R3, [R0, R2]    ; Load element
+    ; Process R3...
+    ADDS    R2, #4          ; Next element
+    SUBS    R1, #1          ; Decrement counter
+    BNE     loop           ; Continue if not done
+\end{lstlisting}
+
+2. Post-increment access:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; R0 = array base, R1 = count
+loop
+    LDR     R3, [R0]        ; Load current
+    ADDS    R0, #4          ; Move to next
+    ; Process R3...
+    SUBS    R1, #1          ; Decrement counter
+    BNE     loop           ; Continue if not done
+\end{lstlisting}
+\end{KR}
+
+\begin{formula}{Array Access} ex. 10 from exercise sheet\\
+Steps for array manipulation:
+\begin{enumerate}
+  \item Calculate array element offset
+    \begin{itemize}
+      \item Byte arrays: index * 1
+      \item Half-word arrays: index * 2
+      \item Word arrays: index * 4
+    \end{itemize}
+  \item Access elements
+    \begin{itemize}
+      \item LDRB/STRB for bytes
+      \item LDRH/STRH for half-words
+      \item LDR/STR for words
+    \end{itemize}
+\end{enumerate}
+\end{formula}
+
+\begin{example2}{Array Example}
+\begin{lstlisting}[language=armasm, style=basesmol]
+LDR     R0,=array         ; Get array base address
+MOVS    R1,#1             ; Array index
+LSLS    R2,R1,#2         ; Multiply index by 4 (word array)
+LDR     R3,[R0,R2]       ; Load array[1]
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Efficient Data Transfer Patterns}
+Steps for efficient data movement:
+
+1. Register-to-Register:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Fast local transfers
+    MOV     R1, R0          ; No flags affected
+    MOVS    R2, R1          ; Affects flags
+\end{lstlisting}
+
+2. Memory-to-Register:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Choose appropriate size
+    LDR     R0, [R1]        ; Word (32-bit)
+    LDRH    R0, [R1]        ; Half-word (16-bit)
+    LDRB    R0, [R1]        ; Byte (8-bit)
+\end{lstlisting}
+
+3. Multiple Register Operations:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Efficient block transfers
+    PUSH    {R0-R3, LR}     ; Save multiple registers
+    POP     {R0-R3, PC}     ; Restore and return
+\end{lstlisting}
+\end{KR}
+
+
+
+
+
+
+
+
+
+
+
+\begin{KR}{Pointer Arithmetic}
+Example demonstrating pointer manipulation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    LDR     R0, =array      ; Get array base
+    MOVS    R1, #4          ; Element size
+    MULS    R2, R4, R1      ; Calculate offset
+    
+    ; Access array[index]
+    ADD     R3, R0, R2      ; Get element address
+    LDR     R4, [R3]        ; Load element value
+\end{lstlisting}
+
+Key concepts:
+\begin{itemize}
+  \item Base address in register
+  \item Scale index by element size
+  \item Maintain proper alignment
+\end{itemize}
+\end{KR}
 
 \begin{example2}{Handling Pointers}\\
 Example C code and assembly implementation:

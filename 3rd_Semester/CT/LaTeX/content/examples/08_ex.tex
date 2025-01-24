@@ -286,3 +286,311 @@ logical_and
 \end{lstlisting}
 \end{example2}
 
+\begin{KR}{Parameter Passing Techniques}
+Methods for passing parameters to subroutines:
+
+1. Register parameters (up to 4):
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Caller side
+    MOVS    R0, #1          ; First parameter
+    MOVS    R1, #2          ; Second parameter
+    BL      my_function     ; Call function
+    
+    ; Callee side
+my_function
+    PUSH    {LR}
+    ADD     R0, R0, R1      ; Use parameters
+    POP     {PC}            ; Return
+\end{lstlisting}
+
+2. Stack parameters (more than 4):
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Caller side
+    PUSH    {R0}            ; Push fifth parameter
+    MOVS    R0, #1          ; First parameter
+    BL      my_function     ; Call function
+    ADD     SP, SP, #4      ; Clean up stack
+    
+    ; Callee side
+my_function
+    PUSH    {R4, LR}
+    LDR     R4, [SP, #8]    ; Access fifth parameter
+    POP     {R4, PC}        ; Return
+\end{lstlisting}
+
+3. Return values:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Single value return
+    MOVS    R0, #42         ; Return in R0
+    BX      LR
+    
+    ; Multiple value return
+    MOVS    R0, #42         ; First return value
+    MOVS    R1, #24         ; Second return value
+    BX      LR
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{AAPCS Compliant Function Implementation}
+Guidelines for implementing ARM Procedure Call Standard:
+
+1. Register parameter passing:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Function using multiple parameters
+my_func                     ; void my_func(int a, int b, int c)
+    PUSH    {R4-R6, LR}     ; Save registers
+    
+    ; Parameters already in:
+    ; R0 = a
+    ; R1 = b
+    ; R2 = c
+    
+    MOV     R4, R0          ; Save parameters to
+    MOV     R5, R1          ; preserved registers
+    MOV     R6, R2          ; if needed long-term
+    
+    ; Function body...
+    
+    POP     {R4-R6, PC}     ; Return
+\end{lstlisting}
+
+2. Stack parameter access:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Function with 5+ parameters
+complex_func    ; void complex(int a, int b, int c, int d, int e)
+    PUSH    {R4-R6, LR}
+    
+    ; First four params in R0-R3
+    MOV     R4, R0          ; Save a
+    MOV     R5, R1          ; Save b
+    
+    ; Fifth parameter on stack
+    LDR     R6, [SP, #16]   ; Load e (after saved regs)
+    
+    ; Function body...
+    
+    POP     {R4-R6, PC}
+\end{lstlisting}
+
+3. Return value handling:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Function returning multiple values
+return_pair   ; void return_pair(int* out1, int* out2)
+    PUSH    {R4, LR}
+    
+    ; Parameters are pointers in R0, R1
+    MOVS    R2, #42         ; First value
+    MOVS    R3, #24         ; Second value
+    
+    STR     R2, [R0]        ; Store first result
+    STR     R3, [R1]        ; Store second result
+    
+    POP     {R4, PC}
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Structure Parameter Handling}
+Example of passing and returning structures:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Structure with two fields
+; typedef struct {
+;     int32_t x;
+;     int32_t y;
+; } point_t;
+
+update_point  ; point_t update_point(point_t* p, int32_t dx)
+    PUSH    {R4-R5, LR}
+    
+    ; R0 = point pointer, R1 = dx
+    LDR     R4, [R0, #0]    ; Load p->x
+    LDR     R5, [R0, #4]    ; Load p->y
+    
+    ; Update x coordinate
+    ADDS    R4, R1          ; Add dx to x
+    STR     R4, [R0, #0]    ; Store back to p->x
+    
+    ; Return original y in R0
+    MOV     R0, R5          
+    
+    POP     {R4-R5, PC}     
+\end{lstlisting}
+
+Key points:
+\begin{itemize}
+  \item Structures passed by pointer
+  \item Fields accessed via offsets
+  \item Return value in R0
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Array Parameter Handling}
+Guidelines for passing and processing arrays:
+
+1. Simple array processing:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Calculate sum of array
+; int sum_array(int* arr, int count)
+sum_array
+    PUSH    {R4-R5, LR}
+    
+    ; R0 = array pointer, R1 = count
+    MOVS    R4, #0          ; Initialize sum
+    MOVS    R5, #0          ; Initialize index
+    
+loop
+    CMP     R5, R1          ; Check index < count
+    BGE     done
+    
+    LDR     R2, [R0, R5, LSL #2] ; Load arr[i]
+    ADDS    R4, R2          ; Add to sum
+    ADDS    R5, #1          ; Increment index
+    B       loop
+    
+done
+    MOV     R0, R4          ; Return sum
+    POP     {R4-R5, PC}
+\end{lstlisting}
+
+2. Array with size parameter:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Find maximum in array
+; int find_max(int* arr, int size)
+find_max
+    PUSH    {R4-R5, LR}
+    
+    ; R0 = array, R1 = size
+    CMP     R1, #0          ; Check empty array
+    BEQ     return_zero
+    
+    LDR     R4, [R0]        ; Initialize max
+    MOVS    R5, #1          ; Start from second element
+    
+max_loop
+    CMP     R5, R1
+    BGE     max_done
+    
+    LDR     R2, [R0, R5, LSL #2]
+    CMP     R2, R4
+    BLE     not_larger
+    MOV     R4, R2          ; Update max
+not_larger
+    ADDS    R5, #1
+    B       max_loop
+    
+max_done
+    MOV     R0, R4          ; Return maximum
+    POP     {R4-R5, PC}
+    
+return_zero
+    MOVS    R0, #0
+    POP     {R4-R5, PC}
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Variable Output Parameters}
+Example handling multiple output values:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Calculate min and max
+; void minmax(int* arr, int size, int* min, int* max)
+minmax
+    PUSH    {R4-R7, LR}
+    
+    ; R0 = array, R1 = size
+    ; R2 = min ptr, R3 = max ptr
+    
+    LDR     R4, [R0]        ; Initial value
+    MOV     R5, R4          ; min = first
+    MOV     R6, R4          ; max = first
+    MOVS    R7, #1          ; index
+    
+loop
+    CMP     R7, R1
+    BGE     done
+    
+    LDR     R4, [R0, R7, LSL #2]
+    CMP     R4, R5
+    BGE     check_max
+    MOV     R5, R4          ; Update min
+check_max
+    CMP     R4, R6
+    BLE     next
+    MOV     R6, R4          ; Update max
+next
+    ADDS    R7, #1
+    B       loop
+    
+done
+    STR     R5, [R2]        ; Store min result
+    STR     R6, [R3]        ; Store max result
+    
+    POP     {R4-R7, PC}
+\end{lstlisting}
+
+Key points:
+\begin{itemize}
+  \item Multiple outputs via pointers
+  \item Results stored to provided addresses
+  \item No return value needed
+\end{itemize}
+\end{example2}
+
+\begin{example2}{String Parameter Handling}
+String manipulation example:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Find string length
+; int strlen(const char* str)
+strlen
+    PUSH    {R4, LR}
+    
+    MOV     R4, R0          ; Save string pointer
+    MOVS    R0, #0          ; Initialize length
+    
+count_loop
+    LDRB    R1, [R4, R0]    ; Load character
+    CMP     R1, #0          ; Check for null
+    BEQ     done
+    ADDS    R0, #1          ; Increment length
+    B       count_loop
+    
+done
+    POP     {R4, PC}        ; Return length in R0
+\end{lstlisting}
+
+\begin{itemize}
+  \item String passed as pointer
+  \item Null terminator check
+  \item Length returned in R0
+\end{itemize}
+\end{example2}
+
+\begin{KR}{Return Value Patterns}
+Guidelines for handling different return types:
+
+1. Simple values:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Return 32-bit value
+    MOV     R0, R4          ; Result in R0
+    BX      LR
+    
+; Return boolean
+    MOVS    R0, #1          ; Return true
+    BX      LR
+\end{lstlisting}
+
+2. Large values via pointer:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Fill structure with result
+    STR     R4, [R0, #0]    ; Store first field
+    STR     R5, [R0, #4]    ; Store second field
+    BX      LR
+\end{lstlisting}
+
+3. Multiple return values:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Return pair of values
+    MOV     R0, R4          ; First return value
+    MOV     R1, R5          ; Second return value
+    BX      LR
+\end{lstlisting}
+\end{KR}
+
