@@ -62,26 +62,31 @@ ADDS    R0, R0, R0      ; R0 = R0 * 2 = R0 * 10
 
 
 
-\begin{KR}{Using Logic and Shift Instructions}\\
+\begin{KR}{Using Logic and Shift Instructions}
 Steps for bit manipulation:
 \begin{enumerate}
   \item Identify required operation (AND, OR, XOR, NOT, shift)
   \item Choose appropriate instruction
   \item Consider effect on flags if relevant
-  \item For shifts:
+\end{enumerate}
+
+\begin{minipage}[t]{0.55\textwidth}
+  \textbf{For shifts:}
     \begin{itemize}
       \item LSLS for multiplication by $2^n$
       \item LSRS for unsigned division by $2^n$
       \item ASRS for signed division by $2^n$
     \end{itemize}
-  \item For logic:
+\end{minipage}
+\begin{minipage}[t]{0.4\textwidth}
+  \textbf{For logic:}
     \begin{itemize}
       \item ANDS for bit masking
       \item ORRS for bit setting
       \item BICS for bit clearing
       \item EORS for bit toggling
     \end{itemize}
-\end{enumerate}
+\end{minipage}
 \end{KR}
 
 \begin{concept}{Flag Behavior with Logic Instructions}\\
@@ -89,8 +94,7 @@ Logic instructions only affect N and Z flags:
 \begin{itemize}
   \item \textbf{N flag}: Set to bit 31 of result (MSB)
   \item \textbf{Z flag}: Set if result is zero
-  \item \textbf{C flag}: Unchanged
-  \item \textbf{V flag}: Unchanged
+  \item \textbf{C, V flags}: Unchanged
 \end{itemize}
 
 Special case for shift/rotate:
@@ -102,37 +106,56 @@ Special case for shift/rotate:
 \end{concept}
 
 \begin{KR}{Bit Manipulation Techniques}\\
-Common operations on individual bits:
+Common patterns for bit manipulation:
 
-1. Set specific bits:
+1. Setting specific bits:
 \begin{lstlisting}[language=armasm, style=basesmol]
-    ; Set bits 0 and 4
-    MOVS    R1, #0x11       ; Mask: 0001 0001
-    ORRS    R0, R1          ; Set bits in R0
+MOVS    R0, #pattern    ; Create bit pattern
+ORRS    target, R0      ; OR to set bits
 \end{lstlisting}
 
-2. Clear specific bits:
+2. Clearing specific bits:
 \begin{lstlisting}[language=armasm, style=basesmol]
-    ; Clear bits 1 and 5
-    MOVS    R1, #0x22       ; Mask: 0010 0010
-    BICS    R0, R1          ; Clear bits in R0
+MOVS    R0, #pattern    ; Create bit pattern
+BICS    target, R0      ; Clear selected bits
 \end{lstlisting}
 
-3. Toggle specific bits:
+3. Inverting specific bits:
 \begin{lstlisting}[language=armasm, style=basesmol]
-    ; Toggle bits 2,3,4
-    MOVS    R1, #0x1C       ; Mask: 0001 1100
-    EORS    R0, R1          ; Toggle bits in R0
+MOVS    R0, #pattern    ; Create bit pattern
+EORS    target, R0      ; XOR to invert bits
 \end{lstlisting}
 
-4. Test specific bits:
+4. Testing bits:
 \begin{lstlisting}[language=armasm, style=basesmol]
-    ; Test bit 3
-    MOVS    R1, #0x08       ; Mask: 0000 1000
-    ANDS    R2, R0, R1      ; Test bit
-    BEQ     bit_is_clear    ; Branch if bit was 0
+MOVS    R0, #pattern    ; Create bit pattern
+ANDS    R1, target, R0  ; AND to test bits
+; Check flags for result
 \end{lstlisting}
 \end{KR}
+
+\begin{example2}{Bit Manipulation}
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Set bits 0 and 4
+MOVS    R1, #0x11       ; Mask: 0001 0001
+ORRS    R0, R1          ; Set bits in R0
+
+; Clear bits 1 and 5
+MOVS    R1, #0x22       ; Mask: 0010 0010
+BICS    R0, R1          ; Clear bits in R0
+
+; Toggle bits 2,3,4
+MOVS    R1, #0x1C       ; Mask: 0001 1100
+EORS    R0, R1          ; Toggle bits in R0
+
+; Test bit 3
+MOVS    R1, #0x08       ; Mask: 0000 1000
+ANDS    R2, R0, R1      ; Test bit
+BEQ     bit_is_clear    ; Branch if bit was 0
+\end{lstlisting}
+\end{example2}
+
+
 
 
 
@@ -220,9 +243,8 @@ ASRS    R0, R0, #24     ; Arithmetic shift right 24
 \end{lstlisting}
 \end{example2}
 
-\begin{KR}{Type Conversion Guidelines}\\
+\begin{KR}{Type Conversion Guidelines}
 Steps for safe type conversion:
-
 
 1. For unsigned to larger unsigned:
 \begin{itemize}
@@ -230,11 +252,34 @@ Steps for safe type conversion:
   \item Or use LSLS followed by LSRS
 \end{itemize}
 
+\begin{lstlisting}[language=armasm, style=basesmol]
+  ; Extend 8-bit to 32-bit unsigned
+  MOVS    R0, #0xFF       ; Load 8-bit value
+  UXTB    R2, R0          ; Unsigned extension
+  
+  ; Manual zero extension
+  LDRB    R0, [R1]       ; Load byte, top bits zero
+  LSLS    R0, #24        ; Move to top byte
+  LSRS    R0, #24        ; Logical shift back
+\end{lstlisting}
+
 2. For signed to larger signed:
 \begin{itemize}
   \item Use sign extension (SXTB, SXTH)
   \item Or use LSLS followed by ASRS
 \end{itemize}
+
+\begin{lstlisting}[language=armasm, style=basesmol]
+  ; Extend 8-bit to 32-bit signed
+  MOVS    R0, #0xFF       ; Load 8-bit value
+  SXTB    R1, R0          ; Signed extension
+  
+  ; Manual sign extension
+  LDRSB   R0, [R1]       ; Load with sign extend
+  LDRB    R0, [R1]       ; Load byte
+  LSLS    R0, #24        ; Move to top byte
+  ASRS    R0, #24        ; Arithmetic shift back
+\end{lstlisting}
 
 
 3. Reducing size (truncation):
@@ -247,25 +292,31 @@ Steps for safe type conversion:
 
 Example:
 \begin{lstlisting}[language=armasm, style=basesmol]
-    ; Convert 8-bit to 32-bit
-    MOVS    R0, #0xFF       ; Load 8-bit value
-    SXTB    R1, R0          ; Signed extension
-    UXTB    R2, R0          ; Unsigned extension
-    
     ; Truncate 32-bit to 8-bit
     MOVS    R1, #0xFF       ; Create mask
     ANDS    R0, R1          ; Truncate to 8 bits
+
+    ; Store 32-bit value as 8-bit
+    STRB    R0, [R1]        ; Store byte 
 \end{lstlisting}
+%TODO: check if this is correct
 \end{KR}
+
+
+\raggedcolumns
 
 \begin{remark}
 Important considerations:
 \begin{itemize}
   \item Always consider signedness of values
-  \item Check for potential overflow in arithmetic shifts
+  \item Check for potential carry/overflow in arithmetic shifts
   \item Remember carry flag behavior in shifts
   \item Use appropriate extension for data type
   \item Consider performance impact of shifts vs multiply
+  \item Be careful with bit patterns crossing byte boundaries
+  \item Document complex bit manipulations clearly
 \end{itemize}
 \end{remark}
+
+
 

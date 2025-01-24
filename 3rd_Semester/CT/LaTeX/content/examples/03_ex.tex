@@ -192,9 +192,10 @@ Literal can be a constant (the value is known at assembling time)
 
 
 
-\begin{example2}{Register Content and Memory Positions}\\
-Whenever possible, work out the contents of registers or memory positions that have changed.
 
+
+\begin{example2}{Register Content and Memory Positions} ex 7 from exercise sheet\\
+Whenever possible, work out the contents of registers or memory positions that have changed.
 \begin{center}
 \begin{tabular}{|c|c|c|c|}
 \hline
@@ -236,8 +237,8 @@ R0 = address of lit1 \\
  & STR & R2, [R1, \#8] & \textcolor{darkred}{lit4 = 0x0000EFAA} \\
 \hline
  & STR & R4, [R1, R7] & \textcolor{darkred}{lit3 = 0x00012345}  \\
- & & & (writes to  \\
- & & & (address of lit2 + R7)) \\
+ & & & \textcolor{darkred}{(writes to}  \\
+ & & & \textcolor{darkred}{(address of lit2 + R7))} \\
 \hline
  & LDR & R5, =lit5 & \textcolor{darkred}{R5 = address of lit5} \\
 \hline
@@ -248,7 +249,7 @@ R0 = address of lit1 \\
  & LDRSB & R6, [R5, R0] & \textcolor{darkred}{R6 = 0xFFFFFF89} \\
 \hline
  & LDRSH & R6, [R5, R7] & \textcolor{darkred}{Problem: Unaligned}  \\
- & & & memory access \\
+ & & & \textcolor{darkred}{memory access} \\
 \hline
  & B & Again &  \\
 \hline
@@ -276,12 +277,112 @@ Var4 & DCD & 0xE4568900 &  \\
 \end{center}
 \end{example2}
 
-\begin{example2}{Assembled Listings}\\
-\textcolor{pink}{\textbf{see exercise 8 in exercise sheet 3 - Data Transfer Instructions}}
-this is way too much text for this summary
+\begin{KR}{Memory Access Patterns}
+Tracking memory and register contents:
+\begin{enumerate}
+  \item Track register contents:
+    \begin{itemize}
+      \item Note initial values and update after each instruction
+      \item Pay attention to flags if MOVS/ADDS used
+    \end{itemize}
+  \item Track memory changes: Consider byte ordering! (little-endian)
+    \begin{itemize}
+      \item Note memory layout before operations
+      \item Update after each store instruction
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Memory Operation Example} 
+\begin{lstlisting}[language=armasm, style=basesmol]
+LDR     R0,=0x20001000    ; R0 = 0x20001000
+MOVS    R1,#42            ; R1 = 0x0000002A
+STR     R1,[R0]    ; Mem[0x20001000] = 0x0000002A
+LDRB    R2,[R0]    ; R2 = 0x0000002A (byte access)
+\end{lstlisting}
 \end{example2}
 
-\textcolor{pink}{\textbf{TODO: Add more examples}} and understand exercises from exercise sheet 3... help
+
+\begin{KR}{PC-Relative Calculations} ex. 8 from exercise sheet\\
+Steps for calculating PC-relative offsets:
+\begin{enumerate}
+  \item Start with instruction address
+  \item Add 4 to get effective PC value
+  \item Calculate target address
+    \begin{itemize}
+      \item Must be word-aligned (multiple of 4)
+      \item Within ±1KB range
+    \end{itemize}
+  \item Compute offset = target - (PC + 4)
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{PC-Relative Example}
+\begin{lstlisting}[language=armasm, style=basesmol]
+; At address 0x1000:
+LDR     R0,[PC,#12]       ; PC = 0x1004, loads from 0x1010
+...
+ALIGN   4
+DCD     0x12345678        ; At 0x1010
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Array Access} ex. 10 from exercise sheet\\
+Steps for array manipulation:
+\begin{enumerate}
+  \item Calculate array element offset
+    \begin{itemize}
+      \item Byte arrays: index * 1
+      \item Half-word arrays: index * 2
+      \item Word arrays: index * 4
+    \end{itemize}
+  \item Access elements
+    \begin{itemize}
+      \item LDRB/STRB for bytes
+      \item LDRH/STRH for half-words
+      \item LDR/STR for words
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Array Example}
+\begin{lstlisting}[language=armasm, style=basesmol]
+LDR     R0,=array         ; Get array base address
+MOVS    R1,#1             ; Array index
+LSLS    R2,R1,#2         ; Multiply index by 4 (word array)
+LDR     R3,[R0,R2]       ; Load array[1]
+\end{lstlisting}
+\end{example2}
+
+
+
+\begin{KR}{Literal Pool Usage} ex. 11 from exercise sheet\\
+Steps for working with literals:
+\begin{enumerate}
+  \item Direct load of value
+    \begin{itemize}
+      \item LDR Rx,=value for constants
+      \item Value stored in literal pool
+    \end{itemize}
+  \item Load address of label
+    \begin{itemize}
+      \item LDR Rx,label loads value at label
+      \item LDR Rx,=label loads address of label
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Literal Example}
+\begin{lstlisting}[language=armasm, style=basesmol]
+    LDR     R0,=0x12345678    ; Load constant from literal pool
+    LDR     R1,myvar          ; Load value at myvar
+    LDR     R2,=myvar         ; Load address of myvar
+    
+myvar   DCD     0x11223344     ; Define variable
+\end{lstlisting}
+\end{example2}
+
+
 
 \begin{example2}{Handling Pointers}\\
 Example C code and assembly implementation:
