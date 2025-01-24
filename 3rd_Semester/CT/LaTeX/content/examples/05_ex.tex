@@ -1,0 +1,298 @@
+\subsection{Examples}
+
+\begin{example2}{Logical Instructions}\\
+Bit manipulation examples:
+
+1. Inverting register contents (one's complement):
+\begin{lstlisting}[language=armasm, style=basesmol]
+MVNS    R1, R1          ; Invert all bits in R1
+\end{lstlisting}
+
+2. Selective bit manipulation:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Set bits 3..0 to 1, bits 7..4 to 0
+; Invert bits 17-16, keep others unchanged
+MOVS    R0, #0xF        ; Pattern for bits 3..0
+ORRS    R1, R0          ; Set bits 3..0 to 1
+MOVS    R0, #0xF0       ; Pattern for bits 7..4
+BICS    R1, R0          ; Clear bits 7..4
+MOVS    R0, #0x30       
+LSLS    R0, #12         ; 0x30000 shift 4 nibbles = 12bit
+EORS    R1, R0          ; Invert bits 17-16
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Bit Manipulation Techniques}\\
+Common patterns for bit manipulation:
+
+1. Setting specific bits:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    MOVS    R0, #pattern    ; Create bit pattern
+    ORRS    target, R0      ; OR to set bits
+\end{lstlisting}
+
+2. Clearing specific bits:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    MOVS    R0, #pattern    ; Create bit pattern
+    BICS    target, R0      ; Clear selected bits
+\end{lstlisting}
+
+3. Inverting specific bits:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    MOVS    R0, #pattern    ; Create bit pattern
+    EORS    target, R0      ; XOR to invert bits
+\end{lstlisting}
+
+4. Testing bits:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    MOVS    R0, #pattern    ; Create bit pattern
+    ANDS    R1, target, R0  ; AND to test bits
+    ; Check flags for result
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Multiplication Using Shifts}\\
+Multiply R7 by 43 using two different methods:
+
+1. Using multiplication instruction:
+\begin{lstlisting}[language=armasm, style=basesmol]
+MOVS    R0, #43         ; Load constant
+MULS    R7, R0, R7      ; Multiply
+\end{lstlisting}
+
+2. Using shifts and additions:
+\begin{lstlisting}[language=armasm, style=basesmol]
+MOVS    R7, R0          ; Copy original value
+LSLS    R0, R0, #1      ; *2
+ADDS    R7, R7, R0
+LSLS    R0, R0, #2      ; *8=4*2
+ADDS    R7, R7, R0
+LSLS    R0, R0, #2      ; *32=8*4
+ADDS    R7, R7, R0      ; Total = 1 + 2 + 8 + 32 = 43
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Reverse Engineering}\\
+Convert assembly to C code:
+
+Given C variables:
+\begin{lstlisting}[language=C, style=basesmol]
+uint32_t ux, uy, uz;    // Variables in memory
+\end{lstlisting}
+
+Example 1:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Assembly code
+LDR     R0, =ux         ; Load address
+LDR     R1, [R0]        ; Load value
+LSLS    R1, R1, #1      ; Shift left by 1
+LDR     R2, =uy         ; Load uy address
+LDR     R3, [R2]        ; Load uy value
+ADDS    R3, R1          ; Add shifted ux
+LSLS    R3, R3, #3      ; Shift left by 3
+STR     R3, [R2]        ; Store back in uy
+
+; Equivalent C code:
+uy = ((ux << 1) + uy) << 3;
+// or: uy = 8 * (2 * ux + uy);
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Type Casting}\\
+Examples of explicit casting in C:
+
+1. Unsigned to signed casting:
+\begin{lstlisting}[language=C, style=basesmol]
+uint8_t ux = 100;           // 0x64 or 0110 0100
+int8_t sx = (int8_t)ux;     // Same bit pattern
+                            // Interpreted as 100
+\end{lstlisting}
+
+2. Signed to unsigned casting:
+\begin{lstlisting}[language=C, style=basesmol]
+int8_t sx = -10;           // 0xF6 or 1111 0110
+uint8_t ux = (uint8_t)sx;  // Same bits but unsigned
+                           // 246 (128+64+32+16+4+2)
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Type Conversion Guidelines}\\
+Rules for safe type conversion:
+
+1. Sign extension:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Extend 8-bit to 32-bit signed
+    LDRSB   R0, [R1]       ; Load with sign extend
+    
+    ; Manual sign extension
+    LDRB    R0, [R1]       ; Load byte
+    LSLS    R0, #24        ; Move to top byte
+    ASRS    R0, #24        ; Arithmetic shift back
+\end{lstlisting}
+
+2. Zero extension:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Extend 8-bit to 32-bit unsigned
+    LDRB    R0, [R1]       ; Load byte, top bits zero
+    
+    ; Manual zero extension
+    LDRB    R0, [R1]       ; Load byte
+    LSLS    R0, #24        ; Move to top byte
+    LSRS    R0, #24        ; Logical shift back
+\end{lstlisting}
+
+3. Important considerations:
+\begin{itemize}
+  \item Check for potential overflow
+  \item Consider signedness of source and target
+  \item Use appropriate load instructions
+  \item Be aware of implicit sign extension
+\end{itemize}
+\end{KR}
+
+\begin{remark}
+Important notes for bit manipulation:
+\begin{itemize}
+  \item Always consider signedness when shifting
+  \item Check carry and overflow flags after operations
+  \item Be careful with bit patterns crossing byte boundaries
+  \item Document complex bit manipulations clearly
+\end{itemize}
+\end{remark}
+
+\section*{CT1 Übungsaufgaben Log- Shift-Operationen und Casting}
+\section*{Aufgabe 1 - Logische Instruktionen}
+Geben Sie die Assemblerinstruktionen für die folgenden Fälle an.\\
+a) Invertieren des Inhaltes des Registers R1 (Bilden des Einerkomplementes)
+
+\begin{verbatim}
+MVNS R1,R1
+\end{verbatim}
+
+b) Verändern Sie den Inhalt des Registers R1 so, dass
+
+\begin{itemize}
+  \item die Bits $3 . .0$ alle eins,
+  \item die Bits $7 . .4$ alle null,
+  \item die Bits 17-16 alle invertiert und
+  \item alle übrigen Bits unverändert sind.
+\end{itemize}
+
+\begin{verbatim}
+MOVS RO,#0xF
+ORRS R1,R0 ; 3-0 -> 1
+MOVS RO,#0xFO
+BICS R1,R0 ; 7-4 -> 0
+MOVS R0,#0x30
+LSLS R0,#12 ;0x30000 ,shift 4 nibbles = 12bit
+EORS R1,R0 ; 17-16 invertiert
+\end{verbatim}
+
+\section*{Aufgabe 2 - Multiplikation mit einer Konstanten}
+Schreiben Sie eine Codesequenz in Assembler welche den vorzeichenlosen Inhalt des Registers R7 mit der Dezimalzahl 43 multipliziert und im Register R7 abspeichert.\\
+a) Verwenden Sie die Multiplikationsinstruktion
+
+\begin{verbatim}
+MOVS RO,#43
+MULS R7,R0,R7
+\end{verbatim}
+
+b) Ersetzen Sie die Multiplikationsinstruktion durch Shift- und Additionsbefehle
+
+\begin{verbatim}
+MOVS R7,R0 ;1
+LSLS RO,RO,#1 ;2
+ADDS R7,R7,R0
+LSLS RO,RO,#2 ; 8=4*2
+ADDS R7,R7,R0
+LSLS RO,RO,#2 ; 32=8*4
+ADDS R7,R7,R0
+\end{verbatim}
+
+\section*{Aufgabe 3-Reverse Engineering}
+Die folgenden Assemblersequenzen wurden durch den bcc Compiler aus einem C Programm erzeugt. Schreiben Sie einen möglichen C-Code, welcher diese Assemblersequenz erzeugt.
+
+Die Speicherstellen im Assembler werden den ursprünglichen Variablen im C-Programm wie folgt zugeordnet:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+ux & DCD & ? & $\mu$  & uint32\_t ux \\
+\hline
+uy & DCD & ? & [ & uint $32-$ t uy \\
+\hline
+uz & DCD & ? & [ & uint32 t uz \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+ & Assembler & C \\
+\hline
+Beispiel & \( \begin{array}{ll} \text { LDR } & \text { R0, }=\text { ux } \\ \text { LDR } & \text { R1, [R0] } \\ \text { ADDS } & \text { R1,\#1 } \\ \text { STR } & \text { R1, }[R 0] \end{array} \) & ux++; \\
+\hline
+a) & \begin{tabular}{ll}
+LDR & R0, =ux \\
+LDR & R1, [R0] \\
+LSLS & R1,R1, \#1 \\
+ &  \\
+LDR & R2, =uy \\
+LDR & R3,[R2] \\
+ADDS & R3,R1 \\
+LSLS & R3,R3,\#3 \\
+STR & R3, [R2] \\
+\end{tabular} & \texttt{Lsg: uy = 8 * (2 * ux + uy); oder uy = ((ux << 1) + uy) << 3;} \\
+\hline
+b) & \begin{tabular}{ll}
+LDR & R0, =ux \\
+LDR & R1, [R0] \\
+LDR & R2, =uy \\
+LDR & R3, [R2] \\
+LDR & R4, =uz \\
+LDR & R5,[R4] \\
+LSRS & R1,R1,\#3 \\
+LSLS & R3, R3,\#4 \\
+ORRS & R1,R3 \\
+MVNS & R1,R1 \\
+ANDS & $R 1, R 5$ \\
+STR & R1,[R4] \\
+\end{tabular} & \texttt{Lsg: uz = \~{}( (ux >> 3) | (uy << 4)) \& uz; oder uz = \~{}( (ux / 8) | (uy * 16)) \& uz;} \\
+\hline
+\end{tabular}
+\end{center}
+
+\section*{Aufgabe 4 - Explicit Casting in C}
+a) Gegeben ist der folgende C Code:
+
+\begin{verbatim}
+uint8_t ux = 100;
+int8_t sx = (int8_t)ux;
+\end{verbatim}
+
+Als welche Dezimalzahl wird der Inhalt der Variable sx nach dem Cast interpretiert?
+
+\begin{verbatim}
+100d --> ux hat Speicherinhalt 0x64 oder Binär 0110'0100
+sx hat denselben Speicherinhalt, wird aber als signed
+interpretiert. Da das höchstwertigste Bit nicht gesetzt ist, hat die
+Interpretation aber in diesem Fall keinen Einfluss.
+sx wird ebenfalls als 100d interpretiert
+\end{verbatim}
+
+b) Gegeben ist der folgende C Code:
+
+\begin{verbatim}
+int8_t sx = -10;
+uint8_t ux = (uint_8)sx;
+\end{verbatim}
+
+Als welche Dezimalzahl wird der Inhalt der Variable ux nach dem Cast interpretiert?
+
+\begin{verbatim}
+-10d --> sx hat Speicherinhalt 0xF6 oder Binär 1111'0110
+(-128+64+32+16+4 + 2)
+ux hat denselben Speicherinhalt, wird aber als unsigned
+interpretiert. So ergibt sich 128 + 64 + 32 + 16 + 4 + 2 = 246d
+\end{verbatim}

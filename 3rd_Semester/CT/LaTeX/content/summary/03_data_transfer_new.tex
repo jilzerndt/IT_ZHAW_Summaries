@@ -1,6 +1,6 @@
 \section{Data Transfer}
 
-\begin{concept}{Data Transfer Overview}
+\begin{concept}{Data Transfer Overview}\\
 ARM Cortex-M uses a load/store architecture:
 \begin{itemize}
   \item Memory can only be accessed through load and store instructions
@@ -216,6 +216,14 @@ found
 \end{lstlisting}
 \end{KR}
 
+\begin{concept}{Register Access}\\
+For operations involving high registers (R8-R15):
+\begin{itemize}
+  \item Use MOV for register transfers (works with all registers but only for reg/reg transfers)
+  \item Cannot use MOVS with high registers
+\end{itemize}
+\end{concept}
+
 \columnbreak
 
 \subsubsection{Arrays}
@@ -406,3 +414,21 @@ mylita  DCD     0xFF001122   ; Data definition
 
 First instruction loads 0xFF001122, second loads address of mylita.
 \end{example2}
+
+\begin{concept}{Pseudo-Instructions}\\
+A pseudo-instruction like \texttt{LDR Rn, =literal}:
+\begin{itemize}
+  \item Does not directly translate to machine code
+  \item Is expanded by assembler into actual instructions
+  \item Decomposed into:
+    \begin{itemize}
+      \item DCD directive for place reservation
+      \item LDR instruction to load from that position
+    \end{itemize}
+  \item Can handle:
+    \begin{itemize}
+      \item Address literals (position in memory)
+      \item Constant literals (known at assembly time)
+    \end{itemize}
+\end{itemize}
+\end{concept}

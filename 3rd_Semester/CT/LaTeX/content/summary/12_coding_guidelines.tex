@@ -1,0 +1,193 @@
+\section{Coding Guidelines}
+
+\begin{concept}{Guidelines Purpose}\\
+Coding guidelines are essential for:
+\begin{itemize}
+  \item Reducing the number of bugs through:
+    \begin{itemize}
+      \item Improved robustness
+      \item Better correctness
+      \item Enhanced maintainability
+    \end{itemize}
+  \item Facilitating code reading within a team
+  \item Improving portability for code reuse
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Code Structure and Organization}\\
+Key guidelines for code organization:
+
+1. Code Appearance:
+\begin{itemize}
+  \item Indentation: 4 spaces, no tabs
+  \item Maximum of 80 characters per line
+  \item No more than one statement per line
+  \item Use parentheses to aid clarity (don't rely on operator precedence)
+\end{itemize}
+
+2. Braces Usage:
+\begin{itemize}
+  \item Non-function statement blocks (if, else, switch, for, while, do):
+    \begin{itemize}
+      \item Opening brace last on line
+      \item Closing brace first on line
+    \end{itemize}
+  \item Functions:
+    \begin{itemize}
+      \item Opening brace beginning of next line
+      \item Closing brace first on line
+    \end{itemize}
+  \item Always use braces for single statements and empty statements
+\end{itemize}
+\end{KR}
+
+\begin{definition}{Function Requirements}\\
+Guidelines for function implementation:
+\begin{itemize}
+  \item Keep functions short and focused (max ~50 lines)
+  \item Do just one thing
+  \item No more than 5-10 local variables
+  \item No more than 3 parameters
+  \item Function prototypes must include parameter names with data types
+  \item Maximum of 3 levels of indentation
+  \item Single exit point at bottom of function
+  \item Use const for call-by-reference parameters that shouldn't be modified
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Return Value Conventions}\\
+Guidelines for function return values:
+\begin{itemize}
+  \item Return values must be checked by the caller
+  \item For functions named as actions/commands:
+    \begin{itemize}
+      \item Return error-code integer (0 success, -Exxx failure)
+      \item Use Posix error codes where possible
+      \item Document custom error codes in header files
+    \end{itemize}
+  \item For predicate functions:
+    \begin{itemize}
+      \item Return boolean success value
+      \item Example: pci\_dev\_present() returns 1 for success, 0 for failure
+    \end{itemize}
+  \item Computation functions return actual results
+    \begin{itemize}
+      \item Indicate failure through out-of-range values
+      \item Use NULL or ERR\_PTR for pointer returns
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Naming Conventions}\\
+Rules for naming different code elements:
+\begin{itemize}
+  \item Macro names (\#define): All uppercase letters
+  \item Function/variable names: No uppercase letters
+  \item Use descriptive names for functions, globals, and important locals
+  \item Use underscores to separate words (e.g., count\_active\_users())
+  \item Short names acceptable for auxiliary locals (e.g., i for loop counters)
+  \item Don't encode types in names - let compiler do type checking
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Comments and Documentation}\\
+Guidelines for code documentation:
+\begin{itemize}
+  \item All comments must be in English
+  \item C99 comments (//) are allowed
+  \item Explain WHAT code does, not HOW
+  \item Don't repeat what the statement says in comments
+  \item Comments shall never be nested
+  \item Document all assumptions in comments
+  \item Interface documentation in header files only
+  \item Comment function prototypes in header, not in source file
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Type Usage}\\
+Rules for data type usage:
+\begin{itemize}
+  \item Use fixed-width C99 types from stdint.h
+    \begin{itemize}
+      \item uint8\_t/int32\_t instead of unsigned char/int
+    \end{itemize}
+  \item Restrict char type to string operations
+  \item No bit-fields within signed integer types
+  \item Don't use bitwise operators on signed integers
+  \item Don't mix signed/unsigned in comparisons
+  \item Use 'U' suffix for unsigned decimal constants
+  \item One data declaration per line for clarity
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Header File Organization}\\
+Requirements for header files:
+\begin{itemize}
+  \item One header file per module
+  \item Include preprocessor guards against multiple inclusion
+  \item Only add immediately needed \#includes
+  \item No variable definitions/declarations
+  \item Keep interface minimal - only expose necessary functions
+  \item Document all public functions in header
+  \item Private functions must be declared static
+  \item Function prototypes in module interface
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Module Design}\\
+Example of proper module organization:
+
+1. Header File (module.h):
+\begin{lstlisting}[language=C, style=basesmol]
+#ifndef _MODULE_H
+#define _MODULE_H
+
+typedef enum {
+    STATE_A = 0x00,
+    STATE_B = 0x01
+} module_state_t;
+
+void module_init(void);
+void module_set_state(module_state_t state);
+module_state_t module_get_state(void);
+
+#endif /* _MODULE_H */
+\end{lstlisting}
+
+2. Implementation File (module.c):
+\begin{lstlisting}[language=C, style=basesmol]
+#include "module.h"
+
+static module_state_t current_state;
+static void helper_function(void);
+
+void module_init(void) {
+    current_state = STATE_A;
+}
+
+void module_set_state(module_state_t state) {
+    current_state = state;
+    helper_function();
+}
+
+module_state_t module_get_state(void) {
+    return current_state;
+}
+
+static void helper_function(void) {
+    // Implementation
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{remark}
+Important considerations:
+\begin{itemize}
+  \item Coding guidelines are subjective
+  \item Different organizations have different standards
+  \item Follow existing project conventions
+  \item Guidelines help maintain consistency
+  \item Use automated checks and peer reviews
+  \item Document any deviations from standards
+\end{itemize}
+\end{remark}

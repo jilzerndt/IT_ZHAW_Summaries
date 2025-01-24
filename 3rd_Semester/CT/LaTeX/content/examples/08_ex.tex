@@ -1,0 +1,305 @@
+\subsection{Examples}
+
+\begin{concept}{ARM Parameter Passing}\\
+Key rules for parameter passing:
+\begin{itemize}
+  \item \textbf{Register Parameters}:
+    \begin{itemize}
+      \item First four parameters in R0-R3
+      \item Additional parameters on stack
+      \item Return value in R0 (or R0/R1 for 64-bit)
+    \end{itemize}
+  \item \textbf{Stack Parameters}:
+    \begin{itemize}
+      \item Pushed right-to-left
+      \item 8-byte aligned
+      \item Caller responsible for cleanup
+    \end{itemize}
+  \item \textbf{Return Values}:
+    \begin{itemize}
+      \item 32-bit or less in R0
+      \item 64-bit in R0 and R1
+      \item Larger values via pointer
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Function Call Example}\\
+C function and its parameter passing:
+
+\begin{lstlisting}[language=C, style=basesmol]
+// C code
+uint32_t logical_and(uint32_t a, uint32_t b, uint32_t c) {
+    return a & b & c;
+}
+
+int32_t main(void) {
+    uint32_t x = 0x11223344;  // In R4
+    uint32_t y = 0xFFFF0000;  // In R5
+    uint32_t z = 0x33661122;  // In R6
+    uint32_t result;          // In R7
+    
+    result = logical_and(x, y, z);
+}
+\end{lstlisting}
+
+Assembly implementation showing parameter passing:
+\begin{lstlisting}[language=armasm, style=basesmol]
+main
+    ; Initial register setup
+    LDR     R4, =0x11223344   ; x
+    LDR     R5, =0xFFFF0000   ; y
+    LDR     R6, =0x33661122   ; z
+    
+    ; Parameter passing
+    MOV     R0, R4            ; a = x
+    MOV     R1, R5            ; b = y
+    MOV     R2, R6            ; c = z
+    BL      logical_and       
+    MOV     R7, R0            ; result = return value
+
+logical_and
+    AND     R0, R0, R1        ; a & b
+    AND     R0, R0, R2        ; & c
+    BX      LR                ; Return
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Pass by Value vs Reference}\\
+Example showing parameter passing issues:
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Incorrect swap - pass by value
+void swap_bad(int32_t c, int32_t d) {
+    int32_t temp = c;
+    c = d;
+    d = temp;
+}
+
+// Correct swap - pass by reference
+void swap_good(int32_t *c, int32_t *d) {
+    int32_t temp = *c;
+    *c = *d;
+    *d = temp;
+}
+
+int32_t main(void) {
+    int32_t a = 3, b = 5;
+    
+    swap_bad(a, b);   // Doesn't work
+    swap_good(&a, &b); // Works correctly
+}
+\end{lstlisting}
+
+Assembly implementation of swap\_good:
+\begin{lstlisting}[language=armasm, style=basesmol]
+swap_good
+    PUSH    {LR}             ; Save return address
+    
+    LDR     R2, [R0]         ; Load *c into R2
+    LDR     R3, [R1]         ; Load *d into R3
+    
+    STR     R3, [R0]         ; Store R3 to *c
+    STR     R2, [R1]         ; Store R2 to *d
+    
+    POP     {PC}             ; Return
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Parameter Passing Guidelines}\\
+Rules for implementing function calls:
+
+1. Caller responsibilities:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Save any needed registers
+    PUSH    {R4-R6, LR}      ; Save registers
+    
+    ; Load parameters into R0-R3
+    MOV     R0, R4           ; First parameter
+    MOV     R1, R5           ; Second parameter
+    MOV     R2, R6           ; Third parameter
+    
+    ; Call function
+    BL      function
+    
+    ; Save return value if needed
+    MOV     R7, R0           ; Save result
+    
+    ; Restore registers
+    POP     {R4-R6, PC}      ; Return
+\end{lstlisting}
+
+2. Callee responsibilities:
+\begin{lstlisting}[language=armasm, style=basesmol]
+function
+    ; Save any registers we'll modify
+    PUSH    {R4, LR}
+    
+    ; Process parameters in R0-R3
+    ; Put return value in R0
+    
+    ; Restore registers
+    POP     {R4, PC}
+\end{lstlisting}
+
+3. Reference parameter handling:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Loading from pointer
+    LDR     R2, [R0]         ; Get value at address
+    
+    ; Storing to pointer
+    STR     R2, [R1]         ; Store to address
+    
+    ; Incrementing pointer
+    ADD     R0, R0, #4       ; Next word
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Recursive Function Example}\\
+Factorial calculation showing stack usage:
+
+\begin{lstlisting}[language=C, style=basesmol]
+int32_t fakultaet_recursive(int32_t n) {
+    if(n < 2) {
+        return 1;
+    } else {
+        return n * fakultaet_recursive(n-1);
+    }
+}
+
+int32_t main(void) {
+    int32_t n = 20;
+    int32_t result = fakultaet_recursive(n);
+}
+\end{lstlisting}
+
+Assembly implementation showing stack growth:
+\begin{lstlisting}[language=armasm, style=basesmol]
+fakultaet_recursive
+    PUSH    {R4, LR}         ; Each call adds 8 bytes
+    MOV     R4, R0           ; Save n
+    
+    CMP     R0, #2           ; Check base case
+    BLT     return_one
+    
+    SUB     R0, R0, #1       ; n-1
+    BL      fakultaet_recursive
+    MUL     R0, R4, R0       ; n * result
+    
+    POP     {R4, PC}         ; Return
+    
+return_one
+    MOV     R0, #1           ; Return 1
+    POP     {R4, PC}         ; Return
+\end{lstlisting}
+
+Maximum stack size = 8 bytes * 19 calls = 152 bytes
+\end{example2}
+
+\begin{remark}
+Important considerations:
+\begin{itemize}
+  \item Track register usage and preservation
+  \item Consider stack alignment requirements
+  \item Be aware of parameter passing limits
+  \item Handle return values consistently
+  \item Monitor stack growth in recursion
+\end{itemize}
+\end{remark}
+
+\section*{CT1 Übungsaufgaben}
+\section*{Datenübergabe / Schnittstelle zu Hochsprachen}
+\section*{Aufgabe 1}
+Gegeben ist folgernder C-Code:
+
+\begin{verbatim}
+uint32_t logical_and(uint32_t a, uint32_t b, uint32_t c)
+{
+    return a & b & c;
+}
+int32_t main(void)
+{
+    uint32_t result;
+    uint32-t x = 0x11223344;
+    uint32-t y = 0xFFFF0000;
+    uint32_t z = 0x33661122;
+    result = logical_and(x, y, z);
+}
+\end{verbatim}
+
+Beim Start des Programmes wird die Variable x in R4, y in R 5 und z in R 6 abgelegt. Die Variable result wird in R7 abgelegt.
+
+\begin{enumerate}
+  \item Welche Schritte führt der Caller (main) vor dem Aufruf der Funktion logical\_and() durch? Wie werden die Parameter übergeben?\\
+Die Variablen in den Registern R4 bis R6 werden nach R0 bis $R 2$ kopiert und so der Funktion übergeben. ( $R 6=>R 2, R 5=>R 1, R 4=>R 0$ )\\
+$\qquad$
+  \item Wir gibt die Funktion logical\_and() den Rückgabewert zurück?
+\end{enumerate}
+
+Der Rückgabewert wird via R0 zurückgegeben.\\
+3. Welche Operation führt der Call nach dem Aufruf der Funktion logical\_and() durch?
+
+Der Rückgabewert wird von R0 nach R7 kopiert
+
+\section*{Aufgabe 2}
+Gegeben ist das folgende C-Programm:
+
+\begin{verbatim}
+#include <utils_ctboard.h>
+void swap_bad(int32_t c, int32_t d)
+{
+    /*WARNING: This code does not work*/
+    int32_t temp = c;
+    c = d;
+    d = temp;
+}
+int32_t main(void)
+{
+    int32_t a = 3, b = 5;
+    swap_bad(a,b);
+    write_word(0x60000300, a);
+}
+\end{verbatim}
+
+a. Die Swap-Funktion swap\_bad() lässt sich ohne Fehler kompilieren und ausführen. Nach ihrem Aufruf in main() hat die Variable a jedoch immer noch den Wert 3. Erläutern Sie anhand der Calling Convention wo das Problem liegt.\\
+Beim Aufruf der Funktion swap bad() werden die übergebenen Parameter in die Register R0, R1 kopiert und in der Funktion auch korrekt verändert. Jedoch werden die Änderungen nicht an den Caller zurückgegeben. Daher sind die Änderungen in main() nicht sichtbar.\\
+b. Schreiben Sie eine Funktion swap\_good() die diesen Fehler behebt und korrekt funktioniert
+
+\begin{verbatim}
+void swap_good(int32_t *c, int32_t *d) {
+    int32_t temp = *c;
+    *c = *d;
+    *d = temp;
+}
+int32_t main(void) {
+    int\overline{3}2_t a = 3, b = 5;
+    swap_good(&a, &b);
+    write_word(0x60000300, a);
+}
+\end{verbatim}
+
+\section*{Aufgabe 3}
+Gegeben sei das folgende C-Programm:
+
+\begin{verbatim}
+int32_t fakultaet_recursive(int32_t n)
+{
+    if(n< 2){
+        return 1;
+        }
+        else{
+                return n * fakultaet_recursive(n-1); // Break Point set here
+    }
+}
+int32_t main(void)
+{
+    int32_t n = 20;
+    int32_t result = fakultaet_recursive(n);
+}
+\end{verbatim}
+
+Das C-Programm berechnet die Fakultät von 20 und verwendet dazu Rekursion. Dabei ruft sich die Funktion selbst wieder auf. Dies wird so lange wiederholt, bis die Abbruchbedingung ( $n<2$ ) erreicht wird.
+
+Wenn das Programm zum zweiten Mal beim Breakpoint in der Funktion fakultaet\_recursive() gestoppt wird, ist das Stackframe der main()-Funktion und der aufgerufenen fakultaet\_recursive()-Funktionen 16 Byte gross. Die Variable n wird in einem Register gespeichert.\\
+Wie gross wird das Stackframe beim Ausführen des Programmes maximal?\\
+Da die Variable $n$ in einem Register gespeichert ist und das Stackframe der main()Funktion somit 0 ist, wird bei jedem Aufruf der Funktion fakultaet recursive() das Stackframe um 8 Byte (R4 und LR) erhöht. Nach zwanzig Aufrufen ist das Stackframe also 160 Byte gross.
