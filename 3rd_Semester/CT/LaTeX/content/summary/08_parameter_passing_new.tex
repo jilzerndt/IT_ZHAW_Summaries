@@ -268,75 +268,8 @@ fact_end
 \end{example2}
 
 
-\subsubsection{Parameter Passing Examples}
-
-\begin{example2}{Complex Parameter Example}
-Function with mixed parameter types:
-\begin{lstlisting}[language=C, style=basesmol]
-typedef struct {
-    int32_t x;
-    int32_t y;
-} point_t;
-
-int32_t calculate(point_t* p, int32_t scale, 
-                  int32_t* result);
-\end{lstlisting}
-
-Assembly implementation:
-\begin{lstlisting}[language=armasm, style=basesmol]
-; R0 = point_t* p
-; R1 = scale
-; R2 = result pointer
-calculate
-    PUSH    {R4-R5, LR}     ; Save registers
-    
-    ; Load structure members
-    LDR     R4, [R0, #0]    ; Load p->x
-    LDR     R5, [R0, #4]    ; Load p->y
-    
-    ; Perform calculation
-    MULS    R4, R1, R4      ; x * scale
-    MULS    R5, R1, R5      ; y * scale
-    
-    ; Store result
-    STR     R4, [R2, #0]    ; *result = x
-    ADDS    R0, R4, R5      ; Return sum
-    
-    POP     {R4-R5, PC}     ; Return
-\end{lstlisting}
-\end{example2}
 
 
-
-\begin{example2}{Data Structure Access}
-Working with structures and arrays:
-\begin{lstlisting}[language=C, style=basesmol]
-typedef struct {
-    uint32_t minutes;
-    uint32_t seconds;
-} time_t;
-
-time_t time;
-\end{lstlisting}
-
-Assembly implementation:
-\begin{lstlisting}[language=armasm, style=basesmol]
-    ; Access structure members
-    LDR     R0, =time       ; Get structure address
-    LDR     R1, [R0, #0]    ; Load minutes
-    LDR     R2, [R0, #4]    ; Load seconds
-    
-    ; Modify structure
-    ADDS    R2, #1          ; Increment seconds
-    CMP     R2, #60         ; Check for overflow
-    BLT     store_back
-    MOVS    R2, #0          ; Reset seconds
-    ADDS    R1, #1          ; Increment minutes
-store_back
-    STR     R1, [R0, #0]    ; Store minutes
-    STR     R2, [R0, #4]    ; Store seconds
-\end{lstlisting}
-\end{example2}
 
 
 
