@@ -1,0 +1,133 @@
+\subsection{Examples}
+
+\begin{KR}{Creating Modular Programs}
+Steps for modular development:
+\begin{enumerate}
+  \item Design module structure:
+    \begin{itemize}
+      \item Identify clear boundaries
+      \item Define interfaces
+    \end{itemize}
+  \item Create individual modules:
+    \begin{itemize}
+      \item Declare IMPORT/EXPORT
+      \item Implement functionality
+    \end{itemize}
+  \item Compile modules separately
+  \item Link modules:
+    \begin{itemize}
+      \item Resolve references
+      \item Create executable
+    \end{itemize}
+  \item Test integrated system
+\end{enumerate}
+\end{KR}
+
+
+
+
+
+
+
+\begin{example2}{Module Linkage Example}
+Example implementations:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    AREA myData, DATA, READWRITE
+    EXPORT global_counter    ; Public variable
+global_counter
+    DCD     0x00000000
+    
+local_counter               ; Private variable
+    DCD     0x00000000
+
+    AREA myCode, CODE, READONLY
+    EXPORT init_counter     ; Public function
+    EXPORT increment
+    
+init_counter PROC           ; Can be called from other modules
+    PUSH    {LR}
+    LDR     R0, =global_counter
+    MOVS    R1, #0
+    STR     R1, [R0]
+    POP     {PC}
+    ENDP
+    
+increment PROC              ; Can be called from other modules
+    PUSH    {LR}
+    BL      internal_helper ; Private function call
+    POP     {PC}
+    ENDP
+    
+internal_helper PROC        ; Private function
+    PUSH    {LR}
+    LDR     R0, =global_counter
+    LDR     R1, [R0]
+    ADDS    R1, #1
+    STR     R1, [R0]
+    POP     {PC}
+    ENDP
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Module Interface Example}
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Module A - Defining function
+    AREA myCode, CODE, READONLY
+    EXPORT myFunction    ; Make available externally
+myFunction
+    PUSH    {LR}
+    ; function code here
+    POP     {PC}
+    
+    ; Module B - Using function
+    AREA myCode, CODE, READONLY
+    IMPORT myFunction    ; Use external function
+    
+    BL      myFunction   ; Call the function
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Data Symbol Linkage}\\
+Example showing data symbol linkage:
+
+Header file (constants.s):
+\begin{lstlisting}[language=armasm, style=basesmol]
+    AREA myData, DATA, READONLY
+    EXPORT MAX_VALUE
+    EXPORT MIN_VALUE
+    
+MAX_VALUE
+    DCD     0x000000FF    ; Public constant
+MIN_VALUE
+    DCD     0x00000000    ; Public constant
+    
+internal_value            ; Private constant
+    DCD     0x00000055
+    END
+\end{lstlisting}
+
+Usage file (process.s):
+\begin{lstlisting}[language=armasm, style=basesmol]
+    AREA |.text|, CODE, READONLY
+    IMPORT MAX_VALUE
+    IMPORT MIN_VALUE
+    
+validate_value PROC
+    PUSH    {LR}
+    LDR     R1, =MAX_VALUE
+    LDR     R1, [R1]      ; Load max value
+    CMP     R0, R1
+    BGT     invalid       ; Above max
+    LDR     R1, =MIN_VALUE
+    LDR     R1, [R1]      ; Load min value
+    CMP     R0, R1
+    BLT     invalid       ; Below min
+    MOVS    R0, #1        ; Valid
+    POP     {PC}
+invalid
+    MOVS    R0, #0        ; Invalid
+    POP     {PC}
+    ENDP
+    END
+\end{lstlisting}
+\end{example2}

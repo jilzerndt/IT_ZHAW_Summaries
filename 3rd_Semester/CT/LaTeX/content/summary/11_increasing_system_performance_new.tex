@@ -158,6 +158,41 @@ For a processor with n pipeline stages:
 Note: Pipeline must be filled first! After filling, instructions are executed after every stage.
 \end{formula}
 
+
+
+\begin{KR}{Analyzing Pipeline Performance}\\
+Steps for calculating pipeline performance:
+\vspace{2mm}\\
+\textbf{1. Calculate performance without pipelining:}
+\begin{itemize}
+  \item Total delay = Sum of all stage delays
+  \item Performance = $\frac{1}{\text{Total delay}}$
+\end{itemize}
+Example for 3 stages:
+    \begin{itemize}
+      \item Fetch: 3ns, Decode: 4ns, Execute: 5ns
+      \item Total delay = 12ns
+      \item Performance = 83.3 MIPS
+    \end{itemize}
+\vspace{2mm}
+\textbf{2. Calculate performance with pipelining:}
+\begin{itemize}
+  \item Critical path = Longest stage delay
+  \item Initial latency = Number of stages
+  \item Throughput = $\frac{1}{\text{Max stage delay}}$
+\end{itemize}
+Example for 3 stages:
+    \begin{itemize}
+      \item Max stage delay = 5ns (Execute)
+      \item Initial latency = 3 cycles
+      \item Throughput = 200 MIPS
+    \end{itemize}
+\vspace{2mm}
+\textbf{3. Calculate performance improvement:}
+$$\text{Improvement }=\frac{\text{Pipelined throughput}}{\text{Non-pipelined throughput}}$$
+Example: $$\frac{200}{83.3} = 2.4\times \text{speedup}$$ 
+\end{KR}
+
 \begin{example2}{Pipeline Performance Calculation}
 \begin{itemize}
   \item Stage delays: Fe=3ns, De=4ns, Ex=5ns
@@ -166,6 +201,8 @@ Note: Pipeline must be filled first! After filling, instructions are executed af
   \item Performance improvement: 2.4×
 \end{itemize}
 \end{example2}
+
+
 
 \columnbreak
 
@@ -176,31 +213,33 @@ Note: Pipeline must be filled first! After filling, instructions are executed af
   \item Worst case scenario: conditional branch taken
   \item Pipeline stalls for taken branches
 \end{itemize}
-
-\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-15}
+\vspace{4mm}
+\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-15}\\
 
 \textbf{Reduce control hazards:} Use loop fusion!
 \end{concept}
 
-\begin{example2}{Pipeline Hazards}
-Three types of pipeline hazards:
 
-1. \textbf{Structural Hazards}:
-\begin{lstlisting}[style=basesmol]
-LDR  R0, [R1]    ; Needs memory access
-LDR  R2, [R3]    ; Also needs memory access
-; Memory system can't handle both at once
+
+\begin{example2}{Pipeline Hazard Analysis}
+
+1. Structural Hazard:
+\begin{lstlisting}[language=armasm, style=basesmol]
+; Multiple instructions need memory access
+LDR R0, [R1]    ; Load from memory
+LDR R2, [R3]    ; Load from memory - must wait
+; Pipeline stalls because memory system can't handle both loads
 \end{lstlisting}
 
-2. \textbf{Data Hazards}:
-\begin{lstlisting}[style=basesmol]
+2. Data Hazard:
+\begin{lstlisting}[language=armasm, style=basesmol]
 ADDS R0, R1, R2  ; R0 gets new value
 ADDS R3, R0, R4  ; Uses R0 before ready
-; Second instruction must wait
+; Second instruction must wait for first to complete
 \end{lstlisting}
 
-3. \textbf{Control Hazards}:
-\begin{lstlisting}[style=basesmol]
+3. Control Hazard:
+\begin{lstlisting}[language=armasm, style=basesmol]
 CMP  R0, #0      ; Compare
 BEQ  target      ; Branch if equal
 ADD  R1, R2, R3  ; May be unnecessary
@@ -216,19 +255,19 @@ target
   \item Branch prediction based on history
   \begin{itemize}
     \item Store last decisions made for each conditional branch
-    \item $\rightarrow$ probability is high that the same decision will be made again
+    \\$\rightarrow$ probability is high that the same decision will be made again
   \end{itemize}
   \item Instruction prefetch
   \begin{itemize}
     \item Fetch several instructions in advance
-    \item $\rightarrow$ reduces pipeline stalls
-    \item $\rightarrow$ better use of system bus
-    \item $\rightarrow$ possibility of ''Out-of-order execution''
+    \\$\rightarrow$ reduces pipeline stalls
+    \\$\rightarrow$ better use of system bus
+    \\$\rightarrow$ possibility of ''Out-of-order execution''
   \end{itemize}
   \item Out-of-order execution
   \begin{itemize}
     \item If one instruction stalls, it might be possible to already execute next instruction
-    \item $\rightarrow$ requires complex hardware
+    \\$\rightarrow$ requires complex hardware
   \end{itemize}
 \end{itemize}
 
@@ -240,9 +279,57 @@ target
 \end{itemize}
 \end{corollary}
 
+\begin{KR}{Loop Optimization Techniques}\\
+Steps for optimizing loops:
+
+1. Loop Fusion:
+\begin{lstlisting}[language=C, style=basesmol]
+// Before optimization - two loops
+for (i = 0; i < N; i++) {
+    a[i] = b[i] * c[i];
+}
+for (i = 0; i < N; i++) {
+    d[i] = a[i] + c[i];
+}
+
+// After fusion - single loop
+for (i = 0; i < N; i++) {
+    a[i] = b[i] * c[i];
+    d[i] = a[i] + c[i];
+}
+\end{lstlisting}
+
+2. Loop Unrolling:
+\begin{lstlisting}[language=C, style=basesmol]
+// Before unrolling
+for (i = 0; i < N; i++) {
+    sum += array[i];
+}
+
+// After unrolling by factor 4
+for (i = 0; i < N-3; i += 4) {
+    sum += array[i];
+    sum += array[i+1];
+    sum += array[i+2];
+    sum += array[i+3];
+}
+// Handle remaining elements
+for (; i < N; i++) {
+    sum += array[i];
+}
+\end{lstlisting}
+
+3. Memory Access Optimization:
+\begin{itemize}
+  \item Align data to cache line boundaries
+  \item Use sequential memory access patterns
+  \item Minimize cache misses
+\end{itemize}
+\end{KR}
 
 
-\pagebreak
+
+\columnbreak
 
 \subsubsection{Parallel Computing}
 
@@ -276,6 +363,51 @@ Key differences:
 \end{itemize}
 \end{example2}
 
+\begin{example2}{Multi-Core Programming}
+Example of parallel task processing:
+
+\begin{lstlisting}[language=C, style=basesmol]
+typedef struct {
+    int *array;
+    int start;
+    int end;
+    long sum;
+} task_t;
+
+void* partial_sum(void* arg) {
+    task_t* task = (task_t*)arg;
+    long sum = 0;
+    
+    for (int i = task->start; i < task->end; i++) {
+        sum += task->array[i];
+    }
+    task->sum = sum;
+    return NULL;
+}
+// Split work across multiple cores
+void parallel_sum(int* array, int size, int num_cores) {
+    task_t tasks[MAX_CORES];
+    int chunk = size / num_cores;
+    // Create tasks for each core
+    for (int i = 0; i < num_cores; i++) {
+        tasks[i].array = array;
+        tasks[i].start = i * chunk;
+        tasks[i].end = (i == num_cores-1) ? 
+                      size : (i+1) * chunk;
+        // Launch task on core i
+        launch_on_core(i, partial_sum, &tasks[i]);
+    }
+    // Wait for all cores and combine results
+    long total = 0;
+    for (int i = 0; i < num_cores; i++) {
+        wait_for_core(i);
+        total += tasks[i].sum;
+    }
+    return total;
+}
+\end{lstlisting}
+\end{example2}
+
 
 \begin{concept}{Parallel Processing Models}\\
 \textbf{SISD (Single Instruction Single Data):}
@@ -300,26 +432,37 @@ Key differences:
 \end{itemize}
 \end{concept}
 
+
+
+\begin{example2}{SIMD Operations}\\
+Example of vectorized operations:
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Scalar addition
+void add_arrays_scalar(int *a, int *b, int *c, int n) {
+    for (int i = 0; i < n; i++) {
+        c[i] = a[i] + b[i];
+    }
+}
+
+// SIMD/Vector addition (conceptual)
+void add_arrays_vector(int *a, int *b, int *c, int n) {
+    for (int i = 0; i < n; i += 4) {
+        // Load 4 elements at once
+        vector_t va = vector_load(&a[i]);
+        vector_t vb = vector_load(&b[i]);
+        // Add 4 pairs of elements simultaneously
+        vector_t vc = vector_add(va, vb);
+        // Store 4 results at once
+        vector_store(&c[i], vc);
+    }
+}
+\end{lstlisting}
+\end{example2}
+
 \subsubsection{Conclusion on Performance Optimization}
 
-\begin{KR}{Optimizing System Performance}\\
-Steps for performance optimization:
-\begin{enumerate}
-  \item Analyze performance bottlenecks
-  \item Choose appropriate architecture:
-    \begin{itemize}
-      \item RISC vs CISC based on application
-      \item Consider memory architecture
-    \end{itemize}
-  \item Implement pipelining:
-    \begin{itemize}
-      \item Balance stage delays
-      \item Handle hazards appropriately
-    \end{itemize}
-  \item Consider parallelization options
-  \item Evaluate security implications
-\end{enumerate}
-\end{KR}
+
 
 \begin{concept}{Performance Growth Overview}\\
 Historical development:
@@ -345,6 +488,25 @@ Historical development:
     \end{itemize}
 \end{itemize}
 \end{concept}
+
+\begin{KR}{Optimizing System Performance}\\
+Steps for performance optimization:
+\begin{enumerate}
+  \item Analyze performance bottlenecks
+  \item Choose appropriate architecture:
+    \begin{itemize}
+      \item RISC vs CISC based on application
+      \item Consider memory architecture
+    \end{itemize}
+  \item Implement pipelining:
+    \begin{itemize}
+      \item Balance stage delays
+      \item Handle hazards appropriately
+    \end{itemize}
+  \item Consider parallelization options
+  \item Evaluate security implications
+\end{enumerate}
+\end{KR}
 
 \begin{corollary}{System Level Optimization}\\
 Different approaches to improve performance:

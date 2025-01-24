@@ -80,7 +80,31 @@ MyISR
 
 \subsubsection{Interrupt Handling}
 
-
+\begin{corollary}{Interrupt Basics}\\
+Key concepts for interrupt handling:
+\begin{itemize}
+  \item \textbf{Interrupt Sources}:
+    \begin{itemize}
+      \item Hardware interrupts from peripherals
+      \item Software interrupts (SVC)
+      \item System exceptions
+    \end{itemize}
+  \item \textbf{Configuration Steps}:
+    \begin{itemize}
+      \item Enable specific interrupt source
+      \item Install interrupt handler
+      \item Configure interrupt priority
+      \item Enable global interrupts
+    \end{itemize}
+  \item \textbf{Handler Requirements}:
+    \begin{itemize}
+      \item Predefined names from vector table
+      \item No return values allowed
+      \item Must clear interrupt flags
+      \item Save/restore used registers
+    \end{itemize}
+\end{itemize}
+\end{corollary}
 
 \begin{concept}{Interrupt-Driven I/O}
 \begin{itemize}
@@ -148,45 +172,9 @@ MyISR
 \end{minipage}
 \end{concept}
 
-\begin{KR}{Implementing Interrupt Handlers}
 
-\begin{minipage}{0.5\linewidth}
-\begin{enumerate}
-  \item Define interrupt vector
-  \item Save necessary context
-  \item Handle the interrupt
-  \item Clear interrupt flag
-  \item Restore context
-  \item Return from interrupt
-\end{enumerate}
-\end{minipage}
-\begin{minipage}{0.49\linewidth}
-Important considerations:
-\begin{itemize}
-  \item Keep ISRs short
-  \item Handle critical tasks only
-  \item Be aware of nested interrupts
-  \item Protect shared resources
-\end{itemize}
-\end{minipage}
-\end{KR}
 
-\begin{concept}{Data Consistency}
-Handling shared data access:
-\begin{itemize}
-  \item \textbf{Race Conditions}:
-    \begin{itemize}
-      \item Main program and ISR accessing same data
-      \item Interrupts during multi-step operations
-    \end{itemize}
-  \item \textbf{Solutions}:
-    \begin{itemize}
-      \item Disable interrupts during critical sections
-      \item Use atomic operations
-      \item Implement proper synchronization
-    \end{itemize}
-\end{itemize}
-\end{concept}
+
 
 \begin{formula}{Interrupt Control}
 
@@ -225,28 +213,31 @@ Interrupt priority handling:
 \includegraphics[width=\linewidth]{images/nested_exceptions.png}  
 \end{definition}
 
+\subsubsection{Nested Vectored Interrupt Controller (NVIC)}
 
 \begin{concept}{NVIC (Nested Vectored Interrupt Controller)}\\
-Key components and functionality:
-\begin{itemize}
-  \item \textbf{Interrupt/Exception States}:
+\textbf{Interrupt/Exception States}:
     \begin{itemize}
       \item \textbf{Inactive}: Not active and not pending
       \item \textbf{Pending}: Waiting to be serviced by CPU
       or: Interrupt event occurred (IRQn=1), but interrupts are disabled (PRIMASK=1)
       \item \textbf{Active}: Currently being serviced by CPU but not yet completed
-      \item \textbf{Active and Pending}: Being serviced with new request pending for same source
+      \item \textbf{Active and Pending}: \\Being serviced with new request pending for same source
     \end{itemize}
-  \item \textbf{Control Registers}:
+\textbf{Control Registers}:
+
+\begin{minipage}{0.5\linewidth}
     \begin{itemize}
       \item Interrupt Enable (IE)
       \item Interrupt Pending (IP)
+    \end{itemize}
+\end{minipage}
+\begin{minipage}{0.49\linewidth}
+    \begin{itemize}
       \item Interrupt Active (IA)
       \item Priority Level (PL)
     \end{itemize}
-\end{itemize}
-
-%\includegraphics[width=\linewidth]{images/2024_12_29_79e6b22f503fb7b4f718g-11(3)}
+\end{minipage}
 \end{concept}
 
 
@@ -258,12 +249,10 @@ Important NVIC registers:
 \begin{lstlisting}[language=armasm, style=basesmol]
 SETENA0 EQU 0xE000E100    ; Enable interrupts
 CLRENA0 EQU 0xE000E180    ; Disable interrupts
-
 ; Enable IRQ3
 LDR     R0, =SETENA0
 MOVS    R1, #(1<<3)
 STR     R1, [R0]
-
 ; Disable IRQ3
 LDR     R0, =CLRENA0
 MOVS    R1, #(1<<3)
@@ -274,12 +263,10 @@ STR     R1, [R0]
 \begin{lstlisting}[language=armasm, style=basesmol]
 SETPEND0 EQU 0xE000E200   ; Set pending
 CLRPEND0 EQU 0xE000E280   ; Clear pending
-
 ; Set IRQ3 pending
 LDR     R0, =SETPEND0
 MOVS    R1, #(1<<3)
 STR     R1, [R0]
-
 ; Clear IRQ3 pending
 LDR     R0, =CLRPEND0
 MOVS    R1, #(1<<3)
@@ -287,12 +274,10 @@ STR     R1, [R0]
 \end{lstlisting}
 \end{formula}
 
-
-
 \begin{KR}{Exception Vector Table}
 Setup and usage:
 
-1. Vector table structure:
+Vector table structure and Handler implementation:
 \begin{lstlisting}[language=armasm, style=basesmol]
     AREA RESET, DATA, READONLY
 __Vectors
@@ -302,13 +287,11 @@ __Vectors
     DCD     HardFault_Handler  ; Hard Fault
     DCD     0                  ; Reserved
     DCD     0                  ; Reserved
-    DCD     0                  ; Reserved
     ; ... more vectors
     DCD     IRQ0_Handler       ; IRQ0
     DCD     IRQ1_Handler       ; IRQ1
 \end{lstlisting}
-
-2. Handler implementation:
+\vspace{-2mm}
 \begin{lstlisting}[language=armasm, style=basesmol]
     AREA |.text|, CODE, READONLY
     
@@ -321,6 +304,228 @@ IRQ0_Handler PROC
 \end{lstlisting}
 \end{KR}
 
+\begin{example2}{NVIC Configuration}\\
+Complete interrupt system setup:
+
+\begin{lstlisting}[language=C, style=basesmol]
+void init_timer_interrupt(void) {
+    // Configure timer peripheral
+    TIM2->PSC = 7199;        // Prescaler
+    TIM2->ARR = 9999;        // Auto-reload value
+    TIM2->DIER |= 1;         // Enable interrupt
+    TIM2->CR1 |= 1;          // Enable timer
+    
+    // Configure NVIC
+    NVIC_SetPriority(TIM2_IRQn, 2);  // Set priority
+    NVIC_EnableIRQ(TIM2_IRQn);       // Enable IRQ
+    
+    __enable_irq();          // Enable global interrupts
+}
+
+// Timer 2 interrupt handler
+void TIM2_IRQHandler(void) {
+    if (TIM2->SR & 1) {      // Check update flag
+        // Handle interrupt
+        TIM2->SR &= ~1;      // Clear flag
+    }
+}
+\end{lstlisting}
+
+Assembly equivalent:
+\begin{lstlisting}[language=armasm, style=basesmol]
+TIM2_BASE    EQU     0x40000000
+TIM_SR       EQU     0x10
+TIM_DIER     EQU     0x0C
+SETENA0      EQU     0xE000E100
+
+    ; Enable timer interrupt
+    LDR     R0, =TIM2_BASE
+    LDR     R1, [R0, #TIM_DIER]
+    ORRS    R1, #1
+    STR     R1, [R0, #TIM_DIER]
+    
+    ; Enable in NVIC
+    LDR     R0, =SETENA0
+    MOVS    R1, #1
+    LSLS    R1, #28         ; IRQ28
+    STR     R1, [R0]
+\end{lstlisting}
+\end{example2}
+
+\begin{remark}
+Important considerations:
+\begin{itemize}
+  \item Always clear interrupt flags
+  \item Minimize time in interrupt handlers
+  \item Protect shared data access
+  \item Consider interrupt priorities
+  \item Avoid deadlocks with nested interrupts
+\end{itemize}
+\end{remark}
+
+\columnbreak
+
+\subsubsection{Data Consistency}
+
+\begin{concept}{Data Consistency}
+Handling shared data access:
+\begin{itemize}
+  \item \textbf{Race Conditions}:
+    \begin{itemize}
+      \item Main program and ISR accessing same data
+      \item Interrupts during multi-step operations
+    \end{itemize}
+  \item \textbf{Solutions}:
+    \begin{itemize}
+      \item Disable interrupts during critical sections
+      \item Use atomic operations
+      \item Implement proper synchronization
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Data Consistency Protection}\\
+Protecting shared data access:
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Global time counters accessed by ISR
+volatile uint32_t minutes = 0;
+volatile uint32_t hours = 0;
+
+// Timer ISR updates counters
+void TIM2_IRQHandler(void) {
+    minutes++;
+    if (minutes >= 60) {
+        minutes = 0;
+        hours++;
+    }
+    // Clear interrupt flag
+}
+
+// Main code reading counters
+void read_time(uint32_t *min, uint32_t *hr) {
+    // Disable interrupts to read consistent values
+    __disable_irq();
+    *min = minutes;
+    *hr = hours;
+    __enable_irq();
+}
+\end{lstlisting}
+
+Assembly equivalent:
+\begin{lstlisting}[language=armasm, style=basesmol]
+read_time
+    PUSH    {R4-R5, LR}
+    CPSID   i               ; Disable interrupts
+    
+    LDR     R4, =minutes    ; Load minutes
+    LDR     R2, [R4]
+    STR     R2, [R0]        ; Store to output
+    
+    LDR     R5, =hours      ; Load hours
+    LDR     R3, [R5]
+    STR     R3, [R1]        ; Store to output
+    
+    CPSIE   i               ; Enable interrupts
+    POP     {R4-R5, PC}
+\end{lstlisting}
+\end{example2}
+
+\columnbreak
+
+\subsubsection{Implementing Interrupt Handlers}
+
+\begin{KR}{Implementing Interrupt Handlers}
+
+\begin{minipage}{0.5\linewidth}
+\begin{enumerate}
+  \item Define interrupt vector
+  \item Save necessary context
+  \item Handle the interrupt
+  \item Clear interrupt flag
+  \item Restore context
+  \item Return from interrupt
+\end{enumerate}
+\end{minipage}
+\begin{minipage}{0.49\linewidth}
+Important considerations:
+\begin{itemize}
+  \item Keep ISRs short
+  \item Handle critical tasks only
+  \item Be aware of nested interrupts
+  \item Protect shared resources
+\end{itemize}
+\end{minipage}
+\end{KR}
+
+\begin{KR}{Interrupt Handler Implementation}\\
+Guidelines for implementing interrupt handlers:
+
+1. Handler structure:
+\begin{lstlisting}[language=armasm, style=basesmol]
+handler_name
+    PUSH    {R4-R6}          ; Save used registers
+    
+    ; Check interrupt flags
+    ; Handle interrupt condition
+    ; Clear interrupt flags
+    
+    POP     {R4-R6}          ; Restore registers
+    BX      LR               ; Return from handler
+\end{lstlisting}
+
+2. Register preservation:
+\begin{itemize}
+  \item R0-R3: Automatically saved by hardware
+  \item R4-R11: Must be preserved if used
+  \item R12: Can be used freely
+  \item LR: Contains special EXC\_RETURN value
+\end{itemize}
+
+3. Critical section handling:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    ; Disable all interrupts
+    CPSID   i
+    
+    ; Critical section code
+    ; Access shared resources
+    
+    ; Enable interrupts
+    CPSIE   i
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Timer Interrupt Configuration}
+Configuring Timer 2 interrupt:
+
+1. Handler definition:
+\begin{lstlisting}[language=armasm, style=basesmol]
+    AREA    handlers, CODE, READONLY
+    
+    EXPORT  TIM2_IRQHandler
+TIM2_IRQHandler
+    PUSH    {R4-R6}          ; Save registers
+    ; Handle interrupt
+    POP     {R4-R6}          ; Restore registers
+    BX      LR               ; Return
+\end{lstlisting}
+
+2. Enable interrupt (IRQ28):
+\begin{lstlisting}[language=armasm, style=basesmol]
+    AREA    startup, CODE, READONLY
+    
+SETENA0     EQU     0xE000E100  ; Interrupt enable register
+    
+    ; Enable Timer 2 interrupt
+    LDR     R7, =SETENA0
+    MOVS    R6, #1           ; Set bit
+    LSLS    R6, #28          ; Shift to IRQ28
+    STR     R6, [R7]         ; Enable interrupt
+\end{lstlisting}
+\end{example2}
+
+
+\columnbreak
 
 \subsubsection{Exception Handling in C}
 
@@ -353,17 +558,6 @@ void init_timer_interrupt(void) {
 \end{lstlisting}
 \end{KR}
 
-\begin{example2}{Priority Configuration}
-  Example priority setting:
-\begin{lstlisting}[language=C, style=basesmol]
-// Set priority for IRQ3
-NVIC_SetPriority(IRQ3_IRQn, 2);
-
-// Get priority
-uint32_t prio = NVIC_GetPriority(IRQ3_IRQn);
-\end{lstlisting}
-  
-\end{example2}
 
 \begin{example2}{Data Consistency}
   Example protection:
