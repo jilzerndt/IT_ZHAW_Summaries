@@ -85,6 +85,10 @@
 
 \end{concept}
 
+\begin{examplecode}{Accessing control registers in C}
+    \includegraphics[width=\linewidth]{accessing_control_registers_in_C.png}
+\end{examplecode}
+
 \begin{concept}{CPU read/write to peripheral registers}
     How does the CPU write to and read from peripheral registers?
     \begin{itemize}
@@ -149,18 +153,18 @@
 
 \begin{theorem}{Signal Groups}
     \begin{itemize}
-        \item Address lines
+        \item \textcolor{darkblue}{\textbf{Data lines}}
+        \begin{itemize}
+            \item Bidirectional (read/write)
+            \item Number of lines $\rightarrow$ data bus width \\(8, 16, 32, 64 parallel lines of data)
+            \item Example: Cortex-M has 32 address lines $\rightarrow$ 4GB address space $\rightarrow$ $0x00000000$ to $0xFFFFFFFF$
+        \end{itemize}
+        \item \textcolor{darkgreen}{\textbf{Address lines}}
         \begin{itemize}
             \item Unidirectional: from Master to slaves
             \item Number of lines $\rightarrow$ size of address space
         \end{itemize}
-        \item Data lines
-        \begin{itemize}
-            \item Bidirectional (read/write)
-            \item Number of lines $\rightarrow$ data bus width (8, 16, 32, 64 parallel lines of data)
-            \item Example: Cortex-M has 32 address lines $rightarrow$ 4GB address space $rightarrow$ $0x00000000$ to $0xFFFFFFFF$
-        \end{itemize}
-        \item Control signals
+        \item \textcolor{darkred}{\textbf{Control signals}}
         \begin{itemize}
             \item Control read/write direction
             \item Provide timing information
@@ -170,25 +174,34 @@
     \includegraphics[width=\linewidth]{master_slave_signal_groups.png}
 \end{theorem}
 
-\begin{theorem}{Bus Timing Options}\\
+\begin{theorem}{Bus Timing Options}
+
+    \begin{minipage}{0.7\linewidth}
     \textbf{Synchronous}
     \begin{itemize}
-        \item Master and slaves use a common clock\\
-        Often a dedicated clock signal from master to slave, but clock can also be encoded in a data signal
-        \item Clock edges control bus transfer on both sides
+        \item \textcolor{blue}{Master} and \textcolor{darkcorn}{slaves} use a common clock\\
+        \small{Often a dedicated clock signal from master to slave, but clock can also be encoded in a data signal}
+        \item \normalsize Clock edges control bus transfer on both sides
         \item Used by most on-chip buses
         \item Off-chip: DDR and synchronous RAM
     \end{itemize}
-    \includegraphics[width=\linewidth]{synchronous_bus_timing.png}
+    \end{minipage}
+    \begin{minipage}{0.29\linewidth}
+        \includegraphics[width=\linewidth]{synchronous_bus_timing.png}
+    \end{minipage}
 
+    \begin{minipage}{0.7\linewidth}
     \textbf{Asynchronous}
     \begin{itemize}
-        \item Slaves have no access to the master clock
+        \item \textcolor{darkcorn}{Slaves} have no access to clock of the \textcolor{blue}{master}
         \item Control signals carry timing information to allow synchronization
-        \item Widely used for low data-rate off-chip memories\\
-        $rightarrow$ parallel flash memories and asynchronous RAM
+        \item Widely used for low data-rate off-chip memories
+        $\rightarrow$ parallel flash memories and \\ asynchronous RAM
     \end{itemize}
-    \includegraphics[width=\linewidth]{asynchronous_bus_timing.png}
+    \end{minipage}
+    \begin{minipage}{0.29\linewidth}
+        \includegraphics[width=\linewidth]{asynchronous_bus_timing.png}
+    \end{minipage}
 \end{theorem}
 
 \begin{corollary}{Multiple devices driving the same data line}\\
@@ -208,3 +221,41 @@
     
     \textcolor{pink}{textbf{CHECK IF CORRECT}}
 \end{corollary}
+
+\begin{definition}{Slow Slaves}\\
+    Wait states are inserted to slow down the CPU to match the speed of the slowest peripheral (depending on the address of an access)
+
+    \includegraphics[width=\linewidth]{slow_slaves.png}    
+\end{definition}
+
+\begin{formula}{Block Diagram}
+    \begin{itemize}
+        \item Address lines [31:0]
+        \item Data lines [31:0]
+        \item Control signals
+        \begin{itemize}
+            \item CLK $\rightarrow$ clock
+            \item NE $\rightarrow$ Not enable
+            \item NWE $\rightarrow$ Not write enable
+            \item NOE $\rightarrow$ Not output enable
+        \end{itemize}
+    \end{itemize}
+    \includegraphics[width=\linewidth]{block_diagramm.png}
+\end{formula}
+
+\begin{formula}{Timing Diagram}
+    \begin{itemize}
+        \item \texttt{write} \textcolor{darkblue}{D[:]} to \textcolor{darkgreen}{A[:]} $\rightarrow$ \textcolor{darkred}{NE, NWE} = 0
+        \item \texttt{read} \textcolor{darkblue}{D[:]} from \textcolor{darkgreen}{A[:]} $\rightarrow$ \textcolor{darkred}{NE, NOE} = 0
+    \end{itemize}
+
+\end{formula}
+
+\begin{definition}{Address Decoding}
+    \begin{itemize}
+        \item CPU uses address lines to select a peripheral
+        \item Each peripheral has a unique address range
+        \item Address decoding logic generates a chip select signal for each peripheral
+    \end{itemize}
+    %\includegraphics[width=\linewidth]{address_decoding.png}
+\end{definition}
