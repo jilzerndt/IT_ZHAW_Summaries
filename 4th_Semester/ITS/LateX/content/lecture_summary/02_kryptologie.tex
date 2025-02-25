@@ -1,0 +1,223 @@
+\section{Kryptographie}
+
+\subsection{Einführung in die Kryptographie}
+
+\begin{remark}
+    In diesem Kapitel schauen wir uns die Ziele, Grundbegriffe und Modelle der Kryptologie an.
+\end{remark}
+
+\begin{concept}{Zweige der Kryptologie}
+    
+    Die \textcolor{darkturquoise}{\textbf{Kryptologie}} ist ein Teil der Mathematik, welcher sich mit dem sicheren Übertragen und Speichern von Nachrichten beschäftigt.
+
+    \begin{itemize}
+        \item \textcolor{darkturquoise}{\textbf{Kryptographie}}: Die Wissenschaft der Verschlüsselung von Nachrichten (sicheres Speichern und Übertragen) $\rightarrow$ sichere Protokolle und deren Aufbau
+        \item \textcolor{darkturquoise}{\textbf{Kryptoanalyse}}: Die Wissenschaft des Entschlüsselns von Nachrichten (wie können Mechanismen der Kryptographie gebrochen werden?) $\rightarrow$ alte, unsichere Protokolle und deren Schwachstellen
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{Ziele der Kryptographie}
+    Nachrichten sicher übertragen und speichern. \textit{Sicherheit} hat dabei verschiedene Aspekte:
+    \begin{itemize}
+        \item \textcolor{darkfrog}{\textbf{Confidentiality:}} Nur berechtigte Personen können eine Nachricht lesen. Unberechtigte Personen können die Nachricht zwar sehen, sie aber nicht entziffern, da die Nachricht für sie nur aus einer zufälligen Zeichenfolge zu bestehen scheint.
+        \item \textcolor{darkfrog}{\textbf{Integrity:}} Eine Nachricht wird vom Empfänger so empfangen, wie sie vom Sender geschickt wurde. Das heisst, eine unberechtigte Person könnte zwar eine Nachricht abfangen, verändern, und dem Empfänger zustellen. Dieser würde dann aber merken, dass die Nachricht nicht der ursprünglichen Nachricht entspricht und sie daher verwerfen.
+        \\ $\rightarrow$ Der Empfänger kann sicher sein, dass die Nachricht nicht verändert wurde.
+        \item \textcolor{darkfrog}{\textbf{Authenticity:}} Der Empfänger kann sicher sein, dass eine Nachricht auch wirklich von der Person stammt, von welcher die Nachricht zu kommen scheint. Das heisst, er kann überprüfen, ob der angegebene Absender auch dem tatsächlichen Absender entspricht.
+        \item \textcolor{darkfrog}{\textbf{Non-repudiation:}} Wenn eine Person eine Nachricht bekommen hat, kann diese Person nicht abstreiten, dass sie die Nachricht erhalten hat. Das heisst, es kann bewiesen werden, dass sie die Nachricht erhalten hat.
+        \item \textcolor{darkfrog}{\textbf{Freshness:}} Alle erhaltenen Nachrichten sind aktuell. Das heisst, ein Attacker könnte zwar eine Nachricht zurückbehalten und später senden, oder eine abgefangene Nachricht duplizieren und zu einem späteren Zeitpunkt noch einmal senden, aber dies würde vom Empfänger bemerkt.
+        \item \textcolor{darkfrog}{\textbf{Anonymity:}} Der Absender und/oder Empfänger einer Nachricht bleiben unbekannt.
+    \end{itemize}
+\end{theorem}
+
+
+\subsubsection{Model der Kommunikation und Verschlüsselung}
+
+\begin{definition}{Kommunikationsmodel}
+
+    \includegraphics[width=\linewidth]{kommunikationsmodel.png}
+
+    \begin{itemize}
+        \item \textcolor{darkblue}{\textbf{Alice}} sendet eine Nachricht an Bob. Dabei sollen die oben genannten Ziele, confidentiality, integrity, authenticity, non-repudiation und freshness erfüllt werden.
+        \item \textcolor{darkgreen}{\textbf{Bob}} empfängt die Nachrichten von Allice. Er will überprüfen können, dass die Ziele eingehalten wurden.
+        \item \textcolor{darktangerine}{\textbf{Eve}}  ist ein Attacker. Sie kann Nachrichten mitlesen, aber sie nicht verändern.
+        \item \textcolor{darkred}{\textbf{Mallory}} ist ein anderer Attacker. Er kann Daten sowohl mitlesen als auch verändern. Er kann auch Nachrichten abfangen und später weitersenden, oder ganz verwerfen. Er kann auch neue Nachrichten generieren.
+        \item \textcolor{darkgrey}{\textbf{Trent}} ist eine Drittperson/Instanz, welcher sowohl Alice und Bob vertrauen. Trent unterstützt Alice und Bob bei der sicheren Kommunikation.
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Model der Verschlüsselung}
+    Um eine vertrauliche Kommunikation zu erreichen, werden Nachrichten vor dem Senden verschlüsselt und nach dem Empfangen wieder entschlüsselt.
+
+    \includegraphics[width=\linewidth]{model_der_verschluesselung.png}
+
+    \begin{itemize}
+        \item \textcolor{darkcorn}{\textbf{Plaintext (Klartext):}} Der Plaintext ist der Text, so wie er geschrieben, respektive gelesen werden kann. Er wird mit dem Buchstaben "p" abgekürzt.
+        \item \textcolor{darkorange}{\textbf{Ciphertext (Verschlüsselter Text):}} Der Ciphertext ist der Text, welcher durch die Verschlüsselung entsteht. Er wird mit dem Buchstaben "c" abgekürzt.
+        \item \textcolor{darkturquoise}{\textbf{Encryption (Verschlüsselung):}} Die Verschlüsselung macht aus dem Plaintext den dazugehörenden Ciphertext. Dazu wird ein Schlüssel verwendet. Die Verschlüsselung kann wie folgt angegeben werden: $c=E[k](p)$. Der Verschlüsselungsalgorithmus selbst ist öffentlich bekannt und kann von allen analysiert werden, um mögliche Schwachstellen zu finden.
+        \item \textcolor{darkturquoise}{\textbf{Decryption (Entschlüsselung):}} Die Entschlüsselung macht aus einem Ciphertext den dazugehörenden Plaintext. Dazu wird ein Schlüssel verwendet. Die Entschlüsselung kann wie folgt angegeben werden p' = D[k](c'). Der Entschlüsselungsmechanismus ist öffentlich bekannt und kann von allen analysiert werden, um mögliche Schwachstellen zu finden.
+        \item \textcolor{darkpink}{\textbf{Key (Schlüssel):}} Nur mit dem richtigen Schlüssel, kann eine Nachricht richtig entschlüsselt werden. Je nach Art der Verschlüsselung wird derselbe Key für die Verschlüsselung und die Entschlüsselung verwendet (Secret Key Kryptographie) oder es werden unterschiedliche Schlüssel verwendet (Public Key Kryptographie). Damit die Verschlüsselung sicher ist, muss der Schlüssel, welcher für die Entschlüsselung gebraucht wird, geheim bleiben.
+    \end{itemize}
+
+    \textbf{Confidentiality} ist erreicht, wenn Eve (und Mallory) den Ciphertext c nicht lesen können. \textbf{Integrity} ist erreicht wenn der von Bob empfangene Plaintext p' dem von Alice gesendeten Plaintext p entspricht, also \textcolor{darkcorn}{\textbf{p' = p}} ist. Authenticity ist erreicht, wenn Bob sicher sein kann, dass die Nachricht von Alice stammt. Non-repudiation ist erreicht, wenn Alice nicht abstreiten kann, dass sie die Nachricht gesendet hat. Freshness ist erreicht, wenn Bob sicher sein kann, dass die Nachricht aktuell ist.
+    
+\end{concept}
+
+\subsubsection{Attacktypen auf Kryptosysteme}
+
+\begin{remark}
+    Die Unterschiede zwischen den Attacken bestehen daraus, auf was der Attacker Zugriff hat.
+\end{remark}
+
+\begin{definition}{Ciphertext-only attack}
+    Der Attacker kann vom Ciphertext alleine Rückschlüsse auf den Plaintext oder den 
+    verwendeten Schlüssel ziehen.
+\end{definition}
+
+\begin{definition}{Chosen-ciphertext attack}
+    Der Attacker kann Ciphertexte generieren und diese vom System entschlüsseln lassen. 
+    Der Attacker bekommt entweder den zum gewählten Ciphertext gehörenden Plaintext 
+    (und kann daraus potenziell Rückschlüsse auf den verwendeten Schlüssel machen) 
+    oder er bekommt nur Teilinformationen, wie zum Beispiel 
+    "Die Entschlüsselung konnte / konnte nicht durchgeführt werden".
+\end{definition}
+
+\begin{definition}{Known-plaintext attack}
+    Der Attacker kennt sowohl Teile des Plaintext als auch den dazugehörenden Ciphertext (oder zumindest Teile davon). 
+    Er kann daraus Rückschlüsse auf andere Plaintexte oder gar den Schlüssel machen.
+\end{definition}
+
+\begin{definition}{Chosen-plaintext attack}
+    Der Attacker kann Plaintexte wählen, welche er vom System verschlüsseln lassen will. 
+    Er erhält dann den dazugehörenden Ciphertext und kann daraus Rückschlüsse auf 
+    andere Plaintexte oder gar den Schlüssel machen.
+\end{definition}
+
+\begin{definition}{Brute-force attack}
+    Der Attacker probiert alle möglichen Schlüssel aus, bis er den richtigen gefunden hat. 
+    Dass er den richtigen gefunden hat, erkennt er daran, dass der erhaltene Plaintext sinnvoll erscheint.
+\end{definition}
+
+\begin{remark}
+    Grundsätzlich können alle Verschlüsselungsalgorithmen mittels brute-force Attacken geknackt werden. 
+    Ein wichtiges Evaluationskriterium eines Verschlüsselungsalgorithmus ist also, wie lange eine solche brute-force Attacke im Durchschnitt benötigt. Dieser Anzahl sagt man auch kryptographischer Work Factor.
+\end{remark}
+
+\subsubsection{Kryptographischer Work Factor}
+
+\begin{definition}{Work Factor}
+    Durchschnittliche Anzahl Versuche, bis der richtige Schlüssel gefunden wird.
+    \vspace{2mm}\\
+    Der kryptographische Work Faktor kann als Mass der Stärke für eine Verschlüsselung herangezogen werden. Der Work Faktor bezeichnet die durchschnittliche Anzahl Versuche, bis man den richtigen Schlüssel bei einer Brute Force Attacke gefunden hat.
+    \vspace{2mm}\\
+    Ein Algorithmus hat dann einen genügend grossen Work Faktor wenn es unrealistisch ist, den richtigen Schlüssel per brute force zu erraten.
+\end{definition}
+
+\begin{concept}{Einflussfaktoren auf den Work-Factor}
+    \begin{itemize}
+        \item \textbf{Verschlüsselungsalgorithmus:} Je nach verwendetem Algorithmus ist die Berechnung des Work Faktors anders. Wir werden in den entsprechenden Kapiteln jeweils den dazugehörenden Work Faktor auflisten.
+        \item \textbf{Schlüssellänge:} Grundsätzlich gilt: Je länger der Schlüssel, desto höher der Work Faktor
+        \item \textbf{Zufälligkeit des Schlüssels:} Der Work Faktor von einem Algorithmus mit einem Schlüssel fixer länge, ist dann maximal, wenn alle Schlüssel gleich wahrscheinlich sind. Sind die Schlüssel nicht gleich wahrscheinlich, wird der Attacker zuerst die wahrscheinlicheren Schlüssel ausprobieren und so durchschnittlich weniger Schlüssel ausprobieren müssen, bis er den richtigen Schlüssel gefunden hat. Daher ist es sehr wichtig, dass die gewählten Schlüssel immer zufällig sind.
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Berechnung des Work-Factors}
+    als Hilfe zur Berechnung erfindet man ein unrealistisch schnelles System, welches $10^9$ Chips hat, welcher jeder in $10^{-12}s$ einen Schlüssel ausprobieren kann.
+    \vspace{2mm}\\
+    durchschn. Zeit je nach grösse Work-Factor (Schlüssellänge):
+    \begin{itemize}
+        \item $2^{64}$: $1.8 \cdot 10^{-2}$ Sekunden
+        \item $2^{96}$: $7.9 \cdot 10^7$ s, ca. 2.5 Jahre
+        \item $2^{128}$: $3.4 \cdot 10^{17}$ s, ca. $10^10$ Jahre
+        \item $2^{256}$: $1.2 \cdot 10^{56}$ s, ca. $10^{48}$ Jahre
+    \end{itemize}
+    
+    Aus der Tabelle ersichtlich: Algorithmen mit Work-Factor > $2^{128}$ als sicher betrachtet werden.
+\end{formula}
+
+\begin{remark}
+    Den Work-Factor kann man auch in \textbf{bits} darstellen. Ein Work-Factor von $2^{128}$ entspricht einem Work-Factor von 128 bits. ($2^n$ entspricht $n$ bits)
+\end{remark}
+
+\subsubsection{Perfect Secrecy}
+
+\begin{remark}
+    Unter einem Algorithmus welcher Informationstheoretisch sicher ist, 
+    versteht man einen Algorithmus, bei dem man den ursprünglichen Plaintext nicht kennt, 
+    auch wenn man alle Schlüssel ausprobiert hat. 
+    Dazu sagt man auch der Algorithmus habe perfect secrecy. 
+    Aktuell gibt es nur einen einzigen Algorithmus, welcher diese Eigenschaft erfüllt, 
+    der One-Time-Pad (auch bekannt unter dem Namen Vernam Cipher).
+\end{remark}
+
+\begin{concept}{One-Time-Pad}
+    \begin{itemize}
+        \item \textbf{Voraussetzung:} Der Schlüssel ist komplett zufällig und genau gleich lang, wie die zu verschlüsselnde Nachricht.
+        \item \textbf{Verschlüsselung:}
+        Der Plaintext wird mit dem Schlüssel bitweise ver-xor-ed
+        $c_j = p_j \oplus k_j \forall j \in \{1, \dots, n\}$
+    \end{itemize}
+
+    Zur Erinnerung: Der XOR Operator ist definiert als:
+    \begin{center}
+        \begin{tabular}{c|c|c}
+            $p$ & $k$ & $p \oplus k$ \\
+            \hline
+            0 & 0 & 0 \\
+            0 & 1 & 1 \\
+            1 & 0 & 1 \\
+            1 & 1 & 0 \\
+        \end{tabular}
+    \end{center}
+\end{concept}
+
+\begin{theorem}{Perfect Secrecy}
+    Ein Verschlüsselungsalgorithmus hat perfect secrecy, wenn für alle möglichen Plaintexte $p$ und Ciphertexte $c$ und für alle Schlüssel $k$ gilt:
+    \begin{equation}
+        P[p|c] = P[p]
+    \end{equation}
+    Das heisst, dass die Wahrscheinlichkeit, dass ein bestimmter Plaintext $p$ verschlüsselt wurde, gleich gross ist, wie die Wahrscheinlichkeit, dass ein beliebiger Plaintext $p$ verschlüsselt wurde.
+\end{theorem}
+
+\begin{corollary}
+    Wenn ein Attacker jetzt alle Schlüssel ausprobieren würde, würde er neben vielen offensichtlich falschen Plaintexten auch viele plausible Plaintexte erhalten und wüsste daher nicht, welcher der plausiblen Plaintexte der korrekte ist.
+    \vspace{2mm}\\
+    Obwohl dies also genau das Verhalten ist, was wir möchten, kommt der One-Time-Pad nur in sehr seltenen Fällen zum Einsatz. Dies liegt daran, dass der Schlüssel
+    \begin{itemize}
+        \item genau gleich lang wie der zu verschlüsselnde Text sein muss
+        \item komplett zufällig sein muss (vollständig zufällige Bitfolge)
+        \item vorgängig geheim zwischen Sender und Empfänger ausgetauscht werden muss
+        \item nur ein einziges mal verwendet werden darf (sonst ist er nicht mehr vollkommen zufällig und die ganze Sicherheit geht verloren)
+    \end{itemize}
+\end{corollary}
+
+\begin{concept}{Eigenschaften sicherer kryptographischer Algorithmen}
+    Da heute ausser dem One-Time-Pad kein Algorithmus bekannt ist, welcher als informationstheoretisch sicher gilt, werden folgende Eigenschaften für sichere Algorithmen definiert:
+    \begin{itemize}
+        \item Allgemein bekannt
+        \item Keine Fehler bekannt
+        \item Work Factor > $2^{128}$
+    \end{itemize}
+    Daraus lässt sich auch ableiten, dass wir als Noobs keine kryptographischen Algorithmen selber entwickeln/implementieren sollten. Stattdessen soll auf standardisierte Algorithmen zurückgegriffen werden. (Öffentlich verfügbare Libraries)
+\end{concept}
+
+\subsection{Kryptographische Hash Funktionen}
+
+\begin{definition}{Kryptographische Hash Funktion} ist eine mathematische Funktion mit folgenden Eigenschaften:
+    \begin{itemize}
+        \item aus einem beliebig langen Input wird Output mit konstanter Länge generiert
+        \item es gibt keine Möglichkeit aus dem Output den Input wieder herzuleiten
+        \item unterschiedliche Inputs ergeben mit sehr hoher Wahrscheinlichkeit völlig unterschiedliche Outputs, auch wenn sich die Inputs nur wenig unterscheiden
+        \item es ist nicht möglich innert nützlicher Zeit zwei unterschiedliche Inputs zu generieren, welche denselben Output haben
+    \end{itemize}
+
+    \includegraphics[width=\linewidth]{krypto_hashfunktionen.png}
+    
+\end{definition}
+
+\begin{formula}{Work Factor}
+    Da bei Hash Funktionen der Output weniger lang ist als der Input gibt es keinen Algorithmus, welcher für alle Inputs und Outputs die Eigenschaften 3 und 4 erreicht. Das heisst, es wird immer verschiedene Inputs geben, welche denselben Output generieren. Mit dem Work Faktor kann angegeben werden, wie gross der Aufwand ist, um diese Hash Collisions zu berechnen.
+
+Der Work Faktor in bits einer kryptographischen Funktion entspricht der Hälfte der bits des generierten Outputs.
+
+Auch hier gilt: Für eine sichere Hash Funktion sollte der Work Faktor mindestens 128 bit betragen.    
+\end{formula}
