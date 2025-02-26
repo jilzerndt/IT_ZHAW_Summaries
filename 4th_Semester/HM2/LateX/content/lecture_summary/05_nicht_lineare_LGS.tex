@@ -2,7 +2,7 @@
 
 \begin{remark}
     In diesem Kapitel geht es um die Nullstellenbestimmung von\\ nichtlinearen Funktionen $f: \R^n \to \R^n$. \\
-    Abkürzung: NLGS = nichtlineares Gleichungssystem
+    Abkürzung: LGS = lineares Gleichungssystem, NGS = nichtlineares Gleichungssystem
 \end{remark}
 
 \begin{example2}{Einleitendes Beispiel}
@@ -146,4 +146,234 @@
     \includegraphics[width=\linewidth]{grafische_darstellung3.png}
     \end{minipage}
 \end{concept}
+
+
+\subsection{Partielle Ableitungen}
+
+\begin{theorem}{Partielle Ableitung}
+In einer Dimension
+$$
+f^{\prime}\left(x_0\right)=\lim _{\Delta x \rightarrow 0} \frac{\left(f\left(x_0+\Delta x\right)-f\left(x_0\right)\right)}{\Delta x}
+$$
+
+\textcolor{frog}{\textbf{In mehreren Dimensionen}}
+
+1. Ableitung nach $x$ :
+$$
+f_x=\frac{\partial f}{\partial x}(x, y)=\lim _{\Delta x \rightarrow 0} \frac{f(x+\Delta x, y)-f(x, y)}{\Delta x}
+$$
+2. Ableitung nach $y: \quad f_y=\frac{\partial f}{\partial y}(x, y)=\lim _{\Delta y \rightarrow 0} \frac{f(x, y+\Delta y)-f(x, y)}{\Delta y}$
+\end{theorem}
+
+\begin{example}
+$$
+z=f(x, y)=3 x y^3+10 x^2 y+5 y+3 y \cdot \sin (5 x y)
+$$
+
+$$\frac{\partial f}{\partial x}(x, y)=3 \cdot 1 \cdot y^3+10 \cdot 2 x \cdot y+0+3 y \cdot \cos (5 x y) \cdot 5 \cdot 1 \cdot y$$
+$$\frac{\partial f}{\partial y}(x, y)=3 x \cdot 3 y^2+10 x^2 \cdot 1+5 \cdot 1+(3 \cdot 1 \cdot \sin (5 x y)+3 y \cdot \cos (5 x y) \cdot 5 x \cdot 1)$$
+
+Steigung der beiden Tangenten in $x-$ resp. $y$-Richtung im Punkt $\left(x_0, y_0\right)=(-1,1)$
+\end{example}
+
+\subsubsection{Linearisierung von Funktionen mit mehreren Variablen}
+
+\begin{concept}{Jacobi-Matrix}\\
+    Sei $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ mit $y=f(x)$ und $x=\left(x_1, x_2, \ldots, x_n\right)^T \in \mathbb{R}^n$. Die Jacobi-Matrix $D f(x)$ enthält sämtliche partiellen Ableitungen 1 . Ordnung von $f$.
+    $$
+    f(x)=\left(\begin{array}{c}
+    y_1=f_1(x) \\
+    y_2=f_2(x) \\
+    \vdots \\
+    y_m=f_m(x)
+    \end{array}\right), \quad D f(x)=\left(\begin{array}{cllc}
+    \frac{\partial f_1}{\partial x_1}(x) & \frac{\partial f_1}{\partial x_2}(x) & \cdots & \frac{\partial f_1}{\partial x_n}(x) \\
+    \frac{\partial f_2}{\partial x_1}(x) & \frac{\partial f_2}{\partial x_2}(x) & \cdots & \frac{\partial f_2}{\partial x_n}(x) \\
+    \vdots & \vdots & \ddots & \vdots \\
+    \frac{\partial f_m}{\partial x_1}(x) & \frac{\partial f_m}{\partial x_2}(x) & \cdots & \frac{\partial f_m}{\partial x_n}(x)
+    \end{array}\right)
+    $$
+\end{concept}
+
+\begin{formula}{Verallgemeinerte Tangentengleichung}
+    $$
+    g(x)=f\left(x^{(0)}\right)+D f\left(x^{(0)}\right) \cdot\left(x-x^{(0)}\right)
+    $$
+    Beschreibt eine lineare Funktion und es gilt $f(x) \approx g(x)$ in einer Umgebung eines gegebenen Vektors $x^{(0)}=\left(x_1^{(0)}, x_2^{(0)}, \ldots, x_n^{(0)}\right)^T \in \mathbb{R}^n$. 
+    Man spricht deshalb auch von der Linearisierung der Funktion $y=f(x)$ in einer Umgebung von $x^{(0)}$
+    (ein hochgestellter Index in Klammern $x^{(k)}$ bezeichnet wie bisher einen Vektor aus $\R^n$ nach der $k$-ten Iteration).  
+\end{formula}
+
+\begin{definition}{Tangentialebene}\\
+    Für den speziellen Fall $f: \mathbb{R}^2 \longrightarrow \mathbb{R}$ mit $y=f\left(x_1, x_2\right)$ und $\boldsymbol{x}^{(0)}=\left(x_1^{(0)}, x_2^{(0)}\right)^T \in \mathbb{R}^2$ 
+    ist die Jacobi-Matrix nur ein Zeilenvektor mit zwei Elementen, nämlich:
+    $$
+    D f\left(x^{(0)}\right)=\left(\begin{array}{cc}
+    \frac{\partial f}{\partial x_1}\left(x_1^{(0)}, x_2^{(0)}\right) & \frac{\partial f}{\partial x_2}\left(x_1^{(0)}, x_2^{(0)}\right)
+    \end{array}\right)
+    $$
+    Dann liefert die Linearisierung
+    $$
+    \begin{aligned}
+    g\left(x_1, x_2\right) & =f\left(x_1^{(0)}, x_2^{(0)}\right)+\left(\frac{\partial f}{\partial x_1}\left(x_1^{(0)}, x_2^{(0)}\right) \quad \frac{\partial f}{\partial x_2}\left(x_1^{(0)}, x_2^{(0)}\right)\right) \cdot\binom{x_1-x_1^{(0)}}{x_2-x_2^{(0)}} \\
+    & =f\left(x_1^{(0)}, x_2^{(0)}\right)+\frac{\partial f}{\partial x_1}\left(x_1^{(0)}, x_2^{(0)}\right) \cdot\left(x_1-x_1^{(0)}\right)+\frac{\partial f}{\partial x_2}\left(x_1^{(0)}, x_2^{(0)}\right) \cdot\left(x_2-x_2^{(0)}\right)
+    \end{aligned}
+    $$
+    die Gleichung der Tangentialebene.
+
+    Sie enthält sämtliche im Flächenpunkt $\stackrel{\bullet}{P}=\left(x_1^{(0)}, x_2^{(0)}, f\left(x_1^{(0)}, x_2^{(0)}\right)\right)$ an die Bildfläche von $y=f\left(x_1, x_2\right)$ angelegten Tangenten.
+\end{definition}
+
+\begin{example}
+    Beispiel: Linearisieren Sie für $x^{(0)}=(\pi / 4,0, \pi)^T$ der Funktion $f\left(x_1, x_2, x_3\right)$
+    \vspace{2mm} \\
+    1. Jacobi-Matrix $\operatorname{Df}\left(x_1, x_2, x_3\right)$ bilden
+    $$
+    f\left(x_1, x_2, x_3\right)=\binom{\sin \left(x_2+2 x_3\right)}{\cos \left(2 x_1+x_2\right)}, \quad D f\left(x_1, x_2, x_3\right)=\left(\begin{array}{ccc}
+    0 & \cos \left(x_2+2 x_3\right) & \cos \left(x_2+2 x_3\right) \cdot 2 \\
+    -\sin \left(2 x_1+x_2\right) \cdot 2 & -\sin \left(2 x_1+x_2\right) & 0
+    \end{array}\right)
+    $$
+
+    2. Startvektor $x^{(0)}$ in Vektorwertige Funktion $f(x)$ und Jacobi-Matrix D $f(x)$ einsetzen
+    $$
+    f(\pi / 4,0, \pi)=f\left(x^{(0)}\right)=\binom{\sin (0+2 \pi)}{\cos (2 \cdot \pi / 4+0)}=\binom{0}{0}, \quad D f\left(x^{(0)}\right)=\left(\begin{array}{ccc}
+    0 & 1 & 2 \\
+    -2 & -1 & 0
+    \end{array}\right)
+    $$
+
+    3. Verallgemeinerte Tangentengleichung
+    $$
+    g(x)=\underbrace{\binom{0}{0}}_{f\left(x_0\right)}+\underbrace{\left(\begin{array}{ccc}
+    0 & 1 & 2 \\
+    -2 & -1 & 0
+    \end{array}\right)}_{D f\left(x_0\right)} \cdot \underbrace{\left(\begin{array}{c}
+    x_1-\pi / 4 \\
+    x_2-0 \\
+    x_3-\pi
+    \end{array}\right)}_{x-x_0}=\left(\begin{array}{ccc}
+    x_2 & +2 x_3 & -2 \pi \\
+    -2 x_1 & -x_2 & +\pi / 2
+    \end{array}\right)
+    $$
+\end{example}
+
+\subsection{Nullstellenbestimmung für NGS}
+
+\begin{remark}
+    Es gibt keine einfachen Methoden, um festzustellen, ob ein nichtlineares Gleichungssystem lösbar ist und wie viele Lösungen es hat. Deshalb entscheidet die Wahl
+    einer «geeigneten Startnäherug» meist über erfolgt oder Misserfolg der eingesetzten numerischen Verfahren.
+\end{remark}
+
+\begin{concept}{Newton-Verfahren} \textcolor{pink}{?????}
+    Das Newton-Verfahren ist ein iteratives Verfahren zur Bestimmung von Nullstellen einer Funktion. Es basiert auf der Linearisierung der Funktion um einen Startwert $x^{(0)}$.
+    \begin{itemize}
+        \item \textbf{Vorgehen:}
+        \begin{enumerate}
+            \item Startwert $x^{(0)}$ wählen
+            \item Linearisierung der Funktion um $x^{(0)}$
+            \item Nullstelle der Linearisierung berechnen
+            \item Neue Linearisierung um die berechnete Nullstelle
+            \item Iteration bis Konvergenz
+        \end{enumerate}
+        \item \textbf{Formel:}
+        $$
+        x^{(k+1)}=x^{(k)}-\left(D f\left(x^{(k)}\right)\right)^{-1} \cdot f\left(x^{(k)}\right)
+        $$
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Quadratisch konvergentes Newton-Verfahren} (Quadratische Konvergenz)
+    
+    Lösung von $f(x)=0$ mit $f: \mathbb{R}^n \rightarrow \mathbb{R}^n$ für $n=0,1,2, \ldots$
+    \begin{enumerate}
+        \item Berechne $f\left(x^{(n)}\right)$ und $D f\left(x^{(n)}\right)$
+        \item Berechne $\delta^{(n)}$ als Lösung des lin. GS $D f\left(x^{(n)}\right) \cdot \delta^{(n)}=-f\left(x^{(n)}\right)$
+        \item Setze $x^{(n+1)}:=x^{(n)}+\delta^{(n)}$
+    \end{enumerate}
+\end{concept}
+
+\begin{theorem}{Vereinfachtes Newton-Verfahren} (Lineare Konvergenz)
+
+    Lösung von $f(x)=0$ mit $f: \mathbb{R}^n \rightarrow \mathbb{R}^n$ für $n=0,1,2, \ldots$
+    \begin{enumerate}
+        \item Berechne $f\left(x^{(n)}\right)$ und $D f\left(x^{(0)}\right)$
+        \item Berechne $\delta^{(n)}$ als Lösung des lin. GS $D f\left(x^{(0)}\right) \cdot \delta^{(n)}=-f\left(x^{(n)}\right)$
+        \item Setze $x^{(n+1)}:=x^{(n)}+\delta^{(n)}$
+    \end{enumerate}
+\end{theorem}
+
+\begin{corollary}{Gedämpftes Newton-Verfahren}
+
+Nur in der Nähe der Nullstelle ist Konvergenz des Verfahrens garantiert!
+\begin{enumerate}
+    \item Berechne $f\left(x^{(n)}\right)$ und $D f\left(x^{(n)}\right)$
+    \item Berechne $\delta^{(n)}$ als Lösung des lin. GS $D f\left(x^{(n)}\right) \cdot \delta^{(n)}=-f\left(x^{(n)}\right)$
+    \item Finde das minimale $k \in\left\{0,1, \ldots, k_{\max }\right\}$ mit:
+\end{enumerate}
+$$
+\left\|f\left(x^{(n)}+\frac{\delta^{(n)}}{2^k}\right)\right\|_2<\left\|f\left(x^{(n)}\right)\right\|_2
+$$
+Kein minimales $k$ gefunden $\rightarrow k=0$
+
+4. Setze
+$$
+x^{(n+1)}:=x^{(n)}+\frac{\delta^{(n)}}{2^k}
+$$
+\end{corollary}
+
+
+\begin{example2}{Beispiel mit Newton-Verfahren}
+    
+Gegeben sind zwei Gleichungen und der Start-Vektor $x^{(0)}=(2,-1)^T$
+
+$$
+1-x^2=y^2, \quad \frac{(x-2)^2}{a}+\frac{(y-1)^2}{b}=1
+$$
+
+
+Umwandlung in Funktionen $f_1, f_2=0$
+
+$$
+f_1(x, y)=1-x^2-y^2=0, \quad f_2(x, y)=\frac{(x-2)^2}{a}+\frac{(y-1)^2}{b}-1=0
+$$
+
+
+1: Vektorwertige Funktion und Jacobi-Matrix bilden
+
+$$
+D f(x, y)=\left(\begin{array}{cc}
+-2 x & -2 y \\
+\frac{2 x-4}{a} & \frac{2 y-2}{b}
+\end{array}\right), \quad f(x, y)=\binom{1-x^2-y^2}{\frac{(x-2)^2}{a}+\frac{(y-1)^2}{b}-1}
+$$
+
+
+1: Start-Vektor $x^{(0)}$ einsetzen
+
+$$
+D f(2,-1)=\left(\begin{array}{cc}
+-4 & 2 \\
+0 & -4 / b
+\end{array}\right), \quad f(2,-1)=\binom{-4}{4 / b-1}
+$$
+
+
+2: Berechne $\delta^{(0)}$
+
+$$
+\left(D f\left(x^{(0)}\right) \mid-f\left(x^{(0)}\right)\right)=\left(\begin{array}{cc|c}
+-4 & 2 & 4 \\
+0 & -4 / b & -4 / b+1
+\end{array}\right) \rightarrow \underbrace{\binom{-1}{0}}_{\delta^{(0)}}
+$$
+
+
+3: Berechne $x^{(1)}$
+
+$$
+x^{(1)}=\underbrace{\binom{2}{-1}}_{x^{(0)}}+\underbrace{\binom{-1}{0}}_{\delta^{(0)}}=\binom{1}{-1}
+$$
+\end{example2}
 

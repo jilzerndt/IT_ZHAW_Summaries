@@ -1,0 +1,158 @@
+\section{Ausgleichsrechnung}
+
+\subsection{Interpolation}
+
+\begin{remark}
+Die Interpolation ist ein Spezialfall der linearen Ausgleichsrechnung, bei dem wir zu einer Menge von vorgegebenen Punkten eine Funktion suchen, die exakt durch diese Punkte verlăuft.
+\end{remark}
+
+\begin{definition}{Interpolationsproblem}
+
+Gegeben sind $n+1$ Wertepaare $\left(x_i, y_i\right), i=0, \ldots, n$ mit $x_i \neq x_j$ für $i \neq j$. 
+
+Gesucht ist eine stetige Funktion $g$ mit der Eigenschaft $g\left(x_i\right)=y_i$ für alle $i=0$, $\ldots, n$.
+
+Die Polynominterpolation kann mittels Linearem Gleichungssystem gelöst werden (Vandermonde-Matrix). 
+Dies führt jedoch zu einer schlechten Konditionierung. Daher müssen anderen Verfahren verwendet werden.
+\end{definition}
+
+\begin{formula}{Lagrange-Interpolationspolynom}
+    Durch $n+1$ Stützpunkte mit verschiedenen Stützstellen gibt es genau ein Polynom $P_n(x)$ vom Grade $\leq n$, welches alle Stützpunkte interpoliert, d.h. wo gilt
+
+$$
+P_n\left(x_i\right)=y_i, \quad i=0,1, \ldots, n
+$$
+
+$P_n(x)$ lautet in der Lagrangeform
+
+$$
+P_n(x)=\sum_{i=0}^n l_i(x) \cdot y_i
+$$
+
+
+Dabei sind die $l_i(x)$ die Lagrangepolynome vom Grad $n$ definiert durch
+
+$$
+l_i(x)=\prod_{\substack{j=0 \\ j \neq i}}^n \frac{x-x_j}{x_i-x_j}, \quad(i=0,1, \ldots, n)
+$$
+
+
+Fehlerabschätzung
+Sind die $y_i$ Funktionswerte einer genügend oft stetig differenzierbaren Funktion $f$ (also $y_i=f\left(x_i\right)$ ), dann ist der Interpolationsfehler an einer Stelle $x$ gegeben durch
+
+$$
+\left|f(x)-P_n(x)\right| \leq \frac{\left|\left(x-x_0\right)\left(x-x_1\right) \ldots\left(x-x_n\right)\right|}{(n+1)!} \max _{x_0 \leq \xi \leq x_n} f^{(n+1)}(\xi)
+$$
+
+\end{formula}
+
+\begin{example2}{Berechnung der Lagrange-Interpolationspolynome}
+    Gegeben sind
+    $x=[0,250,500,1000]$, $y=[1013,747,540,226]$
+
+    Berechnung der Lagrangepolynome
+    $$l_0=\frac{x-x_1}{x_0-x_1} \cdot \frac{x-x_2}{x_0-x_2} \cdot \frac{x-x_3}{x_0-x_3}=\frac{375-250}{0-250} \cdot \frac{375-500}{0-500} \cdot \frac{375-1000}{0-1000}=-0.078$$
+    $$l_1=\frac{x-x_0}{x_1-x_0} \cdot \frac{x-x_2}{x_1-x_2} \cdot \frac{x-x_3}{x_1-x_3}=\frac{375-0}{250-0} \cdot \frac{375-500}{250-500} \cdot \frac{375-1000}{250-1000}=0.625$$
+    $$l_2=\frac{x-x_0}{x_2-x_0} \cdot \frac{x-x_1}{x_2-x_1} \cdot \frac{x-x_3}{x_2-x_3}=\frac{375-0}{500-0} \cdot \frac{375-250}{500-250} \cdot \frac{375-1000}{500-1000}=0.469$$
+    $$l_3=\frac{x-x_0}{x_3-x_0} \cdot \frac{x-x_1}{x_3-x_1} \cdot \frac{x-x_2}{x_3-x_2}=\frac{375-0}{1000-0} \cdot \frac{375-250}{1000-250} \cdot \frac{375-500}{1000-500}=-0.016$$
+
+    Gesucht ist der $y$-Wert an der Stelle $x=375$
+
+    $$
+    \begin{gathered}
+    P_n(375)=\sum_{i=0}^n l_i(375) \cdot y_i \\
+    P_n(375)=-0.078 \cdot 1013+0.625 \cdot 747+0.469 \cdot 540+-0.016 \cdot 226 \\
+    P_n(375)=637.328 \mathrm{hPa}
+    \end{gathered}
+    $$
+  
+\end{example2}
+
+\begin{KR}{Algorithmus: natürliche kubische Splinefunktion}
+
+    Gegeben seien $n+1$ Stützpunkte ( $x_i, y_i$ ) mit monoton aufsteigenden Stützstellen (Knoten) $x_0<x_1<\cdots<x_n$ ( $n \geq 2$ ). Gesucht ist die natürliche kubische Splinefunktion $S(x)$, welche in jedem Intervall $\left[x_i, x_{i+1}\right]$ mit $=0,1, \ldots, n-1$ durch ein kubisches Polynom:
+    $$
+    S_i(x)=a_i+b_i\left(x-x_i\right)+c_i\left(x-x_i\right)^2+d_i\left(x-x_i\right)^3
+    $$
+    
+    \tcblower
+
+    Berechnung der Polynome $S_i(x)$ für $i=0,1, \ldots, n-1$ :
+
+    1: Koeffizienten $a_i, h_i, c_0, c_n$
+    $$
+    a_i=y_i, \quad h_i=x_{i+1}-x_i, \quad c_0=0, \quad c_n=0
+    $$
+
+
+    2: Koeffizienten $c_1, c_2, \ldots c_{n-1}$ aus dem Gleichungssystem $(A c=z)$
+
+    - $\quad i=1$
+    $$
+    2\left(h_0+h_1\right) \cdot c_1+h_1 c_2 \quad=3 \frac{\left(y_2-y_1\right)}{h_1}-3 \frac{\left(y_1-y_0\right)}{h_0}
+    $$
+
+    - $n \geq 4 \rightarrow i=2, \ldots, n-2$
+    $$
+    h_{i-1} c_{i-1}+2\left(h_{i-1}+h_i\right) \cdot c_i+h_i c_{i+1}=3 \frac{\left(y_{i+1}-y_i\right)}{h_i}-3 \frac{\left(y_i-y_{i-1}\right)}{h_{i-1}}
+    $$
+
+    - $\quad i=n-1$
+    $$
+    h_{n-2} c_{n-2}+2\left(h_{n-2}+h_{n-1}\right) \cdot c_{n-1}=3 \frac{\left(y_n-y_{n-1}\right)}{h_{n-1}}-3 \frac{\left(y_{n-1}-y_{n-2}\right)}{h_{n-2}}
+    $$
+
+    3: Koeffizienten $b_i$ und $d_i$
+    - $b_i=\frac{\left(y_{i+1}-y_i\right)}{h_i}-\frac{h_i}{3}\left(c_{i+1}+2 c_i\right)$
+    - $d_i=\frac{1}{3 h_i}\left(c_{i+1}-c_i\right)$
+\end{KR}
+
+\begin{example2}{Beispiel Verwendung des Algorithmus}
+    $$
+    x=[4,6,8,10], \quad y=[6,3,9,0], \quad i=[0,1,2,3], n=3
+    $$
+
+
+    Koeffizienten $a_i, h_i, c_0, c_n$
+    - $a_i=y_i \quad a=[6,3,9]$
+    - $h_i=x_{i+1}-x_i \quad h=[2,2,2]$
+    - $c_0=0, c_n=0$
+
+    Koeffizienten $c_1, c_2, \ldots c_{n-1}$ aus dem Gleichungssystem ( $A c=z$ )
+
+    $$
+    \begin{gathered}
+    A=\left(\begin{array}{cc}
+    2\left(h_0+h_1\right) & h_1 \\
+    h_1 & 2\left(h_1+h_2\right)
+    \end{array}\right), \quad z=\binom{3 \frac{\left(y_2-y_1\right)}{h_1}-3 \frac{\left(y_1-y_0\right)}{h_0}}{3 \frac{\left(y_3-y_2\right)}{h_2}-3 \frac{\left(y_2-y_1\right)}{h_1}} \\
+    A c=z \rightarrow\left(\begin{array}{ll|c}
+    8 & 2 & 6 \\
+    2 & 8 & -3
+    \end{array}\right), \quad c=\binom{2.55}{-3.45}
+    \end{gathered}
+    $$
+
+
+    Koeffizienten $b_i$ und $d_i$
+
+    \tcblower
+
+    $$
+    A=\left(\begin{array}{cccc}
+    2\left(h_0+h_1\right) & h_1 & & \square \\
+    h_1 & 2\left(h_1+h_2\right) & \ddots & \vdots \\
+    \square & \ddots & \ddots & h_{n-2} \\
+    \square & \square & h_{n-2} & 2\left(h_{n-2}+h_{n-1}\right)
+    \end{array}\right), \quad c=\left(\begin{array}{c}
+    c_1 \\
+    c_2 \\
+    \vdots \\
+    c_{n-1}
+    \end{array}\right), \quad z=\left(\begin{array}{c}
+    3 \frac{\left(y_2-y_1\right)}{h_1}-3 \frac{\left(y_1-y_0\right)}{h_0} \\
+    \vdots \\
+    3 \frac{\left(y_n-y_{n-1}\right)}{h_{n-1}}-3 \frac{\left(y_{n-1}-y_{n-2}\right)}{h_{n-2}}
+    \end{array}\right)
+    $$
+\end{example2}
