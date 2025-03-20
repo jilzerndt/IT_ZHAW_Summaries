@@ -243,19 +243,66 @@
     \includegraphics[width=\linewidth]{block_diagramm.png}
 \end{formula}
 
+\begin{concept}{Control Bits}
+    \begin{itemize}
+        \item Allow CPU to configure Slaves
+        \item CPU writes to register bit to configure Slave
+        \item Slave uses output of register bit to configure itself
+        \item Example: SPI Slave Select (SS) bit
+        \item Usually read/write access to control bits
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Status Bits}
+    \begin{itemize}
+        \item Allow CPU to monitor Slaves
+        \item CPU reads register bit to monitor Slave
+        \item Slave uses input of register bit to monitor itself (Slave writes to register bit)
+        \item Example: SPI Busy bit
+        \item Usually read-only access to status bits
+    \end{itemize}
+\end{concept}
+
 \begin{formula}{Timing Diagram}
     \begin{itemize}
         \item \texttt{write} \textcolor{darkblue}{D[:]} to \textcolor{darkgreen}{A[:]} $\rightarrow$ \textcolor{darkred}{NE, NWE} = 0
         \item \texttt{read} \textcolor{darkblue}{D[:]} from \textcolor{darkgreen}{A[:]} $\rightarrow$ \textcolor{darkred}{NE, NOE} = 0
     \end{itemize}
-
+    \includegraphics[width=\linewidth]{timing_diagram.png}
 \end{formula}
 
-\begin{definition}{Address Decoding}
+\begin{theorem}{Bus Access Size}
+    is determined by the NBL (0-3) (No Byte Line) signals
+    \begin{itemize}
+        \item NBL = 1 $\rightarrow$ Byte used for Read/Write
+        \item NBL = 00
+        \item NBL[0:3] = 0011 $\rightarrow$ Read Halfword
+        \item NBL[0:3] = 1111 $\rightarrow$ Read Word
+    \end{itemize}
+    \textcolor{pink}{\textbf{CHECK IF CORRECT}}
+\end{theorem}
+
+\begin{definition}{Address Decoding}\\
+    Interpretation of address line values. See whether bus access targets a particular address or address range.
     \begin{itemize}
         \item CPU uses address lines to select a peripheral
         \item Each peripheral has a unique address range
         \item Address decoding logic generates a chip select signal for each peripheral
     \end{itemize}
-    %\includegraphics[width=\linewidth]{address_decoding.png}
+
+    \textbf{Full Address Decoding}
+    \begin{itemize}
+        \item All address lines are decoded
+        \item A control register can be accessed at exactly one location
+        \item 1:1 mapping: A unique address maps to a single hardware register
+    \end{itemize}
+
+    \textbf{Partial Address Decoding}
+    \begin{itemize}
+        \item Only a subset of address lines are decoded
+        \item A control register can be accessed at multiple locations
+        \item 1:n mapping: Multiple addresses map to the same hardware register
+        \item Map a hardware register to multiple addresses
+    \end{itemize}
+    \includegraphics[width=\linewidth]{address_decoding.png}
 \end{definition}
