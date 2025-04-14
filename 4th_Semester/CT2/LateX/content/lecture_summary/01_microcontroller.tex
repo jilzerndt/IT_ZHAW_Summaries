@@ -1,4 +1,5 @@
 \section{Microcontroller}
+\mult{2}
 
 \begin{remark}
     \begin{itemize}
@@ -26,13 +27,25 @@
     \end{itemize}
 \end{theorem}
 
-\begin{concept}{Single Chip Solution} 
+\begin{concept}{Single Chip Solution} \\
     $\Rightarrow$ CPU with integrated memory and peripherals
-    
-    \includegraphics[width=\linewidth]{single_chip_solution.png}
 \end{concept}
 
+\includegraphics[width=\linewidth]{single_chip_solution.png}
+
+\multend
+
+\subsection{Microcontroller Architecture}
+
+\subsubsection{Peripherals and Registers}
+
+
 \begin{definition}{Peripherals}
+
+    \begin{minipage}{0.55\linewidth}
+    \includegraphics[width=\linewidth]{peripherals_registers.png}
+    \end{minipage}
+    \begin{minipage}{0.44\linewidth}
     \begin{itemize}
         \item configurable hardware blocks of a microcontroller
         \item accepts a specific task from the CPU, executes task and returns result (status, e.g. task completion, error)
@@ -40,20 +53,23 @@
         many (not all) interact with external MCU pins (grey things very right side of image)
         \item examples: GPIO, UART, SPI, ADC...
     \end{itemize}
-    \includegraphics[width=\linewidth]{peripherals1.png}
+    \end{minipage}
 \end{definition}
 
-\begin{definition}{Peripheral Registers}
-    the CPU controls and monitors Peripherals through registers
+\mult{2}
+
+\begin{definition}{Peripheral Registers}\\
+    The CPU controls and monitors Peripherals through registers.
     \begin{itemize}
         \item Registers are arrays of flip-flops (storage elements with two states, i.e. 0 or 1)
         \item Each flip-flop stores one bit of information
         \item CPU writes to and reads from registers
     \end{itemize}
-    \includegraphics[width=\linewidth]{peripherals_registers.png}
+\end{definition}
 
-    \tcblower
+\begin{theorem}{Categories of Registers}\\
     A Peripheral typically has multiple registers that can be categorized as:
+    \vspace{-2mm}\\
     \begin{itemize}
         \item \textbf{Control Registers} \\
         enable CPU to configure the peripheral
@@ -62,16 +78,18 @@
         \item \textbf{Data Registers} \\
         enable CPU to exchange data with the peripheral
     \end{itemize}
-\end{definition}
+\end{theorem}
 
 \begin{definition}{Memory-mapped Peripheral Registers}
-    Distinction between LEDs and DIP switches on the CT-Board:
     \begin{itemize}
-        \item Control register $\rightarrow$ controls states of LEDs
-        \item Status register $\rightarrow$ monitors states of DIP switches
+        \item Control register: controls states of LEDs
+        \item Status register: monitors states of DIP switches
     \end{itemize}
+    \vspace{1mm}
     \includegraphics[width=\linewidth]{registers_leds_dipswitches.png}
 \end{definition}
+
+\multend
 
 \begin{concept}{CPU access to individual peripheral registers}
     \begin{itemize}
@@ -79,45 +97,42 @@
         the memory address range
         \item Reference Manual shows the defined addresses
     \end{itemize}
+    \vspace{2mm}
     \includegraphics[width=\linewidth]{example_SPI_cpu_access.png}
-
-    \includegraphics[width=\linewidth]{peripheral_registers_cpu_access.png}
-
 \end{concept}
 
-\begin{examplecode}{Accessing control registers in C}
-    \includegraphics[width=\linewidth]{accessing_control_registers_in_C.png}
+\mult{2}
+
+\begin{definition}{Peripheral Register Addressing}
+    \begin{itemize}
+        \item Each peripheral register has a unique address
+        \item CPU uses the address to access the register
+        \item CPU uses load/store instructions to access the register
+    \end{itemize}
+    \includegraphics[width=\linewidth]{peripheral_registers_cpu_access.png}
+\end{definition}
+
+\begin{examplecode}{Reading/Writing to peripheral registers in C}
+    
 \end{examplecode}
 
-\begin{concept}{CPU read/write to peripheral registers}
+\includegraphics[width=\linewidth]{accessing_control_registers_in_C.png}
+
+\begin{concept}{CPU read/write to peripheral registers}\\
     How does the CPU write to and read from peripheral registers?
+    \vspace{-2mm}\\
     \begin{itemize}
         \item CPU reads/writes to peripheral registers
         \item CPU uses memory-mapped I/O to access peripheral registers
         \item CPU uses load/store instructions to access peripheral registers
     \end{itemize}
-    \includegraphics[width=\linewidth]{read_write_cpu_peripheral_registers.png}
-
     $\Rightarrow$ System Buses
 \end{concept}
+\multend
 
-\begin{example2}{STM32 Microcontroller}
-    with CPU, on-chip memory, and peripherals interconnected through the system bus(es)
 
-    \includegraphics[width=\linewidth]{stm32_example.png}
-
-    A distributed system with parallel (simultaneous) processing of data in many peripherals. All under the supervision of the CPU.
-\end{example2}
-
-\begin{remark}
-    Note: ARM calls their system buses AHB (ARM High-performance Bus) and APB (ARM
-    Peripheral Bus). On complex chips, it is state-of-the-art to partition the system bus into
-    multiple interconnected buses.
-\end{remark}
-
-\begin{example2}{CT Board with STM32 Microcontroller and Buses}
-    \includegraphics[width=\linewidth]{ctboard_with_stm32.png}
-\end{example2}
+\subsubsection{System Bus}
+\mult{2}
 
 \begin{definition}{System Bus}
     \begin{itemize}
@@ -144,8 +159,7 @@
         \end{itemize}
         \item \textcolor{darkpurple}{\textbf{Electrical properties}} (not in exam)
         \begin{itemize}
-            \item Drive strength
-            \item Load
+            \item Drive strength and Load
         \end{itemize}
         \item \textcolor{darkorange}{\textbf{Mechanical requirements}} (not in exam)
     \end{itemize}
@@ -157,7 +171,7 @@
         \begin{itemize}
             \item Bidirectional (read/write)
             \item Number of lines $\rightarrow$ data bus width \\(8, 16, 32, 64 parallel lines of data)
-            \item Example: Cortex-M has 32 address lines $\rightarrow$ 4GB address space $\rightarrow$ $0x00000000$ to $0xFFFFFFFF$
+            \item Example: Cortex-M has 32 address lines $\rightarrow$ 4GB address space \\ $\rightarrow$ $0x00000000$ to $0xFFFFFFFF$
         \end{itemize}
         \item \textcolor{darkgreen}{\textbf{Address lines}}
         \begin{itemize}
@@ -171,46 +185,92 @@
             \item Chip select, read/write, etc.
         \end{itemize}
     \end{itemize}
+    \vspace{2mm}
     \includegraphics[width=\linewidth]{master_slave_signal_groups.png}
 \end{theorem}
 
-\begin{theorem}{Bus Timing Options}
+\multend
 
-    \begin{minipage}{0.7\linewidth}
+\subsection{Our System}
+
+\begin{example2}{CT Board with STM32 Microcontroller and Buses}\\
+    \includegraphics[width=\linewidth]{ctboard_with_stm32.png}
+\end{example2}
+
+\begin{example2}{STM32 Microcontroller}\\
+    with CPU, on-chip memory, and peripherals interconnected through the system bus(es)
+
+    \includegraphics[width=0.9\linewidth]{stm32_example.png}
+
+    A distributed system with parallel (simultaneous) processing of data in many peripherals. All under the supervision of the CPU.
+\end{example2}
+
+\begin{remark}
+    Note: ARM calls their system buses AHB (ARM High-performance Bus) and APB (ARM
+    Peripheral Bus). On complex chips, it is state-of-the-art to partition the system bus into
+    multiple interconnected buses.
+\end{remark}
+
+\pagebreak
+
+
+
+\subsection{Digital Logic Basics}
+\mult{2}
+\important{TODO}
+\multend
+
+\pagebreak
+
+\subsection{Timing and Access}
+
+\subsubsection{Synchronous and Asynchronous Buses}
+
+\begin{theorem}{Bus Timing Options}
+    \vspace{2mm}\\
+    \begin{minipage}{0.65\linewidth}
     \textbf{Synchronous}
     \begin{itemize}
         \item \textcolor{blue}{Master} and \textcolor{darkcorn}{slaves} use a common clock\\
-        \small{Often a dedicated clock signal from master to slave, but clock can also be encoded in a data signal}
-        \item \normalsize Clock edges control bus transfer on both sides
+        Often a dedicated clock signal from master to slave, \\ but clock can also be encoded in a data signal
+        \item Clock edges control bus transfer on both sides
         \item Used by most on-chip buses
         \item Off-chip: DDR and synchronous RAM
     \end{itemize}
     \end{minipage}
-    \begin{minipage}{0.29\linewidth}
+    \begin{minipage}{0.2\linewidth}
+        \vspace{-9mm}
         \includegraphics[width=\linewidth]{synchronous_bus_timing.png}
     \end{minipage}
 
-    \begin{minipage}{0.7\linewidth}
+    \begin{minipage}{0.65\linewidth}
     \textbf{Asynchronous}
     \begin{itemize}
         \item \textcolor{darkcorn}{Slaves} have no access to clock of the \textcolor{blue}{master}
+        \\ $\rightarrow$ slave has their own clock or no clock at all
         \item Control signals carry timing information to allow synchronization
-        \item Widely used for low data-rate off-chip memories
-        $\rightarrow$ parallel flash memories and \\ asynchronous RAM
+        \item Widely used for low data-rate off-chip memories \\
+        $\rightarrow$ parallel flash memories and asynchronous RAM
     \end{itemize}
     \end{minipage}
-    \begin{minipage}{0.29\linewidth}
+    \begin{minipage}{0.2\linewidth}
+        \vspace{-2mm}
         \includegraphics[width=\linewidth]{asynchronous_bus_timing.png}
     \end{minipage}
 \end{theorem}
 
+\mult{2}
+
 \begin{corollary}{Multiple devices driving the same data line}\\
     What if one device drives a logic 1 (Vcc) and another device drives a logic 0 (Gnd)?\\
-    $\Rightarrow$ Electrical short circuit! $rightarrow$ bus contention ("Streitigkeit")\\
+    $\Rightarrow$ Electrical short circuit!
+    \\ $\rightarrow$ bus contention ('Streitigkeit')\\
     \includegraphics[width=\linewidth]{bus_contention.png}\\
     \small{Figure only shows output paths, input paths are not shown.}
 
-    \tcblower
+\end{corollary}
+
+\begin{concept}{Bus Contention} \\
     CPU defines who drives the data bus at which moment in time:
     \begin{itemize}
         \item \texttt{write} CPU drives bus $rightarrow$ all slave drivers disconnected
@@ -219,29 +279,13 @@
     
     Electrically disconnecting a driver is called \textbf{tri-state} or \textbf{high-impedance} (Hi-Z) state. (switch)
     
-    \textcolor{pink}{textbf{CHECK IF CORRECT}}
-\end{corollary}
+    \important{CHECK IF CORRECT}
+\end{concept}
 
-\begin{definition}{Slow Slaves}\\
-    Wait states are inserted to slow down the CPU to match the speed of the slowest peripheral (depending on the address of an access)
+\multend
 
-    \includegraphics[width=\linewidth]{slow_slaves.png}    
-\end{definition}
-
-\begin{formula}{Block Diagram}
-    \begin{itemize}
-        \item Address lines [31:0]
-        \item Data lines [31:0]
-        \item Control signals
-        \begin{itemize}
-            \item CLK $\rightarrow$ clock
-            \item NE $\rightarrow$ Not enable
-            \item NWE $\rightarrow$ Not write enable
-            \item NOE $\rightarrow$ Not output enable
-        \end{itemize}
-    \end{itemize}
-    \includegraphics[width=\linewidth]{block_diagramm.png}
-\end{formula}
+\subsubsection{Control and Status Registers}
+\mult{2}
 
 \begin{concept}{Control Bits}
     \begin{itemize}
@@ -263,24 +307,9 @@
     \end{itemize}
 \end{concept}
 
-\begin{formula}{Timing Diagram}
-    \begin{itemize}
-        \item \texttt{write} \textcolor{darkblue}{D[:]} to \textcolor{darkgreen}{A[:]} $\rightarrow$ \textcolor{darkred}{NE, NWE} = 0
-        \item \texttt{read} \textcolor{darkblue}{D[:]} from \textcolor{darkgreen}{A[:]} $\rightarrow$ \textcolor{darkred}{NE, NOE} = 0
-    \end{itemize}
-    \includegraphics[width=\linewidth]{timing_diagram.png}
-\end{formula}
+\multend
 
-\begin{theorem}{Bus Access Size}
-    is determined by the NBL (0-3) (No Byte Line) signals
-    \begin{itemize}
-        \item NBL = 1 $\rightarrow$ Byte used for Read/Write
-        \item NBL = 00
-        \item NBL[0:3] = 0011 $\rightarrow$ Read Halfword
-        \item NBL[0:3] = 1111 $\rightarrow$ Read Word
-    \end{itemize}
-    \textcolor{pink}{\textbf{CHECK IF CORRECT}}
-\end{theorem}
+\subsubsection{Address Decoding}
 
 \begin{definition}{Address Decoding}\\
     Interpretation of address line values. See whether bus access targets a particular address or address range.
@@ -306,3 +335,73 @@
     \end{itemize}
     \includegraphics[width=\linewidth]{address_decoding.png}
 \end{definition}
+
+\subsubsection{Slow Slaves (Peripherals)}
+
+\begin{definition}{Slow Slaves}\\
+    Wait states are inserted to slow down the CPU to match the speed of the slowest peripheral (depending on the address of an access)
+
+    \includegraphics[width=\linewidth]{slow_slaves.png}    
+\end{definition}
+
+
+
+\subsubsection{Bus Hierarchies}
+
+\begin{formula}{Block Diagram}
+
+    \begin{minipage}{0.35\linewidth}
+    \begin{itemize}
+        \item Address lines [31:0]
+        \item Data lines [31:0]
+        \item Control signals
+        \begin{itemize}
+            \item CLK $\rightarrow$ clock
+            \item NE $\rightarrow$ Not enable
+            \item NWE $\rightarrow$ Not write enable
+            \item NOE $\rightarrow$ Not output enable
+        \end{itemize}
+    \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.4\linewidth}
+    \includegraphics[width=\linewidth]{block_diagramm.png}
+    \end{minipage}
+\end{formula}
+
+\begin{formula}{Timing Diagram}
+    \begin{itemize}
+        \item \texttt{write} \textcolor{darkblue}{D[:]} to \textcolor{darkgreen}{A[:]} $\rightarrow$ \textcolor{darkred}{NE, NWE} = 0
+        \item \texttt{read} \textcolor{darkblue}{D[:]} from \textcolor{darkgreen}{A[:]} $\rightarrow$ \textcolor{darkred}{NE, NOE} = 0
+    \end{itemize}
+    \includegraphics[width=\linewidth]{timing_diagram.png}
+\end{formula}
+
+\begin{theorem}{Bus Access Size}
+    is determined by the NBL (0-3) (No Byte Line) signals
+    \begin{itemize}
+        \item NBL = 1 $\rightarrow$ Byte used for Read/Write
+        \item NBL = 00
+        \item NBL[0:3] = 0011 $\rightarrow$ Read Halfword
+        \item NBL[0:3] = 1111 $\rightarrow$ Read Word
+    \end{itemize}
+    \textcolor{pink}{\textbf{CHECK IF CORRECT}}
+\end{theorem}
+
+\subsubsection{Accessing Control Registers in C}
+
+
+\subsection{Conclusions}
+\mult{2}
+\multend
+
+
+
+
+
+
+
+
+
+
+
+
