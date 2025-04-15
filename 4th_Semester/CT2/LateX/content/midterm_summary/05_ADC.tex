@@ -1,0 +1,380 @@
+\section{Analog-to-Digital Converter (ADC)}
+
+\subsection{ADC Fundamentals}
+
+\begin{concept}{ADC Overview}\\
+An Analog-to-Digital Converter (ADC) converts continuous analog signals into discrete digital values:
+\begin{itemize}
+    \item Transforms analog voltage levels into corresponding digital values
+    \item Resolution determined by number of bits (N)
+    \item $2^N$ possible digital values (e.g., 12-bit ADC has 4096 levels)
+    \item Converts real-world continuous signals (temperature, pressure, etc.) into digital form for processing
+\end{itemize}
+\end{concept}
+
+\begin{definition}{ADC Terminology}\\
+Key terms and concepts:
+\begin{itemize}
+    \item \textbf{Resolution}: Number of bits (N) in the digital output
+    \item \textbf{LSB} (Least Significant Bit): Smallest detectable voltage change
+    \begin{itemize}
+        \item $LSB = \frac{V_{REF}}{2^N}$
+    \end{itemize}
+    \item \textbf{FSR} (Full Scale Range): Range between minimum and maximum digital codes
+    \begin{itemize}
+        \item $FSR = V_{REF} - 1 LSB$
+    \end{itemize}
+    \item \textbf{Sampling Rate}: Number of conversions per second
+    \item \textbf{Conversion Time}: Time from start of sampling to digital output availability
+    \item \textbf{Reference Voltage} ($V_{REF}$): Voltage that defines the ADC's full-scale range
+\end{itemize}
+\end{definition}
+
+\begin{concept}{ADC Operating Principle}\\
+\textbf{Flash ADC (Parallel ADC)}:
+\begin{itemize}
+    \item Uses comparators for each voltage level
+    \item Input voltage compared to reference voltages simultaneously
+    \item Fast but requires many components (e.g., 255 comparators for 8-bit)
+\end{itemize}
+\textbf{Successive Approximation Register (SAR) ADC}:
+\begin{itemize}
+    \item Uses binary search algorithm
+    \item Compares input to successive approximations
+    \item Takes N steps for N-bit resolution
+    \item Good balance of speed, power, and complexity
+    \item Most common in microcontrollers
+\end{itemize}
+\end{concept}
+
+\subsection{ADC Errors and Characteristics}
+
+\begin{definition}{Sampling Theorem}\\
+According to the Nyquist-Shannon sampling theorem:
+\begin{itemize}
+    \item Sampling rate must be at least twice the highest frequency component of the input signal
+    \item $f_{sampling} \geq 2 \times f_{max}$
+    \item Prevents aliasing (false lower frequencies appearing in sampled signal)
+\end{itemize}
+\end{definition}
+
+\begin{concept}{ADC Error Types}\\
+\textbf{Quantization Error}:
+\begin{itemize}
+    \item Inherent error due to rounding analog values to discrete digital levels
+    \item Range between -0.5 LSB and +0.5 LSB
+    \item Cannot be eliminated, but reduced by increasing resolution
+\end{itemize}
+\textbf{Offset Error}:
+\begin{itemize}
+    \item Deviation from ideal ADC at zero input
+    \item For ideal ADC, first transition occurs at 0.5 LSB
+    \item Can be corrected through calibration
+\end{itemize}
+\textbf{Gain Error}:
+\begin{itemize}
+    \item Difference in slope between actual and ideal transfer function
+    \item Expressed in LSB or as percentage of full-scale range (\%FSR)
+    \item Can be corrected through calibration
+\end{itemize}
+\end{concept}
+
+\begin{formula}{ADC Calculations}\\
+\textbf{LSB Voltage}:
+\begin{align}
+V_{LSB} = \frac{V_{REF}}{2^N}
+\end{align}
+
+\textbf{Digital Output Value}:
+\begin{align}
+D_{out} = \frac{V_{in} \times 2^N}{V_{REF}}
+\end{align}
+
+\textbf{Analog Input from Digital Value}:
+\begin{align}
+V_{in} = \frac{D_{out} \times V_{REF}}{2^N}
+\end{align}
+
+\textbf{Percent Full Scale Range}:
+\begin{align}
+\%FSR = \frac{V_{in}}{V_{REF}} \times 100\%
+\end{align}
+\end{formula}
+
+\subsection{STM32F4 ADC Features}
+
+\begin{concept}{STM32F4 ADC Architecture}\\
+The STM32F4 includes ADC modules with the following features:
+\begin{itemize}
+    \item Three ADCs (ADC1, ADC2, ADC3)
+    \item 12-bit resolution (configurable to 10, 8, or 6 bits)
+    \item Up to 24 external channels (16 on each ADC)
+    \item Internal channels (temperature sensor, V$_{REFINT}$, V$_{BAT}$)
+    \item Multiple operating modes:
+    \begin{itemize}
+        \item Single conversion vs. continuous conversion
+        \item Single channel vs. scan mode (multiple channels)
+    \end{itemize}
+    \item Maximum sampling rate up to 2.4 MSPS (million samples per second)
+    \item DMA capability
+    \item Configurable sampling time
+    \item Analog watchdog for threshold monitoring
+\end{itemize}
+\end{concept}
+
+\begin{definition}{ADC Conversion Modes}\\
+\textbf{Single vs. Continuous Conversion}:
+\begin{itemize}
+    \item \textbf{Single Conversion}: Performs one conversion, then stops
+    \item \textbf{Continuous Conversion}: Continuously performs conversions without CPU intervention
+\end{itemize}
+\textbf{Single Channel vs. Scan Mode}:
+\begin{itemize}
+    \item \textbf{Single Channel}: Converts one channel only
+    \item \textbf{Scan Mode}: Converts multiple channels in sequence
+\end{itemize}
+This results in four possible combinations:
+\begin{itemize}
+    \item Single channel, single conversion (simplest mode)
+    \item Single channel, continuous conversion (monitor one input)
+    \item Multi-channel, single conversion (read multiple inputs once)
+    \item Multi-channel, continuous conversion (monitor multiple inputs)
+\end{itemize}
+\end{definition}
+
+\subsection{STM32F4 ADC Configuration}
+
+\begin{definition}{ADC Registers}\\
+Key ADC registers on STM32F4:
+\begin{itemize}
+    \item \textbf{ADC\_SR}: Status register (flags for EOC, overrun, etc.)
+    \item \textbf{ADC\_CR1}: Control register 1 (scan mode, resolution, etc.)
+    \item \textbf{ADC\_CR2}: Control register 2 (conversion start, data alignment, etc.)
+    \item \textbf{ADC\_SMPRx}: Sample time registers
+    \item \textbf{ADC\_SQRx}: Regular sequence registers
+    \item \textbf{ADC\_DR}: Data register (conversion result)
+    \item \textbf{ADC\_CCR}: Common control register (for all ADCs)
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Basic ADC Configuration}
+\paragraph{Step 1: Enable GPIO and ADC clocks}
+Enable the clock to the GPIO port and ADC.
+\paragraph{Step 2: Configure GPIO pins}
+Configure the GPIO pins as analog inputs.
+\paragraph{Step 3: Configure ADC parameters}
+Set resolution, scan mode, conversion mode, and alignment.
+\paragraph{Step 4: Configure channel and sampling time}
+Set the channel sequence and sampling time.
+\paragraph{Step 5: Enable ADC}
+Turn on the ADC.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure ADC1 Channel 0 (PA0) for single conversion
+
+// Step 1: Enable GPIO and ADC clocks
+RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;  // Enable GPIOA clock
+RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;   // Enable ADC1 clock
+
+// Step 2: Configure PA0 as analog input
+GPIOA->MODER |= GPIO_MODER_MODER0;  // Analog mode (0b11)
+
+// Step 3: Configure ADC parameters
+// ADC Common Control Register
+ADC->CCR &= ~ADC_CCR_ADCPRE;  // ADCPRE = 0 (APB2/2, typically 42MHz/2 = 21MHz)
+
+// ADC1 Control Register 1
+ADC1->CR1 &= ~ADC_CR1_RES;    // 12-bit resolution (default)
+ADC1->CR1 &= ~ADC_CR1_SCAN;   // Disable scan mode (single channel)
+
+// ADC1 Control Register 2
+ADC1->CR2 &= ~ADC_CR2_CONT;   // Single conversion mode
+ADC1->CR2 &= ~ADC_CR2_ALIGN;  // Right alignment
+ADC1->CR2 &= ~ADC_CR2_EXTEN;  // Software trigger
+
+// Step 4: Configure channel and sampling time
+// Configure for channel 0
+ADC1->SQR1 &= ~ADC_SQR1_L;     // 1 conversion in regular sequence
+ADC1->SQR3 &= ~ADC_SQR3_SQ1;   // Clear channel selection
+ADC1->SQR3 |= (0 << ADC_SQR3_SQ1_Pos);  // Channel 0 as first conversion
+
+// Set sampling time for channel 0 (e.g., 84 cycles)
+ADC1->SMPR2 &= ~ADC_SMPR2_SMP0;  // Clear bits
+ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP0_Pos);  // 84 cycles
+
+// Step 5: Enable ADC
+ADC1->CR2 |= ADC_CR2_ADON;  // Turn on ADC
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Performing ADC Conversion}
+\paragraph{Start conversion}
+Trigger the conversion using software or external trigger.
+\paragraph{Wait for completion}
+Check the EOC flag to determine when conversion is complete.
+\paragraph{Read result}
+Read the data register to get the conversion result.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Function to perform single ADC conversion
+uint16_t ADC_ReadChannel(void) {
+    // Start conversion
+    ADC1->CR2 |= ADC_CR2_SWSTART;  // Software trigger to start conversion
+    
+    // Wait for conversion to complete
+    while (!(ADC1->SR & ADC_SR_EOC)) { }
+    
+    // Read and return result
+    return ADC1->DR;
+}
+
+// Function to convert ADC value to voltage
+float ADC_ConvertToVoltage(uint16_t adcValue) {
+    // Assuming VREF = 3.3V and 12-bit resolution (4096 levels)
+    float voltage = (float)adcValue * 3.3f / 4095.0f;
+    return voltage;
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Multi-Channel ADC Configuration}
+\paragraph{Configure scan mode}
+Enable scan mode to convert multiple channels.
+\paragraph{Set up channel sequence}
+Configure the sequence and number of channels.
+\paragraph{Process results}
+Read results for each channel in sequence.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure ADC for multi-channel scanning (channels 0, 1, and 4)
+
+// Enable scan mode
+ADC1->CR1 |= ADC_CR1_SCAN;
+
+// Set number of conversions in sequence (3)
+ADC1->SQR1 &= ~ADC_SQR1_L;
+ADC1->SQR1 |= (2 << ADC_SQR1_L_Pos);  // L = 2 means 3 conversions
+
+// Set channel sequence
+ADC1->SQR3 = 0;  // Clear all
+ADC1->SQR3 |= (0 << ADC_SQR3_SQ1_Pos);  // CH0 as 1st conversion
+ADC1->SQR3 |= (1 << ADC_SQR3_SQ2_Pos);  // CH1 as 2nd conversion
+ADC1->SQR3 |= (4 << ADC_SQR3_SQ3_Pos);  // CH4 as 3rd conversion
+
+// Set sampling times for each channel
+ADC1->SMPR2 &= ~(ADC_SMPR2_SMP0 | ADC_SMPR2_SMP1 | ADC_SMPR2_SMP4);
+ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP0_Pos);  // 84 cycles for CH0
+ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP1_Pos);  // 84 cycles for CH1
+ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP4_Pos);  // 84 cycles for CH4
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Analog Watchdog}\\
+The Analog Watchdog monitors ADC conversion results against programmable thresholds:
+\begin{itemize}
+    \item Generates an interrupt if a conversion result is outside the threshold range
+    \item Can be configured to monitor a single channel or all channels
+    \item Useful for detecting abnormal voltage levels without CPU polling
+    \item Programmable high and low thresholds
+\end{itemize}
+Applications:
+\begin{itemize}
+    \item Over-voltage/under-voltage detection
+    \item Temperature limit monitoring
+    \item Battery level monitoring
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Using DMA with ADC}
+\paragraph{Configure DMA}
+Set up DMA channel to transfer ADC results to memory.
+\paragraph{Enable DMA for ADC}
+Configure ADC to use DMA for data transfer.
+\paragraph{Start conversion}
+Start ADC conversion in continuous mode.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure ADC with DMA for continuous multi-channel sampling
+
+// Configure DMA
+RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;  // Enable DMA2 clock
+
+// Configure DMA2 Stream0 for ADC1
+DMA2_Stream0->CR &= ~DMA_SxCR_EN;  // Disable DMA stream
+while (DMA2_Stream0->CR & DMA_SxCR_EN) { }  // Wait until disabled
+
+DMA2_Stream0->CR = 0;
+DMA2_Stream0->CR |= (0 << DMA_SxCR_CHSEL_Pos);  // Channel 0
+DMA2_Stream0->CR |= DMA_SxCR_PL_1;  // Priority high
+DMA2_Stream0->CR |= DMA_SxCR_MSIZE_0;  // Memory data size: 16-bit
+DMA2_Stream0->CR |= DMA_SxCR_PSIZE_0;  // Peripheral data size: 16-bit
+DMA2_Stream0->CR |= DMA_SxCR_MINC;  // Memory increment mode
+DMA2_Stream0->CR &= ~DMA_SxCR_PINC;  // Peripheral fixed
+DMA2_Stream0->CR |= DMA_SxCR_CIRC;  // Circular mode
+
+// Set addresses
+DMA2_Stream0->PAR = (uint32_t)&ADC1->DR;  // Source: ADC1 data register
+DMA2_Stream0->M0AR = (uint32_t)adc_values;  // Destination: buffer
+DMA2_Stream0->NDTR = 3;  // Number of data items (3 channels)
+
+// Enable DMA stream
+DMA2_Stream0->CR |= DMA_SxCR_EN;
+
+// Configure ADC for DMA
+ADC1->CR2 |= ADC_CR2_DMA;  // Enable DMA mode
+ADC1->CR2 |= ADC_CR2_CONT;  // Continuous conversion mode
+
+// Start ADC conversion
+ADC1->CR2 |= ADC_CR2_SWSTART;
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{ADC Configuration Exercise}\\
+Configure ADC1 to measure an analog voltage on pin PA5, with 12-bit resolution. Convert the result to a voltage between 0-3.3V.
+\tcblower
+1. Configure PA5 as an analog input
+2. Configure ADC1 for 12-bit resolution, single conversion, single channel
+3. Set appropriate sampling time
+4. Perform conversion and convert result to voltage
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure PA5 as analog input
+RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;  // Enable GPIOA clock
+RCC->APB2ENR |= RCC_PB2ENR_ADC1EN;   // Enable ADC1 clock
+GPIOA->MODER |= GPIO_MODER_MODER5;    // Set PA5 to analog mode (0b11)
+
+// Configure ADC1
+ADC1->CR1 &= ~ADC_CR1_RES;     // 12-bit resolution (default)
+ADC1->CR2 &= ~ADC_CR2_CONT;    // Single conversion mode
+ADC1->CR2 &= ~ADC_CR2_ALIGN;   // Right alignment
+
+// Configure for channel 5 (PA5)
+ADC1->SQR1 &= ~ADC_SQR1_L;      // 1 conversion in sequence
+ADC1->SQR3 &= ~ADC_SQR3_SQ1;    // Clear channel selection
+ADC1->SQR3 |= (5 << ADC_SQR3_SQ1_Pos);  // Channel 5 as first conversion
+
+// Set sampling time (84 cycles)
+ADC1->SMPR2 &= ~ADC_SMPR2_SMP5;
+ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP5_Pos);
+
+// Enable ADC
+ADC1->CR2 |= ADC_CR2_ADON;
+
+// Function to read ADC and convert to voltage
+float ReadVoltage(void) {
+    // Start conversion
+    ADC1->CR2 |= ADC_CR2_SWSTART;
+    
+    // Wait for conversion to complete
+    while (!(ADC1->SR & ADC_SR_EOC)) { }
+    
+    // Read ADC value
+    uint16_t adcValue = ADC1->DR;
+    
+    // Convert to voltage (0-3.3V)
+    float voltage = (float)adcValue * 3.3f / 4095.0f;
+    
+    return voltage;
+}
+\end{lstlisting}
+\end{example2}
