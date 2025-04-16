@@ -148,6 +148,8 @@ SPI has four different modes based on two parameters:
 \end{itemize}
 \end{definition}
 
+\columnbreak
+
 \subsection{STM32 SPI Implementation}
 
 \begin{concept}{STM32 SPI Architecture}
@@ -273,9 +275,14 @@ Looking at the diagram:
 This corresponds to Mode 1: CPOL = 0, CPHA = 1
 \end{example2}
 
+\raggedcolumns
+\pagebreak
+
 \section{Serial Data Transfer - UART \& I2C}
 
 \subsection{UART Fundamentals}
+
+\mult{2}
 
 \begin{concept}{UART - Universal Asynchronous Receiver Transmitter}\\
 UART is an asynchronous serial communication interface:
@@ -303,7 +310,11 @@ Extended UART (with hardware flow control) may include:
 \end{itemize}
 \end{definition}
 
+\multend
+
 \subsection{UART Data Format and Timing}
+
+\mult{2}
 
 \begin{definition}{UART Frame Structure}\\
 A UART frame consists of:
@@ -350,19 +361,16 @@ This UART transmission contains the character 'S'.
 
 \begin{formula}{UART Calculations}\\
 \textbf{Bit Time (seconds):}
-\begin{align}
-T_{bit} = \frac{1}{\text{Baud Rate}}
-\end{align}
+$T_{bit} = \frac{1}{\text{Baud Rate}}$
+
 
 \textbf{Frame Time (seconds):}
-\begin{align}
-T_{frame} = T_{bit} \times (1 + \text{Data Bits} + \text{Parity Bits} + \text{Stop Bits})
-\end{align}
+$T_{frame} =$\\$T_{bit} \times (1 + \text{Data Bits} + \text{Parity Bits} + \text{Stop Bits})$
 
-\textbf{Maximum Data Rate (bytes/second):}
-\begin{align}
-\text{Data Rate} = \frac{\text{Baud Rate}}{\text{Total Bits per Byte}}
-\end{align}
+
+\textbf{Maximum Data Rate (bytes/second):}\\
+$\text{Data Rate} = \frac{\text{Baud Rate}}{\text{Total Bits per Byte}}$
+
 where Total Bits per Byte = 1 (start) + Data Bits + Parity Bits + Stop Bits
 \end{formula}
 
@@ -371,22 +379,22 @@ where Total Bits per Byte = 1 (start) + Data Bits + Parity Bits + Stop Bits
 The receiver must sample correctly until the last bit:
 \paragraph{Formula}
 Maximum allowed clock deviation (as percentage):
-\begin{align}
-\text{Deviation}_{\max} = \frac{0.5}{N} \times 100\%
-\end{align}
+$\text{Deviation}_{\max} = \frac{0.5}{N} \times 100\%$
+
 where N is the number of bit times between synchronization points.
-
-\begin{lstlisting}[language=C, style=basesmol]
-// For a standard UART frame (1 start, 8 data, 1 stop):
-// Synchronization occurs at start bit
-// Last bit (stop bit) is 10 bits later
-// Maximum clock deviation = 0.5/10 = 5%
-
-// Sample calculation:
-// If sender clock is 9600 Hz
-// Receiver can be between 9120 Hz and 10080 Hz
-\end{lstlisting}
 \end{KR}
+
+\begin{example}
+    For a standard UART frame (1 start, 8 data, 1 stop):\\
+    Synchronization occurs at start bit,
+    Last bit (stop bit) is 10 bits later\\
+    Maximum clock deviation = 0.5/10 = 5\%\\
+    Sample calculation:\\
+    If sender clock is 9600 Hz: Receiver can be between 9120 Hz and 10080 Hz
+\end{example}
+
+\multend
+
 
 \subsection{UART on STM32F4}
 
@@ -403,42 +411,35 @@ The STM32F4 includes several UART/USART modules with features:
 \end{itemize}
 \end{concept}
 
-\begin{code}{STM32F4 UART Configuration}
+\begin{code}{STM32F4 UART Configuration} Configure UART2 for 115200 baud, 8-N-1
 \begin{lstlisting}[language=C, style=basesmol]
-// Configure UART2 for 115200 baud, 8-N-1
-
 // 1. Enable UART2 and GPIO clock
 RCC->APB1ENR |= RCC_APB1ENR_USART2EN;  // Enable UART2 clock
 RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;   // Enable GPIOA clock
-
 // 2. Configure GPIO pins for UART (PA2 = TX, PA3 = RX)
 // Set alternate function mode (0x10)
 GPIOA->MODER &= ~(0x3 << (2*2) | 0x3 << (2*3));
 GPIOA->MODER |= (0x2 << (2*2) | 0x2 << (2*3));
-
 // Set to AF7 (UART2)
 GPIOA->AFR[0] &= ~(0xF << (4*2) | 0xF << (4*3));
 GPIOA->AFR[0] |= (0x7 << (4*2) | 0x7 << (4*3));
-
 // 3. Configure UART
 // Reset UART configuration
 USART2->CR1 = 0;
 USART2->CR2 = 0;
 USART2->CR3 = 0;
-
 // Set baud rate (assuming 84MHz APB1 clock)
 // BRR = f_CK / baud rate = 84,000,000 / 115,200 = 729.16
 USART2->BRR = 729;
-
 // Enable UART, TX, and RX
 USART2->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
 \end{lstlisting}
 \end{code}
 
 \begin{KR}{UART Data Transmission and Reception}
-\paragraph{Transmitting Data}
-Write data to the data register after checking the TXE flag.
-\paragraph{Receiving Data}
+\textbf{Transmitting Data}
+Write data to the data register after checking the TXE flag.\\
+\textbf{Receiving Data}
 Read from the data register after checking the RXNE flag.
 
 \begin{lstlisting}[language=C, style=basesmol]
@@ -446,28 +447,25 @@ Read from the data register after checking the RXNE flag.
 void UART_SendChar(USART_TypeDef *uart, char c) {
     // Wait until TXE flag is set (transmit buffer empty)
     while (!(uart->SR & USART_SR_TXE)) { }
-    
     // Write the character to the data register
     uart->DR = c;
 }
-
 // Send a string
 void UART_SendString(USART_TypeDef *uart, const char *str) {
     while (*str) {
         UART_SendChar(uart, *str++);
     }
 }
-
 // Receive a character (blocking)
 char UART_ReceiveChar(USART_TypeDef *uart) {
     // Wait until RXNE flag is set (data received)
     while (!(uart->SR & USART_SR_RXNE)) { }
-    
     // Return received data
     return uart->DR;
 }
 \end{lstlisting}
 \end{KR}
+
 
 \subsection{I2C Fundamentals}
 
