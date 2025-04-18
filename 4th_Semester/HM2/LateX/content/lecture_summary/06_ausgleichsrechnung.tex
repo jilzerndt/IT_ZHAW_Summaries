@@ -156,3 +156,423 @@ $$
     \end{array}\right)
     $$
 \end{example2}
+
+\raggedcolumns
+
+\section{Curve Fitting and Approximation}
+
+\subsection{Introduction and Motivation}
+
+\begin{definition}{Curve Fitting and Approximation}\\
+Curve fitting (or approximation) is a mathematical optimization method used to find a function that best represents a given set of data points. In general, these problems are overdetermined, meaning there are more data points than parameters to determine.
+\end{definition}
+
+\begin{concept}{Types of Approximation Problems}\\
+We distinguish between two main types of approximation problems:
+
+\begin{itemize}
+    \item \textbf{Interpolation:} Finding a function that passes exactly through all given data points.
+    \item \textbf{Regression:} Finding a function that approximates the data points as closely as possible according to some error criterion (typically least squares).
+\end{itemize}
+\end{concept}
+
+\subsection{Interpolation}
+
+\begin{definition}{Interpolation Problem}\\
+Given $n+1$ data points $(x_i, y_i)$, $i=0,\ldots,n$, with $x_i \neq x_j$ for $i \neq j$, find a continuous function $g$ with the property $g(x_i) = y_i$ for all $i=0,\ldots,n$.
+\end{definition}
+
+\subsubsection{Polynomial Interpolation}
+
+\begin{theorem}{Lagrange Interpolation Formula}\\
+Through $n+1$ data points with distinct $x$-values, there exists exactly one polynomial $P_n(x)$ of degree $\leq n$ that interpolates all points, i.e., $P_n(x_i) = y_i$ for $i=0,1,\ldots,n$.
+
+The polynomial in Lagrange form is:
+\begin{align*}
+P_n(x) = \sum_{i=0}^{n} l_i(x)y_i
+\end{align*}
+
+where the Lagrange basis polynomials $l_i(x)$ are defined by:
+\begin{align*}
+l_i(x) = \prod_{j=0, j\neq i}^{n} \frac{x - x_j}{x_i - x_j}
+\end{align*}
+\end{theorem}
+
+\begin{example2}{Lagrange Interpolation}\\
+Given the temperature data:
+\begin{center}
+\begin{tabular}{c|cccc}
+$t$ [hour] & 8:00 & 10:00 & 12:00 & 14:00 \\
+\hline
+$T$ [$^{\circ}$C] & 11.2 & 13.4 & 15.3 & 19.5 \\
+\end{tabular}
+\end{center}
+
+Let's find the temperature at 11:00 using Lagrange interpolation.
+
+For simplicity, we'll use $t=0, 2, 4, 6$ for the four times (8:00, 10:00, 12:00, 14:00). Then $t=3$ corresponds to 11:00.
+
+The Lagrange basis polynomials are:
+\begin{align*}
+l_0(t) &= \frac{(t-2)(t-4)(t-6)}{(0-2)(0-4)(0-6)} = -\frac{1}{48}t^3 + \frac{3}{4}t^2 - \frac{107}{12}t + 35 \\
+l_1(t) &= \frac{(t-0)(t-4)(t-6)}{(2-0)(2-4)(2-6)} = \frac{1}{16}t^3 - \frac{17}{8}t^2 + \frac{47}{2}t - 84 \\
+l_2(t) &= \frac{(t-0)(t-2)(t-6)}{(4-0)(4-2)(4-6)} = -\frac{1}{16}t^3 + 2t^2 - \frac{83}{4}t + 70 \\
+l_3(t) &= \frac{(t-0)(t-2)(t-4)}{(6-0)(6-2)(6-4)} = \frac{1}{48}t^3 - \frac{5}{8}t^2 + \frac{37}{6}t - 20
+\end{align*}
+
+The interpolation polynomial is:
+\begin{align*}
+P_3(t) &= 11.2 \cdot l_0(t) + 13.4 \cdot l_1(t) + 15.3 \cdot l_2(t) + 19.5 \cdot l_3(t) \\
+&= \frac{13}{240}t^3 - \frac{133}{80}t^2 + \frac{2137}{120}t - \frac{263}{5}
+\end{align*}
+
+At $t=3$ (11:00), we get $P_3(3) = 14.225^{\circ}$C.
+\tcblower
+For direct evaluation at $t=3$ without computing the full polynomial:
+\begin{align*}
+l_0(3) &= \frac{(3-2)(3-4)(3-6)}{(0-2)(0-4)(0-6)} = \frac{(1)(-1)(-3)}{(-2)(-4)(-6)} = -\frac{1}{16} \\
+l_1(3) &= \frac{(3-0)(3-4)(3-6)}{(2-0)(2-4)(2-6)} = \frac{(3)(-1)(-3)}{(2)(-2)(-4)} = \frac{9}{16} \\
+l_2(3) &= \frac{(3-0)(3-2)(3-6)}{(4-0)(4-2)(4-6)} = \frac{(3)(1)(-3)}{(4)(2)(-2)} = \frac{9}{16} \\
+l_3(3) &= \frac{(3-0)(3-2)(3-4)}{(6-0)(6-2)(6-4)} = \frac{(3)(1)(-1)}{(6)(4)(2)} = -\frac{1}{16}
+\end{align*}
+
+And:
+\begin{align*}
+P_3(3) &= 11.2 \cdot (-\frac{1}{16}) + 13.4 \cdot (\frac{9}{16}) + 15.3 \cdot (\frac{9}{16}) + 19.5 \cdot (-\frac{1}{16}) \\
+&= 14.225^{\circ}\text{C}
+\end{align*}
+\end{example2}
+
+\begin{theorem}{Interpolation Error}\\
+If the $y_i$ are function values of a sufficiently differentiable function $f$ (thus $y_i = f(x_i)$), then the interpolation error at a point $x$ is given by:
+
+\begin{align*}
+|f(x) - P_n(x)| \leq \frac{|(x-x_0)(x-x_1)\cdots(x-x_n)|}{(n+1)!} \max_{x_0 \leq \xi \leq x_n} |f^{(n+1)}(\xi)|
+\end{align*}
+\end{theorem}
+
+\subsubsection{Spline Interpolation}
+
+\begin{definition}{Cubic Spline Interpolation}\\
+A cubic spline $S(x)$ for data points $(x_i, y_i)$, $i=0,\ldots,n$ is a piecewise polynomial function that:
+\begin{itemize}
+    \item Consists of cubic polynomials $S_i(x)$ on each interval $[x_i, x_{i+1}]$
+    \item Interpolates all data points: $S(x_i) = y_i$
+    \item Is continuous: $S_i(x_{i+1}) = S_{i+1}(x_{i+1})$ for $i=0,\ldots,n-2$
+    \item Has continuous first derivatives: $S_i'(x_{i+1}) = S_{i+1}'(x_{i+1})$ for $i=0,\ldots,n-2$
+    \item Has continuous second derivatives: $S_i''(x_{i+1}) = S_{i+1}''(x_{i+1})$ for $i=0,\ldots,n-2$
+\end{itemize}
+
+Two additional conditions are needed to uniquely define the spline. For a natural cubic spline, these are:
+\begin{align*}
+S''(x_0) = S''(x_n) = 0
+\end{align*}
+\end{definition}
+
+\begin{KR}{Algorithm for Natural Cubic Spline}\\
+Given $n+1$ data points $(x_i, y_i)$ with $x_0 < x_1 < \ldots < x_n$ (where $n \geq 2$), the natural cubic spline $S(x)$ consists of cubic polynomials
+\begin{align*}
+S_i(x) = a_i + b_i(x-x_i) + c_i(x-x_i)^2 + d_i(x-x_i)^3
+\end{align*}
+for $x \in [x_i, x_{i+1}]$ with $i=0,1,\ldots,n-1$.
+
+\paragraph{Steps}
+\begin{enumerate}
+    \item Set $a_i = y_i$ for all $i$
+    \item Calculate intervals $h_i = x_{i+1} - x_i$ for $i=0,1,\ldots,n-1$
+    \item Set boundary conditions $c_0 = 0$ and $c_n = 0$ (natural spline)
+    \item Calculate coefficients $c_1, c_2, \ldots, c_{n-1}$ by solving the tridiagonal system:
+    \begin{align*}
+    2(h_0+h_1)c_1 + h_1c_2 &= 3\frac{y_2-y_1}{h_1} - 3\frac{y_1-y_0}{h_0}\\
+    h_{i-1}c_{i-1} + 2(h_{i-1}+h_i)c_i + h_ic_{i+1} &= 3\frac{y_{i+1}-y_i}{h_i} - 3\frac{y_i-y_{i-1}}{h_{i-1}}\\
+    h_{n-2}c_{n-2} + 2(h_{n-2}+h_{n-1})c_{n-1} &= 3\frac{y_n-y_{n-1}}{h_{n-1}} - 3\frac{y_{n-1}-y_{n-2}}{h_{n-2}}
+    \end{align*}
+    for $i = 2,\ldots,n-2$.
+    \item Calculate remaining coefficients:
+    \begin{align*}
+    b_i &= \frac{y_{i+1}-y_i}{h_i} - \frac{h_i}{3}(c_{i+1} + 2c_i)\\
+    d_i &= \frac{1}{3h_i}(c_{i+1} - c_i)
+    \end{align*}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Natural Cubic Spline}\\
+Calculate the natural cubic spline for the data points:
+\begin{center}
+\begin{tabular}{c|cccc}
+$x_i$ & 0 & 1 & 2 & 3 \\
+\hline
+$y_i$ & 2 & 1 & 2 & 2 \\
+\end{tabular}
+\end{center}
+
+Following the algorithm:
+\begin{enumerate}
+    \item $a_0 = 2$, $a_1 = 1$, $a_2 = 2$
+    \item $h_0 = 1$, $h_1 = 1$, $h_2 = 1$
+    \item $c_0 = 0$, $c_3 = 0$ (boundary conditions)
+    \item Solving the tridiagonal system:
+    \begin{align*}
+    2(h_0+h_1)c_1 + h_1c_2 &= 3\frac{y_2-y_1}{h_1} - 3\frac{y_1-y_0}{h_0}\\
+    2(1+1)c_1 + 1c_2 &= 3\frac{2-1}{1} - 3\frac{1-2}{1}\\
+    4c_1 + c_2 &= 3 + 3 = 6
+    \end{align*}
+    
+    \begin{align*}
+    h_1c_1 + 2(h_1+h_2)c_2 &= 3\frac{y_3-y_2}{h_2} - 3\frac{y_2-y_1}{h_1}\\
+    1c_1 + 2(1+1)c_2 &= 3\frac{2-2}{1} - 3\frac{2-1}{1}\\
+    c_1 + 4c_2 &= 0 - 3 = -3
+    \end{align*}
+    
+    Solving this system:
+    \begin{align*}
+    4c_1 + c_2 &= 6\\
+    c_1 + 4c_2 &= -3
+    \end{align*}
+    
+    We get $c_1 = \frac{27}{15} = 1.8$ and $c_2 = -\frac{12}{15} = -0.8$
+    
+    \item Calculate $b_i$ and $d_i$:
+    \begin{align*}
+    b_0 &= \frac{y_1-y_0}{h_0} - \frac{h_0}{3}(c_1 + 2c_0)\\
+    &= \frac{1-2}{1} - \frac{1}{3}(1.8 + 2 \cdot 0)\\
+    &= -1 - 0.6 = -1.6\\
+    d_0 &= \frac{1}{3h_0}(c_1 - c_0)\\
+    &= \frac{1}{3 \cdot 1}(1.8 - 0)\\
+    &= 0.6\\
+    b_1 &= \frac{y_2-y_1}{h_1} - \frac{h_1}{3}(c_2 + 2c_1)\\
+    &= \frac{2-1}{1} - \frac{1}{3}(-0.8 + 2 \cdot 1.8)\\
+    &= 1 - \frac{2.8}{3} \approx 0.0667\\
+    d_1 &= \frac{1}{3h_1}(c_2 - c_1)\\
+    &= \frac{1}{3 \cdot 1}(-0.8 - 1.8)\\
+    &= \frac{-2.6}{3} \approx -0.8667\\
+    b_2 &= \frac{y_3-y_2}{h_2} - \frac{h_2}{3}(c_3 + 2c_2)\\
+    &= \frac{2-2}{1} - \frac{1}{3}(0 + 2 \cdot (-0.8))\\
+    &= 0 + \frac{1.6}{3} \approx 0.5333\\
+    d_2 &= \frac{1}{3h_2}(c_3 - c_2)\\
+    &= \frac{1}{3 \cdot 1}(0 - (-0.8))\\
+    &= \frac{0.8}{3} \approx 0.2667
+    \end{align*}
+\end{enumerate}
+
+This gives us the complete natural cubic spline with three cubic polynomials:
+\begin{align*}
+S_0(x) &= 2 - 1.6(x-0) + 0(x-0)^2 + 0.6(x-0)^3, \quad x \in [0,1]\\
+S_1(x) &= 1 + 0.0667(x-1) + 1.8(x-1)^2 - 0.8667(x-1)^3, \quad x \in [1,2]\\
+S_2(x) &= 2 + 0.5333(x-2) - 0.8(x-2)^2 + 0.2667(x-2)^3, \quad x \in [2,3]
+\end{align*}
+\end{example2}
+
+\subsection{Regression Analysis}
+
+\begin{definition}{Regression Problem}\\
+Given $n$ data points $(x_i, y_i)$, $i=1,\ldots,n$, find a continuous function $f: \mathbb{R} \rightarrow \mathbb{R}$ that approximates the data points in a certain optimal sense, meaning that $f(x_i) \approx y_i$ for all $i=1,\ldots,n$.
+\end{definition}
+
+\begin{definition}{Ansatz Functions / Error Functional / Least Squares}\\
+Given a set $F$ of continuous ansatz functions $f$ on an interval $[a,b]$ and $n$ data points $(x_i, y_i)$, $i=1,\ldots,n$.
+
+An element $f \in F$ is called a regression function if the error functional
+\begin{align*}
+E(f) := \|y - f(x)\|_2^2 = \sum_{i=1}^{n}(y_i - f(x_i))^2
+\end{align*}
+is minimized for $f$, i.e., $E(f) = \min\{E(g) | g \in F\}$.
+
+This approach is called the method of least squares.
+\end{definition}
+
+\subsection{Linear Regression}
+
+\begin{definition}{Linear Regression Problem}\\
+Given $n$ data points $(x_i, y_i)$, $i=1,\ldots,n$, and $m$ basis functions $f_1,\ldots,f_m$ on an interval $[a,b]$. We choose $F$ as the set of ansatz functions $f := \lambda_1 f_1 + \ldots + \lambda_m f_m$ with $\lambda_j \in \mathbb{R}$, so $F = \{f = \lambda_1 f_1 + \ldots + \lambda_m f_m | \lambda_j \in \mathbb{R}, j=1,\ldots,m\}$.
+
+The error functional is:
+\begin{align*}
+E(f) = \|y - f(x)\|_2^2 = \sum_{i=1}^{n}(y_i - f(x_i))^2 = \sum_{i=1}^{n}\left(y_i - \sum_{j=1}^{m}\lambda_j f_j(x_i)\right)^2 = \|y - A\lambda\|_2^2
+\end{align*}
+
+where
+\begin{align*}
+A = \begin{pmatrix}
+f_1(x_1) & f_2(x_1) & \cdots & f_m(x_1)\\
+f_1(x_2) & f_2(x_2) & \cdots & f_m(x_2)\\
+\vdots & \vdots & \ddots & \vdots\\
+f_1(x_n) & f_2(x_n) & \cdots & f_m(x_n)
+\end{pmatrix},
+y = \begin{pmatrix} y_1 \\ y_2 \\ \vdots \\ y_n \end{pmatrix},
+\lambda = \begin{pmatrix} \lambda_1 \\ \lambda_2 \\ \vdots \\ \lambda_m \end{pmatrix}
+\end{align*}
+
+The system $A\lambda = y$ is called the error equation system.
+\end{definition}
+
+\begin{definition}{Normal Equations}\\
+The equations
+\begin{align*}
+\frac{\partial E(f)(\lambda_1,\ldots,\lambda_m)}{\partial \lambda_j} = 0, \quad j=1,\ldots,m
+\end{align*}
+are called the normal equations of the linear regression problem.
+
+The system of all normal equations is called the normal equation system and can be written as a linear system:
+\begin{align*}
+A^T A\lambda = A^T y
+\end{align*}
+
+The solution $\lambda = (\lambda_1,\ldots,\lambda_m)^T$ of the normal equation system contains the desired parameters of the linear regression problem.
+\end{definition}
+
+\begin{KR}{Solving Linear Regression}\\
+\paragraph{Steps for solving a linear regression problem:}
+\begin{enumerate}
+    \item Identify the basis functions $f_1, f_2, \ldots, f_m$ for your model
+    \item Set up the matrix $A$ using the basis functions evaluated at each data point $x_i$
+    \item Form the normal equations: $A^T A\lambda = A^T y$
+    \item Solve for the parameter vector $\lambda$
+\end{enumerate}
+
+\paragraph{Alternative method using QR decomposition}
+The normal equations can be ill-conditioned. A more stable approach is to use QR decomposition:
+\begin{enumerate}
+    \item Compute the QR decomposition of $A = QR$, where $Q$ is orthogonal ($Q^T Q = I_n$) and $R$ is upper triangular
+    \item Solve the equivalent, but often better-conditioned system:
+    \begin{align*}
+    R\lambda = Q^T y
+    \end{align*}
+    by back substitution
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Linear Regression}\\
+Find the best-fit line $f(x) = ax + b$ for the data:
+\begin{center}
+\begin{tabular}{c|cccc}
+$x_i$ & 1 & 2 & 3 & 4 \\
+\hline
+$y_i$ & 6 & 6.8 & 10 & 10.5 \\
+\end{tabular}
+\end{center}
+
+We have basis functions $f_1(x) = x$ and $f_2(x) = 1$, so the matrix $A$ is:
+\begin{align*}
+A = \begin{pmatrix}
+1 & 1 \\
+2 & 1 \\
+3 & 1 \\
+4 & 1
+\end{pmatrix}
+\end{align*}
+
+The normal equations are:
+\begin{align*}
+A^T A\lambda = A^T y
+\end{align*}
+
+Computing:
+\begin{align*}
+A^T A &= \begin{pmatrix} 1 & 2 & 3 & 4 \\ 1 & 1 & 1 & 1 \end{pmatrix} \begin{pmatrix} 1 & 1 \\ 2 & 1 \\ 3 & 1 \\ 4 & 1 \end{pmatrix} = \begin{pmatrix} 30 & 10 \\ 10 & 4 \end{pmatrix}\\
+A^T y &= \begin{pmatrix} 1 & 2 & 3 & 4 \\ 1 & 1 & 1 & 1 \end{pmatrix} \begin{pmatrix} 6 \\ 6.8 \\ 10 \\ 10.5 \end{pmatrix} = \begin{pmatrix} 91.6 \\ 33.3 \end{pmatrix}
+\end{align*}
+
+The normal equations become:
+\begin{align*}
+\begin{pmatrix} 30 & 10 \\ 10 & 4 \end{pmatrix} \begin{pmatrix} a \\ b \end{pmatrix} = \begin{pmatrix} 91.6 \\ 33.3 \end{pmatrix}
+\end{align*}
+
+Solving this system gives $a = 1.67$ and $b = 4.15$, so our best-fit line is:
+\begin{align*}
+f(x) = 1.67x + 4.15
+\end{align*}
+\end{example2}
+
+\subsection{Nonlinear Regression}
+
+\begin{definition}{General Regression Problem}\\
+Given $n$ data points $(x_i, y_i)$, $i=1,\ldots,n$, and the set $F$ of ansatz functions $f_p = f_p(\lambda_1, \lambda_2, \ldots, \lambda_m, x)$ with $m$ parameters $\lambda_j \in \mathbb{R}$, $j=1,\ldots,m$.
+
+The general regression problem consists of determining the $m$ parameters $\lambda_1,\ldots,\lambda_m$ so that the error functional
+\begin{align*}
+E(f) = \sum_{i=1}^{n}(y_i - f_p(\lambda_1, \lambda_2, \ldots, \lambda_m, x_i))^2 = \|y - f(\lambda)\|_2^2
+\end{align*}
+is minimal among all admissible parameter values.
+\end{definition}
+
+\begin{KR}{Gauss-Newton Method}\\
+The Gauss-Newton method is an iterative procedure for solving nonlinear regression problems.
+
+\paragraph{Algorithm}
+\begin{enumerate}
+    \item Define the function $g(\lambda) := y - f(\lambda)$ and the error functional $E(\lambda) := \|g(\lambda)\|_2^2$
+    \item Start with an initial parameter vector $\lambda^{(0)}$ close to the minimum of the error functional 
+    \item For $k = 0, 1, 2, \ldots$ until convergence:
+        \begin{itemize}
+            \item Compute $\delta^{(k)}$ as the solution of the linear least squares problem
+            \begin{align*}
+            \min \|g(\lambda^{(k)}) + Dg(\lambda^{(k)}) \cdot \delta^{(k)}\|_2^2
+            \end{align*}
+            where $Dg(\lambda^{(k)})$ is the Jacobian matrix of $g$ at $\lambda^{(k)}$
+            
+            \item This is equivalent to solving the normal equations:
+            \begin{align*}
+            Dg(\lambda^{(k)})^T Dg(\lambda^{(k)})\delta^{(k)} = -Dg(\lambda^{(k)})^T \cdot g(\lambda^{(k)})
+            \end{align*}
+            
+            \item Update the parameter vector:
+            \begin{align*}
+            \lambda^{(k+1)} = \lambda^{(k)} + \delta^{(k)}
+            \end{align*}
+        \end{itemize}
+\end{enumerate}
+
+\paragraph{Damped Gauss-Newton Method}
+If the correction $\delta^{(k)}$ does not lead to a decrease in the error functional, the step size can be reduced:
+
+\begin{enumerate}
+    \item Compute $\delta^{(k)}$ as in the standard method
+    \item Find the minimum $p \in \{0, 1, \ldots, p_{max}\}$ such that
+    \begin{align*}
+    \|g(\lambda^{(k)} + \frac{\delta^{(k)}}{2^p})\|_2^2 < \|g(\lambda^{(k)})\|_2^2
+    \end{align*}
+    \item If no such $p$ is found, use $p = 0$
+    \item Update:
+    \begin{align*}
+    \lambda^{(k+1)} = \lambda^{(k)} + \frac{\delta^{(k)}}{2^p}
+    \end{align*}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Nonlinear Regression}\\
+Fit the function $f(x) = ae^{bx}$ to the data:
+\begin{center}
+\begin{tabular}{c|ccccc}
+$x_i$ & 0 & 1 & 2 & 3 & 4 \\
+\hline
+$y_i$ & 3 & 1 & 0.5 & 0.2 & 0.05 \\
+\end{tabular}
+\end{center}
+
+We need to find parameters $a$ and $b$ that minimize:
+\begin{align*}
+E(f) = \sum_{i=1}^{5}(y_i - ae^{bx_i})^2
+\end{align*}
+
+Using the Gauss-Newton method with initial values $a^{(0)} = 3$ and $b^{(0)} = -1$:
+
+For the first iteration, we define $g(a,b) = y - f(a,b) = \begin{pmatrix} y_1 - ae^{bx_1} \\ \vdots \\ y_5 - ae^{bx_5} \end{pmatrix}$
+
+The Jacobian is:
+\begin{align*}
+Dg(a,b) = \begin{pmatrix}
+-e^{bx_1} & -ax_1e^{bx_1} \\
+\vdots & \vdots \\
+-e^{bx_5} & -ax_5e^{bx_5}
+\end{pmatrix} = \begin{pmatrix}
+-1 & 0 \\
+-e^{-1} & -ae^{-1} \\
+-e^{-2} & -2ae^{-2} \\
+-e^{-3} & -3ae^{-3} \\
+-e^{-4} & -4ae^{-4}
+\end{pmatrix}_{a=3, b=-1}
+\end{align*}
+
+Solving the normal equations gives a correction vector, and after several iterations, we get the parameters $a \approx 2.98$ and $b \approx -1.00$.
+\end{example2}

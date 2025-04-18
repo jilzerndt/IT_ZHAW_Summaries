@@ -1,1 +1,529 @@
-\section{Numerische Integration}
+\section{Numerical Integration}
+
+\subsection{Introduction and Motivation}
+
+\begin{definition}{Numerical Integration}\\
+Numerical integration, also known as quadrature, refers to numerical approximation methods for evaluating definite integrals. While differentiation can be performed analytically for all differentiable functions, many integrals cannot be solved analytically, making numerical integration a crucial component of numerical methods.
+\end{definition}
+
+\begin{concept}{Problem Statement}\\
+For a function $f: \mathbb{R} \rightarrow \mathbb{R}$, we want to numerically calculate the definite integral
+\begin{align*}
+I(f) = \int_a^b f(x) \, dx = \frac{b-a}{2}\int_{-1}^{1} f\left(\frac{b-a}{2}t + \frac{a+b}{2}\right) \, dt
+\end{align*}
+
+The Gauss-Legendre formulas for $n=1, 2, 3$ are:
+\begin{align*}
+G_1f &= (b-a) \cdot f\left(\frac{b+a}{2}\right)\\
+G_2f &= \frac{b-a}{2}\left[f\left(-\frac{1}{\sqrt{3}}\cdot\frac{b-a}{2} + \frac{b+a}{2}\right) + f\left(\frac{1}{\sqrt{3}}\cdot\frac{b-a}{2} + \frac{b+a}{2}\right)\right]\\
+G_3f &= \frac{b-a}{2}\left[\frac{5}{9}\cdot f\left(-\sqrt{0.6}\cdot\frac{b-a}{2} + \frac{b+a}{2}\right) + \frac{8}{9}\cdot f\left(\frac{b+a}{2}\right)\right]\\
+&+ \frac{b-a}{2}\left[\frac{5}{9}\cdot f\left(\sqrt{0.6}\cdot\frac{b-a}{2} + \frac{b+a}{2}\right)\right]
+\end{align*}
+\end{definition}
+
+\subsection{Romberg Integration}
+
+\begin{definition}{Romberg Integration}\\
+Romberg integration is an extrapolation technique that uses the trapezoidal rule with successively halved step sizes to obtain higher-order accuracy.
+
+For the composite trapezoidal rule $Tf(h)$ approximating $I(f) = \int_a^b f(x) \, dx$:
+
+Let $T_{j0} = Tf\left(\frac{b-a}{2^j}\right)$ for $j = 0, 1, \ldots, m$. Then, the extrapolations are defined by the recursion:
+\begin{align*}
+T_{jk} = \frac{4^k \cdot T_{j+1,k-1} - T_{j,k-1}}{4^k - 1}
+\end{align*}
+for $k = 1, 2, \ldots, m$ and $j = 0, 1, \ldots, m-k$.
+
+These extrapolations $T_{jk}$ have error order $2k+2$. The sequence of step sizes $h_j = \frac{b-a}{2^j}$ is called the Romberg sequence.
+\end{definition}
+
+\begin{KR}{Romberg Integration Algorithm}\\
+\paragraph{Steps}
+\begin{enumerate}
+    \item For $j = 0, 1, \ldots, m$, compute $T_{j0}$ using the composite trapezoidal rule with step size $h_j = \frac{b-a}{2^j}$:
+    \begin{align*}
+    T_{j0} = Tf(h_j) = h_j \cdot \left(\frac{f(a) + f(b)}{2} + \sum_{i=1}^{n_j-1} f(x_i)\right)
+    \end{align*}
+    where $n_j = 2^j$ and $x_i = a + ih_j$.
+    
+    \item For $k = 1, 2, \ldots, m$ and $j = 0, 1, \ldots, m-k$, compute the extrapolations:
+    \begin{align*}
+    T_{jk} = \frac{4^k \cdot T_{j+1,k-1} - T_{j,k-1}}{4^k - 1}
+    \end{align*}
+    
+    \item The value $T_{0m}$ provides the highest-order approximation to the integral.
+\end{enumerate}
+
+\paragraph{Extrapolation Scheme}
+The extrapolations form a triangular pattern:
+\begin{center}
+$T_{00}$ \\
+$\searrow$ \\
+$T_{10} \rightarrow T_{01}$ \\
+$\searrow \nearrow \searrow$ \\
+$T_{20} \rightarrow T_{11} \rightarrow T_{02}$ \\
+$\searrow \nearrow \searrow \nearrow \searrow$ \\
+$T_{30} \rightarrow T_{21} \rightarrow T_{12} \rightarrow T_{03}$ \\
+$\downarrow \quad \downarrow \quad \downarrow \quad \downarrow$ \\
+\end{center}
+
+\paragraph{Efficiency}
+Each extrapolation significantly improves accuracy without requiring additional function evaluations. The first column requires $O(2^m)$ function evaluations, but each subsequent column only requires algebraic operations, making this method highly efficient for achieving high accuracy.
+\end{KR}
+
+\begin{example2}{Romberg Integration}\\
+Approximate $\int_2^4 \frac{1}{x} \, dx$ using Romberg integration with $j = 0, 1, 2, 3$.
+
+First, compute the first column $T_{j0}$ using the trapezoidal rule with different step sizes:
+
+For $j = 0, h_0 = \frac{4-2}{2^0} = 2, n_0 = 2^0 = 1$:
+\begin{align*}
+T_{00} &= h_0 \cdot \frac{f(2) + f(4)}{2} = 2 \cdot \frac{\frac{1}{2} + \frac{1}{4}}{2} = 2 \cdot \frac{0.75}{2} = 0.75
+\end{align*}
+
+For $j = 1, h_1 = 1, n_1 = 2$:
+\begin{align*}
+T_{10} &= h_1 \cdot \left(\frac{f(2) + f(4)}{2} + f(3)\right) = 1 \cdot \left(\frac{\frac{1}{2} + \frac{1}{4}}{2} + \frac{1}{3}\right) = 1 \cdot \left(\frac{0.75}{2} + \frac{1}{3}\right) = 0.7083
+\end{align*}
+
+For $j = 2, h_2 = 0.5, n_2 = 4$:
+\begin{align*}
+T_{20} &= h_2 \cdot \left(\frac{f(2) + f(4)}{2} + f(2.5) + f(3) + f(3.5)\right)\\
+&= 0.5 \cdot \left(\frac{\frac{1}{2} + \frac{1}{4}}{2} + \frac{1}{2.5} + \frac{1}{3} + \frac{1}{3.5}\right)\\
+&= 0.5 \cdot (0.375 + 0.4 + 0.3333 + 0.2857) \approx 0.6970
+\end{align*}
+
+For $j = 3, h_3 = 0.25, n_3 = 8$:
+\begin{align*}
+T_{30} &= 0.25 \cdot \left(\frac{f(2) + f(4)}{2} + f(2.25) + f(2.5) + \ldots + f(3.75)\right)\\
+&\approx 0.6941
+\end{align*}
+
+Now, compute the extrapolations:
+
+For $k = 1, j = 0$:
+\begin{align*}
+T_{01} &= \frac{4^1 \cdot T_{10} - T_{00}}{4^1 - 1} = \frac{4 \cdot 0.7083 - 0.75}{3} = \frac{2.8332 - 0.75}{3} \approx 0.6944
+\end{align*}
+
+For $k = 1, j = 1$:
+\begin{align*}
+T_{11} &= \frac{4 \cdot T_{21} - T_{10}}{3} = \frac{4 \cdot 0.6970 - 0.7083}{3} = \frac{2.788 - 0.7083}{3} \approx 0.6932
+\end{align*}
+
+For $k = 1, j = 2$:
+\begin{align*}
+T_{21} &= \frac{4 \cdot T_{31} - T_{20}}{3} = \frac{4 \cdot 0.6941 - 0.6970}{3} = \frac{2.7764 - 0.6970}{3} \approx 0.6931
+\end{align*}
+
+For $k = 2, j = 0$:
+\begin{align*}
+T_{02} &= \frac{4^2 \cdot T_{11} - T_{01}}{4^2 - 1} = \frac{16 \cdot 0.6932 - 0.6944}{15} = \frac{11.0912 - 0.6944}{15} \approx 0.6931
+\end{align*}
+
+For $k = 2, j = 1$:
+\begin{align*}
+T_{12} &= \frac{16 \cdot T_{21} - T_{11}}{15} = \frac{16 \cdot 0.6931 - 0.6932}{15} \approx 0.6931
+\end{align*}
+
+For $k = 3, j = 0$:
+\begin{align*}
+T_{03} &= \frac{4^3 \cdot T_{12} - T_{02}}{4^3 - 1} = \frac{64 \cdot 0.6931 - 0.6931}{63} \approx 0.6931
+\end{align*}
+
+The final approximation $T_{03} \approx 0.6931$ is very close to the exact value $\ln(2) \approx 0.693147$.
+\end{example2}b f(x) \, dx
+\end{align*}
+on an interval $[a,b]$.
+
+Numerical quadrature methods typically have the form
+\begin{align*}
+I(f) \approx \sum_{i=1}^{n} a_i f(x_i)
+\end{align*}
+where $x_i$ are the nodes (or sample points) and $a_i$ are the weights of the quadrature formula.
+\end{concept}
+
+\subsection{Newton-Cotes Formulas}
+
+\subsubsection{Rectangle and Trapezoidal Rules}
+
+\begin{definition}{Rectangle Rule / Trapezoidal Rule}\\
+The rectangle rule (or midpoint rule) $Rf$ and the trapezoidal rule $Tf$ for approximating $\int_a^b f(x) \, dx$ are defined as:
+\begin{align*}
+Rf &= f\left(\frac{a+b}{2}\right) \cdot (b-a)\\
+Tf &= \frac{f(a) + f(b)}{2} \cdot (b-a)
+\end{align*}
+
+The rectangle rule approximates the integral by the area of a rectangle with height equal to the function value at the midpoint, while the trapezoidal rule approximates the integral by the area of a trapezoid.
+\end{definition}
+
+\begin{definition}{Composite Rectangle Rule / Composite Trapezoidal Rule}\\
+To improve accuracy, we can divide the interval $[a,b]$ into $n$ subintervals $[x_i, x_{i+1}]$ of equal width $h = \frac{b-a}{n}$ with $x_i = a + ih$ for $i = 0, \ldots, n$ and sum the results.
+
+The composite rectangle rule $Rf(h)$ and the composite trapezoidal rule $Tf(h)$ are given by:
+\begin{align*}
+Rf(h) &= h \cdot \sum_{i=0}^{n-1} f\left(x_i + \frac{h}{2}\right)\\
+Tf(h) &= h \cdot \left(\frac{f(a) + f(b)}{2} + \sum_{i=1}^{n-1} f(x_i)\right)
+\end{align*}
+\end{definition}
+
+\begin{example2}{Applying the Trapezoidal Rule}\\
+Approximate $\int_2^4 \frac{1}{x} \, dx$ using the composite trapezoidal rule with $n = 4$ subintervals.
+
+The exact value is $\int_2^4 \frac{1}{x} \, dx = \ln(4) - \ln(2) = \ln(2) \approx 0.6931$.
+
+We have:
+\begin{align*}
+h &= \frac{b-a}{n} = \frac{4-2}{4} = 0.5\\
+x_i &= 2 + i \cdot 0.5 \quad \text{for } i = 0, 1, 2, 3, 4
+\end{align*}
+
+So $x_0 = 2$, $x_1 = 2.5$, $x_2 = 3$, $x_3 = 3.5$, $x_4 = 4$.
+
+Applying the composite trapezoidal rule:
+\begin{align*}
+Tf(h) &= h \cdot \left(\frac{f(a) + f(b)}{2} + \sum_{i=1}^{n-1} f(x_i)\right)\\
+&= 0.5 \cdot \left(\frac{f(2) + f(4)}{2} + f(2.5) + f(3) + f(3.5)\right)\\
+&= 0.5 \cdot \left(\frac{\frac{1}{2} + \frac{1}{4}}{2} + \frac{1}{2.5} + \frac{1}{3} + \frac{1}{3.5}\right)\\
+&= 0.5 \cdot \left(\frac{0.5 + 0.25}{2} + 0.4 + 0.333... + 0.2857...\right)\\
+&= 0.5 \cdot (0.375 + 1.0187...) = 0.5 \cdot 1.3937... \approx 0.6969
+\end{align*}
+
+The approximation 0.6969 is close to the exact value 0.6931, with an error of about 0.0038.
+\end{example2}
+
+\subsubsection{Simpson's Rule}
+
+\begin{definition}{Simpson's Rule}\\
+Simpson's rule extends the idea of the trapezoidal rule by approximating $f(x)$ with a quadratic polynomial instead of a linear function. For an interval $[a,b]$, Simpson's rule is:
+\begin{align*}
+Sf = \frac{b-a}{6}\left(f(a) + 4f\left(\frac{a+b}{2}\right) + f(b)\right)
+\end{align*}
+
+The composite Simpson's rule for $n$ subintervals (where $n$ must be even) is:
+\begin{align*}
+Sf(h) \equiv \frac{h}{3}\left(\frac{1}{2}f(a) + \sum_{i=1}^{n-1} f(x_i) + 2\sum_{i=1}^{n} f\left(\frac{x_{i-1} + x_i}{2}\right) + \frac{1}{2}f(b)\right)
+\end{align*}
+\end{definition}
+
+\begin{theorem}{Relation between Rules}\\
+The composite Simpson's rule can be expressed as a weighted average of the composite trapezoidal and rectangle rules:
+\begin{align*}
+Sf(h) = \frac{1}{3}(Tf(h) + 2Rf(h))
+\end{align*}
+\end{theorem}
+
+\subsubsection{Error Analysis of Quadrature Methods}
+
+\begin{theorem}{Error Bounds for Composite Rules}\\
+Let $f: [a,b] \rightarrow \mathbb{R}$ be sufficiently differentiable. Then:
+\begin{align*}
+\left|\int_a^b f(x) \, dx - Rf(h)\right| &\leq \frac{h^2}{24}(b-a) \cdot \max_{x\in[a,b]}|f''(x)|\\
+\left|\int_a^b f(x) \, dx - Tf(h)\right| &\leq \frac{h^2}{12}(b-a) \cdot \max_{x\in[a,b]}|f''(x)|\\
+\left|\int_a^b f(x) \, dx - Sf(h)\right| &\leq \frac{h^4}{2880}(b-a) \cdot \max_{x\in[a,b]}|f^{(4)}(x)|
+\end{align*}
+
+These error bounds indicate that the rectangle and trapezoidal rules have convergence order $O(h^2)$, while Simpson's rule has convergence order $O(h^4)$.
+\end{theorem}
+
+\begin{KR}{Determining Optimal Step Size}\\
+To achieve a desired accuracy $\epsilon > 0$ when approximating an integral, we can determine the necessary step size $h$ (or number of subintervals $n$) using the error bound formulas.
+
+\paragraph{For the composite trapezoidal rule}
+From $\left|\int_a^b f(x) \, dx - Tf(h)\right| \leq \frac{h^2}{12}(b-a) \cdot \max_{x\in[a,b]}|f''(x)| \leq \epsilon$,
+we get:
+\begin{align*}
+h \leq \sqrt{\frac{12\epsilon}{(b-a) \cdot \max_{x\in[a,b]}|f''(x)|}}
+\end{align*}
+
+Since $h = \frac{b-a}{n}$, this gives:
+\begin{align*}
+n \geq (b-a) \cdot \sqrt{\frac{(b-a) \cdot \max_{x\in[a,b]}|f''(x)|}{12\epsilon}}
+\end{align*}
+
+\paragraph{For the composite Simpson's rule}
+From $\left|\int_a^b f(x) \, dx - Sf(h)\right| \leq \frac{h^4}{2880}(b-a) \cdot \max_{x\in[a,b]}|f^{(4)}(x)| \leq \epsilon$,
+we get:
+\begin{align*}
+h \leq \sqrt[4]{\frac{2880\epsilon}{(b-a) \cdot \max_{x\in[a,b]}|f^{(4)}(x)|}}
+\end{align*}
+
+Since $h = \frac{b-a}{n}$, this gives:
+\begin{align*}
+n \geq (b-a) \cdot \sqrt[4]{\frac{(b-a) \cdot \max_{x\in[a,b]}|f^{(4)}(x)|}{2880\epsilon}}
+\end{align*}
+
+\paragraph{Approach}
+\begin{enumerate}
+    \item Determine the maximum value of the relevant derivative of $f$ on $[a,b]$
+    \item Calculate the minimum required $n$ using the appropriate formula
+    \item If necessary, round up to the next integer (for Simpson's rule, round up to the next even integer)
+    \item Apply the quadrature method with this value of $n$
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Determining Step Size}\\
+Find the number of subintervals needed to approximate $\int_0^{0.5} e^{-x^2} \, dx$ using the composite trapezoidal rule with an absolute error less than $10^{-5}$.
+
+First, we need to find $\max_{x\in[0,0.5]}|f''(x)|$ where $f(x) = e^{-x^2}$.
+\begin{align*}
+f'(x) &= -2xe^{-x^2}\\
+f''(x) &= -2e^{-x^2} + 4x^2e^{-x^2} = (-2 + 4x^2)e^{-x^2}
+\end{align*}
+
+The maximum of $|f''(x)|$ on $[0,0.5]$ occurs at $x = 0$ and equals $|-2 \cdot e^0| = 2$.
+
+Using the trapezoidal rule error formula:
+\begin{align*}
+n &\geq (b-a) \cdot \sqrt{\frac{(b-a) \cdot \max_{x\in[a,b]}|f''(x)|}{12\epsilon}}\\
+&= 0.5 \cdot \sqrt{\frac{0.5 \cdot 2}{12 \cdot 10^{-5}}}\\
+&= 0.5 \cdot \sqrt{\frac{1}{12 \cdot 10^{-5}}}\\
+&= 0.5 \cdot \sqrt{\frac{10^5}{12}}\\
+&\approx 0.5 \cdot 91.29 \approx 45.64
+\end{align*}
+
+Rounding up, we need at least $n = 46$ subintervals to achieve the desired accuracy.
+\end{example2}
+
+\subsection{Gaussian Quadrature}
+
+\begin{concept}{Gaussian Quadrature}\\
+While Newton-Cotes formulas use equally spaced nodes, Gaussian quadrature methods allow for optimal placement of the nodes $x_i$ and weights $a_i$ in the quadrature formula
+\begin{align*}
+I(f) \approx \sum_{i=1}^{n} a_i f(x_i)
+\end{align*}
+
+Gaussian quadrature formulas are designed to exactly integrate polynomials of as high a degree as possible. A Gaussian quadrature with $n$ nodes can exactly integrate polynomials of degree up to $2n-1$, making them highly efficient.
+\end{concept}
+
+\begin{definition}{Gauss-Legendre Formulas}\\
+The most common type of Gaussian quadrature is Gauss-Legendre quadrature, which is optimal for integrating functions on $[-1,1]$. For an interval $[a,b]$, we can transform the integral via:
+\begin{align*}
+\int_a^b f(x) \, dx = \frac{b-a}{2}\int_{-1}^{1} f\left(\frac{b-a}{2}t + \frac{a+b}{2}\right) \, dt
+\end{align*}
+
+The Gauss-Legendre formulas for $n=1, 2, 3$ are:
+\begin{align*}
+G_1f &= (b-a) \cdot f\left(\frac{b+a}{2}\right)\\
+G_2f &= \frac{b-a}{2}\left[f\left(-\frac{1}{\sqrt{3}}\cdot\frac{b-a}{2} + \frac{b+a}{2}\right) + f\left(\frac{1}{\sqrt{3}}\cdot\frac{b-a}{2} + \frac{b+a}{2}\right)\right]\\
+G_3f &= \frac{b-a}{2}\left[\frac{5}{9}\cdot f\left(-\sqrt{0.6}\cdot\frac{b-a}{2} + \frac{b+a}{2}\right) + \frac{8}{9}\cdot f\left(\frac{b+a}{2}\right)\right]\\
+&+ \frac{b-a}{2}\left[\frac{5}{9}\cdot f\left(\sqrt{0.6}\cdot\frac{b-a}{2} + \frac{b+a}{2}\right)\right]
+\end{align*}
+\end{definition}
+
+\begin{example2}{Gauss-Legendre Quadrature}\\
+Approximate $\int_0^{0.5} e^{-x^2} \, dx$ using the 3-point Gauss-Legendre formula.
+
+First, we transform the integral:
+\begin{align*}
+\int_0^{0.5} e^{-x^2} \, dx = \frac{0.5-0}{2}\int_{-1}^{1} e^{-\left(\frac{0.5-0}{2}t + \frac{0+0.5}{2}\right)^2} \, dt = \frac{0.25}{2}\int_{-1}^{1} e^{-\left(0.125t + 0.25\right)^2} \, dt
+\end{align*}
+
+Using the 3-point Gauss-Legendre formula ($G_3f$):
+\begin{align*}
+G_3f &= \frac{0.5-0}{2}\left[\frac{5}{9}\cdot e^{-\left(0.125\cdot(-\sqrt{0.6}) + 0.25\right)^2} + \frac{8}{9}\cdot e^{-\left(0.125\cdot 0 + 0.25\right)^2}\right]\\
+&+ \frac{0.5-0}{2}\left[\frac{5}{9}\cdot e^{-\left(0.125\cdot\sqrt{0.6} + 0.25\right)^2}\right]\\
+&= 0.25 \cdot \left[\frac{5}{9}\cdot e^{-\left(0.25-0.125\cdot\sqrt{0.6}\right)^2} + \frac{8}{9}\cdot e^{-0.25^2} + \frac{5}{9}\cdot e^{-\left(0.25+0.125\cdot\sqrt{0.6}\right)^2}\right]\\
+&\approx 0.25 \cdot \left[\frac{5}{9}\cdot e^{-0.15^2} + \frac{8}{9}\cdot e^{-0.0625} + \frac{5}{9}\cdot e^{-0.35^2}\right]\\
+&\approx 0.25 \cdot \left[\frac{5}{9}\cdot 0.978 + \frac{8}{9}\cdot 0.939 + \frac{5}{9}\cdot 0.884\right]\\
+&\approx 0.25 \cdot 0.936 \approx 0.234
+\end{align*}
+
+The exact value is approximately 0.2327, so this is a very accurate approximation with just 3 evaluation points.
+\end{example2}
+
+\subsection{Romberg Integration}
+
+\begin{definition}{Romberg Integration}\\
+Romberg integration is an extrapolation technique that uses the trapezoidal rule with successively halved step sizes to obtain higher-order accuracy.
+
+For the composite trapezoidal rule $Tf(h)$ approximating $I(f) = \int_a^b f(x) \, dx$:
+
+Let $T_{j0} = Tf\left(\frac{b-a}{2^j}\right)$ for $j = 0, 1, \ldots, m$. Then, the extrapolations are defined by the recursion:
+\begin{align*}
+T_{jk} = \frac{4^k \cdot T_{j+1,k-1} - T_{j,k-1}}{4^k - 1}
+\end{align*}
+for $k = 1, 2, \ldots, m$ and $j = 0, 1, \ldots, m-k$.
+
+These extrapolations $T_{jk}$ have error order $2k+2$. The sequence of step sizes $h_j = \frac{b-a}{2^j}$ is called the Romberg sequence.
+\end{definition}
+
+\begin{KR}{Romberg Integration Algorithm}\\
+\paragraph{Steps}
+\begin{enumerate}
+    \item For $j = 0, 1, \ldots, m$, compute $T_{j0}$ using the composite trapezoidal rule with step size $h_j = \frac{b-a}{2^j}$:
+    \begin{align*}
+    T_{j0} = Tf(h_j) = h_j \cdot \left(\frac{f(a) + f(b)}{2} + \sum_{i=1}^{n_j-1} f(x_i)\right)
+    \end{align*}
+    where $n_j = 2^j$ and $x_i = a + ih_j$.
+    
+    \item For $k = 1, 2, \ldots, m$ and $j = 0, 1, \ldots, m-k$, compute the extrapolations:
+    \begin{align*}
+    T_{jk} = \frac{4^k \cdot T_{j+1,k-1} - T_{j,k-1}}{4^k - 1}
+    \end{align*}
+    
+    \item The value $T_{0m}$ provides the highest-order approximation to the integral.
+\end{enumerate}
+
+\paragraph{Extrapolation Scheme}
+The extrapolations form a triangular pattern:
+\begin{center}
+$T_{00}$ \\
+$\searrow$ \\
+$T_{10} \rightarrow T_{01}$ \\
+$\searrow \nearrow \searrow$ \\
+$T_{20} \rightarrow T_{11} \rightarrow T_{02}$ \\
+$\searrow \nearrow \searrow \nearrow \searrow$ \\
+$T_{30} \rightarrow T_{21} \rightarrow T_{12} \rightarrow T_{03}$ \\
+$\downarrow \quad \downarrow \quad \downarrow \quad \downarrow$ \\
+\end{center}
+
+\paragraph{Efficiency}
+Each extrapolation significantly improves accuracy without requiring additional function evaluations. The first column requires $O(2^m)$ function evaluations, but each subsequent column only requires algebraic operations, making this method highly efficient for achieving high accuracy.
+\end{KR}
+
+\begin{theorem}{Relationship to Simpson's Rule}\\
+The first extrapolation step of Romberg integration ($T_{01}$) is equivalent to Simpson's rule:
+\begin{align*}
+T_{01} = \frac{4T_{10} - T_{00}}{3} = \frac{b-a}{6}(f(a) + 4f(\frac{a+b}{2}) + f(b)) = Sf
+\end{align*}
+
+Similarly, each column in the Romberg table corresponds to a higher-order integration method, with the $k$-th column having error order $O(h^{2k+2})$.
+\end{theorem}
+
+\begin{example2}{Romberg Integration}\\
+Approximate $\int_2^4 \frac{1}{x} \, dx$ using Romberg integration with $j = 0, 1, 2, 3$.
+
+First, compute the first column $T_{j0}$ using the trapezoidal rule with different step sizes:
+
+For $j = 0, h_0 = \frac{4-2}{2^0} = 2, n_0 = 2^0 = 1$:
+\begin{align*}
+T_{00} &= h_0 \cdot \frac{f(2) + f(4)}{2} = 2 \cdot \frac{\frac{1}{2} + \frac{1}{4}}{2} = 2 \cdot \frac{0.75}{2} = 0.75
+\end{align*}
+
+For $j = 1, h_1 = 1, n_1 = 2$:
+\begin{align*}
+T_{10} &= h_1 \cdot \left(\frac{f(2) + f(4)}{2} + f(3)\right) = 1 \cdot \left(\frac{\frac{1}{2} + \frac{1}{4}}{2} + \frac{1}{3}\right) = 1 \cdot \left(\frac{0.75}{2} + \frac{1}{3}\right) = 0.7083
+\end{align*}
+
+For $j = 2, h_2 = 0.5, n_2 = 4$:
+\begin{align*}
+T_{20} &= h_2 \cdot \left(\frac{f(2) + f(4)}{2} + f(2.5) + f(3) + f(3.5)\right)\\
+&= 0.5 \cdot \left(\frac{\frac{1}{2} + \frac{1}{4}}{2} + \frac{1}{2.5} + \frac{1}{3} + \frac{1}{3.5}\right)\\
+&= 0.5 \cdot (0.375 + 0.4 + 0.3333 + 0.2857) \approx 0.6970
+\end{align*}
+
+For $j = 3, h_3 = 0.25, n_3 = 8$:
+\begin{align*}
+T_{30} &= 0.25 \cdot \left(\frac{f(2) + f(4)}{2} + f(2.25) + f(2.5) + \ldots + f(3.75)\right)\\
+&\approx 0.6941
+\end{align*}
+
+Now, compute the extrapolations:
+
+For $k = 1, j = 0$:
+\begin{align*}
+T_{01} &= \frac{4^1 \cdot T_{10} - T_{00}}{4^1 - 1} = \frac{4 \cdot 0.7083 - 0.75}{3} = \frac{2.8332 - 0.75}{3} \approx 0.6944
+\end{align*}
+
+For $k = 1, j = 1$:
+\begin{align*}
+T_{11} &= \frac{4 \cdot T_{21} - T_{10}}{3} = \frac{4 \cdot 0.6970 - 0.7083}{3} = \frac{2.788 - 0.7083}{3} \approx 0.6932
+\end{align*}
+
+For $k = 1, j = 2$:
+\begin{align*}
+T_{21} &= \frac{4 \cdot T_{31} - T_{20}}{3} = \frac{4 \cdot 0.6941 - 0.6970}{3} = \frac{2.7764 - 0.6970}{3} \approx 0.6931
+\end{align*}
+
+For $k = 2, j = 0$:
+\begin{align*}
+T_{02} &= \frac{4^2 \cdot T_{11} - T_{01}}{4^2 - 1} = \frac{16 \cdot 0.6932 - 0.6944}{15} = \frac{11.0912 - 0.6944}{15} \approx 0.6931
+\end{align*}
+
+For $k = 2, j = 1$:
+\begin{align*}
+T_{12} &= \frac{16 \cdot T_{21} - T_{11}}{15} = \frac{16 \cdot 0.6931 - 0.6932}{15} \approx 0.6931
+\end{align*}
+
+For $k = 3, j = 0$:
+\begin{align*}
+T_{03} &= \frac{4^3 \cdot T_{12} - T_{02}}{4^3 - 1} = \frac{64 \cdot 0.6931 - 0.6931}{63} \approx 0.6931
+\end{align*}
+
+The final approximation $T_{03} \approx 0.6931$ is very close to the exact value $\ln(2) \approx 0.693147$.
+\end{example2}
+
+\subsection{Special Considerations and Practical Implementation}
+
+\begin{concept}{Handling Singularities}\\
+When the integrand has singularities, standard quadrature methods may fail. Techniques to handle singularities include:
+\begin{itemize}
+    \item Variable substitution to remove the singularity
+    \item Using specialized quadrature formulas designed for specific types of singularities
+    \item Breaking the interval at the singular point and applying appropriate methods on each subinterval
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Adaptive Quadrature}\\
+Adaptive quadrature methods adjust the integration strategy based on the behavior of the integrand:
+\begin{itemize}
+    \item Use smaller intervals where the integrand changes rapidly
+    \item Use larger intervals where the integrand is smooth
+    \item Recursively divide intervals until a desired accuracy is achieved
+\end{itemize}
+
+This approach can significantly improve efficiency while maintaining accuracy.
+\end{concept}
+
+\begin{concept}{Multidimensional Integration}\\
+For integrals in two or more dimensions:
+\begin{itemize}
+    \item Product rules apply one-dimensional methods repeatedly along each dimension
+    \item Monte Carlo methods use random sampling and are particularly effective for high-dimensional integrals
+    \item Adaptive strategies become especially important as the dimensionality increases
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Implementation in Python}\\
+\paragraph{Using SciPy for Numerical Integration}
+Python's SciPy library provides several functions for numerical integration:
+
+\begin{itemize}
+    \item \texttt{scipy.integrate.quad}: General-purpose integration using adaptive quadrature
+    \item \texttt{scipy.integrate.fixed\_quad}: Integration using fixed-order Gaussian quadrature
+    \item \texttt{scipy.integrate.romberg}: Implementation of Romberg integration
+    \item \texttt{scipy.integrate.trapz}: Implementation of the composite trapezoidal rule
+    \item \texttt{scipy.integrate.simps}: Implementation of Simpson's rule
+\end{itemize}
+
+\paragraph{Example Usage}
+\begin{lstlisting}[language=Python, style=basesmol]
+from scipy import integrate
+import numpy as np
+
+# Define the function to integrate
+def f(x):
+    return np.exp(-x**2)
+
+# Using quad (adaptive quadrature)
+result, error = integrate.quad(f, 0, 0.5)
+print(f"Result: {result}, Error estimate: {error}")
+
+# Using fixed_quad (7-point Gaussian quadrature)
+result = integrate.fixed_quad(f, 0, 0.5, n=7)[0]
+print(f"Fixed-quad result: {result}")
+
+# Using Romberg integration
+result = integrate.romberg(f, 0, 0.5, tol=1e-8)
+print(f"Romberg result: {result}")
+
+# Using composite rules with array data
+x = np.linspace(0, 0.5, 100)
+y = f(x)
+trapz_result = integrate.trapz(y, x)
+simps_result = integrate.simps(y, x)
+print(f"Trapz result: {trapz_result}")
+print(f"Simpson result: {simps_result}")
+\end{lstlisting}
+\end{KR}
