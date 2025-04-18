@@ -1,2 +1,134 @@
-\section{Linear Regression}
+\section{Linear Regression Models}
+
+\subsection{Training Linear Regression Models}
+
+\begin{KR}{Training a Linear Regression Model}
+\paragraph{Steps for training linear regression models}
+\begin{enumerate}
+    \item Collect your training data consisting of feature vectors $x^{(m)}$ and target values $y^{(m)}$
+    \item Decide whether to use the normal equation or gradient descent:
+    \begin{itemize}
+        \item Normal equation: Use for datasets with fewer than 20,000 features or samples
+        \item Gradient descent: Use for larger datasets
+    \end{itemize}
+    \item For normal equation:
+    \begin{itemize}
+        \item Construct design matrix $X$ with rows as samples, adding a column of 1s for the intercept term
+        \item Calculate $\theta = (X^T X)^{-1}X^T y$
+    \end{itemize}
+    \item For gradient descent:
+    \begin{itemize}
+        \item Initialize parameters $\theta$ randomly
+        \item Update parameters iteratively using gradient descent until convergence
+    \end{itemize}
+    \item After training, predict using $\hat{y} = \theta^T x$
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Linear Regression Example}
+Consider predicting life satisfaction based on GDP:
+\begin{itemize}
+    \item Input feature: GDP per capita (USD)
+    \item Output: Life satisfaction score (1-10)
+    \item Training the model gives us parameters $\theta_0 = 3.0$ and $\theta_1 = 8 \times 10^{-5}$
+    \item For a country with GDP = 45,000 USD, we predict:
+    $\hat{y} = 3.0 + (8 \times 10^{-5}) \times 45000 = 3.0 + 3.6 = 6.6$
+\end{itemize}
+\end{example2}
+
+\subsection{Evaluating Regression Models}
+
+\mult{2}
+
+\begin{theorem}{Evaluation Metrics for Regression}\\
+Common metrics for evaluating regression models include:\\
+    Mean Absolute Error: 
+    $$MAE = \frac{1}{I} \sum_{i=1}^{I} |y^{(i)}-\hat{y}^{(i)}|$$
+    Mean Squared Error: 
+    $$MSE = \frac{1}{I}\sum_{i=1}^{I}(y^{(i)}-\hat{y}^{(i)})^2$$
+    Root Mean Squared Deviation: 
+    $$RMSD = \sqrt{MSE} = \sqrt{\frac{1}{I}\sum_{i=1}^{I}(y^{(i)}-\hat{y}^{(i)})^2}$$
+\end{theorem}
+
+\begin{concept}{Assumptions in Linear Regression}
+\begin{itemize}
+    \item \textbf{Linearity}: \\The relationship between X and y is linear
+    \item \textbf{Independence}: \\The residuals are independent of each other
+    \item \textbf{Normality}: The expected output values are normally distributed
+    \item \textbf{Homoscedasticity}: The variance of the residual is the same for any value of X
+\end{itemize}
+These assumptions can be verified visually using residual plots.
+\end{concept}
+
+\begin{theorem}{Coefficient of Determination}\\
+The Coefficient of Determination $R^2$ measures the fraction of the variance explained by the model:
+\[R^2 = 1 - \frac{SS_{res}}{SS_{tot}}\]
+Residual sum of squares:
+$$SS_{res} = \sum_i (y^{(i)} - \hat{y}^{(i)})^2$$
+Total sum of squares:
+$$SS_{tot} = \sum_i (y^{(i)} - \mu_y)^2$$
+$R^2 = 1$ means a perfect fit, while $R^2 = 0$ means the model performs no better than predicting the mean.
+\end{theorem}
+
+\begin{corollary}{Residual Analysis}\\
+Residual plots help evaluate model quality:
+\begin{itemize}
+    \item \textbf{Random scatter}: \\Suggests good model fit
+    \item \textbf{U-shaped pattern}: \\ Suggests non-linear relationship
+    \item \textbf{Funnel shape}: \\ Suggests heteroscedasticity
+    \item \textbf{Cyclic pattern}: \\ Suggests seasonality or auto-correlation
+\end{itemize}
+\vspace{1mm}
+Examining residuals can indicate model weaknesses and suggest improvements.
+\end{corollary}
+
+\multend
+
+\begin{KR}{Interpreting Regression Results}
+\paragraph{Examine coefficient values}
+\begin{itemize}
+    \item Sign indicates direction of relationship (positive or negative)
+    \item Magnitude indicates strength of relationship
+    \item For standardized features, directly compare coefficient magnitudes
+\end{itemize}
+
+\paragraph{Assess model fit}
+\begin{itemize}
+    \item $R^2$ close to 1 indicates good fit
+    \item Low MSE indicates accurate predictions
+    \item Check residual plots for patterns
+\end{itemize}
+
+\paragraph{Check for violations of assumptions}
+\begin{itemize}
+    \item Non-linear patterns in residual plot suggest linearity violation
+    \item Residuals changing with fitted values suggest heteroscedasticity
+    \item QQ-plot deviating from straight line suggests non-normality
+\end{itemize}
+
+\paragraph{Consider feature importance}
+\begin{itemize}
+    \item Features with larger coefficients have greater impact
+    \item Statistical significance (p-values) indicates confidence in relationship
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Making Predictions with Linear Regression}\\
+Suppose we've trained a multivariate linear regression model to predict house prices based on size (sq ft), number of bedrooms, and age (years). Our trained model has parameters:
+\begin{itemize}
+    \item $\theta_0 = 50,000$ (intercept)
+    \item $\theta_1 = 100$ (coefficient for size)
+    \item $\theta_2 = 5,000$ (coefficient for bedrooms)
+    \item $\theta_3 = -200$ (coefficient for age)
+\end{itemize}
+\tcblower
+For a house with 1,500 sq ft, 3 bedrooms, and 25 years old, we predict:
+\begin{align*}
+\hat{y} &= \theta_0 + \theta_1 \times \text{size} + \theta_2 \times \text{bedrooms} + \theta_3 \times \text{age} \\
+&= 50,000 + 100 \times 1,500 + 5,000 \times 3 + (-200) \times 25 \\
+&= 50,000 + 150,000 + 15,000 - 5,000 \\
+&= 210,000
+\end{align*}
+So, the predicted price is \$210,000.
+\end{example2}
 

@@ -10,9 +10,33 @@
 
 \subsection{Data}
 
+\mult{2}
+
 \begin{concept}{Typical Data Driven Project}
 
     \includegraphics[width=\linewidth]{typical_data_driven_project.png}
+\end{concept}
+
+
+
+\begin{theorem}{Data Types}
+    
+    \includegraphics[width=\linewidth]{data_types.png}
+\end{theorem}
+
+\begin{concept}{Overview Data Types}
+
+    \textbf{Categorial Data}
+    \begin{itemize}
+        \item Nominal: no order, Scale ("labels") $\rightarrow$ e.g. hair colour, gender
+        \item Ordinal: ordered $\rightarrow$ e.g. military rank, star rating
+    \end{itemize}
+
+    \textbf{Numerical Data} (ordered)
+    \begin{itemize}
+        \item Discrete: countable, ratio $\rightarrow$ e.g. number of persons in a room
+        \item Continuous: interval, numeric scale $\rightarrow$ e.g. temperature, weight
+    \end{itemize}
 \end{concept}
 
 \begin{definition}{Data} has many sources, e.g.: 
@@ -20,11 +44,6 @@
     
     Independent of the data source, each data point has a data type
 \end{definition}
-
-\begin{theorem}{Data Types}
-    
-    \includegraphics[width=\linewidth]{data_types.png}
-\end{theorem}
 
 \begin{corollary}{Nominal Data}
     \begin{itemize}
@@ -62,30 +81,38 @@
     \end{itemize}
 \end{corollary}
 
-\begin{concept}{Overview Data Types}
 
-    \textbf{Categorial Data}
-    \begin{itemize}
-        \item Nominal: no order, Scale ("labels") $\rightarrow$ e.g. hair colour, gender
-        \item Ordinal: ordered $\rightarrow$ e.g. military rank, star rating
-    \end{itemize}
 
-    \textbf{Numerical Data} (ordered)
-    \begin{itemize}
-        \item Discrete: countable, ratio $\rightarrow$ e.g. number of persons in a room
-        \item Continuous: interval, numeric scale $\rightarrow$ e.g. temperature, weight
-    \end{itemize}
-\end{concept}
+\multend
+
+\subsection{Data Quality}
+
+\begin{formula}{Standard error measure}
+    $$
+    \begin{gathered}
+    E=\frac{1}{N} \sum_{i=1}^N\left(1-\text { id }\left(\hat{y}_i, y_i\right)\right), \quad \text { id }(a, b)= \begin{cases}1 & \text { if } a=b \\
+    0 & \text { else }\end{cases} \\
+    \text { data } a_{\text {size }}=9, \quad \text { correct }=6, \quad \text { wrong }=3 \\
+    E=\frac{1}{9} \cdot 3=0.33
+    \end{gathered}
+    $$
+\end{formula}
+
+\subsubsection{Data Preprocessing}
+
+\mult{2}
+
+
 
 \begin{definition}{Data Cleaning}
     is the process of improving the data quality by removing or improving incorrect or improperly formatted data.
-    \vspace{2mm}\\
+    \vspace{1mm}\\
     \textbf{(near) duplicate detection} is the process of identifying and removing or merging duplicate data points.
     \begin{itemize}
         \item compare attributes of the tuple
         \item compare content of the attributes
     \end{itemize}
-
+    \vspace{1mm}
     \textbf{Filling missing values} is the process of replacing missing values with substituted values.
     \begin{itemize}
         \item ignore tuple
@@ -94,7 +121,7 @@
         \item use attribute mean, median, mode
         \item use most probable value
     \end{itemize}
-
+    \vspace{1mm}
     \textbf{Noisy data} is data with errors or outliers.
     \begin{itemize}
         \item Binning: divide the range of attribute values into bins
@@ -103,22 +130,76 @@
     \end{itemize}
 \end{definition}
 
-\begin{formula}{Binning}
-    
-    \textcolor{purple}{Equal Width Binning:}
-    \begin{itemize}
-        \item Divide the range into $N$ intervals of equal size (= width)
-        \item $width = \frac{max - min}{N}$, $bin_i = [min + i \cdot width, min + (i+1) \cdot width]$
-    \end{itemize}
-    \includegraphics[width=0.5\linewidth]{equal_width_ninning.png}
 
-    \textcolor{purple}{Equal Depth/Frequency Binning:}
+
+\begin{definition}{Data Sampling}
+    Represent large dataset by smaller subset to speed up automatic calculations.
+    \vspace{1mm}\\
+    \textbf{Non-Probabilistic}
     \begin{itemize}
-        \item Divide the range into $N$ intervals with equal number of data points/records (= depth/frequency)
-        \item $depth = \frac{N}{n}$, $bin_i = [data_{(i-1) \cdot depth}, data_{i \cdot depth}]$
+        \item Convenience: easiest to obtain
+        \item Judgement: based on experts' knowledge and judgement
+        \item Snowball: purely based on referrals
+        \item Quota: based on attribute values
     \end{itemize}
-    \includegraphics[width=0.5\linewidth]{equal_depth_binning.png}
+    \vspace{1mm}
+    \textbf{Probabilistic}
+    \begin{itemize}
+        \item Simple Random: each item has an equal probability of being chosen
+        \item Systematic: select some starting point and then select every $k$th element
+        \item Stratified: divide the population into subgroups (strata) based on attributes and then draw a sample from each stratum
+        \item Cluster: divide the population into clusters and then randomly select some of the clusters
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Data Partitioning}
+    is the process of dividing the dataset into two or more parts.
+    \begin{itemize}
+        \item Training set: used to train the model
+        \item Validation set: used to tune the model
+        \item Test set: used to evaluate the model
+    \end{itemize}
+    \vspace{1mm}
+    \textcolor{pink}{\textbf{K-Fold Cross-Validation}}
+    \begin{itemize}
+        \item Divide the dataset into $k$ subsets (folds)
+        \item Train the model $k$ times, each time using a different subset as the test set and the remaining points as the training set
+        $\rightarrow$ train on k-1 folds, test on the remaining fold, repeat for each fold
+        \item Average the results to get the final model $\rightarrow$ calculate average errors
+    \end{itemize}
+\end{definition}
+
+\begin{formula}{Equal Width Binning}\\
+    Divide the range into $N$ intervals of \\equal size (= width)
+    $$width = \frac{max - min}{N}$$
+    $$bin_i = [min + i \cdot width, min + (i+1) \cdot width]$$
+    \includegraphics[width=\linewidth]{equal_width_ninning.png}
 \end{formula}
+
+\begin{formula}{Equal Depth/Frequency Binning}\\
+    Divide the range into $N$ intervals with equal number of data points/records (= depth/frequency)
+    $$depth = \frac{N}{n}$$
+    $$bin_i = [data_{(i-1) \cdot depth}, data_{i \cdot depth}]$$
+    \includegraphics[width=\linewidth]{equal_depth_binning.png}
+\end{formula}
+
+\multend
+
+\begin{definition}{Data Normalization}
+    is the process of transforming values of several variables into a similar range.
+    $$\text{Min-Max Normalization: } x_{norm} = \frac{x - min(x)}{max(x) - min(x)}$$
+    $$\text{Z-Score Normalization: } x_{norm} = \frac{x - \bar{x}}{\sigma}$$
+    Change the values of numeric columns to a common scale (e.g., between 0 and 1 ), without distorting differences in the ranges of values.
+    $$\text{Linear Normalization: } f_{lin}(v) = \frac{v - min}{max - min}$$
+    $$\text{Square Root Normalization: } f_{sq}(v) = \frac{\sqrt{v} - \sqrt{min}}{\sqrt{max} - \sqrt{min}}$$
+    $$\text{Logarithmic Normalization: } f_{ln}(v) = \frac{\ln(v) - \ln(min)}{\ln(max) - \ln(min)}$$
+
+    \includegraphics[width=\linewidth]{data_normalization1.png}
+
+    \includegraphics[width=\linewidth]{data_normalization2.png}
+\end{definition}
+
+\subsection{Basics of Linear Regression}
 
 \begin{definition}{Linear Regression}
     Discover the parameters of the straight-line equation that best fits the data points.
@@ -129,75 +210,40 @@
     $$
     b=\frac{\sum_{i=1}^n\left(x_i-\bar{x}\right)\left(y_i-\bar{y}\right)}{\sum_{i=1}^n\left(x_i-\bar{x}\right)^2}, \quad a=\bar{y}-b \bar{x}, \quad y=a+b x
     $$
-    \includegraphics[width=\linewidth]{linear_regression_icecream.png}
+    \includegraphics[width=0.8\linewidth]{linear_regression_icecream.png}
 
     Usage: smooth out noise, fill in missing values, predict future/unknown values
 \end{definition}
 
-\begin{definition}{Data Normalization}
-    is the process of transforming values of several variables into a similar range.
-    \begin{itemize}
-        \item Min-Max Normalization: $x_{norm} = \frac{x - min(x)}{max(x) - min(x)}$
-        \item Z-Score Normalization: $x_{norm} = \frac{x - \bar{x}}{\sigma}$
-    \end{itemize}
-    
-    Change the values of numeric columns to a common scale (e.g., between 0 and 1 ), without distorting differences in the ranges of values.
-    \begin{itemize}
-        \item Linear normalization: $f_{lin}(v) = \frac{v - min}{max - min}$
-        \item Square root normalization: $f_{sq}(v) = \frac{\sqrt{v} - \sqrt{min}}{\sqrt{max} - \sqrt{min}}$
-        \item Logarithmic normalization: $f_{ln}(v) = \frac{\ln(v) - \ln(min)}{\ln(max) - \ln(min)}$
-    \end{itemize}
 
-    \includegraphics[width=0.5\linewidth]{data_normalization1.png}
 
-    \includegraphics[width=0.5\linewidth]{data_normalization2.png}
-\end{definition}
+\begin{concept}{Univariate Linear Regression}\\
+In Univariate (Simple) Linear Regression, the output depends on one input variable $x$, and the hypothesis is a linear combination:
+\[h_{\theta_0,\theta_1}(x) = \theta_0 + \theta_1 x\]
+where $\theta_0$ represents the intercept with the y-axis and $\theta_1$ represents the slope of a straight line.
+\end{concept}
 
-\begin{definition}{Data Sampling}
-    Represent large dataset by smaller subset to speed up automatic calculations.
-\textbf{Non-Probabilistic}
-\begin{itemize}
-    \item Convenience: easiest to obtain
-    \item Judgement: based on experts' knowledge and judgement
-    \item Snowball: purely based on referrals
-    \item Quota: based on attribute values
-\end{itemize}
+\begin{concept}{Multivariate Linear Regression}\\
+Multivariate (Multiple) Linear Regression extends the simple model to handle multiple predictors:
+\[\hat{y}^{(m)} = h_\theta(x^{(m)}) = \theta_0 + \theta_1 x^{(m)}_1 + \theta_2 x^{(m)}_2 + \ldots + \theta_N x^{(m)}_N = \theta^T X_{m,:}\]
+This can be expressed compactly in matrix form:
+\[y = X\theta + \varepsilon\]
+where $X$ is the design matrix, $\theta$ is the parameter vector, $y$ is the output vector, and $\varepsilon$ is the error term.
+\end{concept}
 
-\textbf{Probabilistic}
-\begin{itemize}
-    \item Simple Random: each item has an equal probability of being chosen
-    \item Systematic: select some starting point and then select every $k$th element
-    \item Stratified: divide the population into subgroups (strata) based on attributes and then draw a sample from each stratum
-    \item Cluster: divide the population into clusters and then randomly select some of the clusters
-\end{itemize}
-\end{definition}
+\begin{concept}{Cost Function for Linear Regression}\\
+We use the Residual Sum of Squares (RSS) to measure how well our model fits the data:
+\[J(\theta_0, \theta_1) = \frac{1}{2M}\sum_{m=1}^{M}(y^{(m)} - \hat{y}^{(m)})^2\]
+This is also called the Least Squares Approach.
+\end{concept}
 
-\begin{definition}{Data Partitioning}
-    is the process of dividing the dataset into two or more parts.
-    \begin{itemize}
-        \item Training set: used to train the model
-        \item Validation set: used to tune the model
-        \item Test set: used to evaluate the model
-    \end{itemize}
-
-    \textcolor{pink}{\textbf{K-Fold Cross-Validation}}
-    \begin{itemize}
-        \item Divide the dataset into $k$ subsets (folds)
-        \item Train the model $k$ times, each time using a different subset as the test set and the remaining points as the training set
-        $\rightarrow$ train on k-1 folds, test on the remaining fold, repeat for each fold
-        \item Average the results to get the final model $\rightarrow$ calculate average errors
-    \end{itemize}
-\end{definition}
-
-\subsection{Evaluation}
-
-\begin{formula}{Standard error measure}
-    $$
-    \begin{gathered}
-    E=\frac{1}{N} \sum_{i=1}^N\left(1-\text { id }\left(\hat{y}_i, y_i\right)\right), \quad \text { id }(a, b)= \begin{cases}1 & \text { if } a=b \\
-    0 & \text { else }\end{cases} \\
-    \text { data } a_{\text {size }}=9, \quad \text { corret }=6, \quad \text { wrong }=3 \\
-    E=\frac{1}{9} \cdot 3=0.33
-    \end{gathered}
-    $$
+\begin{formula}{Normal Equation}\\
+For linear regression, we can directly compute the optimal parameters using:
+\[\theta = (X^T X)^{-1}X^T y\]
+This gives the exact solution without requiring iterative approximation.
 \end{formula}
+
+
+
+
+
