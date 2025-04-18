@@ -1,73 +1,57 @@
 \section{Memory Management}
 
-\subsection{Memory Management Basics}
+\mult{2}
 
 \begin{definition}{Memory Management Introduction}\\
-    Memory is a critical system resource managed by the operating system:
+    Critical system resource managed by the OS:
     \begin{itemize}
-        \item The Memory Manager controls main memory allocation and usage
-        \item Secondary memory can be used as a buffer zone (swap)
+        \item The Memory Manager controls \\ main memory allocation and usage
+        \item Secondary memory: buffer zone (swap)
     \end{itemize}
     
     Memory is organized in a hierarchy:
     \begin{itemize}
         \item Fast cache in 1-3 layers (L1, L2, L3)
         \item Main memory (RAM) - slower but larger
-        \item Secondary memory (hard disks, SSDs) - for programs and files
+        \item Secondary memory (hard disks, SSDs) \\ - for programs and files
         \item Tertiary memory (backup storage, tapes)
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Memory Management Tasks}\\
-    Operating systems handle several memory management tasks:
+\begin{concept}{Memory Management Tasks}\\
+    OSs handle several memory management tasks:
     \begin{itemize}
-        \item Determining how much memory processes require
+        \item Determine how much memory processes require
         \item Deciding where in memory processes are located (position of residency)
         \item Managing how long processes remain in memory (length of residency)
-        \item Subdividing memory for co-existence of multiple processes
+        \item Subdividing memory for co-existence of \\ multiple processes
         \item Handling memory fragmentation
     \end{itemize}
-\end{definition}
+\end{concept}
 
-\subsection{Memory Allocation Approaches}
+\multend
 
-\begin{definition}{Memory Division and Fragmentation}\\
-    Two basic approaches to memory division:
+\subsubsection{Memory Allocation Approaches}
+
+\mult{2}
+
+\begin{definition}{Memory Division and Fragmentation}
     \begin{itemize}
         \item \textbf{Static memory division}:
             \begin{itemize}
                 \item Memory divided into fixed-size segments
-                \item Problem: Internal fragmentation (wasted space within allocated segments)
+                \item Problem: Internal fragmentation \\ (wasted space within allocated segments)
             \end{itemize}
         \item \textbf{Dynamic memory division}:
             \begin{itemize}
                 \item Memory divided according to process needs
-                \item Problem: External fragmentation (free space becomes fragmented)
+                \item Problem: External fragmentation \\ (free space becomes fragmented)
                 \item Solution: Compaction (expensive operation)
             \end{itemize}
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Buddy Algorithm}\\
-    The Buddy Algorithm addresses fragmentation:
-    \begin{itemize}
-        \item Memory divided into blocks of power-of-2 sizes
-        \item When a request arrives, the system:
-            \begin{itemize}
-                \item Finds the smallest block that fits the request
-                \item If no suitable block exists, splits a larger block into two "buddies"
-                \item Allocates one buddy and keeps the other free
-            \end{itemize}
-        \item When a block is freed, the system:
-            \begin{itemize}
-                \item Checks if its buddy is also free
-                \item If both are free, merges them into a larger block
-                \item Continues merging recursively if possible
-            \end{itemize}
-        \item Simpler to implement than other dynamic allocation schemes
-        \item Still experiences some internal fragmentation
-    \end{itemize}
-\end{definition}
+
 
 \begin{definition}{Free Space Management}\\
     Finding free space during allocation requires efficient algorithms:
@@ -86,17 +70,40 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Swapping}\\
-    When main memory becomes scarce, swapping is used:
+\begin{formula}{Buddy Algorithm} Division/Fragmentation:
     \begin{itemize}
-        \item Secondary memory serves as temporary storage for processes
+        \item Memory divided into blocks of power-of-2 sizes
+        \item When a request arrives, the system:
+            \begin{itemize}
+                \item Finds the smallest block that fits the request
+                \item If no suitable block exists, splits a larger block into two 'buddies'
+                \item Allocates one buddy and keeps the other free
+            \end{itemize}
+        \item When a block is freed, the system:
+            \begin{itemize}
+                \item Checks if its buddy is also free
+                \item If both are free, merge into a larger block
+                \item Continues merging recursively if possible
+            \end{itemize}
+        \item Simpler to implement than other DAC
+        \item Still experiences some internal fragmentation
+    \end{itemize}
+\end{formula}
+
+\begin{formula}{Swapping} Free Space Management:
+    \begin{itemize}
+        \item Secondary memory: temp. storage for processes
         \item When processes are suspended or exit, their memory is freed
         \item When processes restart, they are reloaded into memory
         \item Allows more processes to run concurrently than physical memory would permit
     \end{itemize}
-\end{definition}
+\end{formula}
+
+\multend
 
 \subsection{Virtual Memory}
+
+\mult{2}
 
 \begin{definition}{Virtual Memory Concept}\\
     Virtual memory leverages program behavior characteristics:
@@ -109,19 +116,18 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Paging}\\
-    Paging is the mechanism that enables virtual memory:
+\begin{definition}{Paging} mechanism that enables virtual memory:
     \begin{itemize}
         \item Process memory is divided into fixed-size pages
         \item Physical memory is divided into frames of the same size
         \item Pages are loaded into frames as needed
         \item Memory Management Unit (MMU) manages mapping between pages and frames
-        \item Typically uses "on-demand paging" (lazy loading)
+        \item Typically uses 'on-demand paging' (lazy loading)
             \begin{itemize}
                 \item Only loads pages when they are accessed
                 \item Sometimes prefetches additional pages based on locality
             \end{itemize}
-        \item Process then has a set of resident pages in memory
+        \item Process has set of resident pages in memory
             \begin{itemize}
                 \item Resident set: All process pages in memory
                 \item Working set: Pages currently being used
@@ -129,24 +135,41 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Address Translation}\\
-    Virtual memory requires translation between logical and physical addresses:
+\multend
+
+\mult{2}
+
+\begin{concept}{Address Translation} logical $\leftrightarrows$ physical\\
+    Virtual memory requires transl. between addresses:
     \begin{itemize}
-        \item Logical address consists of page number and page offset
-        \item Page number used to look up frame number in page table
+        \item Logical address consists of page-nr. and -offset
+        \item Page nr. used to look up frame nr. in page table
         \item Physical address formed by combining frame number with page offset
         \item Translation process:
             \begin{itemize}
-                \item Extract page number and offset from logical address
-                \item Use page number to index page table
-                \item Retrieve frame number from page table
-                \item Combine frame number with offset to form physical address
+                \item Extract page nr. and offset from logical addr.
+                \item Use page nr. to index page table
+                \item Retrieve frame nr. from page table
+                \item Combine frame nr. with offset to form \\ physical address
             \end{itemize}
     \end{itemize}
-\end{definition}
+\end{concept}
 
-\begin{definition}{Page Table}\\
-    Page tables maintain the mapping between pages and frames:
+\begin{concept}{Page Replacement}\\
+    $\rightarrow$ when memory is full and a new page is needed
+    \begin{itemize}
+        \item System must decide which resident page to evict
+        \item Can use global strategy (any process's pages) or local strategy (only faulting process's pages)
+    \end{itemize}
+        Common page replacement algorithms:
+            \begin{itemize}
+                \item Optimal: Replace page used furthest in future (theoretical only)
+                \item Least Recently Used (LRU): \\ Replace page unused for longest time
+                \item First-In-First-Out (FIFO): Replace oldest page
+            \end{itemize}
+\end{concept}
+
+\begin{definition}{Page Tables} maintain mapping between pages and frames:
     \begin{itemize}
         \item Each entry contains a frame number
         \item Entries also include status bits:
@@ -161,6 +184,8 @@
         \item Can be very large for large address spaces
     \end{itemize}
 \end{definition}
+
+
 
 \begin{definition}{Translation Lookaside Buffer (TLB)}\\
     The TLB addresses the performance overhead of page table lookups:
@@ -179,19 +204,9 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Page Replacement}\\
-    When memory is full and a new page is needed, page replacement occurs:
-    \begin{itemize}
-        \item System must decide which resident page to evict
-        \item Can use global strategy (any process's pages) or local strategy (only faulting process's pages)
-        \item Common page replacement algorithms:
-            \begin{itemize}
-                \item Optimal: Replace page used furthest in future (theoretical only)
-                \item Least Recently Used (LRU): Replace page unused for longest time
-                \item First-In-First-Out (FIFO): Replace oldest page
-            \end{itemize}
-    \end{itemize}
-\end{definition}
+
+
+\multend
 
 \subsection{Linux Memory Management}
 

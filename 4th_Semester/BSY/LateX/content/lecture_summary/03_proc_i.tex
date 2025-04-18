@@ -1,61 +1,66 @@
 \section{Processes and Threads}
 
-\subsection{Process Model}
+\subsection{Processes}
 
-\begin{definition}{Programs vs. Processes}\\
+\subsubsection{Process Model}
+
+\begin{definition}{Programs vs. Processes}
     A program is fundamentally different from a process:
-    \begin{itemize}
-        \item \textbf{Program}: A compiled executable (binary)
+    \vspace{1mm}\\
+    \begin{minipage}{0.5\linewidth}
+    \textbf{Program}: A compiled executable (binary)
             \begin{itemize}
                 \item Set of CPU instructions and related data
                 \item Targets a specific platform (OS + hardware)
                 \item Static entity stored on disk
             \end{itemize}
-        \item \textbf{Process}: An active instance of a program
+        \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+        \textbf{Process}: An active instance of a program
             \begin{itemize}
                 \item Has a program, input, output, and state
                 \item Dynamic entity in memory
                 \item Multiple instances of the same program can run as separate processes
             \end{itemize}
-    \end{itemize}
+    \end{minipage}
 \end{definition}
+
+\mult{2}
 
 \begin{definition}{Process Characteristics}\\
     Processes have several important characteristics:
     \begin{itemize}
         \item Can run sequentially or in parallel (multi-tasking)
         \item Selected for execution by the OS scheduler
-        \item Associated with an owner (defines access privileges)
-        \item Run within an environment (environment variables)
-        \item Can run in foreground (interactive) or background (non-interactive)
+        \item Associated with an owner \\ (defines access privileges)
+        \item Run within an environment \\ (environment variables)
+        \item Can run in foreground (interactive) \\ or background (non-interactive)
         \item Can be user processes or system processes
     \end{itemize}
 \end{definition}
 
-\begin{example}
-    Viewing process information in Linux:
-    \begin{lstlisting}[language=bash, style=basesmol]
-    # List all processes with details
-    ps aux
-    
-    # Interactive process viewer
-    top
-    
-    # Show environment variables
-    env
-    
-    # Run a process in the background
-    wc /dev/zero &
-    
-    # List background jobs
-    jobs
-    
-    # Bring a background job to foreground
-    fg %job_number
-    \end{lstlisting}
-\end{example}
+\begin{example2}{Viewing process information in Linux}
+\begin{lstlisting}[language=bash, style=basesmol]
+# List all processes with details
+ps aux
+# Interactive process viewer
+top
+# Show environment variables
+env
+# Run a process in the background
+wc /dev/zero &
+# List background jobs
+jobs
+# Bring a background job to foreground
+fg %job_number
+\end{lstlisting}
+\end{example2}
 
-\subsection{Process Creation}
+\multend
+
+\subsubsection{Process Creation}
+
+\mult{2}
 
 \begin{definition}{Process Creation by the OS}\\
     When creating a process, the OS performs several operations:
@@ -124,7 +129,11 @@ ls -la
     This process can be visualized with \texttt{pstree} showing the parent-child relationships.
 \end{example2}
 
-\subsection{Process Termination}
+\multend
+
+\subsubsection{Process Termination}
+
+\mult{2}
 
 \begin{definition}{Process Termination}\\
     A process can terminate in several ways:
@@ -150,7 +159,11 @@ ls -la
     \end{lstlisting}
 \end{example}
 
-\subsection{Process States}
+\multend
+
+\subsubsection{Process States}
+
+\mult{2}
 
 \begin{definition}{Process States}\\
     Each process has a life-cycle with specific states:
@@ -168,19 +181,9 @@ ls -la
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Process State Changes}\\
-    Processes change state for various reasons:
-    \begin{itemize}
-        \item \textbf{Timer expiration}: CPU allocation time ended
-        \item \textbf{Interrupt}: Hardware/resource calls for service
-        \item \textbf{Page fault}: Data not in memory, requires disk access
-        \item \textbf{System call}: Explicit OS service request
-    \end{itemize}
-    
-    State changes involve a switch between user mode and system (kernel) mode.
-\end{definition}
 
-\begin{definition}{User Mode vs. System Mode}\\
+
+\begin{concept}{User Mode vs. System Mode}\\
     CPU supports two execution modes:
     \begin{itemize}
         \item \textbf{User Mode}: Limited privileges
@@ -197,9 +200,21 @@ ls -la
                 \item Device management
             \end{itemize}
     \end{itemize}
+\end{concept}
+
+\begin{definition}{Process State Changes}\\
+    Processes change state for various reasons:
+    \begin{itemize}
+        \item \textbf{Timer expiration}: CPU allocation time ended
+        \item \textbf{Interrupt}: Hardware/resource calls for service
+        \item \textbf{Page fault}: Data not in memory, requires disk access
+        \item \textbf{System call}: Explicit OS service request
+    \end{itemize}
+    
+    State changes involve a switch between user mode and system (kernel) mode.
 \end{definition}
 
-\begin{definition}{Context Switch vs. Mode Switch}\\
+\begin{concept}{Context Switch vs. Mode Switch}\\
     Two types of switches occur during system operation:
     \begin{itemize}
         \item \textbf{Mode Switch}: Transition between user mode and kernel mode
@@ -216,9 +231,11 @@ ls -la
                 \item Requires scheduler involvement
             \end{itemize}
     \end{itemize}
-\end{definition}
+\end{concept}
 
-\subsection{Process Management}
+\multend
+
+\subsubsection{Process Management}
 
 \begin{definition}{Process Control Block}\\
     The OS maintains a Process Control Block (PCB) for each process:
@@ -236,6 +253,8 @@ ls -la
 \end{definition}
 
 \subsection{Threads}
+
+\mult{2}
 
 \begin{definition}{Threads}\\
     Threads are execution entities within a process:
@@ -255,7 +274,7 @@ ls -la
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Thread Implementation Approaches}\\
+\begin{concept}{Thread Implementation Approaches}\\
     Threads can be implemented in different ways:
     \begin{itemize}
         \item \textbf{User Space Threading (M:1)}:
@@ -274,37 +293,9 @@ ls -la
                 \item Disadvantages: Higher overhead, slower creation/removal, mode switching for scheduling
             \end{itemize}
     \end{itemize}
-\end{definition}
+\end{concept}
 
-\begin{definition}{Thread Implementation in Linux}\\
-    Linux doesn't have a dedicated concept of threads:
-    \begin{itemize}
-        \item All threads are standard processes (tasks)
-        \item A thread is a process that shares resources with other processes
-        \item Shared resources can include: address space, file descriptors, sockets, signal handlers, etc.
-        \item Implemented using system calls: \texttt{fork()} and \texttt{clone()}
-        \item Two implementation frameworks:
-            \begin{itemize}
-                \item LinuxThreads (legacy)
-                \item NPTL (Native POSIX Thread Library, current standard)
-            \end{itemize}
-    \end{itemize}
-\end{definition}
 
-\begin{definition}{Linux Process vs. Thread Creation}\\
-    Linux offers different system calls for process and thread creation:
-    \begin{itemize}
-        \item \texttt{fork()}: Creates a child process by duplicating the parent
-            \begin{itemize}
-                \item Child and parent run in separate memory spaces
-            \end{itemize}
-        \item \texttt{clone()}: Provides precise control over what execution context is shared
-            \begin{itemize}
-                \item Allows sharing of address space, file descriptors, signal handlers, etc.
-                \item Used to implement threads in Linux
-            \end{itemize}
-    \end{itemize}
-\end{definition}
 
 \begin{definition}{Kernel Threads}\\
     Kernel threads are special processes that:
@@ -326,7 +317,39 @@ ls -la
     \end{itemize}
 \end{definition}
 
-\begin{KR}{Process and Thread Management in Linux}\\
+\begin{concept}{Thread Implementation in Linux}\\
+    Linux doesn't have a dedicated concept of threads:
+    \begin{itemize}
+        \item All threads are standard processes (tasks)
+        \item A thread is a process that shares resources with other processes
+        \item Shared resources can include: address space, file descriptors, sockets, signal handlers, etc.
+        \item Implemented using system calls: \texttt{fork()} and \texttt{clone()}
+        \item Two implementation frameworks:
+            \begin{itemize}
+                \item LinuxThreads (legacy)
+                \item NPTL (Native POSIX Thread Library, current standard)
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\subsection{Linux Process and Thread Creation}
+
+\begin{theorem}{Linux Process vs. Thread Creation}\\
+    Linux offers different system calls for process and thread creation:
+    \begin{itemize}
+        \item \texttt{fork()}: Creates a child process by duplicating the parent
+            \begin{itemize}
+                \item Child and parent run in separate memory spaces
+            \end{itemize}
+        \item \texttt{clone()}: Provides precise control over what execution context is shared
+            \begin{itemize}
+                \item Allows sharing of address space, file descriptors, signal handlers, etc.
+                \item Used to implement threads in Linux
+            \end{itemize}
+    \end{itemize}
+\end{theorem}
+
+\begin{KR}{Process and Thread Management in Linux}
     \paragraph{Viewing process information}
     \begin{itemize}
         \item \texttt{ps aux} - List all processes
@@ -359,6 +382,8 @@ ls -la
         \item Check process state with \texttt{ps} (state "Z" indicates zombie)
     \end{itemize}
 \end{KR}
+
+\multend
 
 \begin{example2}{Creating Processes in C}\\
     Simple process creation with fork():

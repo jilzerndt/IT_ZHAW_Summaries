@@ -1,9 +1,11 @@
 \section{Booting an OS}
 
-\subsection{Boot Process Overview}
+\subsection{Boot Process and Initialization}
 
-\begin{definition}{Boot Process Stages}\\
-    The typical boot process follows these common steps:
+
+
+\begin{formula}{Boot Process Stages}
+    Typical boot process follows these steps:
     \begin{itemize}
         \item Hardware initialization (BIOS/UEFI)
         \item Bootloader execution
@@ -11,12 +13,14 @@
         \item System initialization (services, environment)
         \item User interface presentation
     \end{itemize}
-\end{definition}
+\end{formula}
 
-\subsection{BIOS and Hardware Initialization}
+\mult{2}
 
-\begin{definition}{Basic Input Output System (BIOS)}\\
-    BIOS is the first program loaded on boot:
+\subsubsection{BIOS and Bootloader}
+
+\begin{concept}{BIOS and Hardware Initialization }\\
+    BIOS (Basic Input Output System) is the first program loaded on boot:
     \begin{itemize}
         \item Stored in ROM on the motherboard
         \item Contains low-level I/O software for interfacing with devices
@@ -27,9 +31,7 @@
         \item Reads the first sector from the boot device (Master Boot Record)
         \item Loads MBR into memory and executes it
     \end{itemize}
-\end{definition}
-
-\subsection{Bootloader}
+\end{concept}
 
 \begin{definition}{Bootloader Function}\\
     The bootloader (loaded from MBR):
@@ -52,40 +54,11 @@
     \end{itemize}
 \end{definition}
 
-\subsection{OS Initialization}
+\multend
 
-\begin{definition}{Kernel Initialization}\\
-    The OS kernel initialization process:
-    \begin{itemize}
-        \item Queries hardware information 
-        \item Loads and initializes device drivers
-        \item Initializes internal management structures (e.g., process table)
-        \item Sets up virtual memory and memory management
-        \item Creates system services
-        \item Launches the first user process (init)
-    \end{itemize}
-    
-    Linux kernel initialization phases:
-    \begin{itemize}
-        \item Architecture-specific assembly code
-            \begin{itemize}
-                \item Sets up OS memory map
-                \item Identifies CPU type
-                \item Calculates total RAM
-                \item Disables interrupts
-                \item Enables MMU and caches
-            \end{itemize}
-        \item C main() procedure
-            \begin{itemize}
-                \item Initializes process tables, interrupt/system-call tables
-                \item Sets up virtual memory and page cache
-                \item Configures resource control
-                \item Loads drivers and initializes OS services
-            \end{itemize}
-    \end{itemize}
-\end{definition}
+\paragraph{BIOS vs UEFI}
 
-\subsection{BIOS vs UEFI}
+\mult{2}
 
 \begin{definition}{BIOS Limitations}\\
     Traditional BIOS has several limitations:
@@ -136,7 +109,47 @@
     \end{lstlisting}
 \end{example}
 
-\subsection{Initial RAM Disk (initrd/initramfs)}
+\multend
+
+\subsubsection{OS Kernel Initialization}
+
+\mult{2}
+
+\begin{concept}{Kernel Initialization}\\
+    The OS kernel initialization process:
+    \begin{itemize}
+        \item Queries hardware information 
+        \item Loads and initializes device drivers
+        \item Initializes internal management structures \\ (e.g., process table)
+        \item Sets up virtual memory and \\ memory management
+        \item Creates system services
+        \item Launches the first user process (init)
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{Linux Kernel Initialization Phases}
+    \begin{itemize}
+        \item Architecture-specific assembly code
+            \begin{itemize}
+                \item Sets up OS memory map
+                \item Identifies CPU type
+                \item Calculates total RAM
+                \item Disables interrupts
+                \item Enables MMU and caches
+            \end{itemize}
+        \item C main() procedure
+            \begin{itemize}
+                \item Initializes process tables, \\ interrupt/system-call tables
+                \item Sets up virtual memory and page cache
+                \item Configures resource control
+                \item Loads drivers and initializes OS services
+            \end{itemize}
+    \end{itemize}
+\end{theorem}
+
+\multend
+
+\subsubsection{Initial RAM Disk (initrd/initramfs)}
 
 \begin{definition}{Initial RAM Disk}\\
     The initial RAM disk addresses the "chicken-and-egg" problem:
@@ -162,9 +175,11 @@
     \end{lstlisting}
 \end{example}
 
-\subsection{System Services Initialization}
+\subsubsection{System Services Initialization}
 
-\begin{definition}{System V Init}\\
+
+
+\begin{concept}{System V Init}\\
     Traditional System V initialization:
     \begin{itemize}
         \item Init process runs initialization shell scripts from /etc/rc\# directories
@@ -173,7 +188,7 @@
         \item Dependencies among services are coded in the scripts themselves
         \item Results in complex initialization process
     \end{itemize}
-    
+    \vspace{2mm}
     System V runlevels:
     \begin{itemize}
         \item 0: Halt - Shuts down the system
@@ -184,50 +199,68 @@
         \item 5: Multi-user mode with GUI
         \item 6: Reboot - Restarts the system
     \end{itemize}
-\end{definition}
+\end{concept}
+
+\subsubsection{systemd}
+
+\mult{2}
 
 \begin{definition}{systemd}\\
     Modern initialization system (systemd):
     \begin{itemize}
         \item Replacement for SysV Init
         \item Provides coordinated and parallel service startup
-        \item Features on-demand activation and runtime management
+        \item Features on-demand activation and \\ runtime management
         \item Uses dependency-based service control logic
-        \item Takes a holistic management approach for the entire system
+        \item Takes a holistic management approach for \\ the entire system
     \end{itemize}
 \end{definition}
 
-\subsection{systemd}
-
-\begin{definition}{systemd Units}\\
-    systemd organizes system components as "units":
+\begin{definition}{systemd User Services}\\
+    systemd supports user instance services:
     \begin{itemize}
-        \item Units encapsulate system objects (services, mounts, devices, etc.)
-        \item Units have states (active, inactive, activating, deactivating, failed)
-        \item Units can depend on other units
-        \item Most units are configured in unit configuration files
-        \item Some units can be created automatically or programmatically
-    \end{itemize}
-    
-    Common unit types:
-    \begin{itemize}
-        \item .service - A system service
-        \item .target - A group of systemd units (similar to runlevels)
-        \item .mount - A filesystem mount point
-        \item .device - A device file recognized by the kernel
-        \item .socket - An inter-process communication socket
-        \item .timer - A systemd timer
+        \item Services managed by individual users \\ without requiring root privileges
+        \item User service units are stored in:
+            \begin{itemize}
+                \item Units provided by packages: \\ \texttt{/usr/lib/systemd/user/}
+                \item User-installed package units: \\ \texttt{\textasciitilde/.local/share/systemd/user/}
+                \item System-wide user units: \\ \texttt{/etc/systemd/user/}
+                \item User's own units: \\ \texttt{\textasciitilde/.config/systemd/user/}
+            \end{itemize}
+        \item By default, user services start on login \\ and stop on logout
+        \item Lingering allows user services to \\ start at boot without login
     \end{itemize}
 \end{definition}
 
 \begin{definition}{systemd Dependencies}\\
     systemd supports various dependency types:
     \begin{itemize}
-        \item \textbf{Requires=}: Units that must be started when this unit is started
-        \item \textbf{Wants=}: Units that should be started (but not required) when this unit is started
-        \item \textbf{Conflicts=}: Units that must be stopped when this unit is started
-        \item \textbf{After=}: This unit should be started after the listed units
-        \item \textbf{Before=}: This unit should be started before the listed units
+        \item \textbf{Requires=} \\ Units that must be started when this \\ unit is started
+        \item \textbf{Wants=} \\ Units that should be started (but not required) when this unit is started
+        \item \textbf{Conflicts=} \\ Units that must be stopped when this unit is started
+        \item \textbf{After=} \\ This unit should be started after the listed units
+        \item \textbf{Before=} \\ This unit should be started before the listed units
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{systemd Units}\\
+    systemd organizes system components as 'units' which:
+    \begin{itemize}
+        \item encapsulate system objects \\ (services, mounts, devices, etc.)
+        \item have states \\ (active, inactive, activating, deactivating, failed)
+        \item can depend on other units
+        \item (most) are configured in unit configuration files
+        \item (some) can be created automatically \\ or programmatically
+    \end{itemize}
+    \vspace{2mm}
+    \textbf{Common unit types:}
+    \begin{itemize}
+        \item .service - A system service
+        \item .target - A group of systemd units \\ (similar to runlevels)
+        \item .mount - A filesystem mount point
+        \item .device - A device file recognized by the kernel
+        \item .socket - An inter-process communication socket
+        \item .timer - A systemd timer
     \end{itemize}
 \end{definition}
 
@@ -254,13 +287,15 @@ WantedBy=multi-user.target
 
     The sections have specific purposes:
     \begin{itemize}
-        \item [Unit]: Metadata and dependencies
-        \item [Service]: Execution configuration for services
-        \item [Install]: Configuration for enabling the unit
+        \item Unit: Metadata and dependencies
+        \item Service: Execution configuration for services
+        \item Install: Configuration for enabling the unit
     \end{itemize}
 \end{code}
 
-\begin{KR}{Working with systemd}\\
+\multend
+
+\begin{KR}{Working with systemd}
     \paragraph{Viewing unit status}
     \begin{itemize}
         \item \texttt{systemctl status -all} - Show status of all units
@@ -321,18 +356,5 @@ sudo systemctl enable myservice
 \end{lstlisting}
 \end{example2}
 
-\begin{definition}{systemd User Services}\\
-    systemd supports user instance services:
-    \begin{itemize}
-        \item Services managed by individual users without requiring root privileges
-        \item User service units are stored in:
-            \begin{itemize}
-                \item /usr/lib/systemd/user/: Units provided by packages
-                \item \textasciitilde/.local/share/systemd/user/: User-installed package units
-                \item /etc/systemd/user/: System-wide user units
-                \item \textasciitilde/.config/systemd/user/: User's own units
-            \end{itemize}
-        \item By default, user services start on login and stop on logout
-        \item Lingering allows user services to start at boot without login
-    \end{itemize}
-\end{definition}
+
+
