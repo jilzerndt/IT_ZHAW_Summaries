@@ -1,0 +1,511 @@
+\section{Input / Output - Part II}
+
+\subsection{Building and Using a Custom Linux Kernel}
+
+\begin{concept}{Custom Kernel Motivation}\\
+    There are various reasons to build a custom kernel:
+    \begin{itemize}
+        \item Create a minimalist kernel (disable unused features, load needed ones as modules)
+        \item Add custom OS features for specific requirements
+        \item Support special hardware that may not be in the standard kernel
+        \item Optimize for specific workloads or hardware platforms
+        \item Learn about kernel internals and development processes
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Linux Kernel Development Process}\\
+    Linux follows a time-based release process:
+    \begin{itemize}
+        \item New major kernel releases every 2-3 months (e.g., 5.11, 5.12)
+        \item Development cycle phases:
+            \begin{itemize}
+                \item Merge window (first two weeks): New features merged into mainline
+                \item Release candidates (weekly): Bug fixes only, no new features
+                \item Final release: After several release candidates
+            \end{itemize}
+        \item Long-term support (LTS) kernels receive updates for extended periods
+        \item Community development model with maintainers for various subsystems
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Choosing a Kernel Version}\\
+    When building a custom kernel, version selection matters:
+    \begin{itemize}
+        \item Mainline: Latest development version (might be unstable)
+        \item Stable: Recent release with proven stability
+        \item Long-term: Longer support period (good for production systems)
+        \item Distribution-specific: Modified by Linux distributions
+    \end{itemize}
+    
+    Version numbers indicate:
+    \begin{itemize}
+        \item First number: Major version (rarely changes)
+        \item Second number: Minor version (major features)
+        \item Third number: Patch level (bug fixes and minor improvements)
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Building a Custom Linux Kernel}\\
+    \paragraph{Getting the source code}
+    \begin{itemize}
+        \item Download from kernel.org: \texttt{wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.xx.tar.xz}
+        \item Extract: \texttt{tar xf linux-5.xx.tar.xz}
+        \item Change directory: \texttt{cd linux-5.xx}
+    \end{itemize}
+    
+    \paragraph{Installing build dependencies}
+    \begin{itemize}
+        \item On Debian/Ubuntu: \texttt{sudo apt-get install build-essential gcc bc bison flex libssl-dev libncurses5-dev libelf-dev}
+    \end{itemize}
+    
+    \paragraph{Configuring the kernel}
+    \begin{itemize}
+        \item Start from existing config (recommended):
+            \begin{itemize}
+                \item Current running kernel: \texttt{cp /boot/config-\$(uname -r) ./.config}
+                \item Distribution default: \texttt{make defconfig}
+            \end{itemize}
+        \item Update config for new options: \texttt{make oldconfig}
+        \item Interactive configuration tools:
+            \begin{itemize}
+                \item Text-based menu: \texttt{make menuconfig}
+                \item GUI-based: \texttt{make xconfig} or \texttt{make gconfig}
+            \end{itemize}
+        \item Important configuration options:
+            \begin{itemize}
+                \item Custom version name: \texttt{CONFIG\_LOCALVERSION}
+                \item Module support: \texttt{CONFIG\_MODULES}
+                \item CPU and architecture options
+                \item Device drivers
+                \item File systems
+            \end{itemize}
+    \end{itemize}
+    
+    \paragraph{Building the kernel}
+    \begin{itemize}
+        \item Compile: \texttt{make -j\$(nproc)}
+        \item Build modules: \texttt{make modules}
+        \item Create Debian/Ubuntu packages: \texttt{make -j\$(nproc) deb-pkg}
+        \item For RPM-based systems: \texttt{make -j\$(nproc) rpm-pkg}
+    \end{itemize}
+    
+    \paragraph{Installing the kernel}
+    \begin{itemize}
+        \item Debian packages: \texttt{sudo dpkg -i ../linux-*.deb}
+        \item RPM packages: \texttt{sudo rpm -ivh ../linux-*.rpm}
+        \item Manual installation:
+            \begin{itemize}
+                \item Install modules: \texttt{sudo make modules\_install}
+                \item Install kernel: \texttt{sudo make install}
+            \end{itemize}
+        \item Update bootloader: \texttt{sudo update-grub} (GRUB)
+    \end{itemize}
+    
+    \paragraph{Booting the new kernel}
+    \begin{itemize}
+        \item Reboot: \texttt{sudo reboot}
+        \item Select the new kernel at the bootloader menu
+        \item Verify running kernel: \texttt{uname -a}
+    \end{itemize}
+\end{KR}
+
+\subsection{Linux Kernel Modules}
+
+\begin{definition}{Kernel Modules Concept}\\
+    Kernel modules extend kernel functionality without rebuilding:
+    \begin{itemize}
+        \item Loadable code that can be added to or removed from a running kernel
+        \item Allow dynamic extension of kernel capabilities
+        \item Provide device drivers, filesystem drivers, system calls, etc.
+        \item Reduce the size of the base kernel
+        \item Enable support for hardware that is hot-pluggable
+        \item Support for special features used in specific applications
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Module Structure}\\
+    A kernel module follows a specific structure:
+    \begin{itemize}
+        \item Must include necessary kernel headers
+        \item Initialization function (\texttt{init\_module()} or custom named)
+            \begin{itemize}
+                \item Called when the module is loaded
+                \item Sets up resources, registers with kernel subsystems
+                \item Returns success (0) or error code
+            \end{itemize}
+        \item Cleanup function (\texttt{cleanup\_module()} or custom named)
+            \begin{itemize}
+                \item Called when the module is unloaded
+                \item Releases resources, unregisters from kernel subsystems
+            \end{itemize}
+        \item Uses \texttt{MODULE\_LICENSE()} macro to specify license
+        \item Can include other macros for author, description, etc.
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Hello World Kernel Module}\\
+    Minimal kernel module example:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+#include <linux/module.h>    /* Needed by all modules */
+#include <linux/kernel.h>    /* Needed for KERN_INFO */
+#include <linux/init.h>      /* Needed for macros */
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Your Name");
+MODULE_DESCRIPTION("A simple Hello World module");
+
+static int __init hello_init(void)
+{
+    printk(KERN_INFO "Hello, World!\n");
+    return 0;    /* Success */
+}
+
+static void __exit hello_exit(void)
+{
+    printk(KERN_INFO "Goodbye, World!\n");
+}
+
+module_init(hello_init);
+module_exit(hello_exit);
+\end{lstlisting}
+
+    Key components:
+    \begin{itemize}
+        \item \texttt{module\_init} and \texttt{module\_exit} macros register functions
+        \item \texttt{printk} is the kernel's version of printf
+        \item \texttt{KERN\_INFO} sets the message priority level
+        \item \texttt{MODULE\_LICENSE} declares the license (important for symbol exports)
+    \end{itemize}
+\end{code}
+
+\begin{definition}{Module Building Process}\\
+    Building a kernel module requires:
+    \begin{itemize}
+        \item Pre-built kernel with module support
+        \item Module source code
+        \item Makefile defining the build process
+        \item Build tools and headers
+    \end{itemize}
+    
+    The build process:
+    \begin{itemize}
+        \item Kbuild system builds \texttt{<module\_name>.o} from source
+        \item Links to create \texttt{<module\_name>.ko} (kernel object)
+        \item Kernel modules must be built against the same kernel version they will run on
+        \item Distribution-specific kernel headers needed for module compatibility
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Module Makefile}\\
+    Example Makefile for a kernel module:
+    
+\begin{lstlisting}[style=basesmol]
+# Define the module name
+obj-m := hello.o
+
+# For standalone module build
+all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+# Clean up
+clean:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+\end{lstlisting}
+
+    For multiple source files:
+    
+\begin{lstlisting}[style=basesmol]
+# Module with multiple source files
+hello-y := hello_main.o hello_func.o
+obj-m := hello.o
+
+# For standalone module build
+all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+# Clean up
+clean:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+\end{lstlisting}
+\end{code}
+
+\begin{KR}{Working with Kernel Modules}\\
+    \paragraph{Building a module}
+    \begin{itemize}
+        \item Create module source file
+        \item Create Makefile
+        \item Build module: \texttt{make}
+        \item Result: \texttt{<module\_name>.ko} file
+    \end{itemize}
+    
+    \paragraph{Loading and unloading modules}
+    \begin{itemize}
+        \item List loaded modules: \texttt{lsmod}
+        \item Insert module: \texttt{sudo insmod <module\_name>.ko}
+        \item Remove module: \texttt{sudo rmmod <module\_name>}
+        \item Load module with dependencies: \texttt{sudo modprobe <module\_name>}
+        \item Unload module and dependencies: \texttt{sudo modprobe -r <module\_name>}
+        \item View kernel messages: \texttt{dmesg}
+    \end{itemize}
+    
+    \paragraph{Module information}
+    \begin{itemize}
+        \item Show module info: \texttt{modinfo <module\_name>.ko}
+        \item Check if module is loaded: \texttt{lsmod | grep <module\_name>}
+        \item Display module parameters: \texttt{systool -vm <module\_name>}
+        \item View module details in sysfs: \texttt{ls -l /sys/module/<module\_name>/}
+    \end{itemize}
+    
+    \paragraph{Module autoloading}
+    \begin{itemize}
+        \item Install module: \texttt{sudo make modules\_install}
+        \item Update module dependencies: \texttt{sudo depmod -a}
+        \item Configure autoloading: \texttt{echo "<module\_name>" | sudo tee /etc/modules-load.d/<module\_name>.conf}
+    \end{itemize}
+\end{KR}
+
+\subsection{Character Device Drivers}
+
+\begin{definition}{Character Device Drivers}\\
+    Character device drivers are a common type of Linux device driver:
+    \begin{itemize}
+        \item Handle devices that transfer data as a stream of bytes
+        \item Support operations like read, write, open, release, ioctl
+        \item Examples: serial ports, keyboards, mice, sensors
+        \item Appear as files in /dev with major and minor numbers
+        \item Major number identifies the driver
+        \item Minor number identifies the specific device
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Basic Character Device Driver}\\
+    Structure of a simple character device driver:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+
+MODULE_LICENSE("GPL");
+
+/* Prototypes */
+static int device_open(struct inode *, struct file *);
+static int device_release(struct inode *, struct file *);
+static ssize_t device_read(struct file *, char *, size_t, loff_t *);
+static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
+
+#define DEVICE_NAME "chardev"
+#define BUF_LEN 80
+
+/* Global variables */
+static int Major;                /* Major number assigned */
+static int Device_Open = 0;      /* Is device open? */
+static char msg[BUF_LEN];        /* Message for the device */
+static char *msg_Ptr;
+
+static struct file_operations fops = {
+    .read = device_read,
+    .write = device_write,
+    .open = device_open,
+    .release = device_release
+};
+
+/* Initialization function */
+int init_module(void)
+{
+    Major = register_chrdev(0, DEVICE_NAME, &fops);
+    if (Major < 0) {
+        printk(KERN_ALERT "Failed to register with %d\n", Major);
+        return Major;
+    }
+
+    printk(KERN_INFO "Major number assigned: %d\n", Major);
+    printk(KERN_INFO "Create device with: 'mknod /dev/%s c %d 0'\n", 
+           DEVICE_NAME, Major);
+    return 0;
+}
+
+/* Cleanup function */
+void cleanup_module(void)
+{
+    unregister_chrdev(Major, DEVICE_NAME);
+}
+
+/* Device methods */
+static int device_open(struct inode *inode, struct file *file)
+{
+    static int counter = 0;
+    
+    if (Device_Open)
+        return -EBUSY;
+        
+    Device_Open++;
+    sprintf(msg, "Called device_open %d times\n", counter++);
+    msg_Ptr = msg;
+    try_module_get(THIS_MODULE);
+    
+    return 0;
+}
+
+static int device_release(struct inode *inode, struct file *file)
+{
+    Device_Open--;
+    module_put(THIS_MODULE);
+    return 0;
+}
+
+static ssize_t device_read(struct file *filp, char *buffer, 
+                           size_t length, loff_t *offset)
+{
+    int bytes_read = 0;
+    
+    /* End of message */
+    if (*msg_Ptr == 0)
+        return 0;
+        
+    /* Transfer data to user space */
+    while (length && *msg_Ptr) {
+        put_user(*(msg_Ptr++), buffer++);
+        length--;
+        bytes_read++;
+    }
+    
+    return bytes_read;
+}
+
+static ssize_t device_write(struct file *filp, const char *buff, 
+                            size_t len, loff_t *off)
+{
+    printk(KERN_ALERT "Operation not supported\n");
+    return -EINVAL;
+}
+\end{lstlisting}
+
+    Key components:
+    \begin{itemize}
+        \item \texttt{file\_operations} structure defines callbacks for file operations
+        \item \texttt{register\_chrdev} allocates a major number
+        \item Device methods handle open, read, write, and close operations
+        \item \texttt{put\_user} safely copies data from kernel to user space
+        \item Reference counting with \texttt{try\_module\_get} and \texttt{module\_put}
+    \end{itemize}
+\end{code}
+
+\begin{example2}{Building\, Installing\, and Using a Character Device Module}\\
+    Complete workflow for a character device driver:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# 1. Create source file (chardev.c) and Makefile as shown above
+
+# 2. Build the module
+make
+
+# 3. Load the module
+sudo insmod chardev.ko
+
+# 4. Check kernel messages for major number
+dmesg | tail
+
+# 5. Create device node (assuming major number is 250)
+sudo mknod /dev/chardev c 250 0
+sudo chmod 666 /dev/chardev
+
+# 6. Test reading from the device
+cat /dev/chardev
+
+# 7. Check module information in sysfs
+ls -l /sys/module/chardev/
+cat /sys/module/chardev/parameters/* 2>/dev/null
+
+# 8. Unload the module when done
+sudo rmmod chardev
+
+# 9. Clean up the device node
+sudo rm /dev/chardev
+\end{lstlisting}
+
+    This demonstrates:
+    \begin{itemize}
+        \item Building and loading a custom character device driver
+        \item Creating a device node with appropriate permissions
+        \item Interacting with the device through standard file operations
+        \item Examining module information through sysfs
+        \item Proper cleanup when the module is no longer needed
+    \end{itemize}
+\end{example2}
+
+\begin{KR}{Linux Kernel Module Debugging}\\
+    \paragraph{Using printk}
+    \begin{itemize}
+        \item Add debug messages: \texttt{printk(KERN\_DEBUG "Debug: \%d\\n", value);}
+        \item Set console log level: \texttt{echo 7 > /proc/sys/kernel/printk}
+        \item View kernel messages: \texttt{dmesg}
+        \item Follow kernel messages: \texttt{dmesg -w}
+        \item Clear buffer: \texttt{dmesg -c}
+    \end{itemize}
+    
+    \paragraph{Debug filesystem}
+    \begin{itemize}
+        \item Mount debugfs: \texttt{mount -t debugfs none /sys/kernel/debug}
+        \item Create debug files in your module:
+            \begin{itemize}
+                \item Include \texttt{<linux/debugfs.h>}
+                \item Create directory: \texttt{debugfs\_create\_dir()}
+                \item Create files: \texttt{debugfs\_create\_file()}
+            \end{itemize}
+        \item Access from user space: \texttt{cat /sys/kernel/debug/mymodule/myfile}
+    \end{itemize}
+    
+    \paragraph{Module parameters}
+    \begin{itemize}
+        \item Define parameters: \texttt{module\_param(name, type, permissions);}
+        \item Load with parameters: \texttt{insmod mymodule.ko debug=1}
+        \item Change at runtime: \texttt{echo 1 > /sys/module/mymodule/parameters/debug}
+    \end{itemize}
+    
+    \paragraph{Kernel/system crashes}
+    \begin{itemize}
+        \item Configure kdump: Install and configure \texttt{kdump-tools}
+        \item Analyze crash dumps with \texttt{crash} utility
+        \item Check system logs after reboot: \texttt{journalctl -b -1}
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{I/O Performance Testing with Custom I/O Scheduler}\\
+    Testing I/O performance with different schedulers:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# 1. Check available I/O schedulers
+cat /sys/block/sda/queue/scheduler
+
+# 2. Test performance with default scheduler
+echo 3 > /proc/sys/vm/drop_caches  # Clear cache
+dd if=/dev/zero of=testfile bs=1M count=1000 oflag=direct
+rm testfile
+
+# 3. Change to a different scheduler (e.g., BFQ)
+echo bfq > /sys/block/sda/queue/scheduler
+
+# 4. Test performance with new scheduler
+echo 3 > /proc/sys/vm/drop_caches  # Clear cache
+dd if=/dev/zero of=testfile bs=1M count=1000 oflag=direct
+rm testfile
+
+# 5. Test with different I/O priorities
+# Start a background write process
+dd if=/dev/zero of=bg_file bs=1M count=2000 oflag=direct &
+BG_PID=$!
+
+# Run a foreground process with higher priority
+ionice -c2 -n0 dd if=/dev/zero of=fg_file bs=1M count=500 oflag=direct
+
+# Clean up
+kill $BG_PID
+rm bg_file fg_file
+
+# 6. Return to the default scheduler
+echo deadline > /sys/block/sda/queue/scheduler
+\end{lstlisting}
+\end{example2}

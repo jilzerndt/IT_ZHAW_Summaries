@@ -1,0 +1,338 @@
+\section{Booting an OS}
+
+\subsection{Boot Process Overview}
+
+\begin{definition}{Boot Process Stages}\\
+    The typical boot process follows these common steps:
+    \begin{itemize}
+        \item Hardware initialization (BIOS/UEFI)
+        \item Bootloader execution
+        \item Kernel loading and initialization
+        \item System initialization (services, environment)
+        \item User interface presentation
+    \end{itemize}
+\end{definition}
+
+\subsection{BIOS and Hardware Initialization}
+
+\begin{definition}{Basic Input Output System (BIOS)}\\
+    BIOS is the first program loaded on boot:
+    \begin{itemize}
+        \item Stored in ROM on the motherboard
+        \item Contains low-level I/O software for interfacing with devices
+        \item Performs Power-On Self-Test (POST)
+        \item Discovers devices by scanning PCI buses
+        \item Initializes hardware devices
+        \item Selects a boot device from the list in CMOS
+        \item Reads the first sector from the boot device (Master Boot Record)
+        \item Loads MBR into memory and executes it
+    \end{itemize}
+\end{definition}
+
+\subsection{Bootloader}
+
+\begin{definition}{Bootloader Function}\\
+    The bootloader (loaded from MBR):
+    \begin{itemize}
+        \item Accesses the boot partition containing the OS
+        \item Loads the OS kernel into memory
+        \item Sets up registers (Program Counter, Processor Status Word)
+        \item Transfers control to the OS by jumping to the first instruction
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{GRUB (GRand Unified Bootloader)}\\
+    GRUB is a common bootloader for Linux systems:
+    \begin{itemize}
+        \item Requires filesystem access to read the OS
+        \item Contains device drivers and filesystem modules
+        \item Provides a menu to select the OS to boot
+        \item Loads the selected kernel and optional initial RAM disk (initrd)
+        \item Passes control to the kernel
+    \end{itemize}
+\end{definition}
+
+\subsection{OS Initialization}
+
+\begin{definition}{Kernel Initialization}\\
+    The OS kernel initialization process:
+    \begin{itemize}
+        \item Queries hardware information 
+        \item Loads and initializes device drivers
+        \item Initializes internal management structures (e.g., process table)
+        \item Sets up virtual memory and memory management
+        \item Creates system services
+        \item Launches the first user process (init)
+    \end{itemize}
+    
+    Linux kernel initialization phases:
+    \begin{itemize}
+        \item Architecture-specific assembly code
+            \begin{itemize}
+                \item Sets up OS memory map
+                \item Identifies CPU type
+                \item Calculates total RAM
+                \item Disables interrupts
+                \item Enables MMU and caches
+            \end{itemize}
+        \item C main() procedure
+            \begin{itemize}
+                \item Initializes process tables, interrupt/system-call tables
+                \item Sets up virtual memory and page cache
+                \item Configures resource control
+                \item Loads drivers and initializes OS services
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\subsection{BIOS vs UEFI}
+
+\begin{definition}{BIOS Limitations}\\
+    Traditional BIOS has several limitations:
+    \begin{itemize}
+        \item Operates in 16-bit mode
+        \item Relies on MBR (Master Boot Record) from 1983
+        \item Limited partition number and size (2 TB max)
+        \item Not designed for extendability
+        \item Vulnerable to rootkit and bootkit attacks
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Unified Extensible Firmware Interface (UEFI)}\\
+    UEFI is the modern replacement for BIOS:
+    \begin{itemize}
+        \item Replaces MBR with GPT (GUID Partitioning Table)
+        \item Supports arbitrary number of partitions
+        \item Addresses disk space up to 2\textsuperscript{64} bytes
+        \item Uses unique UUIDs for partitions to avoid collisions
+        \item Features modular design for extendability
+        \item Includes "Secure Boot" to restrict which binaries can be executed
+        \item Uses cryptographic signatures and X.509 certificates for verification
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{UEFI Functioning}\\
+    UEFI uses an architecture-independent virtual machine:
+    \begin{itemize}
+        \item Executes special binary files compiled for UEFI (*.efi)
+        \item These files can be device drivers, bootloaders, or extensions
+        \item Files are stored in the EFI System Partition (ESP)
+        \item ESP uses FAT filesystem and can be reused in multi-boot systems
+        \item EFI Boot Manager configures which EFI binary to execute
+    \end{itemize}
+\end{definition}
+
+\begin{example}
+    Examining UEFI boot configuration:
+    \begin{lstlisting}[language=bash, style=basesmol]
+    # Display current boot entries
+    sudo efibootmgr -v
+    
+    # List contents of EFI system partition
+    sudo ls -la /boot/efi/EFI/
+    
+    # View disk partition table format (MBR or GPT)
+    sudo fdisk -l
+    \end{lstlisting}
+\end{example}
+
+\subsection{Initial RAM Disk (initrd/initramfs)}
+
+\begin{definition}{Initial RAM Disk}\\
+    The initial RAM disk addresses the "chicken-and-egg" problem:
+    \begin{itemize}
+        \item OS needs drivers to access hard drive and its filesystem
+        \item These drivers are stored on the hard drive itself
+        \item Solution: initrd/initramfs provides temporary root filesystem
+        \item Contains kernel modules and basic device files
+        \item Bootloader uncompresses both kernel and initrd into RAM
+        \item Kernel mounts initrd as the initial filesystem
+        \item Kernel uses tools found in initrd to find and mount the real filesystem
+    \end{itemize}
+\end{definition}
+
+\begin{example}
+    Examining GRUB configuration for kernel and initrd:
+    \begin{lstlisting}[language=bash, style=basesmol]
+    # View GRUB configuration
+    cat /boot/grub/grub.cfg
+    
+    # Examine a specific menu entry showing kernel and initrd paths
+    grep -A 10 "menuentry 'Ubuntu'" /boot/grub/grub.cfg
+    \end{lstlisting}
+\end{example}
+
+\subsection{System Services Initialization}
+
+\begin{definition}{System V Init}\\
+    Traditional System V initialization:
+    \begin{itemize}
+        \item Init process runs initialization shell scripts from /etc/rc\# directories
+        \item Uses predefined runlevels (0-6) to determine system state
+        \item Each runlevel has a set of services defined in scripts
+        \item Dependencies among services are coded in the scripts themselves
+        \item Results in complex initialization process
+    \end{itemize}
+    
+    System V runlevels:
+    \begin{itemize}
+        \item 0: Halt - Shuts down the system
+        \item 1: Single-user mode - Administrative tasks
+        \item 2: Multi-user mode without networking
+        \item 3: Multi-user mode with networking
+        \item 4: Not used/user-definable
+        \item 5: Multi-user mode with GUI
+        \item 6: Reboot - Restarts the system
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{systemd}\\
+    Modern initialization system (systemd):
+    \begin{itemize}
+        \item Replacement for SysV Init
+        \item Provides coordinated and parallel service startup
+        \item Features on-demand activation and runtime management
+        \item Uses dependency-based service control logic
+        \item Takes a holistic management approach for the entire system
+    \end{itemize}
+\end{definition}
+
+\subsection{systemd}
+
+\begin{definition}{systemd Units}\\
+    systemd organizes system components as "units":
+    \begin{itemize}
+        \item Units encapsulate system objects (services, mounts, devices, etc.)
+        \item Units have states (active, inactive, activating, deactivating, failed)
+        \item Units can depend on other units
+        \item Most units are configured in unit configuration files
+        \item Some units can be created automatically or programmatically
+    \end{itemize}
+    
+    Common unit types:
+    \begin{itemize}
+        \item .service - A system service
+        \item .target - A group of systemd units (similar to runlevels)
+        \item .mount - A filesystem mount point
+        \item .device - A device file recognized by the kernel
+        \item .socket - An inter-process communication socket
+        \item .timer - A systemd timer
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{systemd Dependencies}\\
+    systemd supports various dependency types:
+    \begin{itemize}
+        \item \textbf{Requires=}: Units that must be started when this unit is started
+        \item \textbf{Wants=}: Units that should be started (but not required) when this unit is started
+        \item \textbf{Conflicts=}: Units that must be stopped when this unit is started
+        \item \textbf{After=}: This unit should be started after the listed units
+        \item \textbf{Before=}: This unit should be started before the listed units
+    \end{itemize}
+\end{definition}
+
+\begin{code}{systemd Service Unit File}\\
+    A systemd service unit file consists of three sections:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+[Unit]
+Description=Example Service
+Documentation=https://example.com/docs
+After=network.target
+Wants=network-online.target
+Requires=example-dependency.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/example-service
+Restart=on-failure
+User=exampleuser
+
+[Install]
+WantedBy=multi-user.target
+\end{lstlisting}
+
+    The sections have specific purposes:
+    \begin{itemize}
+        \item [Unit]: Metadata and dependencies
+        \item [Service]: Execution configuration for services
+        \item [Install]: Configuration for enabling the unit
+    \end{itemize}
+\end{code}
+
+\begin{KR}{Working with systemd}\\
+    \paragraph{Viewing unit status}
+    \begin{itemize}
+        \item \texttt{systemctl status -all} - Show status of all units
+        \item \texttt{systemctl status SERVICE} - Show status of specific service
+        \item \texttt{systemctl list-units -t service} - List only service units
+        \item \texttt{systemctl list-unit-files --type service} - List service unit files
+        \item \texttt{systemctl cat SERVICE} - View the content of a unit file
+    \end{itemize}
+    
+    \paragraph{Managing units}
+    \begin{itemize}
+        \item \texttt{systemctl start SERVICE} - Start a service
+        \item \texttt{systemctl stop SERVICE} - Stop a service
+        \item \texttt{systemctl restart SERVICE} - Restart a service
+        \item \texttt{systemctl enable SERVICE} - Enable service autostart
+        \item \texttt{systemctl disable SERVICE} - Disable service autostart
+    \end{itemize}
+    
+    \paragraph{Working with targets}
+    \begin{itemize}
+        \item \texttt{systemctl list-units -t target} - List available targets
+        \item \texttt{systemctl get-default} - Show default target
+        \item \texttt{systemctl set-default TARGET} - Set default target
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Creating a Simple systemd Service}\\
+    Creating a custom service to write to a file when started:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Create a service unit file
+sudo nano /etc/systemd/system/myservice.service
+
+# Add the following content
+[Unit]
+Description=My Simple Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c 'echo "Service started at $(date)" > /home/ubuntu/service_started'
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+# Reload systemd to recognize the new service
+sudo systemctl daemon-reload
+
+# Start the service
+sudo systemctl start myservice
+
+# Verify it worked
+cat /home/ubuntu/service_started
+
+# Enable auto-start on boot
+sudo systemctl enable myservice
+\end{lstlisting}
+\end{example2}
+
+\begin{definition}{systemd User Services}\\
+    systemd supports user instance services:
+    \begin{itemize}
+        \item Services managed by individual users without requiring root privileges
+        \item User service units are stored in:
+            \begin{itemize}
+                \item /usr/lib/systemd/user/: Units provided by packages
+                \item \textasciitilde/.local/share/systemd/user/: User-installed package units
+                \item /etc/systemd/user/: System-wide user units
+                \item \textasciitilde/.config/systemd/user/: User's own units
+            \end{itemize}
+        \item By default, user services start on login and stop on logout
+        \item Lingering allows user services to start at boot without login
+    \end{itemize}
+\end{definition}

@@ -1,0 +1,502 @@
+\section{Memory Management}
+
+\subsection{Memory Management Basics}
+
+\begin{definition}{Memory Management Introduction}\\
+    Memory is a critical system resource managed by the operating system:
+    \begin{itemize}
+        \item The Memory Manager controls main memory allocation and usage
+        \item Secondary memory can be used as a buffer zone (swap)
+    \end{itemize}
+    
+    Memory is organized in a hierarchy:
+    \begin{itemize}
+        \item Fast cache in 1-3 layers (L1, L2, L3)
+        \item Main memory (RAM) - slower but larger
+        \item Secondary memory (hard disks, SSDs) - for programs and files
+        \item Tertiary memory (backup storage, tapes)
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Memory Management Tasks}\\
+    Operating systems handle several memory management tasks:
+    \begin{itemize}
+        \item Determining how much memory processes require
+        \item Deciding where in memory processes are located (position of residency)
+        \item Managing how long processes remain in memory (length of residency)
+        \item Subdividing memory for co-existence of multiple processes
+        \item Handling memory fragmentation
+    \end{itemize}
+\end{definition}
+
+\subsection{Memory Allocation Approaches}
+
+\begin{definition}{Memory Division and Fragmentation}\\
+    Two basic approaches to memory division:
+    \begin{itemize}
+        \item \textbf{Static memory division}:
+            \begin{itemize}
+                \item Memory divided into fixed-size segments
+                \item Problem: Internal fragmentation (wasted space within allocated segments)
+            \end{itemize}
+        \item \textbf{Dynamic memory division}:
+            \begin{itemize}
+                \item Memory divided according to process needs
+                \item Problem: External fragmentation (free space becomes fragmented)
+                \item Solution: Compaction (expensive operation)
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Buddy Algorithm}\\
+    The Buddy Algorithm addresses fragmentation:
+    \begin{itemize}
+        \item Memory divided into blocks of power-of-2 sizes
+        \item When a request arrives, the system:
+            \begin{itemize}
+                \item Finds the smallest block that fits the request
+                \item If no suitable block exists, splits a larger block into two "buddies"
+                \item Allocates one buddy and keeps the other free
+            \end{itemize}
+        \item When a block is freed, the system:
+            \begin{itemize}
+                \item Checks if its buddy is also free
+                \item If both are free, merges them into a larger block
+                \item Continues merging recursively if possible
+            \end{itemize}
+        \item Simpler to implement than other dynamic allocation schemes
+        \item Still experiences some internal fragmentation
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Free Space Management}\\
+    Finding free space during allocation requires efficient algorithms:
+    \begin{itemize}
+        \item \textbf{Bitmap approach}:
+            \begin{itemize}
+                \item Space-efficient representation
+                \item One bit per allocation unit
+                \item Fast free-space finding
+            \end{itemize}
+        \item \textbf{Linked list approach}:
+            \begin{itemize}
+                \item List of free blocks
+                \item Supports various placement algorithms (first/next/best fit)
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Swapping}\\
+    When main memory becomes scarce, swapping is used:
+    \begin{itemize}
+        \item Secondary memory serves as temporary storage for processes
+        \item When processes are suspended or exit, their memory is freed
+        \item When processes restart, they are reloaded into memory
+        \item Allows more processes to run concurrently than physical memory would permit
+    \end{itemize}
+\end{definition}
+
+\subsection{Virtual Memory}
+
+\begin{definition}{Virtual Memory Concept}\\
+    Virtual memory leverages program behavior characteristics:
+    \begin{itemize}
+        \item Programs exhibit spatial locality (tend to use a limited area of code at any time)
+        \item Entire processes don't need to be fully resident in memory
+        \item Non-required code/data can be swapped out when not immediately needed
+        \item Enables more processes to run concurrently
+        \item Must be transparent to programmer/process
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Paging}\\
+    Paging is the mechanism that enables virtual memory:
+    \begin{itemize}
+        \item Process memory is divided into fixed-size pages
+        \item Physical memory is divided into frames of the same size
+        \item Pages are loaded into frames as needed
+        \item Memory Management Unit (MMU) manages mapping between pages and frames
+        \item Typically uses "on-demand paging" (lazy loading)
+            \begin{itemize}
+                \item Only loads pages when they are accessed
+                \item Sometimes prefetches additional pages based on locality
+            \end{itemize}
+        \item Process then has a set of resident pages in memory
+            \begin{itemize}
+                \item Resident set: All process pages in memory
+                \item Working set: Pages currently being used
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Address Translation}\\
+    Virtual memory requires translation between logical and physical addresses:
+    \begin{itemize}
+        \item Logical address consists of page number and page offset
+        \item Page number used to look up frame number in page table
+        \item Physical address formed by combining frame number with page offset
+        \item Translation process:
+            \begin{itemize}
+                \item Extract page number and offset from logical address
+                \item Use page number to index page table
+                \item Retrieve frame number from page table
+                \item Combine frame number with offset to form physical address
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Page Table}\\
+    Page tables maintain the mapping between pages and frames:
+    \begin{itemize}
+        \item Each entry contains a frame number
+        \item Entries also include status bits:
+            \begin{itemize}
+                \item Valid bit: Indicates if page holds valid data
+                \item Present bit: Indicates if page is in memory
+                \item Modified bit (dirty): Indicates if page has been written to
+                \item Referenced bit: Indicates recent usage
+                \item Protection bits: Control read/write/execute permissions
+            \end{itemize}
+        \item Page tables are stored in main memory
+        \item Can be very large for large address spaces
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Translation Lookaside Buffer (TLB)}\\
+    The TLB addresses the performance overhead of page table lookups:
+    \begin{itemize}
+        \item Cache for recently accessed page table entries
+        \item Small (typically ~64 entries)
+        \item Uses content-addressable memory (CAM) for fast lookups
+        \item Memory access process with TLB:
+            \begin{itemize}
+                \item Check TLB for page number
+                \item If found (TLB hit), use frame number directly
+                \item If not found (TLB miss), search page table
+                \item If not in page table, trigger page fault
+                \item Add entry to TLB for future accesses
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Page Replacement}\\
+    When memory is full and a new page is needed, page replacement occurs:
+    \begin{itemize}
+        \item System must decide which resident page to evict
+        \item Can use global strategy (any process's pages) or local strategy (only faulting process's pages)
+        \item Common page replacement algorithms:
+            \begin{itemize}
+                \item Optimal: Replace page used furthest in future (theoretical only)
+                \item Least Recently Used (LRU): Replace page unused for longest time
+                \item First-In-First-Out (FIFO): Replace oldest page
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\subsection{Linux Memory Management}
+
+\begin{definition}{Linux Page Table Organization}\\
+    Linux uses a hierarchical page table structure:
+    \begin{itemize}
+        \item Multi-level page directory to reduce size and improve lookup speed
+        \item Typically 4-level structure:
+            \begin{itemize}
+                \item Page Global Directory (PGD)
+                \item Page Upper Directory (PUD)
+                \item Page Middle Directory (PMD)
+                \item Page Table Entry (PTE)
+            \end{itemize}
+        \item Allows efficient handling of sparse address spaces
+        \item Only allocates page tables for used parts of address space
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Huge Pages}\\
+    Linux supports huge pages to improve performance:
+    \begin{itemize}
+        \item Standard page size is 4KB
+        \item Huge pages can be 2MB or 1GB (architecture-dependent)
+        \item Advantages:
+            \begin{itemize}
+                \item Reduces TLB pressure (fewer entries needed to cover same memory)
+                \item Improves performance for memory-intensive applications
+                \item More efficient for large memory allocations
+            \end{itemize}
+        \item Uses higher-level page table entries (PUD/PMD)
+        \item Requires explicit configuration
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Memory Zones}\\
+    Linux divides physical memory into zones to handle hardware limitations:
+    \begin{itemize}
+        \item \textbf{ZONE\_DMA}: Memory addressable by DMA controllers (typically below 16MB)
+        \item \textbf{ZONE\_NORMAL}: Regularly mapped memory in kernel space
+        \item \textbf{ZONE\_HIGHMEM}: Memory beyond what the kernel can directly address
+        \item Zones are managed separately to accommodate different hardware constraints
+        \item Each zone has its own free lists and allocation policies
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Buddy Allocator}\\
+    Linux uses the buddy system for frame allocation:
+    \begin{itemize}
+        \item Fundamental allocation unit is the page frame
+        \item Maintains lists of free blocks of various sizes (powers of 2)
+        \item When a process requests memory:
+            \begin{itemize}
+                \item System finds the smallest block size that fits the request
+                \item If necessary, splits larger blocks into "buddies"
+                \item Allocates memory from appropriate free list
+            \end{itemize}
+        \item When memory is freed:
+            \begin{itemize}
+                \item System checks if buddy is also free
+                \item If so, merges buddies to form larger block
+                \item Continues merging recursively if possible
+            \end{itemize}
+        \item Maintains free lists up to MAX\_ORDER-1 (typically 10, so up to 512 contiguous pages)
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Slab Allocator}\\
+    Linux uses the slab allocator for kernel objects:
+    \begin{itemize}
+        \item Kernel often requires small allocations for data structures
+        \item Pages (4KB) are too large for many kernel objects
+        \item Slab allocator:
+            \begin{itemize}
+                \item Gets pages from buddy allocator
+                \item Divides them into smaller objects of specific types
+                \item Maintains caches of frequently used object types
+                \item Reuses recently freed objects (helps prevent fragmentation)
+                \item Preserves object state between uses
+            \end{itemize}
+        \item Improves memory utilization and allocation speed
+        \item Minimizes internal fragmentation
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Memory Compaction}\\
+    Linux performs memory compaction to address fragmentation:
+    \begin{itemize}
+        \item Problem: Buddy allocator may not find large contiguous blocks
+        \item Solution: kcompactd daemon performs compaction
+        \item Process:
+            \begin{itemize}
+                \item Balances memory zones by swapping out non-working-set pages
+                \item Moves movable pages toward the top of the memory zone
+                \item Leaves bottom of memory free for new allocations
+                \item Creates larger contiguous free blocks
+            \end{itemize}
+        \item Performed on-demand or periodically
+        \item Enables allocation of huge pages and other large memory blocks
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Shared Libraries}\\
+    Linux uses shared libraries to reduce memory usage:
+    \begin{itemize}
+        \item Multiple processes can use the same library code
+        \item Libraries compiled with -fPIC (Position Independent Code)
+        \item Dynamically linked with processes using ld.so
+        \item Read-only code pages memory-mapped into processes
+        \item Benefits:
+            \begin{itemize}
+                \item Reduces memory footprint
+                \item Shared code/text pages only loaded once
+                \item Only data pages need to be process-specific
+            \end{itemize}
+        \item Challenge: Version compatibility ("DLL hell")
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Page Reclamation}\\
+    Linux uses page reclamation to recover memory:
+    \begin{itemize}
+        \item Working set: Pages actively in use by processes
+        \item Resident set: All pages in memory
+        \item A page is in the working set if:
+            \begin{itemize}
+                \item Accessed via process address space
+                \item Accessed via system call
+                \item Accessed via device driver
+            \end{itemize}
+        \item Linux identifies non-working set pages using a bitmap
+        \item Pages marked idle can be reclaimed when memory is needed
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Least Recently Used in Linux}\\
+    Linux implements a two-stage LRU algorithm:
+    \begin{itemize}
+        \item Maintains two lists of page frames:
+            \begin{itemize}
+                \item Active list: Recently accessed pages
+                \item Inactive list: Less recently accessed pages
+            \end{itemize}
+        \item Pages move between lists based on access patterns
+        \item Inactive pages are candidates for reclamation
+        \item Recently accessed inactive pages can be promoted to active list
+        \item Linux uses a global strategy for page reclamation
+        \item Recent development: Multi-Generational LRU (MGLRU)
+            \begin{itemize}
+                \item Assigns generation numbers to page frames based on recent access
+                \item Older generations are reclaimed first
+                \item Improves performance and responsiveness
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Out-of-Memory (OOM) Killer}\\
+    Linux has an OOM Killer to handle critical memory shortages:
+    \begin{itemize}
+        \item Activates when system is critically low on memory
+        \item Linux tends to be optimistic in memory allocation
+            \begin{itemize}
+                \item Processes typically request more memory than needed
+                \item System may over-allocate (more than physical memory)
+            \end{itemize}
+        \item OOM Killer selects processes to terminate based on heuristics
+            \begin{itemize}
+                \item Considers memory usage, runtime, nice value, etc.
+                \item Each process has an oom\_score in /proc/\$PID/oom\_score
+                \item Can be adjusted through oom\_score\_adj
+            \end{itemize}
+        \item Prioritizes system stability over individual process survival
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Memory Management Analysis in Linux}\\
+    \paragraph{Basic memory information}
+    \begin{itemize}
+        \item Display system memory usage: \texttt{free -h}
+        \item View memory details: \texttt{cat /proc/meminfo}
+        \item Check process memory usage: \texttt{ps -eo pid,ppid,cmd,vsz,rss}
+        \item Interactive memory monitor: \texttt{top} or \texttt{htop}
+    \end{itemize}
+    
+    \paragraph{Process memory analysis}
+    \begin{itemize}
+        \item Check process memory maps: \texttt{cat /proc/\$PID/maps}
+        \item View process memory status: \texttt{cat /proc/\$PID/status}
+        \item Analyze memory usage in detail: \texttt{pmap \$PID}
+        \item Track memory over time: \texttt{smem}
+    \end{itemize}
+    
+    \paragraph{Memory page information}
+    \begin{itemize}
+        \item Get page size: \texttt{getconf PAGE\_SIZE}
+        \item Check huge pages: \texttt{cat /proc/meminfo | grep Huge}
+        \item View page stats: \texttt{cat /proc/pagetypeinfo}
+        \item Check page faults: \texttt{ps -o min\_flt,maj\_flt \$PID}
+    \end{itemize}
+    
+    \paragraph{Memory limits and control}
+    \begin{itemize}
+        \item Set memory limits: \texttt{ulimit -m [size]}
+        \item Control cgroup memory: \texttt{echo [value] > /sys/fs/cgroup/memory/[group]/memory.limit\_in\_bytes}
+        \item Check swappiness: \texttt{cat /proc/sys/vm/swappiness}
+        \item Adjust swappiness: \texttt{sysctl vm.swappiness=[value]}
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Analyzing Process Memory}\\
+    Check memory usage details for a process:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Get PID of a process
+PID=$(pidof firefox)
+
+# Check virtual and resident memory size
+ps -o pid,comm,vsz,rss -p $PID
+
+# Analyze memory map segments
+cat /proc/$PID/maps | head -10
+
+# View detailed memory status
+grep -E 'VmSize|VmRSS|VmData|VmStk|VmExe' /proc/$PID/status
+
+# Map process address space in detail
+pmap -x $PID | head -20
+
+# Check page faults
+ps -o min_flt,maj_flt -p $PID
+\end{lstlisting}
+
+    \tcblower
+    
+    \textbf{Explanation of memory terms:}
+    \begin{itemize}
+        \item \textbf{VSZ (Virtual Size)}: Total virtual memory allocated to process
+        \item \textbf{RSS (Resident Set Size)}: Actual physical memory used
+        \item \textbf{VmData}: Size of data segment
+        \item \textbf{VmStk}: Size of stack
+        \item \textbf{VmExe}: Size of text segment
+        \item \textbf{min\_flt}: Minor page faults (page in memory but not in process's page table)
+        \item \textbf{maj\_flt}: Major page faults (page had to be loaded from disk)
+    \end{itemize}
+\end{example2}
+
+\begin{example2}{Working with Page Size and Memory Allocation}\\
+    Analyzing page size and memory allocation:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/mman.h>
+
+int main() {
+    // Get process ID
+    pid_t pid = getpid();
+    printf("Process ID: %d\n", pid);
+    
+    // Get page size
+    int page_size = getpagesize();
+    printf("Page size: %d bytes\n", page_size);
+    
+    // Allocate memory for 10 pages
+    size_t size = 10 * page_size;
+    char *buffer = malloc(size);
+    printf("Allocated %zu bytes (%zu pages)\n", 
+           size, size / page_size);
+    
+    // Check page faults before access
+    printf("Check page faults with: ps -o min_flt,maj_flt %d\n", pid);
+    printf("Press Enter to continue...\n");
+    getchar();
+    
+    // Access the memory (causes page faults)
+    for (int i = 0; i < size; i += page_size) {
+        buffer[i] = 1;  // Touch one byte per page
+    }
+    
+    // Check page faults after access
+    printf("Check page faults again with: ps -o min_flt,maj_flt %d\n", pid);
+    printf("Press Enter to continue...\n");
+    getchar();
+    
+    // Allocate page-aligned memory
+    void *aligned_buf = NULL;
+    int result = posix_memalign(&aligned_buf, page_size, size);
+    if (result == 0) {
+        printf("Allocated %zu bytes aligned on page boundary\n", size);
+    }
+    
+    // Free memory
+    free(buffer);
+    free(aligned_buf);
+    
+    return 0;
+}
+\end{lstlisting}
+
+    This example demonstrates:
+    \begin{itemize}
+        \item Getting the system page size
+        \item Allocating memory
+        \item Observing page faults due to lazy allocation
+        \item Creating page-aligned memory allocations
+    \end{itemize}
+\end{example2}
