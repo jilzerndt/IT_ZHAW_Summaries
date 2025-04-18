@@ -101,12 +101,14 @@
 
 \multend
 
+\columnbreak
+
 \subsection{Virtual Memory}
 
 \mult{2}
 
-\begin{definition}{Virtual Memory Concept}\\
-    Virtual memory leverages program behavior characteristics:
+\begin{definition}{Virtual Memory}\\
+    Leverages program behavior characteristics:
     \begin{itemize}
         \item Programs exhibit spatial locality (tend to use a limited area of code at any time)
         \item Entire processes don't need to be fully resident in memory
@@ -115,6 +117,39 @@
         \item Must be transparent to programmer/process
     \end{itemize}
 \end{definition}
+
+\begin{concept}{Address Translation} logical $\leftrightarrows$ physical\\
+    Virtual memory requires translation between logical and pysical addresses:
+    \begin{itemize}
+        \item Logical address consists of page-nr. and -offset
+        \item Page nr. used to look up frame nr. in page table
+        \item Physical address formed by combining frame number with page offset
+        \item Translation process:
+            \begin{itemize}
+                \item Extract page nr. and offset from logical addr.
+                \item Use page nr. to index page table
+                \item Retrieve frame nr. from page table
+                \item Combine frame nr. with offset to form \\ physical address
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{Translation Lookaside Buffer (TLB)}\\
+    The TLB addresses the performance overhead of \\ page table lookups:
+    \begin{itemize}
+        \item Cache for recently accessed page table entries
+        \item Small (typically ~64 entries)
+        \item Uses content-addressable memory (CAM) for fast lookups
+        \item Memory access process with TLB:
+            \begin{itemize}
+                \item Check TLB for page number
+                \item If found (TLB hit), use frame number directly
+                \item If not found (TLB miss), search page table
+                \item If not in page table, trigger page fault
+                \item Add entry to TLB for future accesses
+            \end{itemize}
+    \end{itemize}
+\end{theorem}
 
 \begin{definition}{Paging} mechanism that enables virtual memory:
     \begin{itemize}
@@ -135,26 +170,6 @@
     \end{itemize}
 \end{definition}
 
-\multend
-
-\mult{2}
-
-\begin{concept}{Address Translation} logical $\leftrightarrows$ physical\\
-    Virtual memory requires transl. between addresses:
-    \begin{itemize}
-        \item Logical address consists of page-nr. and -offset
-        \item Page nr. used to look up frame nr. in page table
-        \item Physical address formed by combining frame number with page offset
-        \item Translation process:
-            \begin{itemize}
-                \item Extract page nr. and offset from logical addr.
-                \item Use page nr. to index page table
-                \item Retrieve frame nr. from page table
-                \item Combine frame nr. with offset to form \\ physical address
-            \end{itemize}
-    \end{itemize}
-\end{concept}
-
 \begin{concept}{Page Replacement}\\
     $\rightarrow$ when memory is full and a new page is needed
     \begin{itemize}
@@ -169,7 +184,7 @@
             \end{itemize}
 \end{concept}
 
-\begin{definition}{Page Tables} maintain mapping between pages and frames:
+\begin{theorem}{Page Tables} \\ Maintain mapping between pages and frames:
     \begin{itemize}
         \item Each entry contains a frame number
         \item Entries also include status bits:
@@ -183,32 +198,15 @@
         \item Page tables are stored in main memory
         \item Can be very large for large address spaces
     \end{itemize}
-\end{definition}
-
-
-
-\begin{definition}{Translation Lookaside Buffer (TLB)}\\
-    The TLB addresses the performance overhead of page table lookups:
-    \begin{itemize}
-        \item Cache for recently accessed page table entries
-        \item Small (typically ~64 entries)
-        \item Uses content-addressable memory (CAM) for fast lookups
-        \item Memory access process with TLB:
-            \begin{itemize}
-                \item Check TLB for page number
-                \item If found (TLB hit), use frame number directly
-                \item If not found (TLB miss), search page table
-                \item If not in page table, trigger page fault
-                \item Add entry to TLB for future accesses
-            \end{itemize}
-    \end{itemize}
-\end{definition}
-
-
+\end{theorem}
 
 \multend
 
+\columnbreak
+
 \subsection{Linux Memory Management}
+
+\mult{2}
 
 \begin{definition}{Linux Page Table Organization}\\
     Linux uses a hierarchical page table structure:
@@ -226,11 +224,10 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Huge Pages}\\
-    Linux supports huge pages to improve performance:
+\begin{definition}{Huge Pages} supported to improve performance:
     \begin{itemize}
         \item Standard page size is 4KB
-        \item Huge pages can be 2MB or 1GB (architecture-dependent)
+        \item Huge pages can be 2MB or 1GB \\(architecture-dependent)
         \item Advantages:
             \begin{itemize}
                 \item Reduces TLB pressure (fewer entries needed to cover same memory)
@@ -242,7 +239,9 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Memory Zones}\\
+\multend
+
+\begin{concept}{Memory Zones}\\
     Linux divides physical memory into zones to handle hardware limitations:
     \begin{itemize}
         \item \textbf{ZONE\_DMA}: Memory addressable by DMA controllers (typically below 16MB)
@@ -251,9 +250,9 @@
         \item Zones are managed separately to accommodate different hardware constraints
         \item Each zone has its own free lists and allocation policies
     \end{itemize}
-\end{definition}
+\end{concept}
 
-\begin{definition}{Buddy Allocator}\\
+\begin{theorem}{Buddy Allocator}
     Linux uses the buddy system for frame allocation:
     \begin{itemize}
         \item Fundamental allocation unit is the page frame
@@ -272,9 +271,9 @@
             \end{itemize}
         \item Maintains free lists up to MAX\_ORDER-1 (typically 10, so up to 512 contiguous pages)
     \end{itemize}
-\end{definition}
+\end{theorem}
 
-\begin{definition}{Slab Allocator}\\
+\begin{theorem}{Slab Allocator}
     Linux uses the slab allocator for kernel objects:
     \begin{itemize}
         \item Kernel often requires small allocations for data structures
@@ -290,9 +289,9 @@
         \item Improves memory utilization and allocation speed
         \item Minimizes internal fragmentation
     \end{itemize}
-\end{definition}
+\end{theorem}
 
-\begin{definition}{Memory Compaction}\\
+\begin{formula}{Memory Compaction}
     Linux performs memory compaction to address fragmentation:
     \begin{itemize}
         \item Problem: Buddy allocator may not find large contiguous blocks
@@ -307,9 +306,9 @@
         \item Performed on-demand or periodically
         \item Enables allocation of huge pages and other large memory blocks
     \end{itemize}
-\end{definition}
+\end{formula}
 
-\begin{definition}{Shared Libraries}\\
+\begin{formula}{Shared Libraries}
     Linux uses shared libraries to reduce memory usage:
     \begin{itemize}
         \item Multiple processes can use the same library code
@@ -324,9 +323,9 @@
             \end{itemize}
         \item Challenge: Version compatibility ("DLL hell")
     \end{itemize}
-\end{definition}
+\end{formula}
 
-\begin{definition}{Page Reclamation}\\
+\begin{formula}{Page Reclamation}
     Linux uses page reclamation to recover memory:
     \begin{itemize}
         \item Working set: Pages actively in use by processes
@@ -340,9 +339,9 @@
         \item Linux identifies non-working set pages using a bitmap
         \item Pages marked idle can be reclaimed when memory is needed
     \end{itemize}
-\end{definition}
+\end{formula}
 
-\begin{definition}{Least Recently Used in Linux}\\
+\begin{formula}{Least Recently Used in Linux}\\
     Linux implements a two-stage LRU algorithm:
     \begin{itemize}
         \item Maintains two lists of page frames:
@@ -361,9 +360,9 @@
                 \item Improves performance and responsiveness
             \end{itemize}
     \end{itemize}
-\end{definition}
+\end{formula}
 
-\begin{definition}{Out-of-Memory (OOM) Killer}\\
+\begin{theorem}{Out-of-Memory (OOM) Killer}
     Linux has an OOM Killer to handle critical memory shortages:
     \begin{itemize}
         \item Activates when system is critically low on memory
@@ -380,9 +379,9 @@
             \end{itemize}
         \item Prioritizes system stability over individual process survival
     \end{itemize}
-\end{definition}
+\end{theorem}
 
-\begin{KR}{Memory Management Analysis in Linux}\\
+\begin{KR}{Memory Management Analysis in Linux}
     \paragraph{Basic memory information}
     \begin{itemize}
         \item Display system memory usage: \texttt{free -h}
@@ -416,7 +415,7 @@
     \end{itemize}
 \end{KR}
 
-\begin{example2}{Analyzing Process Memory}\\
+\begin{example2}{Analyzing Process Memory}
     Check memory usage details for a process:
     
 \begin{lstlisting}[language=bash, style=basesmol]
@@ -453,7 +452,7 @@ ps -o min_flt,maj_flt -p $PID
     \end{itemize}
 \end{example2}
 
-\begin{example2}{Working with Page Size and Memory Allocation}\\
+\begin{example2}{Working with Page Size and Memory Allocation}
     Analyzing page size and memory allocation:
     
 \begin{lstlisting}[language=C, style=basesmol]

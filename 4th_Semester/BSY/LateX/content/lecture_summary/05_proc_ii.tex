@@ -260,6 +260,32 @@ echo "test" > /dev/null
 
 \subsection{Working with cgroups}
 
+\begin{KR}{Working with cgroups}
+    \paragraph{Exploring cgroups}
+    \begin{itemize}
+        \item List available subsystems: \texttt{cat /proc/cgroups}
+        \item View cgroup hierarchy: \texttt{tree /sys/fs/cgroup}
+        \item Check cgroups created by systemd: \texttt{systemd-cgls}
+        \item Monitor cgroup usage: \texttt{systemd-cgtop}
+    \end{itemize}
+    
+    \paragraph{Creating and managing cgroups}
+    \begin{itemize}
+        \item Create a cgroup: \texttt{mkdir /sys/fs/cgroup/[controller]/[name]}
+        \item Add process to cgroup: \texttt{echo [PID] > /sys/fs/cgroup/[controller]/[name]/cgroup.procs}
+        \item Set CPU limit: \texttt{echo [value] > /sys/fs/cgroup/cpu/[name]/cpu.cfs\_quota\_us}
+        \item Set memory limit: \texttt{echo [value] > /sys/fs/cgroup/memory/[name]/memory.limit\_in\_bytes}
+        \item Remove cgroup: \texttt{rmdir /sys/fs/cgroup/[controller]/[name]}
+    \end{itemize}
+    
+    \paragraph{Working with systemd cgroups}
+    \begin{itemize}
+        \item Create transient cgroup: \texttt{systemd-run --unit=[name] --slice=[slice] [command]}
+        \item Set resource limits: \texttt{systemctl set-property [unit] [property]=[value]}
+        \item Example: \texttt{systemctl set-property user.slice CPUQuota=20\%}
+    \end{itemize}
+\end{KR}
+
 \begin{code}{Mounting cgroups v1}
     Mounting cgroups controllers:
     
@@ -296,32 +322,6 @@ rmdir /sys/fs/cgroup/cpu/cg1
 
     When adding a process to a cgroup, all threads in the process are moved together.
 \end{code}
-
-\begin{KR}{Working with cgroups}
-    \paragraph{Exploring cgroups}
-    \begin{itemize}
-        \item List available subsystems: \texttt{cat /proc/cgroups}
-        \item View cgroup hierarchy: \texttt{tree /sys/fs/cgroup}
-        \item Check cgroups created by systemd: \texttt{systemd-cgls}
-        \item Monitor cgroup usage: \texttt{systemd-cgtop}
-    \end{itemize}
-    
-    \paragraph{Creating and managing cgroups}
-    \begin{itemize}
-        \item Create a cgroup: \texttt{mkdir /sys/fs/cgroup/[controller]/[name]}
-        \item Add process to cgroup: \texttt{echo [PID] > /sys/fs/cgroup/[controller]/[name]/cgroup.procs}
-        \item Set CPU limit: \texttt{echo [value] > /sys/fs/cgroup/cpu/[name]/cpu.cfs\_quota\_us}
-        \item Set memory limit: \texttt{echo [value] > /sys/fs/cgroup/memory/[name]/memory.limit\_in\_bytes}
-        \item Remove cgroup: \texttt{rmdir /sys/fs/cgroup/[controller]/[name]}
-    \end{itemize}
-    
-    \paragraph{Working with systemd cgroups}
-    \begin{itemize}
-        \item Create transient cgroup: \texttt{systemd-run --unit=[name] --slice=[slice] [command]}
-        \item Set resource limits: \texttt{systemctl set-property [unit] [property]=[value]}
-        \item Example: \texttt{systemctl set-property user.slice CPUQuota=20\%}
-    \end{itemize}
-\end{KR}
 
 \begin{example2}{Using systemd Resource Control}
     Controlling resource limits with systemd:

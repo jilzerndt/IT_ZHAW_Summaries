@@ -1,8 +1,6 @@
-\section{Input / Output - Part II}
-
 \subsection{Building and Using a Custom Linux Kernel}
 
-\begin{concept}{Custom Kernel Motivation}\\
+\begin{concept}{Custom Kernel Motivation}
     There are various reasons to build a custom kernel:
     \begin{itemize}
         \item Create a minimalist kernel (disable unused features, load needed ones as modules)
@@ -13,14 +11,15 @@
     \end{itemize}
 \end{concept}
 
-\begin{definition}{Linux Kernel Development Process}\\
-    Linux follows a time-based release process:
+\mult{2}
+
+\begin{definition}{Linux Kernel Development Process}
     \begin{itemize}
-        \item New major kernel releases every 2-3 months (e.g., 5.11, 5.12)
+        \item New major kernel releases every 2-3 months
         \item Development cycle phases:
             \begin{itemize}
-                \item Merge window (first two weeks): New features merged into mainline
-                \item Release candidates (weekly): Bug fixes only, no new features
+                \item Merge window (first two weeks): \\ New features merged into mainline
+                \item Release candidates (weekly): \\ Bug fixes only, no new features
                 \item Final release: After several release candidates
             \end{itemize}
         \item Long-term support (LTS) kernels receive updates for extended periods
@@ -28,24 +27,25 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Choosing a Kernel Version}\\
-    When building a custom kernel, version selection matters:
+\begin{definition}{Choosing a Kernel Version} version matters!
     \begin{itemize}
-        \item Mainline: Latest development version (might be unstable)
+        \item Mainline: Latest development version \\ (might be unstable)
         \item Stable: Recent release with proven stability
         \item Long-term: Longer support period (good for production systems)
-        \item Distribution-specific: Modified by Linux distributions
+        \item Distribution-specific: Modified by \\ Linux distributions
     \end{itemize}
     
     Version numbers indicate:
     \begin{itemize}
         \item First number: Major version (rarely changes)
         \item Second number: Minor version (major features)
-        \item Third number: Patch level (bug fixes and minor improvements)
+        \item Third number: Patch level (bug fixes etc.)
     \end{itemize}
 \end{definition}
 
-\begin{KR}{Building a Custom Linux Kernel}\\
+\multend
+
+\begin{KR}{Building a Custom Linux Kernel}
     \paragraph{Getting the source code}
     \begin{itemize}
         \item Download from kernel.org: \texttt{wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.xx.tar.xz}
@@ -75,9 +75,7 @@
             \begin{itemize}
                 \item Custom version name: \texttt{CONFIG\_LOCALVERSION}
                 \item Module support: \texttt{CONFIG\_MODULES}
-                \item CPU and architecture options
-                \item Device drivers
-                \item File systems
+                \item CPU and architecture options, Device drivers \& File systems
             \end{itemize}
     \end{itemize}
     
@@ -104,14 +102,13 @@
     \paragraph{Booting the new kernel}
     \begin{itemize}
         \item Reboot: \texttt{sudo reboot}
-        \item Select the new kernel at the bootloader menu
-        \item Verify running kernel: \texttt{uname -a}
+        \item Select the new kernel at the bootloader menu adn verify running kernel: \texttt{uname -a}
     \end{itemize}
 \end{KR}
 
 \subsection{Linux Kernel Modules}
 
-\begin{definition}{Kernel Modules Concept}\\
+\begin{definition}{Kernel Modules Concept}
     Kernel modules extend kernel functionality without rebuilding:
     \begin{itemize}
         \item Loadable code that can be added to or removed from a running kernel
@@ -123,7 +120,7 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Module Structure}\\
+\begin{definition}{Module Structure}
     A kernel module follows a specific structure:
     \begin{itemize}
         \item Must include necessary kernel headers
@@ -143,7 +140,7 @@
     \end{itemize}
 \end{definition}
 
-\begin{code}{Hello World Kernel Module}\\
+\begin{code}{Hello World Kernel Module}
     Minimal kernel module example:
     
 \begin{lstlisting}[language=C, style=basesmol]
@@ -179,7 +176,7 @@ module_exit(hello_exit);
     \end{itemize}
 \end{code}
 
-\begin{definition}{Module Building Process}\\
+\begin{definition}{Module Building Process}
     Building a kernel module requires:
     \begin{itemize}
         \item Pre-built kernel with module support
@@ -197,7 +194,7 @@ module_exit(hello_exit);
     \end{itemize}
 \end{definition}
 
-\begin{code}{Module Makefile}\\
+\begin{code}{Module Makefile}
     Example Makefile for a kernel module:
     
 \begin{lstlisting}[style=basesmol]
@@ -230,7 +227,7 @@ clean:
 \end{lstlisting}
 \end{code}
 
-\begin{KR}{Working with Kernel Modules}\\
+\begin{KR}{Working with Kernel Modules}
     \paragraph{Building a module}
     \begin{itemize}
         \item Create module source file
@@ -279,7 +276,7 @@ clean:
     \end{itemize}
 \end{definition}
 
-\begin{code}{Basic Character Device Driver}\\
+\begin{code}{Basic Character Device Driver}
     Structure of a simple character device driver:
     
 \begin{lstlisting}[language=C, style=basesmol]
@@ -287,18 +284,14 @@ clean:
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-
 MODULE_LICENSE("GPL");
-
 /* Prototypes */
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
-
 #define DEVICE_NAME "chardev"
 #define BUF_LEN 80
-
 /* Global variables */
 static int Major;                /* Major number assigned */
 static int Device_Open = 0;      /* Is device open? */
@@ -311,79 +304,52 @@ static struct file_operations fops = {
     .open = device_open,
     .release = device_release
 };
-
-/* Initialization function */
-int init_module(void)
-{
+int init_module(void) { /* Initialization function */
     Major = register_chrdev(0, DEVICE_NAME, &fops);
     if (Major < 0) {
         printk(KERN_ALERT "Failed to register with %d\n", Major);
         return Major;
     }
-
     printk(KERN_INFO "Major number assigned: %d\n", Major);
-    printk(KERN_INFO "Create device with: 'mknod /dev/%s c %d 0'\n", 
-           DEVICE_NAME, Major);
+    printk(KERN_INFO "Create device: 'mknod /dev/%s c %d 0'\n", DEVICE_NAME, Major);
     return 0;
 }
-
-/* Cleanup function */
-void cleanup_module(void)
-{
+void cleanup_module(void) { /* Cleanup function */
     unregister_chrdev(Major, DEVICE_NAME);
 }
-
 /* Device methods */
-static int device_open(struct inode *inode, struct file *file)
-{
+static int device_open(struct inode *inode, struct file *file) {
     static int counter = 0;
-    
-    if (Device_Open)
-        return -EBUSY;
-        
+    if (Device_Open) return -EBUSY;
     Device_Open++;
     sprintf(msg, "Called device_open %d times\n", counter++);
     msg_Ptr = msg;
     try_module_get(THIS_MODULE);
-    
     return 0;
 }
-
-static int device_release(struct inode *inode, struct file *file)
-{
+static int device_release(struct inode *inode, struct file *file) {
     Device_Open--;
     module_put(THIS_MODULE);
     return 0;
 }
-
-static ssize_t device_read(struct file *filp, char *buffer, 
-                           size_t length, loff_t *offset)
-{
+static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset) {
     int bytes_read = 0;
-    
-    /* End of message */
-    if (*msg_Ptr == 0)
-        return 0;
-        
-    /* Transfer data to user space */
-    while (length && *msg_Ptr) {
+    if (*msg_Ptr == 0) return 0; /* End of message */
+    while (length && *msg_Ptr) { /* Transfer data to user space */
         put_user(*(msg_Ptr++), buffer++);
         length--;
         bytes_read++;
     }
-    
     return bytes_read;
 }
-
-static ssize_t device_write(struct file *filp, const char *buff, 
-                            size_t len, loff_t *off)
-{
+static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t *off) {
     printk(KERN_ALERT "Operation not supported\n");
     return -EINVAL;
 }
 \end{lstlisting}
+\end{code}
 
-    Key components:
+\begin{KR}{Character Device Driver Key Components}
     \begin{itemize}
         \item \texttt{file\_operations} structure defines callbacks for file operations
         \item \texttt{register\_chrdev} allocates a major number
@@ -391,9 +357,10 @@ static ssize_t device_write(struct file *filp, const char *buff,
         \item \texttt{put\_user} safely copies data from kernel to user space
         \item Reference counting with \texttt{try\_module\_get} and \texttt{module\_put}
     \end{itemize}
-\end{code}
+\end{KR}
 
-\begin{example2}{Building\, Installing\, and Using a Character Device Module}\\
+
+\begin{example2}{Building\, Installing\, and Using a Character Device Module}
     Complete workflow for a character device driver:
     
 \begin{lstlisting}[language=bash, style=basesmol]
@@ -436,10 +403,10 @@ sudo rm /dev/chardev
     \end{itemize}
 \end{example2}
 
-\begin{KR}{Linux Kernel Module Debugging}\\
+\begin{KR}{Linux Kernel Module Debugging}
     \paragraph{Using printk}
     \begin{itemize}
-        \item Add debug messages: \texttt{printk(KERN\_DEBUG "Debug: \%d\\n", value);}
+        \item Add debug messages: \texttt{printk(KERN\_DEBUG "Debug: \%d \textbackslash n", value);}
         \item Set console log level: \texttt{echo 7 > /proc/sys/kernel/printk}
         \item View kernel messages: \texttt{dmesg}
         \item Follow kernel messages: \texttt{dmesg -w}
@@ -473,7 +440,7 @@ sudo rm /dev/chardev
     \end{itemize}
 \end{KR}
 
-\begin{example2}{I/O Performance Testing with Custom I/O Scheduler}\\
+\begin{example2}{I/O Performance Testing with Custom I/O Scheduler}
     Testing I/O performance with different schedulers:
     
 \begin{lstlisting}[language=bash, style=basesmol]
