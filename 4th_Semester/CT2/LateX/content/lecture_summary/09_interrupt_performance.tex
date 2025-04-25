@@ -771,3 +771,634 @@ int main(void) {
 }
 \end{lstlisting}
 \end{example2}
+
+\section{Interrupt Performance Exercises}
+
+\subsection{Interrupt Performance Analysis}
+
+\begin{KR}{Analyzing Interrupt System Performance}\\
+\paragraph{Calculate interrupt frequency}
+\begin{itemize}
+    \item Identify the source and rate of interrupts
+    \item For periodic interrupts, calculate frequency directly
+    \item For data-driven interrupts (e.g., serial interface), calculate:
+    \begin{itemize}
+        \item f$_{INT}$ = data\_rate / data\_size\_per\_interrupt
+        \item Example: 9600 baud UART with 8 data bits = 9600/8 = 1200 Hz
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Determine interrupt service time}
+\begin{itemize}
+    \item Estimate execution time of the Interrupt Service Routine (ISR)
+    \item Include:
+    \begin{itemize}
+        \item Context switching time (register saving/restoring)
+        \item Instruction execution time of the routine itself
+        \item Memory access time
+    \end{itemize}
+    \item Measure or calculate in CPU clock cycles, then convert to time
+    \item t$_{ISR}$ = cycles / f$_{CPU}$
+\end{itemize}
+
+\paragraph{Calculate system impact}
+\begin{itemize}
+    \item Percentage of CPU time used by interrupts:
+    \item Impact = f$_{INT}$ × t$_{ISR}$ × 100\%
+    \item Assess if the impact is acceptable:
+    \begin{itemize}
+        \item < 10\%: Minimal impact
+        \item 10-50\%: Moderate impact
+        \item > 50\%: Significant impact, may need optimization
+        \item > 90\%: System likely unable to perform other tasks
+    \end{itemize}
+    \item Check if t$_{ISR}$ > 1/f$_{INT}$ - indicates missed interrupts
+\end{itemize}
+
+\paragraph{Optimize interrupt handling}
+\begin{itemize}
+    \item Reduce ISR execution time:
+    \begin{itemize}
+        \item Keep ISRs short
+        \item Move non-critical processing to main loop
+        \item Use efficient algorithms and data structures
+    \end{itemize}
+    \item Manage interrupt frequency:
+    \begin{itemize}
+        \item Use buffering to reduce interrupt rate
+        \item Adjust hardware configurations if possible
+    \end{itemize}
+    \item Implement interrupt prioritization for critical tasks
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Interrupt System Analysis}\\
+A processor system running at 1 MHz receives data through a peripheral interface at a rate of 16 kbit/s. The peripheral can buffer 32 bits of data and signals the processor via an interrupt line when the buffer is ready to be read. If the data is not read before the next interrupt, it is lost.
+
+The Interrupt Service Routine (ISR) requires 100 clock cycles on average, including call and return overhead. The system uses no other interrupts.
+
+\begin{enumerate}
+    \item Calculate the impact of interrupts on the system performance.
+    \item Determine the maximum data rate the interface could handle before the processor spends 100\% of its time handling interrupts.
+    \item If the data rate is increased such that the system spends 90\% of its time handling interrupts, occasional data loss still occurs. Explain a possible cause.
+\end{enumerate}
+
+\tcblower
+\paragraph{Solution:}
+
+1. \textbf{Calculate interrupt impact:}
+   \begin{itemize}
+     \item Interrupt frequency: f$_{INT}$ = 16 kbit/s ÷ 32 bits = 500 Hz
+     \item Interrupt service time: t$_{ISR}$ = 100 cycles ÷ 1 MHz = 100 $mu$s
+     \item Impact = f$_{INT}$ × t$_{ISR}$ × 100\% = 500 Hz × 100 $mu$s × 100\% = 5\%
+   \end{itemize}
+   Therefore, interrupts consume 5\% of the CPU's processing time.
+
+2. \textbf{Maximum data rate calculation:}
+   \begin{itemize}
+     \item For 100\% CPU usage: 1 = f$_{INT}$ × t$_{ISR}$
+     \item f$_{INT}$ = 1 ÷ t$_{ISR}$ = 1 ÷ 100 $mu$s = 10,000 Hz
+     \item Data rate = f$_{INT}$ × 32 bits = 10,000 × 32 = 320 kbit/s
+   \end{itemize}
+
+3. \textbf{Cause of occasional data loss:}
+   \begin{itemize}
+     \item At 90\% CPU utilization, there should theoretically be enough time to process all interrupts
+     \item However, the service time (t$_{ISR}$) is not constant but an average
+     \item Some interrupt instances may take longer than the average 100 cycles
+     \item When t$_{ISR}$ varies, occasional peaks can exceed the time between interrupts
+     \item The variation may come from:
+     \begin{itemize}
+       \item Different code paths within the ISR depending on the data
+       \item Memory access times that vary due to cache effects
+       \item Context switching overhead that varies based on CPU state
+       \item Interrupt latency variations based on what instruction was executing
+     \end{itemize}
+     \item When a single interrupt takes too long, the next interrupt arrives before processing is complete
+     \item With high CPU utilization (90\%), there's little margin for these variations
+     \item Result: occasional buffer overflows and data loss
+   \end{itemize}
+\end{example2}
+
+\subsection{Interrupt Latency Optimization}
+
+\begin{KR}{Managing Interrupt Latency}\\
+\paragraph{Understand latency components}
+\begin{itemize}
+    \item \textbf{Hardware latency:}
+    \begin{itemize}
+        \item Time for interrupt controller to recognize interrupt
+        \item Time to finish current instruction (multi-cycle instructions)
+        \item Time to push registers onto stack
+    \end{itemize}
+    \item \textbf{Software latency:}
+    \begin{itemize}
+        \item Interrupt disabled periods
+        \item Higher priority interrupt processing
+        \item Cache misses during ISR execution
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Measure interrupt latency}
+\begin{itemize}
+    \item Use an oscilloscope to measure time between:
+    \begin{itemize}
+        \item Interrupt trigger signal
+        \item GPIO pin toggle in ISR
+    \end{itemize}
+    \item Alternatively, use a timer to capture timestamps:
+    \begin{itemize}
+        \item Configure timer to capture on interrupt signal
+        \item Read timer value at ISR entry
+        \item Calculate difference
+    \end{itemize}
+    \item Measure best-case, worst-case, and average latency
+\end{itemize}
+
+\paragraph{Optimize for consistent latency}
+\begin{itemize}
+    \item Minimize interrupt disable periods
+    \begin{itemize}
+        \item Keep critical sections short
+        \item Use selective interrupt masking instead of global disable
+    \end{itemize}
+    \item Optimize ISR code
+    \begin{itemize}
+        \item Minimize stack usage to reduce push/pop operations
+        \item Keep ISRs short and efficient
+        \item Ensure frequently used data and code are in cache
+    \end{itemize}
+    \item Use appropriate priorities
+    \begin{itemize}
+        \item Assign higher priorities to time-critical interrupts
+        \item Group interrupts with similar timing requirements
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Implement deterministic response}
+\begin{itemize}
+    \item For time-critical operations, consider:
+    \begin{itemize}
+        \item Polling instead of interrupts if determinism is crucial
+        \item Hardware solutions (DMA, dedicated controllers)
+        \item Real-time operating system with predictable scheduling
+    \end{itemize}
+    \item Move processing from ISRs to main loop
+    \begin{itemize}
+        \item ISR only captures essential data and signals main loop
+        \item Use flags, semaphores, or message queues for communication
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Interrupt Latency Optimization}\\
+A microcontroller-based system needs to sample an analog signal at precise 100 µs intervals. The current implementation uses Timer1 to generate interrupts every 100 µs, and the ISR reads the ADC. Measurements show that the interrupt latency varies between 5-20 µs, causing jitter in the sampling.
+
+Design an improved solution to minimize sampling jitter, explaining your approach and implementation.
+
+\tcblower
+\paragraph{Solution:}
+
+The goal is to reduce sampling jitter by minimizing variations in the time between the timer interrupt and ADC sampling. Here's an improved solution:
+
+\textbf{Hardware-triggered ADC approach:}
+
+1. \textbf{Use timer to trigger ADC directly:}
+   \begin{itemize}
+     \item Configure Timer1 to generate a trigger signal every 100 µs
+     \item Connect this trigger to the ADC hardware trigger input
+     \item Configure the ADC to start conversion automatically on timer trigger
+     \item Use DMA to transfer ADC results to memory without CPU intervention
+   \end{itemize}
+
+2. \textbf{Implementation details:}
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure Timer1
+void configure_timer(void) {
+    // Enable clock for Timer1
+    RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
+    
+    // Set prescaler and period for 100 microsecond interval
+    TIM1->PSC = (SystemCoreClock / 1000000) - 1;  // 1 microsecond timer ticks
+    TIM1->ARR = 100 - 1;  // 100 microsecond period
+    
+    // Configure timer to generate trigger output
+    TIM1->CR2 &= ~TIM_CR2_MMS;
+    TIM1->CR2 |= TIM_CR2_MMS_1;  // Update event as trigger output
+    
+    // Enable timer
+    TIM1->CR1 |= TIM_CR1_CEN;
+}
+
+// Configure ADC with timer trigger
+void configure_adc(void) {
+    // Enable clocks for ADC and GPIO
+    RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+    
+    // Configure GPIO pin as analog input
+    GPIOA->MODER |= GPIO_MODER_MODER0;  // PA0 as analog
+    
+    // Configure ADC for timer trigger
+    ADC1->CR2 |= ADC_CR2_EXTEN_0;        // Enable external trigger on rising edge
+    ADC1->CR2 |= ADC_CR2_EXTSEL_3;       // Select Timer1 TRGO as trigger
+    
+    // Configure single conversion on channel 0
+    ADC1->SQR3 = 0;  // Channel 0 as first conversion
+    ADC1->SQR1 = 0;  // 1 conversion
+    
+    // Enable DMA for ADC
+    ADC1->CR2 |= ADC_CR2_DMA;
+    
+    // Enable ADC
+    ADC1->CR2 |= ADC_CR2_ADON;
+}
+
+// Configure DMA for ADC
+void configure_dma(uint16_t* buffer, uint32_t buffer_size) {
+    // Enable DMA clock
+    RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
+    
+    // Configure DMA stream
+    DMA2_Stream0->CR &= ~DMA_SxCR_EN;  // Disable DMA during config
+    
+    DMA2_Stream0->PAR = (uint32_t)&ADC1->DR;       // Source: ADC data register
+    DMA2_Stream0->M0AR = (uint32_t)buffer;         // Destination: buffer
+    DMA2_Stream0->NDTR = buffer_size;              // Number of data items
+    
+    DMA2_Stream0->CR &= ~DMA_SxCR_DIR;             // Peripheral to memory
+    DMA2_Stream0->CR |= DMA_SxCR_CIRC;             // Circular mode
+    DMA2_Stream0->CR |= DMA_SxCR_PSIZE_0;          // Peripheral size: 16 bits
+    DMA2_Stream0->CR |= DMA_SxCR_MSIZE_0;          // Memory size: 16 bits
+    DMA2_Stream0->CR |= DMA_SxCR_PL_1;             // Priority: high
+    
+    // Enable DMA
+    DMA2_Stream0->CR |= DMA_SxCR_EN;
+}
+
+// Main application
+int main(void) {
+    // Sample buffer
+    uint16_t adc_buffer[1000];
+    
+    // Configure peripherals
+    configure_timer();
+    configure_adc();
+    configure_dma(adc_buffer, 1000);
+    
+    // Process samples in background
+    while (1) {
+        // Process captured samples from adc_buffer
+        // Buffer is continuously updated by DMA
+    }
+}
+\end{lstlisting}
+
+3. \textbf{Advantages of this approach:}
+   \begin{itemize}
+     \item Eliminates interrupt latency completely from the sampling process
+     \item Hardware triggers ADC directly with precise timing
+     \item DMA transfers data without CPU intervention
+     \item CPU is free to process samples when available
+     \item Sampling jitter reduced to hardware timing accuracy (typically sub-µs)
+   \end{itemize}
+
+4. \textbf{Alternative approaches:}
+   \begin{itemize}
+     \item If hardware triggering is not available, optimize the ISR:
+     \begin{itemize}
+       \item Set ISR to highest priority
+       \item Disable all other interrupts during the ISR
+       \item Make the ISR as short as possible (just start ADC)
+       \item Use a state variable to track if previous conversion completed
+     \end{itemize}
+     \item Use a high-precision external timer dedicated to ADC triggering
+   \end{itemize}
+
+This solution eliminates software-induced jitter by leveraging hardware synchronization between the timer and ADC, providing the precise 100 µs sampling interval required.
+\end{example2}
+
+\subsection{Interrupt-Driven System Design}
+
+\begin{KR}{Designing Efficient Interrupt-Driven Systems}\\
+\paragraph{Choose between polling and interrupts}
+\begin{itemize}
+    \item \textbf{Use interrupts when:}
+    \begin{itemize}
+        \item Events occur infrequently or at unpredictable times
+        \item System needs to respond to external events quickly
+        \item Power efficiency is important (can sleep between events)
+        \item Multiple event sources need to be monitored simultaneously
+    \end{itemize}
+    \item \textbf{Use polling when:}
+    \begin{itemize}
+        \item Events occur at very high frequency
+        \item Absolute determinism is required
+        \item Interrupt overhead would be excessive
+        \item Extremely low latency is required
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Design efficient ISRs}
+\begin{itemize}
+    \item Keep ISRs as short as possible
+    \begin{itemize}
+        \item Only handle time-critical operations in the ISR
+        \item Defer processing to main loop using flags or queues
+        \item Avoid complex calculations or I/O operations
+    \end{itemize}
+    \item Manage shared resources
+    \begin{itemize}
+        \item Use volatile for variables shared between ISR and main code
+        \item Consider atomic operations for simple updates
+        \item Implement proper synchronization for complex data structures
+    \end{itemize}
+    \item Avoid nesting or recursion in ISRs
+\end{itemize}
+
+\paragraph{Implement event queues}
+\begin{itemize}
+    \item Use queue to transfer events from ISRs to main loop
+    \begin{itemize}
+        \item ISR detects event and enqueues it
+        \item Main loop dequeues and processes events
+    \end{itemize}
+    \item Design queue to be interrupt-safe
+    \begin{itemize}
+        \item Use atomic operations if available
+        \item Consider implementing lock-free algorithms
+        \item Size queue appropriately to avoid overflow
+    \end{itemize}
+    \item Process events in order of importance or arrival
+\end{itemize}
+
+\paragraph{Implement event-driven architecture}
+\begin{itemize}
+    \item Structure code as state machines responding to events
+    \item Separate event detection (ISRs) from processing (handlers)
+    \item Design for different operating modes
+    \begin{itemize}
+        \item Normal operation
+        \item Power-saving modes
+        \item Error handling and recovery
+    \end{itemize}
+    \item Consider using an RTOS for complex systems
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Interrupt-Driven UART Communication System}\\
+Design an interrupt-driven communication system with the following requirements:
+\begin{itemize}
+    \item UART interface operating at 115200 baud, 8N1 format
+    \item Must handle both transmit and receive operations
+    \item System should never lose incoming data
+    \item Main application should not be blocked by I/O operations
+    \item CPU runs at 72 MHz and has other tasks to perform
+\end{itemize}
+
+\tcblower
+\paragraph{Solution:}
+
+The system will use an interrupt-driven approach with queues to handle UART communication efficiently:
+
+1. \textbf{System architecture:}
+   \begin{itemize}
+     \item Receive interrupt (RXNE) to handle incoming data
+     \item Transmit interrupt (TXE) to send outgoing data
+     \item Circular buffers for both TX and RX data
+     \item Non-blocking API for the main application
+   \end{itemize}
+
+2. \textbf{Implementation:}
+
+\begin{lstlisting}[language=C, style=basesmol]
+#include <stdint.h>
+#include <stdbool.h>
+
+// Buffer size must be power of 2 for efficient wrap-around
+#define UART_BUFFER_SIZE 256
+#define UART_BUFFER_MASK (UART_BUFFER_SIZE - 1)
+
+// Circular buffer structure
+typedef struct {
+    volatile uint8_t data[UART_BUFFER_SIZE];
+    volatile uint16_t head;
+    volatile uint16_t tail;
+} circular_buffer_t;
+
+// Global buffers
+static circular_buffer_t rx_buffer = {0};
+static circular_buffer_t tx_buffer = {0};
+static volatile bool tx_busy = false;
+
+// Function prototypes
+void uart_init(uint32_t baudrate);
+bool uart_send_byte(uint8_t data);
+bool uart_send_data(const uint8_t* data, uint16_t length);
+bool uart_read_byte(uint8_t* data);
+uint16_t uart_available(void);
+void uart_flush(void);
+
+// External hardware functions
+extern void uart_hw_init(uint32_t baudrate);
+extern void uart_hw_send_byte(uint8_t data);
+extern uint8_t uart_hw_read_byte(void);
+extern bool uart_hw_tx_empty(void);
+extern bool uart_hw_rx_ready(void);
+extern void uart_hw_enable_tx_interrupt(bool enable);
+extern void uart_hw_enable_rx_interrupt(bool enable);
+
+// Buffer operations
+static bool buffer_is_full(const circular_buffer_t* buffer) {
+    return ((buffer->head + 1) & UART_BUFFER_MASK) == buffer->tail;
+}
+
+static bool buffer_is_empty(const circular_buffer_t* buffer) {
+    return buffer->head == buffer->tail;
+}
+
+static bool buffer_push(circular_buffer_t* buffer, uint8_t data) {
+    uint16_t next_head = (buffer->head + 1) & UART_BUFFER_MASK;
+    
+    if (next_head == buffer->tail) {
+        return false; // Buffer full
+    }
+    
+    buffer->data[buffer->head] = data;
+    buffer->head = next_head;
+    return true;
+}
+
+static bool buffer_pop(circular_buffer_t* buffer, uint8_t* data) {
+    if (buffer->head == buffer->tail) {
+        return false; // Buffer empty
+    }
+    
+    *data = buffer->data[buffer->tail];
+    buffer->tail = (buffer->tail + 1) & UART_BUFFER_MASK;
+    return true;
+}
+
+static uint16_t buffer_count(const circular_buffer_t* buffer) {
+    return (buffer->head - buffer->tail) & UART_BUFFER_MASK;
+}
+
+// UART initialization
+void uart_init(uint32_t baudrate) {
+    // Initialize hardware
+    uart_hw_init(baudrate);
+    
+    // Reset buffers
+    rx_buffer.head = rx_buffer.tail = 0;
+    tx_buffer.head = tx_buffer.tail = 0;
+    tx_busy = false;
+    
+    // Enable receive interrupt
+    uart_hw_enable_rx_interrupt(true);
+    // Transmit interrupt will be enabled when data is available
+}
+
+// Send a single byte (non-blocking)
+bool uart_send_byte(uint8_t data) {
+    bool success;
+    bool start_transmission = false;
+    
+    // Critical section: disable interrupts
+    __disable_irq();
+    
+    success = buffer_push(&tx_buffer, data);
+    
+    // If TX is not busy and we successfully added data, start transmission
+    if (success && !tx_busy) {
+        start_transmission = true;
+        tx_busy = true;
+    }
+    
+    // End critical section
+    __enable_irq();
+    
+    if (start_transmission) {
+        uart_hw_enable_tx_interrupt(true);
+    }
+    
+    return success;
+}
+
+// Send multiple bytes (non-blocking)
+bool uart_send_data(const uint8_t* data, uint16_t length) {
+    for (uint16_t i = 0; i < length; i++) {
+        if (!uart_send_byte(data[i])) {
+            return false; // Buffer full
+        }
+    }
+    return true;
+}
+
+// Read a single byte (non-blocking)
+bool uart_read_byte(uint8_t* data) {
+    return buffer_pop(&rx_buffer, data);
+}
+
+// Get number of bytes available to read
+uint16_t uart_available(void) {
+    return buffer_count(&rx_buffer);
+}
+
+// Flush TX buffer
+void uart_flush(void) {
+    // Wait until TX buffer is empty
+    while (!buffer_is_empty(&tx_buffer)) {
+        __NOP(); // No operation - just wait
+    }
+    
+    // Wait until last byte is transmitted
+    while (tx_busy) {
+        __NOP();
+    }
+}
+
+// RX interrupt handler
+void UART_RX_IRQHandler(void) {
+    if (uart_hw_rx_ready()) {
+        uint8_t data = uart_hw_read_byte();
+        
+        // If buffer full, data will be lost
+        buffer_push(&rx_buffer, data);
+    }
+}
+
+// TX interrupt handler
+void UART_TX_IRQHandler(void) {
+    if (uart_hw_tx_empty()) {
+        uint8_t data;
+        
+        if (buffer_pop(&tx_buffer, &data)) {
+            // Send next byte
+            uart_hw_send_byte(data);
+        } else {
+            // No more data, disable TX interrupt
+            uart_hw_enable_tx_interrupt(false);
+            tx_busy = false;
+        }
+    }
+}
+
+// Example usage in main application
+void main(void) {
+    // Initialize UART
+    uart_init(115200);
+    
+    // Main loop
+    while (1) {
+        // Check for received data
+        if (uart_available() > 0) {
+            uint8_t data;
+            uart_read_byte(&data);
+            
+            // Process received data
+            process_data(data);
+            
+            // Echo back
+            uart_send_byte(data);
+        }
+        
+        // Perform other tasks
+        other_application_tasks();
+    }
+}
+\end{lstlisting}
+
+3. \textbf{Key design elements:}
+   \begin{itemize}
+     \item \textbf{Circular buffers:} Efficient for handling serial data; no memory copying required
+     \item \textbf{Non-blocking API:} Main application can send/receive without waiting
+     \item \textbf{Interrupt-driven:} Minimal CPU overhead, responds quickly to data
+     \item \textbf{Buffer size is power of 2:} Enables efficient masking for wrap-around
+     \item \textbf{Buffer management:} Checks for full/empty conditions to prevent data loss
+     \item \textbf{Critical sections:} Protect shared buffer access between ISR and main code
+   \end{itemize}
+
+4. \textbf{Performance analysis:}
+   \begin{itemize}
+     \item At 115200 baud, 8N1:
+     \begin{itemize}
+       \item 1 start bit + 8 data bits + 1 stop bit = 10 bits per byte
+       \item Byte rate = 115200/10 = 11520 bytes per second
+       \item Time between bytes = 1/11520 $\approx$ 87 $mu$s
+     \end{itemize}
+     \item With a 256-byte buffer:
+     \begin{itemize}
+       \item Buffer can hold 256 × 87 $mu$s $\approx$ 22 ms of data
+       \item Sufficient for main loop to process data even with other tasks
+     \end{itemize}
+     \item ISR execution time:
+     \begin{itemize}
+       \item At 72 MHz, reading a byte and storing it takes ~10 cycles
+       \item ISR overhead (entry/exit) ~20 cycles
+       \item Total ~30 cycles = 0.42 $mu$s
+       \item Impact = 0.42 $mu$s / 87 $mu$s $\approx$ 0.5\% of CPU time
+     \end{itemize}
+   \end{itemize}
+
+This design provides an efficient, interrupt-driven UART interface that meets all requirements with minimal CPU overhead.
+\end{example2}

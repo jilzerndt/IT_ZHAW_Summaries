@@ -89,8 +89,6 @@ Both control \& status bits can be in same register.
 \raggedcolumns
 \multend
 
-
-
 \begin{concept}{CPU access to individual Peripheral Registers}
     \begin{itemize}
         \item ARM \& STM map the peripheral registers into
@@ -776,6 +774,210 @@ aux_var = BUTTON_REG;
     $\rightarrow$ \textcolor{pink}{cast} the address to a pointer to a 32-bit register
 \end{examplecode}
 
+\raggedcolumns
+\pagebreak
 
+\section{Microcontroller Basics Exercises}
 
+\subsection{Bus Access Analysis}
+
+\begin{KR}{Analyzing Bus Cycle Diagrams}
+\paragraph{Read access analysis}
+\begin{itemize}
+    \item Examine clock (CLK), address lines (A), data lines (D), and control signals (NWE, NOE, NE)
+    \item Identify whether it's a read (NOE active) or write (NWE active) operation
+    \item Note the address value from address lines
+    \item For read operations, note the data value returned on data lines
+\end{itemize}
+
+\paragraph{Write access analysis}
+\begin{itemize}
+    \item Identify write operations (NWE active)
+    \item Note the address value from address lines
+    \item Note the data value being written from data lines
+\end{itemize}
+
+\paragraph{Memory mapping}
+\begin{itemize}
+    \item Remember that processors like ARM use little-endian ordering
+    \item Lowest memory address holds the least significant byte (LSB)
+    \item Highest memory address in the word holds the most significant byte (MSB)
+    \item Map the bytes according to this ordering in memory
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Bus Cycle Analysis Example}\\
+Given the following bus cycle diagram, determine the operation type, address, and data value:
+
+\begin{center}
+\begin{tabular}{l}
+Access 1: T1 T2 T3 T4 T5 T6 with A[31:0] = 0x6100ABC8, NOE active, D[31:0] = 0x11223344 \\
+Access 2: T1 T2 T3 T4 T5 with A[31:0] = 0x6100ABC8, NWE active, D[31:0] = 0x55667788
+\end{tabular}
+\end{center}
+
+\tcblower
+\paragraph{Solution:}
+Access 1: This is a read operation because NOE is active.
+\begin{itemize}
+    \item Address: 0x6100ABC8
+    \item Data read: 0x11223344
+\end{itemize}
+
+Access 2: This is a write operation because NWE is active.
+\begin{itemize}
+    \item Address: 0x6100ABC8
+    \item Data written: 0x55667788
+\end{itemize}
+
+Memory contents (little-endian):
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Address} & \textbf{Content before Access 2} \\
+\hline
+0x6100ABC8 & 0x44 (LSB) \\
+0x6100ABC9 & 0x33 \\
+0x6100ABCA & 0x22 \\
+0x6100ABCB & 0x11 (MSB) \\
+\hline
+\end{tabular}
+\quad
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Address} & \textbf{Content after Access 2} \\
+\hline
+0x6100ABC8 & 0x88 (LSB) \\
+0x6100ABC9 & 0x77 \\
+0x6100ABCA & 0x66 \\
+0x6100ABCB & 0x55 (MSB) \\
+\hline
+\end{tabular}
+\end{center}
+\end{example2}
+
+\subsection{Address Decoding}
+
+\begin{KR}{Analyzing Address Decoding Logic}
+\paragraph{Identifying addressable range}
+\begin{itemize}
+    \item Determine the total address space from the number of address lines: $2^n$ bytes
+    \item For partial address decoding, identify which address lines are actually decoded
+    \item Find which address bits are fixed (compared in the logic) and which are "don't care"
+\end{itemize}
+
+\paragraph{Calculating address ranges}
+\begin{itemize}
+    \item For fully decoded address: Only one specific address activates the select signal
+    \item For partially decoded address:
+    \begin{itemize}
+        \item Identify how many address bits are not decoded ("don't care" bits)
+        \item Calculate the number of different addresses that map to the same location: $2^m$ where $m$ is the number of "don't care" bits
+        \item Use the fixed bits to determine the base address pattern
+        \item Substitute all possible values for the "don't care" bits to find all addresses
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Creating decoding logic}
+\begin{itemize}
+    \item For exact address decoding: AND all address bits (or their complements) according to the required pattern
+    \item For partial decoding: Only include the relevant address bits in the logic
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Address Decoding Example}\\
+Given a 6-bit address bus A[5:0], determine the addresses that will select a device with the following address decoding logic:
+\begin{center}
+select = A[5] \& A[4] \& !A[3] \& !A[2]
+\end{center}
+
+\tcblower
+\paragraph{Solution:}
+The decoding logic fixes 4 address bits: A[5:2] = 1100
+
+The bits A[1:0] are "don't care" bits (not included in the logic), giving 4 possible addresses:
+\begin{itemize}
+    \item A[5:0] = 110000 = 0x30
+    \item A[5:0] = 110001 = 0x31
+    \item A[5:0] = 110010 = 0x32
+    \item A[5:0] = 110011 = 0x33
+\end{itemize}
+
+Therefore, the device can be addressed at any of these four addresses: 0x30, 0x31, 0x32, or 0x33.
+\end{example2}
+
+\subsection{Memory-Mapped I/O Access in C}
+
+\begin{KR}{Memory-Mapped Register Access in C}
+\paragraph{Define register addresses}
+\begin{itemize}
+    \item Use \texttt{\#define} for each register address
+    \item Create pointer types for each data width (8-bit, 16-bit, 32-bit)
+    \item Use \texttt{volatile} qualifier to prevent optimization
+\end{itemize}
+
+\paragraph{Reading from registers}
+\begin{itemize}
+    \item Cast the register address to a volatile pointer of appropriate width
+    \item Dereference the pointer to read the value
+    \item Use bit masks and shifts to extract specific bits if needed
+\end{itemize}
+
+\paragraph{Writing to registers}
+\begin{itemize}
+    \item Cast the register address to a volatile pointer of appropriate width
+    \item Assign a value to the dereferenced pointer to write
+    \item For bit manipulation operations:
+    \begin{itemize}
+        \item Use bitwise OR (|) to set specific bits without affecting others
+        \item Use bitwise AND (\&) with inverted mask to clear specific bits
+        \item Use bitwise XOR ($\land$) to toggle specific bits
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Waiting for status bits}
+\begin{itemize}
+    \item Create a polling loop that checks the status bit
+    \item Use appropriate bit masks to isolate the status bit
+    \item Use volatile to ensure the register is read on each iteration
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Memory-Mapped Register Access Example}\\
+Write C code to:
+\begin{enumerate}
+    \item Read an 8-bit control register at address 0x61000007
+    \item Set all bits of a 16-bit control register at address 0x61000008 to '1'
+    \item Wait until bit 15 in a 32-bit register at address 0x6100000C is set
+    \item Set bit 16 in a 32-bit register at address 0x61000010 without changing other bits
+\end{enumerate}
+
+\tcblower
+\paragraph{Solution:}
+\begin{lstlisting}[language=C, style=basesmol]
+#include <stdint.h>
+
+// Define register addresses with appropriate types
+#define MY_BYTE_REG     (*((volatile uint8_t *)(0x61000007)))
+#define MY_HALFWORD_REG (*((volatile uint16_t *)(0x61000008)))
+#define MY_WORD_REG     (*((volatile uint32_t *)(0x6100000C)))
+#define MY_WORD_REG2    (*((volatile uint32_t *)(0x61000010)))
+
+void register_operations(void) {
+    // Read 8-bit control register
+    uint8_t my_var = MY_BYTE_REG;
+    
+    // Set all bits of 16-bit register to '1'
+    MY_HALFWORD_REG = 0xFFFF;
+    
+    // Wait until bit 15 is set in 32-bit register
+    while (!(MY_WORD_REG & 0x00008000)) {
+        // Empty loop body
+    }
+    
+    // Set bit 16 without changing other bits
+    MY_WORD_REG2 |= 0x00010000;
+}
+\end{lstlisting}
+\end{example2}
 

@@ -347,3 +347,306 @@ Address range: 0x68000000 - 0x68007FFF
 Note: Due to partial address decoding, this SRAM might also be accessible at other addresses within bank 3. For example, it might also respond to addresses:
 0x68008000 - 0x6800FFFF, 0x68010000 - 0x68017FFF, etc.
 \end{example2}
+
+\section{Memory Exercises}
+
+\subsection{Memory Technology Comparison}
+
+\begin{KR}{Comparing Memory Technologies}\\
+\paragraph{Identify memory characteristics}
+\begin{itemize}
+    \item \textbf{Volatility:} Whether memory loses contents when power is removed
+    \begin{itemize}
+        \item \textit{Volatile:} SRAM, DRAM/SDRAM
+        \item \textit{Non-volatile:} PROM, EEPROM, Flash, NV-RAM
+    \end{itemize}
+    \item \textbf{Storage mechanism:} How bits are physically stored
+    \begin{itemize}
+        \item \textit{SRAM:} Flip-flop-based cells (6 transistors)
+        \item \textit{DRAM:} Capacitor-based cells (1 transistor + 1 capacitor)
+        \item \textit{Flash:} Floating-gate transistors
+    \end{itemize}
+    \item \textbf{Access method:} How data is accessed
+    \begin{itemize}
+        \item \textit{Random access:} Any location accessed in the same time (SRAM, NOR Flash)
+        \item \textit{Block access:} Efficient for large blocks (NAND Flash)
+        \item \textit{Sequential access:} Fast for sequential data (SDRAM with burst mode)
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Compare memory performance metrics}
+\begin{itemize}
+    \item \textbf{Access time:} Time to read/write data
+    \begin{itemize}
+        \item SRAM: 2-10ns
+        \item SDRAM: 60ns+ for first access, then fast for burst
+        \item NOR Flash: \~120ns read
+        \item NAND Flash: Slow random access (25$\mu$s first byte)
+    \end{itemize}
+    \item \textbf{Density:} Storage capacity per unit area
+    \begin{itemize}
+        \item SRAM: Low (large cells, expensive)
+        \item DRAM: High (small cells, inexpensive)
+        \item NAND Flash: Very high (highest density, lowest cost per bit)
+    \end{itemize}
+    \item \textbf{Power consumption:} Energy required for operation
+    \begin{itemize}
+        \item SRAM: Low static power (no refresh needed)
+        \item DRAM: Higher (requires refresh)
+        \item Flash: Very low when not being written/erased
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Analyze application suitability}
+\begin{itemize}
+    \item \textbf{SRAM:} Cache memory, small temporary storage
+    \item \textbf{DRAM/SDRAM:} Main memory, large temporary storage
+    \item \textbf{NOR Flash:} Program code storage, direct execution
+    \item \textbf{NAND Flash:} Mass storage, data logging, SSD drives
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Memory Technology Comparison}\\
+Compare SDRAM (Synchronous Dynamic RAM) and SRAM (Static RAM) in terms of:
+\begin{enumerate}
+    \item Storage mechanism and structure
+    \item Access patterns and timing characteristics
+    \item Density and cost
+    \item Refresh requirements
+    \item Typical applications
+\end{enumerate}
+
+\tcblower
+\paragraph{Solution:}
+
+1. \textbf{Storage mechanism and structure:}
+   \begin{itemize}
+     \item \textbf{SRAM:} Uses flip-flop circuits with 6 transistors per bit. Stores data as long as power is applied, without requiring refresh.
+     \item \textbf{SDRAM:} Uses a single capacitor and transistor per bit. Stores data as charge in a capacitor that leaks over time.
+   \end{itemize}
+
+2. \textbf{Access patterns and timing:}
+   \begin{itemize}
+     \item \textbf{SRAM:} Provides fast random access with consistent timing for all accesses (~5ns). All operations take roughly the same time.
+     \item \textbf{SDRAM:} Synchronous interface with clock. Has higher latency for first access in a row (~60ns), but very fast subsequent access within same row. Optimized for burst transfers.
+   \end{itemize}
+
+3. \textbf{Density and cost:}
+   \begin{itemize}
+     \item \textbf{SRAM:} Low density due to large cell size (6 transistors). Higher cost per bit. Typically limited to 64Mb per device.
+     \item \textbf{SDRAM:} High density due to small cell size (1 transistor + 1 capacitor). Lower cost per bit. Can reach 4Gb or more per device.
+   \end{itemize}
+
+4. \textbf{Refresh requirements:}
+   \begin{itemize}
+     \item \textbf{SRAM:} No refresh required (static). Maintains data as long as power is applied.
+     \item \textbf{SDRAM:} Requires periodic refresh (dynamic). Capacitors discharge within milliseconds and must be refreshed regularly.
+   \end{itemize}
+
+5. \textbf{Typical applications:}
+   \begin{itemize}
+     \item \textbf{SRAM:} CPU cache memory, small buffer memory, applications requiring fast random access.
+     \item \textbf{SDRAM:} Main system memory, large buffers, applications requiring high capacity with reasonable access speed.
+   \end{itemize}
+\end{example2}
+
+\subsection{External Memory Configuration}
+
+\begin{KR}{Connecting External Memory to STM32}\\
+\paragraph{Identify external memory type and requirements}
+\begin{itemize}
+    \item Determine memory interface type (asynchronous SRAM, NOR Flash, NAND Flash, SDRAM)
+    \item Identify memory capacity and organization (width x depth)
+    \item Note timing requirements from datasheet
+\end{itemize}
+
+\paragraph{Configure FMC (Flexible Memory Controller)}
+\begin{itemize}
+    \item Enable FMC clock in RCC registers
+    \item Configure memory bank registers based on memory type:
+    \begin{itemize}
+        \item Bank 1-4: SRAM/NOR/PSRAM (BCRx and BTRx registers)
+        \item Bank 5-6: SDRAM (SDCR and SDTR registers)
+    \end{itemize}
+    \item Set data bus width (8/16/32 bits)
+    \item Configure timing parameters:
+    \begin{itemize}
+        \item ADDSET: Address setup time
+        \item DATAST: Data setup time
+        \item BUSTURN: Bus turnaround time
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Configure GPIO pins for FMC}
+\begin{itemize}
+    \item Enable GPIO clocks in RCC registers
+    \item Configure GPIO pins for alternate function (FMC)
+    \item Set GPIO speed, typically high or very high
+\end{itemize}
+
+\paragraph{Understand memory mapping}
+\begin{itemize}
+    \item Know the address ranges for each FMC bank:
+    \begin{itemize}
+        \item Bank 1: 0x6000 0000 - 0x6FFF FFFF
+        \item Bank 2: 0x7000 0000 - 0x7FFF FFFF
+        \item Bank 3: 0x8000 0000 - 0x8FFF FFFF
+        \item Bank 4: 0x9000 0000 - 0x9FFF FFFF
+        \item SDRAM Bank 1: 0xC000 0000 - 0xCFFF FFFF
+        \item SDRAM Bank 2: 0xD000 0000 - 0xDFFF FFFF
+    \end{itemize}
+    \item Understand chip select logic (NE1-NE4)
+    \item Account for memory width in address calculations
+\end{itemize}
+\end{KR}
+
+\begin{example2}{External Memory Connection Analysis}\\
+A 64K × 8-bit asynchronous SRAM chip needs to be connected to the FMC of an STM32F429 microcontroller. The address 0x6800'0000 should be the lowest address used to access the memory.
+
+Answer:
+\begin{enumerate}
+    \item How many address pins does the memory need?
+    \item Which FMC signals should be connected to the SRAM chip?
+    \item At what address is the highest byte of the memory accessed?
+    \item Explain why the same memory location can be accessed at multiple addresses.
+\end{enumerate}
+
+\tcblower
+\paragraph{Solution:}
+
+1. \textbf{Number of address pins:}
+   \begin{itemize}
+     \item Memory size = 64K = 2$^{16}$ bytes
+     \item Need 16 address lines: ADDR[15:0]
+   \end{itemize}
+
+2. \textbf{FMC signals to connect:}
+   \begin{itemize}
+     \item Address lines: A[15:0]
+     \item Data lines: D[7:0] (8-bit data bus)
+     \item Chip select: NE[3] (for Bank 3 based on address 0x6800'0000)
+     \item Output Enable: NOE
+     \item Write Enable: NWE
+   \end{itemize}
+
+3. \textbf{Highest memory address:}
+   \begin{itemize}
+     \item Lowest address: 0x6800'0000
+     \item Memory size: 64K = 0x10000 bytes
+     \item Highest address: 0x6800'0000 + 0xFFFF = 0x6800'FFFF
+   \end{itemize}
+
+4. \textbf{Multiple address access:}
+   \begin{itemize}
+     \item This occurs due to partial address decoding
+     \item Only address lines A[15:0] are connected to the memory chip
+     \item Higher address bits A[25:16] are not decoded/connected
+     \item Any address where A[27:26] = 01 (Bank 2) and A[15:0] match will access the same memory location
+     \item Example: Addresses 0x6800'0000, 0x6900'0000, 0x6A00'0000, etc. all access the same byte in memory
+     \item The number of 64KB address blocks that map to the same memory is 2$^{10}$ = 1024 (from the 10 undecoded bits A[25:16])
+   \end{itemize}
+\end{example2}
+
+\subsection{Memory Access Decomposition}
+
+\begin{KR}{Analyzing Memory Access Patterns}\\
+\paragraph{Determine memory access type}
+\begin{itemize}
+    \item Identify memory type and organization (width × depth)
+    \item Determine CPU data bus width (typically 32-bit for Cortex-M)
+    \item Identify the size of the access (byte, half-word, word)
+\end{itemize}
+
+\paragraph{Memory address decomposition}
+\begin{itemize}
+    \item Identify bank select bits from address (typically bits 27:26)
+    \begin{itemize}
+        \item 00: Bank 1, 01: Bank 2, 10: Bank 3, 11: Bank 4
+    \end{itemize}
+    \item Identify chip enable from bank and address
+    \begin{itemize}
+        \item Within each bank, specific regions activate NE1-NE4
+    \end{itemize}
+    \item Determine memory location within the device (lower address bits)
+\end{itemize}
+
+\paragraph{Analyze byte enables for sub-word accesses}
+\begin{itemize}
+    \item For 32-bit data bus: NBL[3:0] controls which bytes are active
+    \begin{itemize}
+        \item Word access (4 bytes): NBL[3:0] = 0000 (all active)
+        \item Half-word access (2 bytes): NBL[3:0] = 0011 or 1100
+        \item Byte access (1 byte): NBL[3:0] = 0111, 1011, 1101, or 1110
+    \end{itemize}
+    \item For 16-bit data bus: NBL[1:0] controls which bytes are active
+    \begin{itemize}
+        \item Half-word access (2 bytes): NBL[1:0] = 00 (both active)
+        \item Byte access (1 byte): NBL[1:0] = 01 or 10
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Determine access pattern}
+\begin{itemize}
+    \item For 8-bit memory with 32-bit CPU: 4 accesses per word
+    \item For 16-bit memory with 32-bit CPU: 2 accesses per word
+    \item Account for address alignment:
+    \begin{itemize}
+        \item Unaligned access may require additional memory cycles
+        \item Byte ordering (little-endian for ARM) affects access pattern
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Memory Access Analysis}\\
+A 16-bit wide asynchronous SRAM is connected to the FMC of an STM32F429 microcontroller. Analyze what happens when the CPU writes a single byte to address 0x6402'8F21:
+
+\begin{enumerate}
+    \item Determine the memory device and bank
+    \item Calculate the memory location in the device
+    \item Identify which byte line (NBL) is activated
+    \item Explain the complete address decomposition
+\end{enumerate}
+
+\tcblower
+\paragraph{Solution:}
+
+1. \textbf{Memory device and bank:}
+   \begin{itemize}
+     \item Address 0x6402'8F21 begins with 0x64...
+     \item From address bits [27:26] = 01, this is in Bank 2
+     \item This activates NE2 (chip select 2)
+   \end{itemize}
+
+2. \textbf{Memory location in device:}
+   \begin{itemize}
+     \item Only address bits [25:1] are passed to the SRAM device
+     \item Bit [0] is used to select the high/low byte within a 16-bit word
+     \item Memory location = 0x0014'7490 (shifted right by 1 bit and ignoring higher bits that aren't connected)
+   \end{itemize}
+
+3. \textbf{Byte line activation:}
+   \begin{itemize}
+     \item Address bit [0] = 1, so we're accessing the high byte in the 16-bit word
+     \item For 16-bit memory: NBL[1:0] = 10 (high byte active)
+     \item NBL[0] = 1 (not active), NBL[1] = 0 (active)
+   \end{itemize}
+
+4. \textbf{Complete address decomposition:}
+   \begin{itemize}
+     \item 0x6402'8F21 decomposed:
+     \begin{itemize}
+       \item Bits [31:28]: 0x6 (not used for decoding)
+       \item Bits [27:26]: 01 (Bank 2, activates NE2)
+       \item Bits [25:1]: Memory address within SRAM (0x0014'7490)
+       \item Bit [0]: 1 (select high byte)
+     \end{itemize}
+     \item FMC signals during access:
+     \begin{itemize}
+       \item NE2 = 0 (active)
+       \item A[24:0] = 0x0014'7490 (memory address)
+       \item NBL[1:0] = 10 (access high byte)
+       \item NWE = 0 (active, writing)
+       \item Data appears on D[15:8] (high byte)
+     \end{itemize}
+   \end{itemize}
+\end{example2}

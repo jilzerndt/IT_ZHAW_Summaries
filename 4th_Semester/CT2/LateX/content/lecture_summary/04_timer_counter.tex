@@ -465,3 +465,245 @@ TIM4->CCER |= TIM_CCER_CC2E;
 TIM4->CR1 |= TIM_CR1_CEN;
 \end{lstlisting}
 \end{example2}
+
+\section{Timer/Counter Exercises}
+
+\subsection{Timer Configuration}
+
+\begin{KR}{Configuring Basic Timer Operations}\\
+\paragraph{Understand timer components}
+\begin{itemize}
+    \item \textbf{Prescaler (PSC):} Divides input clock frequency by (PSC+1)
+    \item \textbf{Counter (CNT):} Current count value
+    \item \textbf{Auto-reload register (ARR):} Value to reload after overflow/underflow
+    \item \textbf{Update flag (UIF):} Set when counter overflows/underflows
+\end{itemize}
+
+\paragraph{Calculate timer parameters}
+\begin{itemize}
+    \item Determine desired period (T): The time between events
+    \item Calculate required counts: counts = T × input\_frequency
+    \item If counts > 65,536 (16-bit limit), use prescaler:
+    \begin{itemize}
+        \item Choose prescaler value (PSC): PSC = $\lfloor$ counts/65,536 $\rfloor$
+        \item Adjusted counter value: ARR = $\lfloor$ counts/(PSC+1) $\rfloor$ - 1
+    \end{itemize}
+    \item For precision, minimize prescaler while keeping ARR within limits
+\end{itemize}
+
+\paragraph{Configure timer registers}
+\begin{itemize}
+    \item Enable timer clock in RCC registers
+    \item Set prescaler value in TIMx\_PSC register
+    \item Set auto-reload value in TIMx\_ARR register
+    \item Configure counting direction in TIMx\_CR1:
+    \begin{itemize}
+        \item DIR=0: Up-counting
+        \item DIR=1: Down-counting
+    \end{itemize}
+    \item Enable interrupt if needed in TIMx\_DIER (UIE bit)
+    \item Enable timer by setting CEN bit in TIMx\_CR1
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Basic Timer Configuration}\\
+Configure Timer 2 on an STM32F4 microcontroller to generate an interrupt every 1 second. The timer clock frequency is 84 MHz.
+
+\tcblower
+\paragraph{Solution:}
+First, calculate the required counts:
+\begin{itemize}
+    \item counts = 1s × 84MHz = 84,000,000
+\end{itemize}
+
+Since 84,000,000 > 65,536 (16-bit limit), we need a prescaler:
+\begin{itemize}
+    \item Choose prescaler: PSC = 8400 - 1 = 8399
+    \item This divides the clock to 84MHz/8400 = 10kHz
+    \item Adjusted counter value: ARR = 10,000 - 1 = 9999
+\end{itemize}
+
+C code for configuration:
+\begin{lstlisting}[language=C, style=basesmol]
+// Enable TIM2 clock
+RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+
+// Configure TIM2
+TIM2->PSC = 8399;         // Prescaler: 8400-1
+TIM2->ARR = 9999;         // Auto-reload: 10000-1
+TIM2->CR1 = 0;            // Up-counting mode
+TIM2->DIER |= TIM_DIER_UIE; // Enable update interrupt
+TIM2->CR1 |= TIM_CR1_CEN;   // Enable timer
+
+// Configure NVIC
+NVIC_EnableIRQ(TIM2_IRQn);
+\end{lstlisting}
+
+\begin{itemize}
+    \item Timer clock frequency: 84MHz
+    \item Prescaler: 8400 (gives 10kHz)
+    \item Auto-reload: 10,000 (gives 1Hz)
+    \item Timer period: 1 second
+\end{itemize}
+\end{example2}
+
+\subsection{Capture/Compare Operations}
+
+\begin{KR}{Configuring PWM Output}\\
+\paragraph{Understand PWM parameters}
+\begin{itemize}
+    \item \textbf{Period:} Controlled by ARR value
+    \item \textbf{Duty cycle:} Controlled by CCRx value
+    \item \textbf{Frequency:} Determined by timer clock, prescaler, and ARR
+\end{itemize}
+
+\paragraph{Calculate PWM parameters}
+\begin{itemize}
+    \item PWM frequency = Timer clock / ((PSC+1) × (ARR+1))
+    \item For up-counting mode:
+    \begin{itemize}
+        \item CCRx controls when output switches from active to inactive
+        \item Duty cycle = CCRx / (ARR+1) × 100\%
+    \end{itemize}
+    \item For down-counting mode:
+    \begin{itemize}
+        \item CCRx controls when output switches from inactive to active
+        \item Duty cycle = (ARR+1-CCRx) / (ARR+1) × 100\%
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Configure PWM output}
+\begin{itemize}
+    \item Configure timer basic parameters (PSC, ARR)
+    \item Select PWM mode in CCMRx register:
+    \begin{itemize}
+        \item PWM Mode 1: Output active when CNT < CCRx
+        \item PWM Mode 2: Output active when CNT > CCRx
+    \end{itemize}
+    \item Set CCRx value to control duty cycle
+    \item Enable output in CCER register (CCxE bit)
+    \item Configure GPIO pin for alternate function (timer output)
+    \item Enable timer by setting CEN bit in CR1
+\end{itemize}
+\end{KR}
+
+\begin{example2}{PWM Configuration Example}\\
+Configure Timer 4 for PWM output with:
+\begin{itemize}
+    \item ARR = 0x9C3F (value 39999)
+    \item Up-counting mode, PWM Mode 1
+    \item 25\% duty cycle
+\end{itemize}
+
+Then, reconfigure for down-counting mode with PWM Mode 2 while maintaining the same electrical signal.
+
+\tcblower
+\paragraph{Solution:}
+For up-counting mode with PWM Mode 1:
+\begin{itemize}
+    \item Total count is 40,000 (ARR+1)
+    \item For 25\% duty cycle, the output should be high for 10,000 counts
+    \item In PWM Mode 1 (up-counting): CCR1 = 25\% of 40,000 = 10,000 = 0x2710
+\end{itemize}
+
+For down-counting mode with PWM Mode 2:
+\begin{itemize}
+    \item In PWM Mode 2 (down-counting), output is active when CNT > CCR1
+    \item To maintain 25\% duty cycle: CCR1 = ARR+1-10,000 = 40,000-10,000 = 30,000 = 0x752F
+\end{itemize}
+
+C code for configuration:
+\begin{lstlisting}[language=C, style=basesmol]
+// Up-counting mode, PWM Mode 1, 25% duty cycle
+TIM4->ARR = 0x9C3F;       // Auto-reload value (39999)
+TIM4->CCR1 = 0x2710;      // Compare value for 25% duty cycle (10000)
+TIM4->CCMR1 = 0x0060;     // PWM Mode 1 for channel 1
+TIM4->CCER |= 0x0001;     // Enable output for channel 1
+TIM4->CR1 &= ~TIM_CR1_DIR; // Up-counting mode
+TIM4->CR1 |= TIM_CR1_CEN;  // Enable timer
+
+// Down-counting mode, PWM Mode 2, 25% duty cycle
+TIM4->ARR = 0x9C3F;       // Auto-reload value (39999)
+TIM4->CCR1 = 0x752F;      // Compare value for 25% duty cycle (30000)
+TIM4->CCMR1 = 0x0070;     // PWM Mode 2 for channel 1
+TIM4->CCER |= 0x0001;     // Enable output for channel 1
+TIM4->CR1 |= TIM_CR1_DIR;  // Down-counting mode
+TIM4->CR1 |= TIM_CR1_CEN;  // Enable timer
+\end{lstlisting}
+\end{example2}
+
+\subsection{Timer Capture/Compare Timing Analysis}
+
+\begin{KR}{Analyzing Timer Signal Generation}\\
+\paragraph{Understand the timing diagram}
+\begin{itemize}
+    \item Identify the timer mode (up-counting, down-counting)
+    \item Note the prescaler value and input frequency
+    \item Observe the event signals and their timing
+\end{itemize}
+
+\paragraph{Trace the counter value}
+\begin{itemize}
+    \item Start with initial counter value
+    \item For up-counting: Increment counter for each clock tick after prescaler
+    \item For down-counting: Decrement counter for each clock tick after prescaler
+    \item Reset counter when overflow/underflow occurs
+    \item Note when capture events occur
+\end{itemize}
+
+\paragraph{Analyze capture/compare events}
+\begin{itemize}
+    \item For capture mode: Counter value is stored in CCRx when event occurs
+    \item For compare mode: Compare event occurs when CNT = CCRx
+    \item Note the timing of interrupt flags (CCIF)
+\end{itemize}
+
+\paragraph{Calculate timing parameters}
+\begin{itemize}
+    \item Actual period = (ARR+1) × (PSC+1) / timer\_clock
+    \item Duty cycle = time\_active / period × 100\%
+    \item For PWM: Duty cycle = CCRx / (ARR+1) × 100\% (up-counting mode)
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Timer Signal Analysis Example}\\
+Analyze the following timer configuration:
+\begin{itemize}
+    \item Timer is configured as up-counter
+    \item Source frequency is 0.5 MHz
+    \item Prescaler (PSC) = 0x01F3 (499)
+    \item Auto-reload (ARR) = 0x752F (30000-1)
+    \item Compare value (CCR1) = 0x2710 (10000)
+    \item CCMR1 = 0x0070 (PWM Mode 2)
+\end{itemize}
+Determine the period and duty cycle of the generated PWM signal.
+
+\tcblower
+\paragraph{Solution:}
+First, calculate the effective counter frequency:
+\begin{itemize}
+    \item Timer input = 0.5 MHz
+    \item Prescaler = 499+1 = 500
+    \item Counter frequency = 0.5 MHz / 500 = 1 kHz
+\end{itemize}
+
+Calculate the period:
+\begin{itemize}
+    \item ARR = 30000-1 = 29999
+    \item Period = (ARR+1) / counter frequency = 30000 / 1000 Hz = 30 seconds
+\end{itemize}
+
+Determine the duty cycle:
+\begin{itemize}
+    \item PWM Mode 2 means output is active when CNT > CCR1
+    \item In up-counting mode, this means output is active when 10000 < CNT $\leq$ 29999
+    \item Active time = (29999+1 - 10000) / 1000 Hz = 20 seconds
+    \item Duty cycle = Active time / Period = 20s / 30s = 66.67\%
+\end{itemize}
+
+Therefore, the PWM signal has:
+\begin{itemize}
+    \item Period: 30 seconds
+    \item Duty cycle: 66.67\% (active for 20 seconds, inactive for 10 seconds)
+\end{itemize}
+\end{example2}

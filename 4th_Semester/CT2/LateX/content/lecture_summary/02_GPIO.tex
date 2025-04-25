@@ -2,6 +2,28 @@
 
 \subsection{GPIO Fundamentals}
 
+\begin{definition}{GPIO}\\
+    \textbf{Situation:}
+    \begin{itemize}
+        \item Microcontroller as a general purpose device
+        \item Many functional blocks included
+    \end{itemize}
+
+    \textbf{Problem:}
+    \begin{itemize}
+        \item Limited number of pins
+        \item Many functions to be implemented (many functional blocks included)
+    \end{itemize}
+
+    \textbf{Solution:}
+    \begin{itemize}
+        \item Many (all) pins are configurable as GPIO
+        \item Select the needed I/O pins and functions
+        \item \oq pin sharing\cq
+        \item Output multiplexer needs to be configured
+    \end{itemize}
+\end{definition}
+
 \begin{concept}{GPIO Overview}\\
 General Purpose Input/Output (GPIO) pins allow the microcontroller to interact with the external world.
 \begin{itemize}
@@ -26,37 +48,48 @@ Not all functions can be used simultaneously; configuration registers define pin
 
 \subsection{GPIO Structure}
 
-\begin{concept}{GPIO Hardware Structure}\\
-Each GPIO pin contains several hardware components:
-\begin{itemize}
-    \item Input data register (IDR) - reads the pin state
-    \item Output data register (ODR) - sets the output state
-    \item Direction control (MODER) - configures pin as input or output
-    \item Output type control (OTYPER) - push-pull or open-drain
-    \item Pull-up/pull-down resistors (PUPDR)
-    \item Speed configuration (OSPEEDR)
-    \item Alternate function selection (AFRL/AFRH)
-\end{itemize}
-\end{concept}
-
 \begin{definition}{GPIO Registers}\\
 Each GPIO port has several configuration registers:
 \begin{itemize}
-    \item \textbf{GPIOx\_MODER}: Mode register (input, output, alternate function, analog)
+    \item \textbf{GPIOx\_MODER}: Mode register (input, output, alternate function, analog) - configures pin as input or output (direction control)
     \item \textbf{GPIOx\_OTYPER}: Output type register (push-pull or open-drain)
-    \item \textbf{GPIOx\_OSPEEDR}: Output speed register (low, medium, high, very high)
+    \item \textbf{GPIOx\_OSPEEDR}: Output speed register (low, medium, high, very high) - configures speed
     \item \textbf{GPIOx\_PUPDR}: Pull-up/pull-down register
-    \item \textbf{GPIOx\_IDR}: Input data register (read-only)
-    \item \textbf{GPIOx\_ODR}: Output data register (read/write)
+    \item \textbf{GPIOx\_IDR}: Input data register (read-only) - reads the pin state
+    \item \textbf{GPIOx\_ODR}: Output data register (read/write) - sets the output state
     \item \textbf{GPIOx\_BSRR}: Bit set/reset register (atomic operations)
     \item \textbf{GPIOx\_LCKR}: Configuration lock register
-    \item \textbf{GPIOx\_AFRL/H}: Alternate function registers
+    \item \textbf{GPIOx\_AFRL/H}: Alternate function registers (AF selection for pins 0-7 and 8-15)
 \end{itemize}
 \end{definition}
 
-\columnbreak
+\begin{concept}{Structure}\\
+    \includegraphics[width=\linewidth]{structure_gpio.png}
+\end{concept}
 
-\subsection{GPIO Configuration}
+
+
+\subsubsection{Push-Pull vs. Open-Drain}
+
+\begin{concept}{Push-Pull vs Open-Drain Outputs}
+\begin{itemize}
+    \item \textbf{Push-Pull:}
+    \begin{itemize}
+        \item Can actively drive output high (to VDD) or low (to GND)
+        \item Faster switching times, can source and sink current
+        \item Default output mode for GPIO pins
+    \end{itemize}
+    \item \textbf{Open-Drain:}
+    \begin{itemize}
+        \item Can only actively drive output low
+        \item Relies on external pull-up resistor to reach high state
+        \item Multiple devices can share a line without conflicts (e.g., I2C bus)
+        \item Used in "wired-AND" configurations
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\subsubsection{GPIO Configuration}
 
 \begin{definition}{Direction Configuration (MODER)}\\
 The GPIOx\_MODER register configures each pin's direction:
@@ -97,28 +130,6 @@ The GPIOx\_OSPEEDR register configures the output slew rate:
 \end{itemize}
 \end{definition}
 
-\subsection{Push-Pull vs. Open-Drain}
-
-\begin{concept}{Push-Pull vs Open-Drain Outputs}
-\begin{itemize}
-    \item \textbf{Push-Pull:}
-    \begin{itemize}
-        \item Can actively drive output high (to VDD) or low (to GND)
-        \item Faster switching times, can source and sink current
-        \item Default output mode for GPIO pins
-    \end{itemize}
-    \item \textbf{Open-Drain:}
-    \begin{itemize}
-        \item Can only actively drive output low
-        \item Relies on external pull-up resistor to reach high state
-        \item Multiple devices can share a line without conflicts (e.g., I2C bus)
-        \item Used in "wired-AND" configurations
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\subsection{Data Registers and Operations}
-
 \begin{definition}{Input Data Register (IDR)}\\
 The GPIOx\_IDR is a read-only register containing the input value of the corresponding I/O port.
 \end{definition}
@@ -135,6 +146,14 @@ The GPIOx\_BSRR allows atomic bit operations:
 \end{itemize}
 This ensures atomic access without read-modify-write operations.
 \end{definition}
+
+\begin{KR}{Setting and Clearing Bits} GPIOx\_BSRR
+    \begin{itemize}
+        \item 0-15: Set Bits $\rightarrow$ 1: Set, 0: No Change
+        \item 16-31: Reset/Clear Bits $\rightarrow$ 1: Reset, 0: No Change
+        \item Ensures atomic access in software (no interruption possible)
+    \end{itemize}
+\end{KR}
 
 \begin{KR}{Configuring a GPIO Pin}
 \paragraph{Step 1: Enable GPIO clock}
@@ -166,6 +185,52 @@ GPIOA->BSRR = (1 << 5);         // Set PA5 high
 \end{lstlisting}
 \end{KR}
 
+\begin{example2}{GPIO Configuration Exercise}\\
+Configure pin PA3 as an output with open-drain configuration, low speed, and pull-up enabled. Then set the pin to low state.
+\begin{lstlisting}[language=C, style=basesmol] 
+// Enable GPIOA clock
+RCC->AHB1ENR |= (1 << 0);  // Bit 0 for GPIOA
+
+// Configure PA3 as output (bits 6-7 = 01)
+GPIOA->MODER \&= ~(3 << 6);  // Clear bits 6-7
+GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
+
+// Configure as open-drain (bit 3 = 1)
+GPIOA->OTYPER |= (1 << 3);  
+
+// Configure as low speed (bits 6-7 = 00)
+GPIOA->OSPEEDR \&= ~(3 << 6);  // Clear bits 6-7 (low speed)
+
+// Configure with pull-up (bits 6-7 = 01)
+GPIOA->PUPDR \&= ~(3 << 6);    // Clear bits 6-7
+GPIOA->PUPDR |= (1 << 6);     // Set bit 6 (pull-up)
+
+// Set pin to low state using BSRR
+GPIOA->BSRR = (1 << (3 + 16));  // Set bit 19 (reset PA3)
+\end{lstlisting}
+\end{example2}
+
+\subsection{Data Registers and Operations}
+
+\subsubsection{Register Access}
+
+\begin{formula}{Register Address} = Base address + Offset
+    \begin{itemize}
+        \item Offset is given for each register in reference Manual
+        \item Base address is defined in memory map (reference manual)
+    \end{itemize}
+\end{formula}
+
+\begin{corollary}{Data Operations}
+    \begin{itemize}
+        \item Input: Read register \textbf{GPIOx\_IDR} (Input Data Register)
+        \item Output: Write register \textbf{GPIOx\_ODR} (Output Data Register) or \textbf{GPIOx\_BSRR} (Bit Set Reset Register)
+    \end{itemize}
+\end{corollary}
+
+
+
+
 \begin{KR}{Reading and Writing GPIO}
 \paragraph{Reading Input Pins}
 Read the current state of GPIO pins using the IDR register.
@@ -192,32 +257,19 @@ GPIOA->BSRR = (1 << (5 + 16));
 \end{lstlisting}
 \end{KR}
 
-\begin{example2}{GPIO Configuration Exercise}\\
-Configure pin PA3 as an output with open-drain configuration, low speed, and pull-up enabled. Then set the pin to low state.
-\begin{lstlisting}[language=C, style=basesmol] 
-// Enable GPIOA clock
-RCC->AHB1ENR |= (1 << 0);  // Bit 0 for GPIOA
 
-// Configure PA3 as output (bits 6-7 = 01)
-GPIOA->MODER \&= ~(3 << 6);  // Clear bits 6-7
-GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
-
-// Configure as open-drain (bit 3 = 1)
-GPIOA->OTYPER |= (1 << 3);  
-
-// Configure as low speed (bits 6-7 = 00)
-GPIOA->OSPEEDR \&= ~(3 << 6);  // Clear bits 6-7 (low speed)
-
-// Configure with pull-up (bits 6-7 = 01)
-GPIOA->PUPDR \&= ~(3 << 6);    // Clear bits 6-7
-GPIOA->PUPDR |= (1 << 6);     // Set bit 6 (pull-up)
-
-// Set pin to low state using BSRR
-GPIOA->BSRR = (1 << (3 + 16));  // Set bit 19 (reset PA3)
-\end{lstlisting}
-\end{example2}
 
 \subsection{Hardware Abstraction Layer (HAL)}
+
+\begin{definition}{Hardware Abstraction Layer (HAL)}\\
+    \includegraphics[width=\linewidth]{HAL1.png}\\
+    \textbf{Accessing a register:}
+    \begin{itemize}
+        \item each GPIO port has the same 10 registers 
+        \item there are 11 GPIO ports $\rightarrow$ GPIOA to GPIOI
+    \end{itemize}
+    \includegraphics[width=\linewidth]{HAL2.png}
+\end{definition}
 
 \begin{concept}{HAL for GPIO}\\
 The Hardware Abstraction Layer provides a structured way to access GPIO registers:
@@ -251,102 +303,8 @@ GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
 \section{GPIO}
 \subsubsection{General Purpose Input Output}
 
-\begin{remark}
-    \begin{itemize}
-        \item Working with documents
-        \item General Purpose Input Output (GPIO)
-        \item GPIO Structure
-        \item Configuration Registers\\
-        Direction, Output Type, Output Speed, Pull-Up/Pull-Down
-        \item Data Registers\\
-        Reading Input Data, Writing Output Data
-        \item GPIO Cookbook
-        \item Hardware Abstraction Layer (HAL)
-    \end{itemize}
-\end{remark}
-
-\begin{definition}{GPIO}
-
-    \textbf{Situation:}
-    \begin{itemize}
-        \item Microcontroller as a general purpose device
-        \item Many functional blocks included
-    \end{itemize}
-
-    \textbf{Problem:}
-    \begin{itemize}
-        \item Limited number of pins
-        \item Many functions to be implemented (many functional blocks included)
-    \end{itemize}
-
-    \textbf{Solution:}
-    \begin{itemize}
-        \item Many (all) pins are configurable as GPIO
-        \item Select the needed I/O pins and functions
-        \item \oq pin sharing\cq
-        \item Output multiplexer needs to be configured
-    \end{itemize}
-\end{definition}
-
-\subsection{Register Access}
-
-\begin{formula}{Register Address} = Base address + Offset
-    \begin{itemize}
-        \item Offset is given for each register in reference Manual
-        \item Base address is defined in memory map (reference manual)
-    \end{itemize}
-\end{formula}
 
 
-
-\begin{concept}{Structure}\\
-    \includegraphics[width=\linewidth]{structure_gpio.png}
-\end{concept}
-
-\begin{theorem}{Configuration Registers}
-    \begin{itemize}
-        \item \textbf{GPIOx\_MODER} (Mode Register)
-        \item \textbf{GPIOx\_OTYPER} (Output Type Register)
-        \item \textbf{GPIOx\_OSPEEDR} (Output Speed Register)
-        \item \textbf{GPIOx\_PUPDR} (Pull-up/Pull-down Register)
-    \end{itemize}
-    %TODO: Add more information
-\end{theorem}
-
-\begin{corollary}{Data Operations}
-    \begin{itemize}
-        \item Input: Read register \textbf{GPIOx\_IDR} (Input Data Register)
-        \item Output: Write register \textbf{GPIOx\_ODR} (Output Data Register) or \textbf{GPIOx\_BSRR} (Bit Set Reset Register)
-    \end{itemize}
-\end{corollary}
-
-\begin{KR}{Setting and Clearing Bits} GPIOx\_BSRR
-    \begin{itemize}
-        \item 0-15: Set Bits $\rightarrow$ 1: Set, 0: No Change
-        \item 16-31: Reset/Clear Bits $\rightarrow$ 1: Reset, 0: No Change
-        \item Ensures atomic access in software (no interruption possible)
-    \end{itemize}
-\end{KR}
-
-\begin{definition}{Configuration}
-    %TODO: Add more information!!
-    \begin{itemize}
-        \item \textbf{Mode:} Input, Output, Alternate Function, Analog
-        \item \textbf{Type:} Push-Pull, Open Drain
-        \item \textbf{Speed:} Low, Medium, High, Very High
-        \item \textbf{Pull-Up/Pull-Down:} No, Pull-Up, Pull-Down, Reserved
-    \end{itemize}
-\end{definition}
-
-\begin{definition}{Hardware Abstraction Layer (HAL)}\\
-    \includegraphics[width=\linewidth]{HAL1.png}\\
-    \textbf{Accessing a register:}
-    \begin{itemize}
-        \item each GPIO port has the same 10 registers 
-        \item there are 11 GPIO ports $\rightarrow$ GPIOA to GPIOI
-    \end{itemize}
-    \includegraphics[width=\linewidth]{HAL2.png}
-\end{definition}
 
 \subsection{Conclusion}
 
@@ -363,4 +321,192 @@ GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
     - to explain the idea of a HAL
 \end{remark}
 
+\section{General Purpose I/O (GPIO) Exercises}
 
+\subsection{GPIO Configuration and Programming}
+
+\begin{KR}{Configuring GPIO Pins}\\
+\paragraph{Identify GPIO port and pin}
+\begin{itemize}
+    \item Find the port letter (A-K) and pin number (0-15) from documentation
+    \item Look up the corresponding pin number on the microcontroller package
+\end{itemize}
+
+\paragraph{Calculate register addresses}
+\begin{itemize}
+    \item Find the base address for the GPIO port in the memory map
+    \item Calculate register addresses by adding offsets to the base address
+    \item For STM32F4: Base addresses are at 0x4002 0000 + (0x400 * port\_index)
+    \begin{itemize}
+        \item GPIOA: 0x4002 0000
+        \item GPIOB: 0x4002 0400
+        \item GPIOC: 0x4002 0800
+        \item And so on...
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Configure GPIO mode}
+\begin{itemize}
+    \item Use GPIOx\_MODER register to set pin mode:
+    \begin{itemize}
+        \item 00: Input mode
+        \item 01: General purpose output mode
+        \item 10: Alternate function mode
+        \item 11: Analog mode
+    \end{itemize}
+    \item Each pin requires 2 bits, so pin n uses bits 2n+1:2n
+\end{itemize}
+
+\paragraph{Configure output type (for output mode)}
+\begin{itemize}
+    \item Use GPIOx\_OTYPER register:
+    \begin{itemize}
+        \item 0: Push-pull output (can drive high or low)
+        \item 1: Open-drain output (can drive low only)
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Configure pull-up/pull-down resistors}
+\begin{itemize}
+    \item Use GPIOx\_PUPDR register:
+    \begin{itemize}
+        \item 00: No pull-up, no pull-down
+        \item 01: Pull-up
+        \item 10: Pull-down
+        \item 11: Reserved
+    \end{itemize}
+    \item Each pin requires 2 bits, so pin n uses bits 2n+1:2n
+\end{itemize}
+
+\paragraph{Configure speed (for output mode)}
+\begin{itemize}
+    \item Use GPIOx\_OSPEEDR register:
+    \begin{itemize}
+        \item 00: Low speed
+        \item 01: Medium speed
+        \item 10: High speed
+        \item 11: Very high speed
+    \end{itemize}
+    \item Each pin requires 2 bits, so pin n uses bits 2n+1:2n
+\end{itemize}
+
+\paragraph{Enable clock for GPIO port}
+\begin{itemize}
+    \item Use RCC\_AHB1ENR register to enable clock for the GPIO port
+    \item Set the corresponding bit for the port
+\end{itemize}
+\end{KR}
+
+\begin{example2}{GPIO Configuration Example}\\
+Configure pin PA3 as a low-speed, open-drain output with pull-up.
+
+\tcblower
+\paragraph{Solution:}
+First, identify the registers and their addresses:
+\begin{itemize}
+    \item GPIOA base address: 0x4002 0000
+    \item GPIOA\_MODER: 0x4002 0000 (offset 0x00)
+    \item GPIOA\_OTYPER: 0x4002 0004 (offset 0x04)
+    \item GPIOA\_OSPEEDR: 0x4002 0008 (offset 0x08)
+    \item GPIOA\_PUPDR: 0x4002 000C (offset 0x0C)
+\end{itemize}
+
+Then, calculate the bit fields for pin 3:
+\begin{itemize}
+    \item MODER3[1:0] = 01 (output mode) at bits 7:6
+    \item OTYPER3 = 1 (open-drain) at bit 3
+    \item OSPEEDR3[1:0] = 00 (low speed) at bits 7:6
+    \item PUPDR3[1:0] = 01 (pull-up) at bits 7:6
+\end{itemize}
+
+C code to configure the pin:
+\begin{lstlisting}[language=C, style=basesmol]
+// Enable clock for GPIOA
+RCC->AHB1ENR |= (1 << 0);
+
+// Configure PA3 as output (01)
+// Clear bits 7:6 then set bit 6
+GPIOA->MODER &= ~(0x3 << 6);
+GPIOA->MODER |= (0x1 << 6);
+
+// Configure as open-drain (1)
+GPIOA->OTYPER |= (1 << 3);
+
+// Configure as low speed (00)
+GPIOA->OSPEEDR &= ~(0x3 << 6);
+
+// Configure with pull-up (01)
+GPIOA->PUPDR &= ~(0x3 << 6);
+GPIOA->PUPDR |= (0x1 << 6);
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Using GPIO Data Registers}\\
+\paragraph{Reading input pins}
+\begin{itemize}
+    \item Use GPIOx\_IDR register to read the state of input pins
+    \item Bit n corresponds to pin n (0-15)
+    \item Apply appropriate bit mask to extract the bit(s) of interest
+\end{itemize}
+
+\paragraph{Writing output pins}
+\begin{itemize}
+    \item Use GPIOx\_ODR register to write to output pins
+    \item Bit n corresponds to pin n (0-15)
+    \item Writing to ODR affects all bits at once, which can lead to race conditions
+\end{itemize}
+
+\paragraph{Atomic bit manipulation}
+\begin{itemize}
+    \item Use GPIOx\_BSRR register for atomic bit setting/clearing:
+    \begin{itemize}
+        \item Bits 15:0: Setting corresponding ODR bits (write 1 to set)
+        \item Bits 31:16: Clearing corresponding ODR bits (write 1 to clear)
+    \end{itemize}
+    \item Example: To set pin 5, write (1 << 5) to BSRR
+    \item Example: To clear pin 5, write (1 << (16+5)) to BSRR
+\end{itemize}
+\end{KR}
+
+\begin{example2}{GPIO Data Operations Example}\\
+Write code to:
+\begin{enumerate}
+    \item Read the state of user button B1 on port A, pin 0
+    \item Turn on the green LED LD3 on port G, pin 13 when B1 is pressed
+    \item Turn on the red LED LD4 on port G, pin 14 when B1 is not pressed
+\end{enumerate}
+
+\tcblower
+\paragraph{Solution:}
+First, define the register addresses and pin mappings:
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Button B1 is on PA0
+// Green LED LD3 is on PG13
+// Red LED LD4 is on PG14
+
+#include "reg_stm32f4xx.h"
+
+void button_led_control(void) {
+    // Read button state (PA0)
+    uint32_t button_state = GPIOA->IDR & (1 << 0);
+    
+    if (button_state) {
+        // Button pressed - turn on green LED (PG13) and turn off red LED (PG14)
+        // Set bit 13, clear bit 14 atomically
+        GPIOG->BSRR = (1 << 13) | (1 << (16+14));
+    } else {
+        // Button not pressed - turn on red LED (PG14) and turn off green LED (PG13)
+        // Set bit 14, clear bit 13 atomically
+        GPIOG->BSRR = (1 << 14) | (1 << (16+13));
+    }
+}
+\end{lstlisting}
+
+Note: This assumes that the GPIO ports have been properly configured:
+\begin{itemize}
+    \item PA0 (Button B1) as input with pull-up/pull-down as needed
+    \item PG13 (LED LD3) as push-pull output
+    \item PG14 (LED LD4) as push-pull output
+\end{itemize}
+\end{example2}

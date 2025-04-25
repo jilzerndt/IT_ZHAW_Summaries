@@ -378,3 +378,219 @@ float ReadVoltage(void) {
 }
 \end{lstlisting}
 \end{example2}
+
+\section{ADC/DAC Exercises}
+
+\subsection{ADC Error Analysis}
+
+\begin{KR}{Analyzing ADC Errors}\\
+\paragraph{Understand error types}
+\begin{itemize}
+    \item \textbf{Quantization error:} Inherent error between -0.5 LSB and +0.5 LSB
+    \item \textbf{Offset error:} Deviation from ideal transfer function at zero input
+    \item \textbf{Gain error:} Deviation of the slope from ideal transfer function
+    \item \textbf{Full-scale error:} Combination of offset and gain error at maximum input
+\end{itemize}
+
+\paragraph{Determine ADC resolution}
+\begin{itemize}
+    \item Calculate LSB size: LSB = V$_{REF}$ / 2$^N$ where N is the number of bits
+    \item Example: 3-bit ADC with V$_{REF}$ = 2V has LSB = 2V/8 = 0.25V
+\end{itemize}
+
+\paragraph{Draw ideal transfer function}
+\begin{itemize}
+    \item Plot digital output vs. analog input
+    \item First transition at 0.5 LSB
+    \item Each subsequent transition at (i + 0.5) × LSB
+    \item For N-bit ADC: 2$^N$ - 1 total steps
+\end{itemize}
+
+\paragraph{Calculate error values}
+\begin{itemize}
+    \item \textbf{Offset error in LSB:} Measure deviation at zero input
+    \item \textbf{Offset error in volts:} Multiply LSB by offset error in LSB
+    \item \textbf{Gain error in LSB:} Difference between actual and ideal slope
+    \item \textbf{Error as percentage of FSR (\%FSR):} (Error in volts / FSR) × 100\%
+    \begin{itemize}
+        \item FSR (Full Scale Range) = V$_{REF}$ - 1 LSB
+    \end{itemize}
+\end{itemize}
+\end{KR}
+
+\begin{example2}{ADC Error Analysis}\\
+For a 3-bit ADC with V$_{REF}$ = 2V and an offset error of -1.5 LSB:
+
+a) Draw the ideal transfer function
+b) Draw the actual transfer function with the offset error
+c) Calculate the LSB in volts
+d) Calculate the offset error in volts
+e) Calculate the offset error as a percentage of FSR
+
+\tcblower
+\paragraph{Solution:}
+a) Ideal transfer function:
+\begin{itemize}
+    \item N = 3 bits → 8 possible output codes (000 to 111)
+    \item LSB = 2V/2$^3$ = 2V/8 = 0.25V
+    \item First transition: 0.5 × LSB = 0.125V
+    \item Code transitions at: 0.125V, 0.375V, 0.625V, 0.875V, 1.125V, 1.375V, 1.625V
+\end{itemize}
+
+b) Actual transfer function with offset error:
+\begin{itemize}
+    \item Offset error = -1.5 LSB
+    \item All transitions shift by -1.5 × 0.25V = -0.375V
+    \item New transitions at: -0.25V, 0V, 0.25V, 0.5V, 0.75V, 1V, 1.25V
+\end{itemize}
+
+c) LSB in volts:
+\begin{itemize}
+    \item LSB = V$_{REF}$/2$^N$ = 2V/8 = 0.25V
+\end{itemize}
+
+d) Offset error in volts:
+\begin{itemize}
+    \item Offset error = -1.5 LSB × 0.25V/LSB = -0.375V
+\end{itemize}
+
+e) Offset error as percentage of FSR:
+\begin{itemize}
+    \item FSR = V$_{REF}$ - 1 LSB = 2V - 0.25V = 1.75V
+    \item Offset error (\%FSR) = (-0.375V / 1.75V) × 100\% = -21.43\%
+\end{itemize}
+\end{example2}
+
+\subsection{ADC Programming}
+
+\begin{KR}{Configuring and Using STM32 ADCs}\\
+\paragraph{Enable peripheral clocks}
+\begin{itemize}
+    \item Enable GPIO clock for analog pin
+    \item Enable ADC clock in RCC register
+\end{itemize}
+
+\paragraph{Configure GPIO pin for analog mode}
+\begin{itemize}
+    \item Set GPIO MODE register bits to analog mode (11)
+\end{itemize}
+
+\paragraph{Configure ADC common settings}
+\begin{itemize}
+    \item Configure ADC clock prescaler in ADC\_CCR
+    \item Enable/disable temperature sensor and internal reference
+\end{itemize}
+
+\paragraph{Configure ADC specific settings}
+\begin{itemize}
+    \item Set resolution in ADC\_CR1 (RES bits)
+    \item Configure scan mode if using multiple channels
+    \item Set conversion mode in ADC\_CR2 (CONT bit):
+    \begin{itemize}
+        \item 0: Single conversion
+        \item 1: Continuous conversion
+    \end{itemize}
+    \item Set data alignment in ADC\_CR2 (ALIGN bit)
+    \item Configure ADC trigger source if needed
+\end{itemize}
+
+\paragraph{Configure channel settings}
+\begin{itemize}
+    \item Set sampling time in ADC\_SMPR1/2 registers
+    \item Configure regular sequence in ADC\_SQR1/2/3:
+    \begin{itemize}
+        \item Set sequence length in L[3:0] bits
+        \item Set channel order in SQx[4:0] bits
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Start conversion and read results}
+\begin{itemize}
+    \item Enable ADC by setting ADON bit in ADC\_CR2
+    \item Start conversion by setting SWSTART bit in ADC\_CR2
+    \item Poll EOC flag in ADC\_SR or use interrupt
+    \item Read conversion result from ADC\_DR
+\end{itemize}
+\end{KR}
+
+\begin{example2}{ADC Configuration and Usage}\\
+Write C code to configure and use ADC1 to read from channel 5 with 12-bit resolution in single conversion mode. The code should:
+
+a) Wait until ADC1 conversion has completed
+b) Set an 8-bit variable (var2) to 0xFF if there was a loss of data on ADC2, otherwise reset that variable to 0
+c) Set ADC3 resolution to 10-bit
+
+Use register addresses from the provided documentation.
+
+\tcblower
+\paragraph{Solution:}
+First, let's define the relevant register addresses:
+\begin{lstlisting}[language=C, style=basesmol]
+// ADC1 registers
+#define ADC1_SR     (*((volatile uint32_t*)(0x40012000)))  // Status register
+#define ADC1_CR1    (*((volatile uint32_t*)(0x40012004)))  // Control register 1
+#define ADC1_CR2    (*((volatile uint32_t*)(0x40012008)))  // Control register 2
+#define ADC1_DR     (*((volatile uint32_t*)(0x4001204C)))  // Data register
+
+// ADC2 registers
+#define ADC2_SR     (*((volatile uint32_t*)(0x40012100)))  // Status register
+
+// ADC3 registers
+#define ADC3_CR1    (*((volatile uint32_t*)(0x40012204)))  // Control register 1
+
+// Bit positions
+#define ADC_SR_EOC  (1 << 1)  // End of conversion flag
+#define ADC_SR_OVR  (1 << 5)  // Overrun flag
+#define ADC_CR1_RES_MASK (3 << 24)  // Resolution mask
+#define ADC_CR1_RES_10BIT (1 << 24)  // 10-bit resolution
+\end{lstlisting}
+
+Now, let's solve each part of the problem:
+
+a) Wait until ADC1 conversion has completed
+\begin{lstlisting}[language=C, style=basesmol]
+// Wait for end of conversion flag
+while (!(ADC1_SR & ADC_SR_EOC)) {
+    // Empty loop
+}
+\end{lstlisting}
+
+b) Check for overrun on ADC2 and set var2 accordingly
+\begin{lstlisting}[language=C, style=basesmol]
+uint8_t var2;
+if (ADC2_SR & ADC_SR_OVR) {
+    var2 = 0xFF;  // Overrun occurred
+} else {
+    var2 = 0x00;  // No overrun
+}
+\end{lstlisting}
+
+c) Set ADC3 resolution to 10-bit
+\begin{lstlisting}[language=C, style=basesmol]
+// Clear resolution bits and set to 10-bit
+ADC3_CR1 &= ~ADC_CR1_RES_MASK;  // Clear bits
+ADC3_CR1 |= ADC_CR1_RES_10BIT;  // Set 10-bit resolution
+\end{lstlisting}
+
+Complete function:
+\begin{lstlisting}[language=C, style=basesmol]
+void adc_operations(void) {
+    // a) Wait until ADC1 conversion has completed
+    while (!(ADC1_SR & ADC_SR_EOC)) {
+        // Empty loop
+    }
+    
+    // b) Check for overrun on ADC2
+    uint8_t var2;
+    if (ADC2_SR & ADC_SR_OVR) {
+        var2 = 0xFF;  // Overrun occurred
+    } else {
+        var2 = 0x00;  // No overrun
+    }
+    
+    // c) Set ADC3 resolution to 10-bit
+    ADC3_CR1 &= ~ADC_CR1_RES_MASK;  // Clear bits
+    ADC3_CR1 |= ADC_CR1_RES_10BIT;  // Set 10-bit resolution
+}
+\end{lstlisting}
+\end{example2}
