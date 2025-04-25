@@ -1,0 +1,410 @@
+\section{Cache}
+
+\subsection{Principle of Locality}
+
+\begin{concept}{Memory Hierarchy and Locality}\\
+The memory hierarchy in computer systems is designed to exploit the principle of locality:
+\begin{itemize}
+    \item \textbf{Spatial Locality}: If a memory location is accessed, nearby locations are likely to be accessed soon
+    \begin{itemize}
+        \item Example: Sequential access to array elements
+    \end{itemize}
+    \item \textbf{Temporal Locality}: If a memory location is accessed, it's likely to be accessed again soon
+    \begin{itemize}
+        \item Example: Loop variables, frequently called functions
+    \end{itemize}
+\end{itemize}
+The memory hierarchy takes advantage of these patterns:
+\begin{itemize}
+    \item Faster, smaller memories (cache) store recently/frequently accessed data
+    \item Larger, slower memories (main memory, disk) store less frequently accessed data
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Memory Hierarchy Levels}\\
+Typical memory hierarchy in a modern system:
+\begin{itemize}
+    \item \textbf{CPU Registers}: Fastest, smallest (bytes)
+    \item \textbf{L1 Cache}: Very fast, small (KB)
+    \begin{itemize}
+        \item Often split into instruction and data caches (Harvard architecture)
+    \end{itemize}
+    \item \textbf{L2 Cache}: Fast, medium size (hundreds of KB)
+    \item \textbf{L3 Cache}: Moderately fast, larger (MB)
+    \item \textbf{Main Memory (RAM)}: Slower, much larger (GB)
+    \item \textbf{Secondary Storage}: Very slow, huge (TB)
+\end{itemize}
+As we move down the hierarchy, memory becomes:
+\begin{itemize}
+    \item Larger
+    \item Slower
+    \item Cheaper per byte
+\end{itemize}
+\end{definition}
+
+\subsection{Cache Mechanics}
+
+\begin{concept}{Cache Operation}\\
+A cache is a small, fast memory that stores copies of data from frequently used main memory locations:
+\begin{itemize}
+    \item Main memory is divided into fixed-size blocks
+    \item Cache holds copies of some memory blocks
+    \item When CPU needs data:
+    \begin{itemize}
+        \item \textbf{Cache Hit}: Data is in cache $\rightarrow$ fast access
+        \item \textbf{Cache Miss}: Data not in cache $\rightarrow$ fetched from main memory, then stored in cache for future access
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Cache Terminology}\\
+Key terms in cache design:
+\begin{itemize}
+    \item \textbf{Cache Line}: Basic unit of data transfer (typically 32-128 bytes)
+    \item \textbf{Tag}: Part of address that identifies which memory block is stored
+    \item \textbf{Valid Bit}: Indicates if the cache line contains valid data
+    \item \textbf{Hit Rate}: Percentage of memory accesses found in cache
+    \item \textbf{Miss Rate}: Percentage of memory accesses not found in cache
+    \item \textbf{Hit Time}: Time to access data in cache
+    \item \textbf{Miss Penalty}: Extra time required to fetch data from main memory
+\end{itemize}
+\end{definition}
+
+\subsection{Cache Organization}
+
+\begin{concept}{Memory Addressing for Cache}\\
+A memory address is typically divided into:
+\begin{itemize}
+    \item \textbf{Tag}: Identifies which memory block is stored
+    \item \textbf{Index}: Determines location in cache (for direct-mapped and set-associative)
+    \item \textbf{Offset}: Identifies specific byte within the block
+\end{itemize}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Tag & Index & Offset \\
+\hline
+\end{tabular}
+\end{center}
+The size of each field depends on the cache organization.
+\end{concept}
+
+\begin{definition}{Cache Organization Types}\\
+Three main cache organization strategies:
+\begin{itemize}
+    \item \textbf{Fully Associative}:
+    \begin{itemize}
+        \item Any memory block can be placed in any cache line
+        \item Address format: [Tag | Offset]
+        \item Highest flexibility, best hit rate
+        \item Complex hardware: requires comparing tag with all cache lines
+    \end{itemize}
+    \item \textbf{Direct Mapped}:
+    \begin{itemize}
+        \item Each memory block maps to exactly one cache line
+        \item Address format: [Tag | Index | Offset]
+        \item Simple hardware: only one comparison needed
+        \item Lower hit rate due to conflicts
+    \end{itemize}
+    \item \textbf{N-Way Set Associative}:
+    \begin{itemize}
+        \item Cache divided into sets, each with N lines
+        \item Memory block maps to specific set, can be placed in any line within that set
+        \item Address format: [Tag | Set Index | Offset]
+        \item Compromise between flexibility and complexity
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Fully Associative Cache}\\
+In a fully associative cache:
+\begin{itemize}
+    \item Any memory block can be stored in any cache line
+    \item Address is divided into tag and offset only
+    \item Each cache line stores:
+    \begin{itemize}
+        \item Valid bit (is data valid?)
+        \item Tag (which memory block)
+        \item Data (contents of memory block)
+    \end{itemize}
+    \item On memory access, the tag is compared with all cache lines in parallel
+    \item Requires many comparators (one per cache line)
+    \item Provides highest flexibility but most complex hardware
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Direct Mapped Cache}\\
+In a direct mapped cache:
+\begin{itemize}
+    \item Each memory block maps to exactly one cache line
+    \item Mapping function: $\text{Line} = \text{Block} \bmod m$ (where $m$ is number of cache lines)
+    \item Address is divided into tag, index, and offset
+    \item The index directly selects which cache line to check
+    \item Only one tag comparison needed
+    \item Simple hardware but can suffer from conflict misses
+    \begin{itemize}
+        \item Different memory blocks mapping to the same cache line
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{concept}{N-Way Set Associative Cache}\\
+In an N-way set associative cache:
+\begin{itemize}
+    \item Cache is divided into sets, each containing N lines
+    \item Memory block maps to a specific set, can go in any line within that set
+    \item Mapping function: $\text{Set} = \text{Block} \bmod s$ (where $s$ is number of sets)
+    \item Address is divided into tag, set index, and offset
+    \item Set index selects which set to check
+    \item N tag comparisons needed (one per line in the set)
+    \item Compromise between fully associative and direct mapped
+    \begin{itemize}
+        \item More flexible than direct mapped
+        \item Less hardware than fully associative
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Cache Organization Calculation}\\
+For a 16KB cache with 64-byte lines, calculate address breakdown for:
+\begin{itemize}
+\item Direct mapped
+\item 4-way set associative
+\end{itemize}
+\tcblower
+Given:
+- Cache size = 16KB = 16,384 bytes
+- Line size = 64 bytes
+
+1. Direct Mapped Cache:
+   - Number of cache lines = 16,384 ÷ 64 = 256 lines
+   - Index bits = $log_2(256)$ = 8 bits
+   - Offset bits = $log_2(64)$ = 6 bits
+   - For 32-bit address: Tag = 32 - 8 - 6 = 18 bits
+   
+   Address format: [18-bit Tag | 8-bit Index | 6-bit Offset]
+
+2. 4-Way Set Associative:
+   - Number of sets = 256 ÷ 4 = 64 sets
+   - Set index bits = $log_2(64)$ = 6 bits
+   - Offset bits = $log_2(64)$ = 6 bits
+   - For 32-bit address: Tag = 32 - 6 - 6 = 20 bits
+   
+   Address format: [20-bit Tag | 6-bit Set Index | 6-bit Offset]
+\end{example2}
+
+\subsection{Cache Performance}
+
+\begin{definition}{Cache Miss Types}\\
+Three fundamental types of cache misses:
+\begin{itemize}
+    \item \textbf{Compulsory Misses} (Cold Misses):
+    \begin{itemize}
+        \item First access to a block, must be fetched from memory
+        \item Unavoidable, regardless of cache size or organization
+    \end{itemize}
+    \item \textbf{Capacity Misses}:
+    \begin{itemize}
+        \item Cache too small to hold all blocks needed during program execution
+        \item Blocks evicted and later needed again
+        \item Can be reduced by increasing cache size
+    \end{itemize}
+    \item \textbf{Conflict Misses}:
+    \begin{itemize}
+        \item Multiple blocks map to same cache line/set
+        \item More common in direct mapped, less in set associative
+        \item Can be reduced by increasing associativity
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{formula}{Cache Performance}\\
+Average memory access time (AMAT) can be calculated as:
+\begin{align}
+AMAT = \text{Hit Time} + \text{Miss Rate} \times \text{Miss Penalty}
+\end{align}
+
+Example:
+\begin{itemize}
+    \item Hit Time = 1 cycle
+    \item Miss Penalty = 100 cycles
+    \item Miss Rate = 3\% (0.03)
+\end{itemize}
+\begin{align}
+AMAT = 1 + 0.03 \times 100 = 1 + 3 = 4 \text{ cycles}
+\end{align}
+
+Reducing miss rate from 3\% to 1\% changes AMAT to:
+\begin{align}
+AMAT = 1 + 0.01 \times 100 = 1 + 1 = 2 \text{ cycles}
+\end{align}
+This is a 50\% performance improvement!
+\end{formula}
+
+\begin{concept}{Cache Size vs. Hit Rate}\\
+Relationship between cache parameters and hit rate:
+\begin{itemize}
+    \item Increasing cache size improves hit rate
+    \begin{itemize}
+        \item But with diminishing returns
+        \item Larger cache may have longer hit time
+    \end{itemize}
+    \item Increasing associativity improves hit rate
+    \begin{itemize}
+        \item Greatest benefit from direct-mapped to 2-way
+        \item Diminishing returns beyond 4-way or 8-way
+        \item Higher associativity increases complexity and hit time
+    \end{itemize}
+    \item Increasing block size improves spatial locality exploitation
+    \begin{itemize}
+        \item But increases miss penalty
+        \item Very large blocks may cause pollution
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\subsection{Replacement and Write Strategies}
+
+\begin{definition}{Replacement Strategies}\\
+When a new block must be loaded into a full cache set, a replacement strategy determines which existing block to evict:
+\begin{itemize}
+    \item \textbf{Least Recently Used (LRU)}:
+    \begin{itemize}
+        \item Evict the block that hasn't been accessed for the longest time
+        \item Good performance but complex to implement for high associativity
+    \end{itemize}
+    \item \textbf{Least Frequently Used (LFU)}:
+    \begin{itemize}
+        \item Evict the block that has been accessed least often
+        \item Requires access counters for each block
+    \end{itemize}
+    \item \textbf{First-In First-Out (FIFO)}:
+    \begin{itemize}
+        \item Evict the block that has been in cache longest
+        \item Simpler to implement than LRU
+    \end{itemize}
+    \item \textbf{Random}:
+    \begin{itemize}
+        \item Evict a random block
+        \item Simplest to implement
+        \item Performance often surprisingly close to LRU
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Write Strategies}\\
+When a write operation hits in cache, two main strategies exist:
+\begin{itemize}
+    \item \textbf{Write-Through}:
+    \begin{itemize}
+        \item Write data to both cache and main memory
+        \item Memory always consistent with cache
+        \item Slower for writes (must wait for memory)
+        \item Simpler coherence in multiprocessor systems
+    \end{itemize}
+    \item \textbf{Write-Back}:
+    \begin{itemize}
+        \item Write data only to cache
+        \item Mark block as "dirty"
+        \item Write to memory only when block is evicted
+        \item Faster for repeated writes to same block
+        \item More complex coherence handling
+    \end{itemize}
+\end{itemize}
+
+For write misses, two approaches:
+\begin{itemize}
+    \item \textbf{Write-Allocate}:
+    \begin{itemize}
+        \item Fetch block into cache, then update
+        \item Works well with write-back
+    \end{itemize}
+    \item \textbf{No-Write-Allocate}:
+    \begin{itemize}
+        \item Write directly to memory, don't fetch block
+        \item Works well with write-through
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\subsection{Programmer's Perspective}
+
+\begin{KR}{Cache-Friendly Programming}\\
+\paragraph{Maximize spatial locality}
+Access memory in sequential patterns whenever possible.
+\paragraph{Maximize temporal locality}
+Reuse recently accessed data before it gets evicted from cache.
+\paragraph{Be aware of cache line size}
+Structure data to minimize cache line crossings.
+\paragraph{Consider memory layout}
+Organize multidimensional arrays to match access patterns.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Cache-unfriendly code (column-major traversal of row-major array)
+for (j = 0; j < N; j++) {
+    for (i = 0; i < N; i++) {
+        sum += array[i][j];  // Poor spatial locality
+    }
+}
+
+// Cache-friendly code (row-major traversal of row-major array)
+for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++) {
+        sum += array[i][j];  // Good spatial locality
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{concept}{Cache Performance Optimization}\\
+General guidelines for cache-friendly programming:
+\begin{itemize}
+    \item \textbf{Loop Interchange}: Reorder nested loops to access memory sequentially
+    \item \textbf{Loop Blocking/Tiling}: Break large loops into smaller chunks that fit in cache
+    \item \textbf{Data Alignment}: Align data structures to cache line boundaries
+    \item \textbf{Structure Packing}: Organize structure fields to minimize cache line usage
+    \item \textbf{Prefetching}: Load data into cache before it's needed
+    \item \textbf{Reduce Working Set Size}: Keep active data small enough to fit in cache
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Optimizing Matrix Multiplication for Cache}\\
+Optimize a simple matrix multiplication algorithm to be cache-friendly.
+\tcblower
+Standard matrix multiplication:
+\begin{lstlisting}[language=C, style=basesmol]
+// Standard implementation - cache unfriendly
+for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++) {
+        sum = 0;
+        for (k = 0; k < N; k++) {
+            sum += A[i][k] * B[k][j];  // Poor locality for B
+        }
+        C[i][j] = sum;
+    }
+}
+\end{lstlisting}
+
+Cache-optimized version using blocking:
+\begin{lstlisting}[language=C, style=basesmol]
+// Blocked implementation - cache friendly
+for (i = 0; i < N; i += BLOCK_SIZE) {
+    for (j = 0; j < N; j += BLOCK_SIZE) {
+        for (k = 0; k < N; k += BLOCK_SIZE) {
+            // Block multiplication
+            for (ii = i; ii < min(i+BLOCK_SIZE, N); ii++) {
+                for (jj = j; jj < min(j+BLOCK_SIZE, N); jj++) {
+                    sum = C[ii][jj];
+                    for (kk = k; kk < min(k+BLOCK_SIZE, N); kk++) {
+                        sum += A[ii][kk] * B[kk][jj];
+                    }
+                    C[ii][jj] = sum;
+                }
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+The blocked implementation works on small submatrices that fit in cache, improving temporal locality.
+\end{example2}

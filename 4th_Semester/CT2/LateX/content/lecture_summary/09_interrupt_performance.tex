@@ -1,0 +1,773 @@
+\section{Interrupt Performance}
+
+\subsection{Event Detection Methods}
+
+\begin{concept}{Polling vs. Interrupt-Driven I/O}\\
+Two primary methods for detecting events in embedded systems:
+\begin{itemize}
+    \item \textbf{Polling}: Periodically checking status registers
+    \begin{itemize}
+        \item Synchronous with main program
+        \item CPU actively queries peripherals
+        \item Predictable timing
+        \item Simple implementation
+    \end{itemize}
+    \item \textbf{Interrupt-Driven}: Hardware signals the CPU when events occur
+    \begin{itemize}
+        \item Asynchronous with main program
+        \item CPU notified only when an event happens
+        \item Event-driven approach
+        \item More complex implementation
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Polling Implementation}\\
+In polling, the CPU periodically checks status registers to detect events:
+\begin{itemize}
+    \item Main loop continuously or periodically inspects peripheral status
+    \item When an event is detected, appropriate handler executes
+    \item After handling, control returns to polling loop
+    \item CPU always actively checking, even when no events occur
+\end{itemize}
+
+Advantages:
+\begin{itemize}
+    \item Simple and straightforward implementation
+    \item Deterministic behavior (predictable timing)
+    \item No need for complex interrupt handling
+    \item Implicit synchronization (operations happen in sequence)
+\end{itemize}
+
+Disadvantages:
+\begin{itemize}
+    \item Wastes CPU cycles checking for events that haven't occurred
+    \item Reduced system throughput (CPU busy checking instead of processing)
+    \item Potentially long response times (if many devices must be checked)
+    \item Inefficient for infrequent events
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Interrupt-Driven I/O}\\
+In interrupt-driven I/O, peripherals notify the CPU when events occur:
+\begin{itemize}
+    \item Peripherals assert interrupt signal when they need servicing
+    \item CPU temporarily suspends current execution
+    \item Control transfers to an Interrupt Service Routine (ISR)
+    \item After handling the interrupt, control returns to previous execution
+\end{itemize}
+
+Advantages:
+\begin{itemize}
+    \item Efficient CPU utilization (only responds when needed)
+    \item Fast response to events
+    \item Good for infrequent, time-critical events
+    \item Main program can focus on primary tasks
+\end{itemize}
+
+Disadvantages:
+\begin{itemize}
+    \item More complex implementation
+    \item Can introduce timing uncertainties (non-deterministic behavior)
+    \item Potential for interrupt conflicts and priority issues
+    \item Overhead for context switching
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Implementing Polling in C}\\
+\paragraph{Step 1: Identify status registers}
+Determine which peripheral registers contain status information.
+\paragraph{Step 2: Create a polling loop}
+Implement a loop that regularly checks the status flags.
+\paragraph{Step 3: Check for events}
+Test specific bits in the status registers to detect events.
+\paragraph{Step 4: Handle detected events}
+Process events when their status flags are set.
+\paragraph{Step 5: Clear status flags}
+Reset status flags to prepare for next event detection.
+
+\begin{lstlisting}[style=basesmol]
+// Main polling loop
+while (1) {
+    // Check SPI transmit buffer empty flag
+    if (SPI1->SR & SPI_SR_TXE) {
+        // Handle SPI transmission
+        if (spi_tx_count < spi_tx_length) {
+            SPI1->DR = spi_tx_buffer[spi_tx_count++];
+        }
+    }
+    
+    // Check UART receive data register not empty flag
+    if (USART2->SR & USART_SR_RXNE) {
+        // Handle UART reception
+        uint8_t data = USART2->DR;
+        process_uart_data(data);
+    }
+    
+    // Check ADC end of conversion flag
+    if (ADC1->SR & ADC_SR_EOC) {
+        // Handle ADC conversion complete
+        uint16_t adc_value = ADC1->DR;  // Reading DR clears EOC flag
+        process_adc_data(adc_value);
+    }
+    
+    // Other system tasks
+    process_system_tasks();
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Configuring Interrupt-Driven I/O}\\
+\paragraph{Step 1: Configure interrupt sources}
+Enable specific interrupt sources in peripherals.
+\paragraph{Step 2: Configure NVIC}
+Set up the Nested Vectored Interrupt Controller for the interrupts.
+\paragraph{Step 3: Implement ISRs}
+Create Interrupt Service Routines to handle specific events.
+\paragraph{Step 4: Enable global interrupts}
+Enable the global interrupt flag.
+
+\begin{lstlisting}[style=basesmol]
+// Step 1: Configure SPI interrupt
+void configure_spi_interrupt(void) {
+    // Enable SPI peripheral clock
+    RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
+    
+    // Configure SPI parameters
+    SPI1->CR1 = SPI_CR1_MSTR | SPI_CR1_SSI | SPI_CR1_SSM;
+    
+    // Enable SPI TX buffer empty interrupt
+    SPI1->CR2 |= SPI_CR2_TXEIE;
+    
+    // Step 2: Configure NVIC for SPI1
+    NVIC_SetPriority(SPI1_IRQn, 2);  // Set priority level
+    NVIC_EnableIRQ(SPI1_IRQn);       // Enable interrupt in NVIC
+}
+
+// Step 3: Implement SPI1 ISR
+void SPI1_IRQHandler(void) {
+    // Check if TX buffer empty interrupt
+    if (SPI1->SR & SPI_SR_TXE) {
+        if (spi_tx_count < spi_tx_length) {
+            // Send next byte
+            SPI1->DR = spi_tx_buffer[spi_tx_count++];
+        } else {
+            // Transfer complete, disable interrupt
+            SPI1->CR2 &= ~SPI_CR2_TXEIE;
+        }
+    }
+}
+
+// Main function
+int main(void) {
+    // Initialize system
+    system_init();
+    
+    // Configure SPI interrupt
+    configure_spi_interrupt();
+    
+    // Step 4: Enable global interrupts
+    __enable_irq();
+    
+    // Main loop - can perform other tasks
+    while (1) {
+        process_system_tasks();
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\subsection{Interrupt Performance Analysis}
+
+\begin{definition}{Key Performance Metrics}\\
+Several metrics characterize interrupt performance:
+\begin{itemize}
+    \item \textbf{Interrupt Frequency} ($f_{INT}$): How often an interrupt occurs (events per second)
+    \item \textbf{Interrupt Service Time} ($t_{ISR}$): Time required to process an interrupt
+    \item \textbf{Interrupt Latency}: Time between interrupt event and start of ISR execution
+    \item \textbf{System Impact}: Percentage of CPU time spent handling interrupts
+\end{itemize}
+\end{definition}
+
+\begin{formula}{System Impact Calculation}\\
+The percentage of CPU time consumed by interrupts can be calculated as:
+\begin{align}
+\text{Impact (\%)} = f_{INT} \times t_{ISR} \times 100\%
+\end{align}
+
+Examples:
+\begin{itemize}
+    \item Keyboard interrupt: $f_{INT} = 20$ Hz, $t_{ISR} = 6$ µs
+    \begin{align}
+    \text{Impact} = 20 \text{ Hz} \times 6 \text{ µs} \times 100\% = 0.012\%
+    \end{align}
+    \item High-speed serial interface: $f_{INT} = 28,800$ Hz, $t_{ISR} = 6$ µs
+    \begin{align}
+    \text{Impact} = 28,800 \text{ Hz} \times 6 \text{ µs} \times 100\% = 17.3\%
+    \end{align}
+\end{itemize}
+\end{formula}
+
+\begin{concept}{Interrupt Overload Conditions}\\
+Interrupt overload occurs when the system cannot keep up with incoming interrupts:
+\begin{itemize}
+    \item When $t_{ISR} >$ time between interrupt events
+    \item Some interrupt events will be missed or delayed
+    \item Data may be lost
+    \item System may become unresponsive to new interrupts
+\end{itemize}
+
+Factors that may lead to overload:
+\begin{itemize}
+    \item Too many interrupt sources
+    \item Interrupt sources that trigger too frequently
+    \item ISRs that take too long to execute
+    \item Varying interrupt frequencies causing bursts
+    \item Improper interrupt priority management
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Optimizing ISR Performance}\\
+\paragraph{Keep ISRs short}
+Perform only time-critical operations in the ISR.
+\paragraph{Defer processing to main loop}
+Use flags, queues, or buffers to pass data to main loop.
+\paragraph{Use hardware features}
+Take advantage of DMA and peripheral buffers.
+\paragraph{Apply appropriate priorities}
+Assign higher priorities to more time-critical interrupts.
+\paragraph{Disable interrupts judiciously}
+Disable interrupts only when necessary, for as short a time as possible.
+
+\begin{lstlisting}[style=basesmol]
+// Non-optimized ISR
+void USART2_IRQHandler(void) {
+    if (USART2->SR & USART_SR_RXNE) {
+        // Directly process data in ISR (slow)
+        char c = USART2->DR;
+        process_character(c);  // Time-consuming
+        update_display();      // Even more time-consuming
+    }
+}
+
+// Optimized ISR
+volatile uint8_t rx_buffer[256];
+volatile uint8_t rx_write_idx = 0;
+volatile uint8_t rx_read_idx = 0;
+volatile bool new_data_available = false;
+
+void USART2_IRQHandler(void) {
+    if (USART2->SR & USART_SR_RXNE) {
+        // Only store data in buffer (fast)
+        rx_buffer[rx_write_idx++] = USART2->DR;
+        new_data_available = true;
+    }
+}
+
+// Process data in main loop
+void main(void) {
+    // Initialize
+    system_init();
+    
+    while (1) {
+        if (new_data_available) {
+            // Process all received data
+            while (rx_read_idx != rx_write_idx) {
+                process_character(rx_buffer[rx_read_idx++]);
+            }
+            
+            // Update display once after processing all characters
+            update_display();
+            
+            // Reset flag
+            new_data_available = false;
+        }
+        
+        // Other system tasks
+        process_system_tasks();
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\subsection{Interrupt Latency}
+
+\begin{definition}{Interrupt Latency}\\
+Interrupt latency is the time between an interrupt event and the first useful instruction execution in the ISR:
+\begin{itemize}
+    \item \textbf{Hardware Latency}: Time for hardware to detect and signal the event
+    \item \textbf{Arbitration Latency}: Time to determine which interrupt to service (if multiple)
+    \item \textbf{CPU Latency}: Time to complete current instruction and save context
+    \item \textbf{OS/Software Latency}: Additional delays due to software overhead
+\end{itemize}
+Latency is critical for real-time systems, where guaranteed response times are required.
+\end{definition}
+
+\begin{concept}{Sources of Interrupt Latency}\\
+Several factors contribute to interrupt latency:
+\begin{itemize}
+    \item \textbf{Current CPU Instruction}:
+    \begin{itemize}
+        \item Multi-cycle instructions may complete before the interrupt is serviced
+        \item Some instructions may be abandoned and restarted (e.g., SDIV/UDIV on Cortex-M3/M4)
+        \item Some may be interrupted and resumed (e.g., LDM/STM on Cortex-M3/M4)
+    \end{itemize}
+    \item \textbf{Disabled Interrupts}:
+    \begin{itemize}
+        \item Global interrupts may be disabled (CPSID i / CPSIE i)
+        \item Specific interrupts may be masked
+    \end{itemize}
+    \item \textbf{Higher Priority Interrupts}:
+    \begin{itemize}
+        \item Lower priority interrupts wait until higher priority ones complete
+    \end{itemize}
+    \item \textbf{Context Saving}:
+    \begin{itemize}
+        \item Pushing registers to stack
+        \item More registers saved means higher latency
+    \end{itemize}
+    \item \textbf{Cache and Memory Behavior}:
+    \begin{itemize}
+        \item Cache misses when fetching ISR code
+        \item Memory wait states
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Managing Interrupt Latency}\\
+\paragraph{Use interrupt priorities}
+Assign appropriate priorities based on timing requirements.
+\paragraph{Limit interrupt disable periods}
+Minimize sections where interrupts are disabled.
+\paragraph{Optimize context switching}
+Use processor features that minimize context save/restore.
+\paragraph{Preempt lower-priority tasks}
+Allow high-priority interrupts to preempt less critical ones.
+\paragraph{Move waiting loops to main program}
+Don't block inside ISRs waiting for slow peripherals.
+
+\begin{lstlisting}[style=basesmol]
+// Poor: Blocking in ISR
+void SPI1_IRQHandler(void) {
+    // Read data from input
+    input_data = read_input_source();
+    
+    // Process data
+    processed_data = process_data(input_data);
+    
+    // Wait for output device to be ready (blocking)
+    while (!(SPI1->SR & SPI_SR_TXE)) { }
+    
+    // Write data to output
+    SPI1->DR = processed_data;
+}
+
+// Better: Queue-based approach
+void SPI1_IRQHandler(void) {
+    // Read data from input
+    input_data = read_input_source();
+    
+    // Process data
+    processed_data = process_data(input_data);
+    
+    // Add to output queue and return
+    queue_add(output_queue, processed_data);
+}
+
+// In main loop
+void main(void) {
+    // Initialize
+    system_init();
+    
+    while (1) {
+        // Check if there's data to send and SPI is ready
+        if (!queue_empty(output_queue) && (SPI1->SR & SPI_SR_TXE)) {
+            // Send next item
+            SPI1->DR = queue_get(output_queue);
+        }
+        
+        // Other tasks
+        process_system_tasks();
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\subsection{Pre-emption and Priority}
+
+\begin{concept}{Nested Vector Interrupt Controller (NVIC)}\\
+The ARM Cortex-M NVIC provides advanced interrupt handling features:
+\begin{itemize}
+    \item Supports up to 240 external interrupt sources (IRQs)
+    \item Each interrupt can be assigned one of 256 priority levels (processor specific)
+    \item Priority-based interrupt preemption
+    \item Automatic context saving and restoring
+    \item Tail-chaining optimization (reduced latency between ISRs)
+    \item Late-arrival handling (higher priority interrupts can overtake pending lower ones)
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Interrupt Preemption}\\
+Preemption allows higher-priority interrupts to interrupt lower-priority ones:
+\begin{itemize}
+    \item When a higher-priority interrupt occurs during a lower-priority ISR
+    \item Current ISR is suspended (context saved)
+    \item Higher-priority ISR executes
+    \item After completion, lower-priority ISR resumes
+\end{itemize}
+This ensures that critical interrupts are handled promptly, regardless of other interrupt activity.
+\end{definition}
+
+\begin{concept}{Priority-Based Interrupt Handling}\\
+Key aspects of priority-based interrupt handling:
+\begin{itemize}
+    \item \textbf{Priority Assignment}:
+    \begin{itemize}
+        \item Assign priorities based on time-criticality and importance
+        \item Lower numerical values usually indicate higher priority
+    \end{itemize}
+    \item \textbf{Priority Grouping}:
+    \begin{itemize}
+        \item Cortex-M supports priority grouping into pre-emption and sub-priority levels
+        \item Pre-emption priority determines whether an interrupt can pre-empt another
+        \item Sub-priority determines ordering when multiple interrupts of same pre-emption priority occur
+    \end{itemize}
+    \item \textbf{Priority Inversion}:
+    \begin{itemize}
+        \item Problem where a high-priority task is indirectly delayed by a low-priority task
+        \item Can be mitigated through proper design and priority inheritance protocols
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Configuring Interrupt Priorities}\\
+\paragraph{Step 1: Analyze timing requirements}
+Determine which interrupts are most time-critical.
+\paragraph{Step 2: Group interrupts by importance}
+Create logical groups based on system criticality.
+\paragraph{Step 3: Assign priority levels}
+Configure NVIC priority registers for each interrupt.
+\paragraph{Step 4: Configure priority grouping}
+Set priority group using NVIC\_SetPriorityGrouping().
+
+\begin{lstlisting}[style=basesmol]
+// Configure interrupt priorities
+void configure_interrupt_priorities(void) {
+    // Set priority grouping (4 bits for pre-emption priority, 0 bits for sub-priority)
+    NVIC_SetPriorityGrouping(3);
+    
+    // Critical interrupts (highest priority)
+    NVIC_SetPriority(EXTI0_IRQn, 0);      // Emergency stop button
+    NVIC_SetPriority(TIM1_UP_IRQn, 1);    // Critical timing control
+    
+    // Medium priority interrupts
+    NVIC_SetPriority(SPI1_IRQn, 4);       // Sensor data acquisition
+    NVIC_SetPriority(USART2_IRQn, 5);     // Communication
+    
+    // Lower priority interrupts
+    NVIC_SetPriority(ADC_IRQn, 10);       // Regular ADC sampling
+    NVIC_SetPriority(TIM3_IRQn, 11);      // Status LED updates
+    
+    // Enable the interrupts
+    NVIC_EnableIRQ(EXTI0_IRQn);
+    NVIC_EnableIRQ(TIM1_UP_IRQn);
+    NVIC_EnableIRQ(SPI1_IRQn);
+    NVIC_EnableIRQ(USART2_IRQn);
+    NVIC_EnableIRQ(ADC_IRQn);
+    NVIC_EnableIRQ(TIM3_IRQn);
+}
+\end{lstlisting}
+\end{KR}
+
+\subsection{Interrupt-Driven State Machines}
+
+\begin{concept}{Integrating Interrupts and State Machines}\\
+Combining interrupt-driven I/O with state machines creates efficient event-driven systems:
+\begin{itemize}
+    \item \textbf{Event Queue}: Buffer between ISRs and state machine
+    \begin{itemize}
+        \item ISRs detect events and add them to queue
+        \item Main loop pulls events from queue and feeds state machine
+    \end{itemize}
+    \item \textbf{ISR Responsibilities}:
+    \begin{itemize}
+        \item Minimal processing (detect event, capture data)
+        \item Add event to queue
+        \item Return quickly
+    \end{itemize}
+    \item \textbf{Main Loop Responsibilities}:
+    \begin{itemize}
+        \item Pull events from queue
+        \item Process events through state machine
+        \item Handle longer-duration processing
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Implementing Interrupt-Driven FSM}\\
+\paragraph{Step 1: Create event queue}
+Implement a buffer to store events from ISRs.
+\paragraph{Step 2: Implement ISRs}
+Keep ISRs short, just capturing events and adding to queue.
+\paragraph{Step 3: Implement state machine}
+Create state machine logic to process events from queue.
+\paragraph{Step 4: Connect with main loop}
+Pull events from queue and feed to state machine in main loop.
+
+\begin{lstlisting}[style=basesmol]
+// Define event types and queue
+typedef enum {
+    EVENT_BUTTON_PRESS,
+    EVENT_TIMEOUT,
+    EVENT_SENSOR_TRIGGER,
+    EVENT_NO_EVENT
+} event_t;
+
+#define EVENT_QUEUE_SIZE 16
+event_t event_queue[EVENT_QUEUE_SIZE];
+int queue_head = 0;
+int queue_tail = 0;
+int queue_count = 0;
+
+// Add event to queue (called from ISRs)
+void queue_add_event(event_t event) {
+    if (queue_count < EVENT_QUEUE_SIZE) {
+        event_queue[queue_tail] = event;
+        queue_tail = (queue_tail + 1) % EVENT_QUEUE_SIZE;
+        queue_count++;
+    }
+}
+
+// Get event from queue (called from main loop)
+event_t queue_get_event(void) {
+    event_t event = EVENT_NO_EVENT;
+    
+    if (queue_count > 0) {
+        event = event_queue[queue_head];
+        queue_head = (queue_head + 1) % EVENT_QUEUE_SIZE;
+        queue_count--;
+    }
+    
+    return event;
+}
+
+// Button interrupt handler
+void EXTI0_IRQHandler(void) {
+    // Check if EXTI0 interrupt occurred
+    if (EXTI->PR & EXTI_PR_PR0) {
+        // Add button press event to queue
+        queue_add_event(EVENT_BUTTON_PRESS);
+        
+        // Clear pending bit
+        EXTI->PR = EXTI_PR_PR0;
+    }
+}
+
+// Timer interrupt handler
+void TIM2_IRQHandler(void) {
+    if (TIM2->SR & TIM_SR_UIF) {
+        // Add timeout event to queue
+        queue_add_event(EVENT_TIMEOUT);
+        
+        // Clear update interrupt flag
+        TIM2->SR &= ~TIM_SR_UIF;
+    }
+}
+
+// Main loop with state machine
+int main(void) {
+    // Initialize system and interrupts
+    system_init();
+    __enable_irq();
+    
+    // Initialize state machine
+    fsm_init();
+    
+    while (1) {
+        // Get event from queue
+        event_t event = queue_get_event();
+        
+        // Process event with state machine
+        if (event != EVENT_NO_EVENT) {
+            fsm_handle_event(event);
+        }
+        
+        // Background tasks
+        process_system_tasks();
+    }
+}
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Complete Interrupt-Driven FSM Example}\\
+Implement a button-controlled LED system with debouncing using timer interrupts.
+\tcblower
+The system has three states:
+- OFF: LED is off
+- ON: LED is on at full brightness
+- BLINK: LED is blinking
+
+Events:
+- SHORT\_PRESS: Button pressed briefly
+- LONG\_PRESS: Button held for >1 second
+- BLINK\_TIMER: Timer for blinking
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Event definitions
+typedef enum {
+    EVENT_NONE,
+    EVENT_SHORT_PRESS,
+    EVENT_LONG_PRESS,
+    EVENT_BLINK_TIMER
+} event_t;
+
+// State definitions
+typedef enum {
+    STATE_OFF,
+    STATE_ON,
+    STATE_BLINK
+} state_t;
+
+// Global variables
+volatile event_t event_queue[10];
+volatile uint8_t queue_head = 0;
+volatile uint8_t queue_tail = 0;
+volatile uint8_t queue_count = 0;
+volatile state_t current_state = STATE_OFF;
+volatile uint32_t button_press_time = 0;
+volatile uint8_t button_released = 1;
+
+// Button interrupt handler (EXTI0)
+void EXTI0_IRQHandler(void) {
+    uint32_t current_time = HAL_GetTick();
+    
+    if (EXTI->PR & EXTI_PR_PR0) {
+        if (GPIOA->IDR & GPIO_PIN_0) {
+            // Button released
+            if (!button_released) {
+                uint32_t press_duration = current_time - button_press_time;
+                if (press_duration > 1000) {
+                    // Long press (>1s)
+                    if (queue_count < 10) {
+                        event_queue[queue_tail] = EVENT_LONG_PRESS;
+                        queue_tail = (queue_tail + 1) % 10;
+                        queue_count++;
+                    }
+                } else if (press_duration > 50) {
+                    // Short press (debounced)
+                    if (queue_count < 10) {
+                        event_queue[queue_tail] = EVENT_SHORT_PRESS;
+                        queue_tail = (queue_tail + 1) % 10;
+                        queue_count++;
+                    }
+                }
+                button_released = 1;
+            }
+        } else {
+            // Button pressed
+            button_press_time = current_time;
+            button_released = 0;
+        }
+        
+        // Clear pending bit
+        EXTI->PR = EXTI_PR_PR0;
+    }
+}
+
+// Timer interrupt for blinking (TIM3)
+void TIM3_IRQHandler(void) {
+    if (TIM3->SR & TIM_SR_UIF) {
+        // Add blink timer event to queue
+        if (queue_count < 10) {
+            event_queue[queue_tail] = EVENT_BLINK_TIMER;
+            queue_tail = (queue_tail + 1) % 10;
+            queue_count++;
+        }
+        
+        // Clear update interrupt flag
+        TIM3->SR &= ~TIM_SR_UIF;
+    }
+}
+
+// State machine handler
+void fsm_handle_event(event_t event) {
+    switch (current_state) {
+        case STATE_OFF:
+            if (event == EVENT_SHORT_PRESS) {
+                // Turn on LED
+                GPIOC->BSRR = GPIO_PIN_13;
+                current_state = STATE_ON;
+                
+                // Disable blink timer
+                TIM3->CR1 &= ~TIM_CR1_CEN;
+            } else if (event == EVENT_LONG_PRESS) {
+                // Start blinking
+                GPIOC->BSRR = GPIO_PIN_13;
+                current_state = STATE_BLINK;
+                
+                // Enable blink timer
+                TIM3->CR1 |= TIM_CR1_CEN;
+            }
+            break;
+            
+        case STATE_ON:
+            if (event == EVENT_SHORT_PRESS) {
+                // Turn off LED
+                GPIOC->BSRR = (GPIO_PIN_13 << 16);
+                current_state = STATE_OFF;
+            } else if (event == EVENT_LONG_PRESS) {
+                // Start blinking
+                current_state = STATE_BLINK;
+                
+                // Enable blink timer
+                TIM3->CR1 |= TIM_CR1_CEN;
+            }
+            break;
+            
+        case STATE_BLINK:
+            if (event == EVENT_BLINK_TIMER) {
+                // Toggle LED
+                GPIOC->ODR ^= GPIO_PIN_13;
+            } else if (event == EVENT_SHORT_PRESS) {
+                // Turn off LED and blinking
+                GPIOC->BSRR = (GPIO_PIN_13 << 16);
+                current_state = STATE_OFF;
+                
+                // Disable blink timer
+                TIM3->CR1 &= ~TIM_CR1_CEN;
+            }
+            break;
+    }
+}
+
+// Main function
+int main(void) {
+    // Initialize hardware
+    system_init();
+    
+    // Configure EXTI for button
+    // Configure TIM3 for blinking (500ms period)
+    // Enable interrupts
+    
+    while (1) {
+        // Get and process events
+        if (queue_count > 0) {
+            event_t event;
+            
+            // Disable interrupts to access queue
+            __disable_irq();
+            event = event_queue[queue_head];
+            queue_head = (queue_head + 1) % 10;
+            queue_count--;
+            __enable_irq();
+            
+            // Handle event
+            fsm_handle_event(event);
+        }
+        
+        // System can enter low-power mode here
+        // when queue is empty
+    }
+}
+\end{lstlisting}
+\end{example2}

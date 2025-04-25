@@ -1,0 +1,349 @@
+\section{Memory}
+
+\subsection{Memory Technologies Overview}
+
+\begin{concept}{Semiconductor Memory Classifications}\\
+Semiconductor memories can be classified into two main categories:
+\begin{itemize}
+    \item \textbf{Volatile Memory}: Loses data when power is turned off
+    \begin{itemize}
+        \item SRAM (Static Random Access Memory)
+        \item DRAM (Dynamic Random Access Memory)
+    \end{itemize}
+    \item \textbf{Non-volatile Memory}: Retains data even without power
+    \begin{itemize}
+        \item ROM (Read-Only Memory)
+        \item PROM (Programmable ROM)
+        \item EPROM (Erasable PROM)
+        \item EEPROM (Electrically Erasable PROM)
+        \item Flash Memory
+        \item NV-RAM (Non-Volatile RAM)
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Memory Organization}\\
+Memory devices are organized as arrays of bit cells:
+\begin{itemize}
+    \item \textbf{Array Size}: $n \times m$ (n words with m data bits each)
+    \item \textbf{Address Lines}: $k$ bits can address $2^k$ words
+    \item \textbf{Data Lines}: Width of data bus (8, 16, 32 bits, etc.)
+    \item \textbf{Control Lines}: Enable read/write operations
+\end{itemize}
+\end{definition}
+
+\subsection{PROM, EEPROM, and Flash Memory}
+
+\mult{2}
+
+\begin{concept}{PROM (Programmable Read-Only Memory)}
+\begin{itemize}
+    \item One-time programmable memory
+    \item Programming involves physically altering the circuit (e.g., blowing fuses)
+    \item Once programmed, contents cannot be changed
+    \item Used for permanent storage of code or data
+\end{itemize}
+\end{concept}
+
+\begin{concept}{EEPROM (Electrically Erasable PROM)}
+\begin{itemize}
+    \item Uses floating-gate transistors to store data
+    \item Can be electrically programmed and erased
+    \item Byte-level erase and write operations
+    \item Limited write cycles (typically 100,000 to 1,000,000)
+    \item Slower and more expensive than SRAM
+    \item Used for storing configuration data or parameters
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Flash Memory}
+\begin{itemize}
+    \item Based on floating-gate transistor technology (like EEPROM)
+    \item Higher density and lower cost per bit than EEPROM
+    \item Block-wise erase operations (not byte-level)
+    \item Write operations can only change bits from '1' to '0'
+    \item Erase operations reset all bits in a block to '1'
+    \item Limited write/erase cycles (typically 10,000 to 100,000)
+    \item Used for code storage and mass data storage
+\end{itemize}
+\end{concept}
+
+\begin{definition}{NOR vs. NAND Flash}\\
+\textbf{NOR Flash}:
+\begin{itemize}
+    \item Random access (like RAM)
+    \item Execute-in-place capability (XIP)
+    \item Fast read access
+    \item Slow write and erase operations
+    \item Lower density
+    \item Used for code storage and execution
+\end{itemize}
+\textbf{NAND Flash}:
+\begin{itemize}
+    \item Page-based access (not random)
+    \item Cannot execute code directly
+    \item Slow random read access
+    \item Fast sequential read and write
+    \item Higher density
+    \item Used for mass storage (SSDs, memory cards)
+\end{itemize}
+\end{definition}
+
+\multend
+
+\subsection{SRAM (Static RAM)}
+
+\mult{2}
+
+\begin{concept}{SRAM Structure and Characteristics}
+\begin{itemize}
+    \item Uses flip-flop circuit for each bit (typically 6 transistors)
+    \item Maintains data as long as power is supplied
+    \item No refresh required (unlike DRAM)
+    \item Fast access times (a few nanoseconds)
+    \item Low power consumption in standby mode
+    \item Higher cost and lower density than DRAM
+    \item Used for cache memory and high-speed buffers
+\end{itemize}
+\end{concept}
+
+\begin{definition}{SRAM Cell}\\
+A typical SRAM cell consists of:
+\begin{itemize}
+    \item Cross-coupled inverters forming a latch to store one bit
+    \item Two access transistors to connect the cell to bit lines
+    \item Word line to enable/disable access to the cell
+    \item High state ('1') and low state ('0') stable as long as power is maintained
+\end{itemize}
+\end{definition}
+
+\begin{definition}{SRAM Operations}\\
+\textbf{Read Operation}:
+\begin{itemize}
+    \item Word line is activated
+    \item Access transistors connect cell to bit lines
+    \item Sense amplifiers detect voltage difference on bit lines
+    \item Data is read from bit lines
+\end{itemize}
+\textbf{Write Operation}:
+\begin{itemize}
+    \item Word line is activated
+    \item Access transistors connect cell to bit lines
+    \item Write drivers force bit lines to desired values
+    \item Cell state changes to match bit line values
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Asynchronous SRAM Interface}\\
+Asynchronous SRAM devices typically have these control signals:
+\begin{itemize}
+    \item \textbf{CS} (Chip Select): Enables the memory device (active low)
+    \item \textbf{OE} (Output Enable): Enables data output during read (active low)
+    \item \textbf{WE} (Write Enable): Indicates write operation (active low)
+    \item \textbf{Address Lines}: Select memory location
+    \item \textbf{Data Lines}: Bidirectional lines for data transfer
+\end{itemize}
+\end{definition}
+
+\multend
+
+\subsection{SDRAM (Synchronous DRAM)}
+
+\mult{2}
+
+\begin{concept}{SDRAM Structure and Characteristics}
+\begin{itemize}
+    \item Uses a capacitor and one transistor for each bit
+    \item Requires periodic refresh to maintain data (capacitor leakage)
+    \item Synchronous interface (clocked)
+    \item Row and column addressing (multiplexed address bus)
+    \item Higher density and lower cost than SRAM
+    \item Higher power consumption due to refresh
+    \item Used for main memory in computers and embedded systems
+\end{itemize}
+\end{concept}
+
+\begin{definition}{SDRAM Operation}\\
+Key aspects of SDRAM operation:
+\begin{itemize}
+    \item \textbf{Refresh}: Periodic read and rewrite of all memory cells
+    \item \textbf{Row Activation}: Opening a row copies data to row buffer
+    \item \textbf{Column Access}: Selecting specific bytes from row buffer
+    \item \textbf{Precharge}: Preparing a bank for next row activation
+    \item \textbf{Burst Mode}: Sequential access to multiple columns
+\end{itemize}
+\end{definition}
+
+\multend
+
+\begin{concept}{SRAM vs. SDRAM Comparison}
+\begin{center}
+\begin{tabular}{|p{3cm}|p{4cm}|p{4cm}|}
+\hline
+\textbf{Feature} & \textbf{SRAM} & \textbf{SDRAM} \\
+\hline
+Cell Structure & 6 transistors (flip-flop) & 1 transistor + 1 capacitor \\
+\hline
+Refresh & Not required & Required (periodic) \\
+\hline
+Density & Lower & Higher \\
+\hline
+Cost per bit & Higher & Lower \\
+\hline
+Access Time & Faster, uniform & Variable (row hit vs. miss) \\
+\hline
+Interface & Often asynchronous & Synchronous (clocked) \\
+\hline
+Power Consumption & Lower static power & Higher due to refresh \\
+\hline
+Applications & Cache, high-speed buffer & Main memory \\
+\hline
+\end{tabular}
+\end{center}
+\end{concept}
+
+\subsection{STM32F4 On-Chip Memory}
+
+\begin{concept}{STM32F4 Memory Architecture}\\
+The STM32F429ZI microcontroller includes:
+\begin{itemize}
+    \item \textbf{Flash Memory}: 2 MB (program storage)
+    \begin{itemize}
+        \item NOR flash with execute-in-place capability
+        \item Divided into sectors of varying sizes (16KB to 128KB)
+        \item Organized in two banks for read-while-write operations
+    \end{itemize}
+    \item \textbf{SRAM}: 256 KB total
+    \begin{itemize}
+        \item SRAM1: 112 KB
+        \item SRAM2: 16 KB
+        \item SRAM3: 64 KB
+        \item CCM (Core Coupled Memory): 64 KB (accessible only by CPU)
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{definition}{STM32F4 Flash Characteristics}
+\begin{itemize}
+    \item \textbf{Write Operations}: Can only change bits from '1' to '0'
+    \item \textbf{Erase Operations}: Resets all bits in a sector to '1'
+    \item \textbf{Programming Time}: Around 16µs per double word
+    \item \textbf{Erase Time}: 1-2 seconds for a 128KB sector
+    \item \textbf{Endurance}: 10,000 erase cycles
+    \item \textbf{Access Time}: Higher latency than SRAM (requires wait states)
+\end{itemize}
+\end{definition}
+
+\subsection{External Memory Interface}
+
+\begin{concept}{Flexible Memory Controller (FMC)}\\
+The STM32F4 Flexible Memory Controller (FMC) provides:
+\begin{itemize}
+    \item Interface between on-chip system bus and external memory devices
+    \item Support for different memory types:
+    \begin{itemize}
+        \item SRAM, NOR Flash, PSRAM
+        \item NAND Flash
+        \item SDRAM
+    \end{itemize}
+    \item Configurable bus width (8, 16, or 32 bits)
+    \item Programmable timing parameters
+    \item Memory banking with up to 6 banks
+\end{itemize}
+\end{concept}
+
+\begin{definition}{FMC Signals}\\
+Key FMC signals for external SRAM/NOR flash:
+\begin{itemize}
+    \item \textbf{A[25:0]}: Address bus
+    \item \textbf{D[31:0]}: Data bus (bidirectional)
+    \item \textbf{NE[4:1]}: Chip enable signals (active low)
+    \item \textbf{NOE}: Output enable (active low)
+    \item \textbf{NWE}: Write enable (active low)
+    \item \textbf{NBL[3:0]}: Byte lane enables (active low)
+\end{itemize}
+\end{definition}
+
+\begin{concept}{External Memory Access}\\
+Accessing external memory with different bus widths:
+\begin{itemize}
+    \item \textbf{32-bit CPU Access to 32-bit Memory}: 1 external bus cycle
+    \item \textbf{32-bit CPU Access to 16-bit Memory}: 2 external bus cycles
+    \item \textbf{32-bit CPU Access to 8-bit Memory}: 4 external bus cycles
+\end{itemize}
+\textbf{Write Operations}:
+\begin{itemize}
+    \item CPU write stored in FMC FIFO buffer
+    \item System bus released for other access
+    \item FMC completes external write(s)
+\end{itemize}
+\textbf{Read Operations}:
+\begin{itemize}
+    \item System bus must wait until all external reads complete
+    \item Multiple external cycles for narrow memory widths
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Connecting Asynchronous SRAM to STM32F4}
+\paragraph{Step 1: Configure GPIO pins}
+Set the GPIO pins for FMC signals to alternate function mode.
+\paragraph{Step 2: Configure FMC timing}
+Set appropriate timing parameters (ADDSET, DATAST) based on memory datasheet.
+\paragraph{Step 3: Configure FMC bank}
+Set the memory type, data width, and other parameters.
+\paragraph{Step 4: Enable FMC}
+Enable the FMC peripheral.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure external SRAM (16-bit) on FMC bank 1
+
+// Step 1: Configure GPIO pins for FMC
+// Enable GPIO clocks
+RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN |
+                RCC_AHB1ENR_GPIOFEN | RCC_AHB1ENR_GPIOGEN;
+
+// Configure GPIO pins (example for some pins)
+// Set alternate function mode (0x2)
+GPIOD->MODER |= 0x55555555;  // All pins to alternate function
+GPIOE->MODER |= 0x55555555;
+// Set to AF12 (FMC)
+GPIOD->AFR[0] = 0xCCCCCCCC;
+GPIOD->AFR[1] = 0xCCCCCCCC;
+GPIOE->AFR[0] = 0xCCCCCCCC;
+GPIOE->AFR[1] = 0xCCCCCCCC;
+
+// Step 2: Enable FMC clock
+RCC->AHB3ENR |= RCC_AHB3ENR_FMCEN;
+
+// Step 3: Configure FMC bank 1 for SRAM
+// Set timing for SRAM (example values)
+FMC_Bank1->BTCR[0] = 
+    FMC_BCR1_MBKEN |    // Memory bank enable
+    FMC_BCR1_MTYP_0 |   // Memory type SRAM
+    FMC_BCR1_MWID_0 |   // 16-bit data bus
+    FMC_BCR1_WREN;      // Write enable
+
+// Set timing (ADDSET=1, DATAST=2)
+FMC_Bank1->BTCR[1] = 
+    (1 << FMC_BTR1_ADDSET_Pos) |
+    (2 << FMC_BTR1_DATAST_Pos);
+\end{lstlisting}
+\end{KR}
+
+\begin{example2}{Address Space Calculation for External Memory}\\
+Calculate the address range for an external 32K x 8-bit SRAM connected to FMC bank 3.
+\tcblower
+For an external SRAM connected to FMC bank 3:
+
+1. Base address of FMC bank 3 = 0x68000000
+2. Memory size = 32K bytes = 32,768 bytes = 0x8000 bytes
+
+Therefore, the address range for this SRAM would be:
+- Start address: 0x68000000
+- End address: 0x68000000 + 0x8000 - 1 = 0x68007FFF
+
+Address range: 0x68000000 - 0x68007FFF
+
+Note: Due to partial address decoding, this SRAM might also be accessible at other addresses within bank 3. For example, it might also respond to addresses:
+0x68008000 - 0x6800FFFF, 0x68010000 - 0x68017FFF, etc.
+\end{example2}
