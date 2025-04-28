@@ -3,6 +3,11 @@
 \subsection{Hyperplanes and Margin Classification}
 
 \begin{definition}{Support Vector Machine (SVM)}\\
+    Goal: Find the optimal hyperplane that separates data points of different classes in a high-dimensional space. (maximize the margin between classes)\\
+    \includegraphics[width=\linewidth]{svms.png}
+\end{definition}
+
+\begin{definition}{Support Vector Machine (SVM)}\\
 Support Vector Machines are supervised learning models used for classification and regression. In classification, SVMs find the hyperplane that best separates classes with the maximum margin.
 \end{definition}
 
@@ -13,71 +18,28 @@ In the general $N$-dimensional case:
 \[b + w^T x = 0\]
 \end{definition}
 
-\begin{definition}{Maximal Margin Classifier}\\
-A maximal margin classifier finds the hyperplane that maximizes the distance to the nearest data point from any class. This leads to the optimization problem:
-\[\min_{b,w} \frac{1}{2}||w||^2\]
-subject to: $y^{(m)}(b + w^T x^{(m)}) \geq 1 \quad \forall m = 1, ..., M$
-
-The data points closest to the hyperplane are called support vectors.
+\begin{definition}{Support Vectors}\\
+    Support vectors are the data points that are closest to the hyperplane and influence its position. They are critical for defining the optimal hyperplane.\\
+    \includegraphics[width=\linewidth]{support_vectors.png}
 \end{definition}
 
-\begin{concept}{Hard Margin vs. Soft Margin}\\
-\begin{itemize}
-    \item \textbf{Hard Margin Classifier}: Requires all points to be correctly classified and outside the margin
-    \item \textbf{Soft Margin Classifier}: Allows some points to violate the margin or be misclassified
-\end{itemize}
-The hard margin classifier works only when data is linearly separable and is sensitive to outliers.
+\begin{concept}{Optimisation Task for the Maximal Margin Classifier}\\
+    The optimization task for the maximal margin classifier is to minimize the following objective function:
+    \[ \min_{\mathbf{w}, b} \frac{1}{2} ||\mathbf{w}||^2 \quad \text{'Primal Form'}\]
+    subject to the constraints:
+    \[ y^{(m)} (b + \mathbf{w}^T \mathbf{x}^{(m)}) \geq 1, \quad \text{ for } m = 1,..., M \]
+    where $\mathbf{w}$ is the weight vector, $b$ is the bias term, and $y^{(m)}$ is the class label of the $m$-th data point.
 \end{concept}
 
-\begin{KR}{Training a Support Vector Machine}\\
-\paragraph{Select kernel}
-Choose an appropriate kernel function:
-\begin{itemize}
-    \item Linear kernel for linearly separable data
-    \item Polynomial kernel for more complex, non-linear boundaries
-    \item RBF (Gaussian) kernel for highly non-linear data
-\end{itemize}
+\begin{definition}{Maximal Margin Classifier} Primal Form\\
+    A maximal margin classifier finds the hyperplane that maximizes the distance to the nearest data point from any class. This leads to the optimization problem:
+    \[\min_{b,w} \frac{1}{2}||w||^2\]
+    subject to: $y^{(m)}(b + w^T x^{(m)}) \geq 1 \quad \forall m = 1,..., M$
 
-\paragraph{Select hyperparameters}
-\begin{itemize}
-    \item $C$: Regularization parameter (controls trade-off between margin width and misclassification)
-    \item Kernel parameters: degree $d$ for polynomial kernel, $\gamma$ for RBF kernel
-\end{itemize}
-
-\paragraph{Train the model}
-\begin{itemize}
-    \item Set up the optimization problem to maximize the margin
-    \item Solve the quadratic programming problem to find support vectors
-\end{itemize}
-
-\paragraph{Make predictions}
-For a new data point $x$:
-\begin{itemize}
-    \item Compute $f(x) = b + \sum_{i \in SV} \alpha_i y_i K(x_i, x)$
-    \item Predict class 1 if $f(x) > 0$, otherwise class -1
-\end{itemize}
-\end{KR}
-
-\subsection{Kernel Trick and Soft Margin}
-
-\begin{definition}{Soft Margin Classifier}\\
-The soft margin classifier allows some data points to violate the margin constraints, adding slack variables $\epsilon_m \geq 0$:
-\[\min_{b,w,\epsilon} \frac{1}{2}||w||^2 + C\sum_{m=1}^{M}\epsilon_m\]
-subject to: $y^{(m)}(b + w^T x^{(m)}) \geq 1 - \epsilon_m$ and $\epsilon_m \geq 0$
-
-The parameter $C$ controls the trade-off between maximizing the margin and minimizing constraint violations.
+    The data points closest to the hyperplane are called support vectors.
 \end{definition}
 
-\begin{definition}{Kernel Trick}\\
-The kernel trick allows SVMs to efficiently operate in high-dimensional spaces without explicitly computing the transformation. Common kernels include:
-\begin{itemize}
-    \item Linear: $\mathcal{K}(x^{(m)}, x^{(m')}) = \sum_{n=1}^{N} x^{(m)}_n x^{(m')}_n$
-    \item Polynomial: $\mathcal{K}(x^{(m)}, x^{(m')}) = (1 + \sum_{n=1}^{N} x^{(m)}_n x^{(m')}_n)^d$
-    \item RBF: $\mathcal{K}(x^{(m)}, x^{(m')}) = \exp(-\gamma||x^{(m)} - x^{(m')}||^2)$
-\end{itemize}
-\end{definition}
-
-\begin{concept}{The Dual Problem}\\
+\begin{concept}{Maximal Margin Classifier} Dual Form\\
 The optimization problem for SVMs can be reformulated in its dual form:
 \[\max_{\alpha} \mathcal{L}(\alpha) = - \frac{1}{2}\sum_{i=1}^{M}\sum_{j=1}^{M}\alpha_i\alpha_j y^{(i)}y^{(j)}x^{(i)}x^{(j)} + \sum_{m=1}^{M}\alpha_m\]
 subject to: $\sum_{m=1}^{M}\alpha_m y^{(m)} = 0$ and $0 \leq \alpha_m \leq C$ for $m = 1, ..., M$
@@ -85,7 +47,94 @@ subject to: $\sum_{m=1}^{M}\alpha_m y^{(m)} = 0$ and $0 \leq \alpha_m \leq C$ fo
 This formulation allows the application of the kernel trick by replacing the dot product $x^{(i)}x^{(j)}$ with a kernel function $\mathcal{K}(x^{(i)}, x^{(j)})$.
 \end{concept}
 
-\begin{KR}{Selecting the Right Kernel and Parameters}\\
+\begin{theorem}{Predictions from the Optimised Lagrangian}\\
+    With the optimal $\hat{\alpha}_m$ we can compute the optimal $\widehat{\mathbf{w}}$ from the equation in the previous slide
+    \[ \widehat{\mathbf{w}}=\sum_{m=1}^M \hat{\alpha}_m y^{(m)} \mathbf{x}^{(m)} \]
+    \[ \text{and }\hat{b}=\frac{1}{M_s} \sum_{m=1}^{M_s}\left(y^{(m)}-\widehat{\mathbf{w}}^T \mathbf{x}^{(m)}\right) \text{ for the support vectors}\]
+    where $M_s$ is the number of support vectors and $\quad \hat{\alpha}_m>0$
+    \vspace{2mm}\\
+    Then, a new sample $\mathbf{x}^{(*)}$ can be classified using $y^{(*)}=\operatorname{sign}(\widehat{\mathbf{w}}^T \mathbf{x}^{(*)}+\hat{b})$
+    The distance from the hyperplane can be interpreted as a confidence for the prediction.
+\end{theorem}
+
+\subsection{Kernel Trick and Soft Margin}
+
+\begin{concept}{Hard Margin vs. Soft Margin}
+\begin{itemize}
+    \item \textbf{Hard Margin Classifier}: Requires all points to be correctly classified and outside the margin
+    \item \textbf{Soft Margin Classifier}: Allows some points to violate the margin or be misclassified
+\end{itemize}
+The hard margin classifier works only when data is linearly separable and is sensitive to outliers.
+\end{concept}
+
+\begin{definition}{Soft Margin Classifier} Cost Function in Soft-Margin SVM\\
+The soft margin classifier allows some data points to violate the margin constraints, adding \textbf{slack variables} $\varepsilon_m \geq 0$:
+\[\min_{b,w,\varepsilon} \frac{1}{2}||w||^2 + C\sum_{m=1}^{M}\varepsilon^{(m)}\]
+subject to: $y^{(m)}(b + \mathbf{w}^T \mathbf{x}^{(m)}) \geq 1 - \varepsilon^{(m)}$ and $\varepsilon^{(m)} \geq 0$ for $m = 1,..., M$
+
+The parameter $C$ controls the trade-off between maximizing the margin and minimizing constraint violations.\\
+\includegraphics[width=0.5\linewidth]{softmargin_classifier.png}
+\end{definition}
+
+\begin{remark}
+    Unbalanced data:\\
+    \includegraphics[width=0.5\linewidth]{unbalanced_data.png}
+\end{remark}
+
+\begin{example2}{'Wrong' Hyperplane}\\
+    \includegraphics[width=\linewidth]{wrong_hyperplane.png}\\
+    The \textcolor{red}{\textbf{RED}} line is the optimal hyperplane for the hard margin classifier. The \textcolor{green}{\textbf{GREEN}} line is NOT optimal!
+\end{example2}
+
+\begin{definition}{Standardization and Normalization}\\
+    \includegraphics[width=\linewidth]{standardization_normalization.png}\\
+    \small Normalization: e.g. for Neural Networks\\
+    \small Standardization: e.g. for SVMs, Linear and Logistic Regression    
+\end{definition}
+
+\subsubsection{Kernel Trick for non-linearly seperable data}
+
+\begin{definition}{Lifting Trick} Projection to Higher Dimensions\\
+    \includegraphics[width=\linewidth]{lifting_trick.png}\\
+    Transformation: $(x_1, x_2) \rightarrow (x_1, x_2, x_1^2 + x_2^2)$\\
+    \small The lifting trick allows us to transform the data into a higher-dimensional space where it may become linearly separable.
+\end{definition}
+
+\begin{concept}{Kernel Trick}\\
+The kernel trick allows SVMs to efficiently operate in high-dimensional spaces without explicitly computing the transformation. Common kernels include:
+\begin{itemize}
+    \item Linear: $\mathcal{K}(x^{(m)}, x^{(m')}) = \sum_{n=1}^{N} x^{(m)}_n x^{(m')}_n$
+    \item Polynomial: $\mathcal{K}(x^{(m)}, x^{(m')}) = (1 + \sum_{n=1}^{N} x^{(m)}_n x^{(m')}_n)^d$
+    \item RBF: $\mathcal{K}(x^{(m)}, x^{(m')}) = \exp(-\gamma||x^{(m)} - x^{(m')}||^2)$
+\end{itemize}
+\end{concept}
+
+\begin{theorem}{Maximal Margin Classifier} Dual Form with Kernel Trick
+\[\max_{\alpha} \mathcal{L}(\alpha) = - \frac{1}{2}\sum_{i=1}^{M}\sum_{j=1}^{M}\alpha_i\alpha_j y^{(i)}y^{(j)} \textcolor{pink}{\mathcal{K}(x^{(i)}, x^{(j)})} + \sum_{m=1}^{M}\alpha_m\]
+subject to: $\sum_{m=1}^{M}\alpha_m y^{(m)} = 0$ and $0 \leq \alpha_m \leq C$ for $m = 1, ..., M$
+
+This formulation allows the application of the kernel trick by replacing the dot product $x^{(i)}x^{(j)}$ with a kernel function $\mathcal{K}(x^{(i)}, x^{(j)})$.
+\end{theorem}
+
+\begin{formula}{Common Kernel Functions}
+
+    \begin{minipage}{0.7\linewidth}
+    Linear: $\quad K(a, b)=a^{\top} \cdot b$
+
+    Polynomial: $\quad K(a, b)=\left(a^{\top} \cdot b+t\right)^r$ with parameters $\mathbf{t}, \mathbf{r}$
+
+    RBF = Radial Basis Function:
+    \[ \mathrm{K}(\mathrm{a}, \mathrm{~b})=e^{-\gamma\|a-b\|^2} \]
+    with parameter $\gamma$
+    \end{minipage}
+    \begin{minipage}{0.25\linewidth}
+        \includegraphics[width=\linewidth]{common_kernel_functions.png}
+    \end{minipage}
+\end{formula}
+
+
+
+\begin{KR}{Selecting the Right Kernel and Parameters}
 \paragraph{When to use different kernels}
 \begin{itemize}
     \item Linear kernel: 
@@ -124,7 +173,33 @@ This formulation allows the application of the kernel trick by replacing the dot
 \end{itemize}
 \end{KR}
 
-\begin{example}{SVM Application}
+\begin{definition}{RBF Kernel}
+    \[ \mathrm{K}(\mathrm{a}, \mathrm{~b}) = e^{-\gamma\|a-b\|^2} = e^{-\frac{||a-b||^2}{2\sigma^2}} \]
+    Small $\gamma \rightarrow$ large width $\sigma$ (Gaussian kernel)\\
+    \includegraphics[width=\linewidth]{small_gamma.png}\\
+    Large $\gamma \rightarrow$ small width $\sigma$ (Gaussian kernel)\\
+    \includegraphics[width=\linewidth]{large_gamma.png}
+\end{definition}
+
+\begin{example2}{RBF Kernel}\\
+    \includegraphics[width=\linewidth]{rbfkernel.png}
+\end{example2}
+
+\begin{theorem}{Interdependence of SVM Hyperparameters}\\
+    $C$ and $\gamma$ both influence the shape of the decision boundary and need to be tuned together 
+    using hyperparameter optimization (e.g. via cross validation)
+\end{theorem}
+
+\begin{example2}{ConceptTest: RBF Kernel}\\
+    In the SVM below we are using $\mathrm{C}=1$. Which image has the highest value for hyperparameter $\gamma$ ?
+
+    \[ K\left(\mathbf{x}, \mathbf{x}^{(m)}\right)=\exp \left(-\gamma\left\|\mathbf{x}^{(m)}-\mathbf{x}\right\|^2\right) \]
+
+    \includegraphics[width=\linewidth]{rbfexample1.png}\\
+    \includegraphics[width=\linewidth]{rbfexample2.png}
+\end{example2}
+
+\begin{example}{SVM Application} Linear Kernel\\
 Consider classifying flowers based on petal length and width:
 \begin{itemize}
     \item Features: Petal length ($x_1$) and petal width ($x_2$)
@@ -137,6 +212,35 @@ Consider classifying flowers based on petal length and width:
     \end{itemize}
 \end{itemize}
 \end{example}
+
+\begin{KR}{Training a Support Vector Machine}
+    \paragraph{Select kernel}
+    Choose an appropriate kernel function:
+    \begin{itemize}
+        \item Linear kernel for linearly separable data
+        \item Polynomial kernel for more complex, non-linear boundaries
+        \item RBF (Gaussian) kernel for highly non-linear data
+    \end{itemize}
+    
+    \paragraph{Select hyperparameters}
+    \begin{itemize}
+        \item $C$: Regularization parameter (controls trade-off between margin width and misclassification)
+        \item Kernel parameters: degree $d$ for polynomial kernel, $\gamma$ for RBF kernel
+    \end{itemize}
+    
+    \paragraph{Train the model}
+    \begin{itemize}
+        \item Set up the optimization problem to maximize the margin
+        \item Solve the quadratic programming problem to find support vectors
+    \end{itemize}
+    
+    \paragraph{Make predictions}
+    For a new data point $x$:
+    \begin{itemize}
+        \item Compute $f(x) = b + \sum_{i \in SV} \alpha_i y_i K(x_i, x)$
+        \item Predict class 1 if $f(x) > 0$, otherwise class -1
+    \end{itemize}
+    \end{KR}
 
 \subsection{Multi-class Classification with SVMs}
 
@@ -209,22 +313,22 @@ Prediction: Virginica
 \begin{definition}{Support Vector Regression (SVR)}\\
 SVR applies the same principles as SVM to regression tasks by:
 \begin{itemize}
-    \item Fitting as many instances as possible on a "street" with width controlled by parameter $\epsilon$
+    \item Fitting as many instances as possible on a "street" with width controlled by parameter $\varepsilon$
     \item Allowing some points to be off the street (margin violations)
     \item Using kernels to handle non-linear regression tasks
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Key Differences Between SVR and Linear Regression}\\
+\begin{concept}{Key Differences Between SVR and Linear Regression}
 \begin{itemize}
     \item Linear regression minimizes the squared error for all points
-    \item SVR is only concerned with errors larger than $\epsilon$ (the tube width)
+    \item SVR is only concerned with errors larger than $\varepsilon$ (the tube width)
     \item SVR is more robust to outliers
     \item SVR produces a sparse solution (depends only on support vectors)
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Implementing Support Vector Regression}\\
+\begin{KR}{Implementing Support Vector Regression}
 \paragraph{Define the problem}
 \begin{itemize}
     \item Determine if a non-linear relationship exists in the data
@@ -233,7 +337,7 @@ SVR applies the same principles as SVM to regression tasks by:
 
 \paragraph{Select parameters}
 \begin{itemize}
-    \item $\epsilon$: Controls the width of the insensitive tube (larger $\epsilon$ means fewer support vectors)
+    \item $\varepsilon$: Controls the width of the insensitive tube (larger $\varepsilon$ means fewer support vectors)
     \item $C$: Regularization parameter (smaller $C$ means more regularization)
     \item Kernel and its parameters (same as for SVM classification)
 \end{itemize}
@@ -250,7 +354,7 @@ SVR applies the same principles as SVM to regression tasks by:
 Consider predicting house prices based on size (in square feet):
 \begin{itemize}
     \item Training data: 100 houses with sizes ranging from 1000 to 3000 sq ft and prices from \$200,000 to \$600,000
-    \item We use SVR with an RBF kernel, $C=1000$, $\epsilon=10000$, and $\gamma=0.0001$
+    \item We use SVR with an RBF kernel, $C=1000$, $\varepsilon=10000$, and $\gamma=0.0001$
     \item For a new house with 2500 sq ft:
     \begin{itemize}
         \item Predicted price: \$475,000
