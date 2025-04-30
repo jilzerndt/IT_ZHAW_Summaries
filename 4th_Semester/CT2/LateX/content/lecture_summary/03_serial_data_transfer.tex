@@ -694,7 +694,7 @@ Typical Use & Terminal communication, debug ports & On-board high-speed communic
 
 \section{Serial Data Transfer}
 
-\begin{concept}{Overview}
+\begin{concept}{Overview}\\
     \includegraphics[width=\linewidth]{SDT_overview.png}
     \vspace{2mm}\\
     \textbf{SPI - Serial Peripheral Interface}
@@ -849,7 +849,7 @@ Typical Use & Terminal communication, debug ports & On-board high-speed communic
 
 \subsection{UART Communication}
 
-\begin{KR}{Analyzing UART Transmission}\\
+\begin{KR}{Analyzing UART Transmission}
 \paragraph{Determine bit timing}
 \begin{itemize}
     \item Calculate bit period (T) from baud rate: T = 1/baud\_rate
@@ -944,7 +944,7 @@ The clock tolerance can be calculated as:
 
 \subsection{SPI Communication}
 
-\begin{KR}{Analyzing SPI Communication}\\
+\begin{KR}{Analyzing SPI Communication}
 \paragraph{Identify SPI mode}
 \begin{itemize}
     \item Determine CPOL (Clock Polarity):
@@ -1032,7 +1032,7 @@ Total frame time = 8 bits × 10 µs = 80 µs.
 
 \subsection{I2C Communication}
 
-\begin{KR}{Analyzing I2C Communication}\\
+\begin{KR}{Analyzing I2C Communication}
 \paragraph{Identify I2C protocol elements}
 \begin{itemize}
     \item Start condition: SDA falls while SCL is high
@@ -1077,29 +1077,36 @@ SDA  ___\_|1|_|1|_|0|_|0|_|1|_|1|_|0|_|1|_|0|_\_|0|_|0|_|1|_|1|_|1|_|0|_|0|_|1|_
 \tcblower
 \paragraph{Solution:}
 The I2C transaction consists of:
-
-1. Start condition (SDA falls while SCL is high)
-2. First byte: 11001101 (data transmitted MSB first)
-   - This is the address byte: 1100110 (0x66) with R/W bit = 1 (read operation)
-   - Followed by an ACK (SDA pulled low during 9th clock cycle)
-3. Second byte: 00111001 (data received from slave)
-   - This is data: 0x39 or 0x9C (depending on bit order interpretation)
-   - Followed by a NACK (SDA remains high during 9th clock cycle)
-   - NACK indicates that the master does not want to receive more data
-4. Stop condition (SDA rises while SCL is high)
+\begin{enumerate}
+    \item Start condition (SDA falls while SCL is high)
+    \item First byte: 11001101 (data transmitted MSB first)
+    \begin{itemize}
+        \item This is the address byte: 1100110 (0x66) with R/W bit = 1 (read operation)
+        \item Followed by an ACK (SDA pulled low during 9th clock cycle)
+    \end{itemize}
+    \item Second byte: 00111001 (data received from slave)
+    \begin{itemize}
+        \item This is data: 0x39 or 0x9C (depending on bit order interpretation)
+        \item Followed by a NACK (SDA remains high during 9th clock cycle)
+        \item NACK indicates that the master does not want to receive more data
+    \end{itemize}
+    \item Stop condition (SDA rises while SCL is high)
+\end{enumerate}
 
 The complete transaction is:
-- Master initiates communication with device at address 0x66
-- Master requests to read from the device (R/W=1)
-- Device acknowledges (ACK)
-- Device sends one data byte (0x39 or 0x9C)
-- Master signals end of transfer with NACK
-- Master terminates communication
+\begin{itemize}
+    \item Master initiates communication with device at address 0x66
+    \item Master requests to read from the device (R/W=1)
+    \item Device acknowledges (ACK)
+    \item Device sends one data byte (0x39 or 0x9C)
+    \item Master signals end of transfer with NACK
+    \item Master terminates communication
+\end{itemize}
 \end{example2}
 
 \subsection{Protocol Comparison and Selection}
 
-\begin{KR}{Selecting the Appropriate Serial Protocol}\\
+\begin{KR}{Selecting the Appropriate Serial Protocol}
 \paragraph{Understand protocol characteristics}
 \begin{itemize}
     \item \textbf{UART:}
@@ -1176,16 +1183,12 @@ The complete transaction is:
 
 \begin{example2}{Serial Protocol Selection}\\
 Select the most appropriate serial protocol for each of the following applications:
-
-1. A system needs to connect a microcontroller to three temperature sensors. The sensors are low-cost devices that should be replaceable without redesigning the PCB. Data rate requirement is low.
-
-2. A data acquisition system needs to transfer large amounts of data from an ADC to a microcontroller at 20 Mbps.
-
-3. A microcontroller needs to communicate with a PC via USB port.
-
-4. A control system needs to connect to four different devices at varying distances up to 30 meters in an electrically noisy industrial environment.
-
-\tcblower
+\begin{enumerate}
+    \item A system needs to connect a microcontroller to three temperature sensors. The sensors are low-cost devices that should be replaceable without redesigning the PCB. Data rate requirement is low.
+    \item A data acquisition system needs to transfer large amounts of data from an ADC to a microcontroller at 20 Mbps.
+    \item A microcontroller needs to communicate with a PC via USB port.
+    \item A control system needs to connect to four different devices at varying distances up to 30 meters in an electrically noisy industrial environment.
+\end{enumerate}
 \paragraph{Solution:}
 
 1. \textbf{I2C is most appropriate for the temperature sensors:}
@@ -1196,7 +1199,7 @@ Select the most appropriate serial protocol for each of the following applicatio
      \item Sensors can be replaced without changing connections (as long as addresses are configured properly)
      \item Reduced pin count (only SCL and SDA) simplifies PCB design
    \end{itemize}
-
+   \vspace{2mm}
 2. \textbf{SPI is most appropriate for the high-speed ADC:}
    \begin{itemize}
      \item 20 Mbps data rate exceeds practical I2C speeds and most UART configurations
@@ -1205,7 +1208,7 @@ Select the most appropriate serial protocol for each of the following applicatio
      \item Minimal protocol overhead maximizes throughput for large data amounts
      \item Hardware-based chip select ensures proper timing for ADC operations
    \end{itemize}
-
+   \vspace{2mm}
 3. \textbf{UART is most appropriate for PC communication:}
    \begin{itemize}
      \item UART is the typical protocol used with USB-to-serial converter chips
@@ -1214,7 +1217,7 @@ Select the most appropriate serial protocol for each of the following applicatio
      \item No need for extra clock signals simplifies interfacing with USB adapters
      \item Asynchronous nature accommodates timing differences between systems
    \end{itemize}
-
+   \vspace{2mm}
 4. \textbf{RS-485 (based on UART) is most appropriate for the industrial control system:}
    \begin{itemize}
      \item RS-485 extends UART to longer distances (up to 1200m)

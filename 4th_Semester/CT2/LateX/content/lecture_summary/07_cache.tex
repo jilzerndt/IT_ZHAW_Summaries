@@ -1,15 +1,32 @@
 \section{Cache}
 
+\begin{remark}
+    \textbf{Situation:}
+    \begin{itemize}
+        \item Processor: fast cycle time
+        \item Fast DRAM: Single accesses have large overhead (slow), efficiently reads only in bursts
+        \item $\rightarrow$ bridging the gap such that pipelining and the bursts are effective!
+    \end{itemize}
+\textbf{Goal:}
+\begin{itemize}
+    \item Access 'slower' main memory in bursts and maintain a fast cache memory for fast single accesses
+    \item But: Data consistency must be carefully managed, such that both, cache and main memory have the same data
+\end{itemize}
+\end{remark}
+
 \subsection{Principle of Locality}
 
 \begin{concept}{Memory Hierarchy and Locality}\\
+Programs usually access small regions of memory in a given interval of time. \\
 The memory hierarchy in computer systems is designed to exploit the principle of locality:
 \begin{itemize}
     \item \textbf{Spatial Locality}: If a memory location is accessed, nearby locations are likely to be accessed soon
+    \item $\rightarrow$ Current data location is likely being close to next accessed location
     \begin{itemize}
         \item Example: Sequential access to array elements
     \end{itemize}
     \item \textbf{Temporal Locality}: If a memory location is accessed, it's likely to be accessed again soon
+    \item $\rightarrow$ Current data location is likely being accessed again in near future
     \begin{itemize}
         \item Example: Loop variables, frequently called functions
     \end{itemize}
@@ -20,6 +37,18 @@ The memory hierarchy takes advantage of these patterns:
     \item Larger, slower memories (main memory, disk) store less frequently accessed data
 \end{itemize}
 \end{concept}
+
+\begin{code}{Principle of Locality}
+\begin{lstlisting}[language=C, style=basesmol]
+for (int i = 0; i < N; i++) {   // incremental access
+    a[i] = b[i];                // spatial locality
+}
+
+if (a[1234] == a[4321]) {       // temporal locality
+    a[1234] = 0;                // access to same location again
+} 
+\end{lstlisting}  
+\end{code}
 
 \begin{definition}{Memory Hierarchy Levels}\\
 Typical memory hierarchy in a modern system:
@@ -34,15 +63,14 @@ Typical memory hierarchy in a modern system:
     \item \textbf{Main Memory (RAM)}: Slower, much larger (GB)
     \item \textbf{Secondary Storage}: Very slow, huge (TB)
 \end{itemize}
-As we move down the hierarchy, memory becomes:
-\begin{itemize}
-    \item Larger
-    \item Slower
-    \item Cheaper per byte
-\end{itemize}
+\includegraphics[width=\linewidth]{memory_hierarchy_levels.png}
 \end{definition}
 
 \subsection{Cache Mechanics}
+
+\begin{definition}{Cache Levels} Typical Cache Architecture\\
+    \includegraphics[width=\linewidth]{cache_architecture.png}    
+\end{definition}
 
 \begin{concept}{Cache Operation}\\
 A cache is a small, fast memory that stores copies of data from frequently used main memory locations:
@@ -173,24 +201,28 @@ For a 16KB cache with 64-byte lines, calculate address breakdown for:
 \end{itemize}
 \tcblower
 Given:
-- Cache size = 16KB = 16,384 bytes
-- Line size = 64 bytes
+\begin{itemize}
+    \item Cache size = 16KB = 16,384 bytes
+    \item Line size = 64 bytes
+\end{itemize}
 
 1. Direct Mapped Cache:
-   - Number of cache lines = 16,384 ÷ 64 = 256 lines
-   - Index bits = $log_2(256)$ = 8 bits
-   - Offset bits = $log_2(64)$ = 6 bits
-   - For 32-bit address: Tag = 32 - 8 - 6 = 18 bits
-   
-   Address format: [18-bit Tag | 8-bit Index | 6-bit Offset]
-
+\begin{itemize}
+    \item Number of cache lines = Cache size / Line size = 16,384 / 64 = 256 lines
+    \item Index bits = $\log_2(256)$ = 8 bits
+    \item Offset bits = $\log_2(64)$ = 6 bits
+    \item For 32-bit address: Tag = 32 - 8 - 6 = 18 bits
+\end{itemize}
+Address format: [18-bit Tag | 8-bit Index | 6-bit Offset]
+\vspace{2mm}\\
 2. 4-Way Set Associative:
-   - Number of sets = 256 ÷ 4 = 64 sets
-   - Set index bits = $log_2(64)$ = 6 bits
-   - Offset bits = $log_2(64)$ = 6 bits
-   - For 32-bit address: Tag = 32 - 6 - 6 = 20 bits
-   
-   Address format: [20-bit Tag | 6-bit Set Index | 6-bit Offset]
+\begin{itemize}
+    \item Number of sets = Cache size / (Line size × Associativity) = 16,384 / (64 × 4) = 64 sets
+    \item Set index bits = $\log_2(64)$ = 6 bits
+    \item Offset bits = $\log_2(64)$ = 6 bits
+    \item For 32-bit address: Tag = 32 - 6 - 6 = 20 bits
+\end{itemize}   
+Address format: [20-bit Tag | 6-bit Set Index | 6-bit Offset]
 \end{example2}
 
 \subsection{Cache Performance}
@@ -329,7 +361,7 @@ For write misses, two approaches:
 
 \subsection{Programmer's Perspective}
 
-\begin{KR}{Cache-Friendly Programming}\\
+\begin{KR}{Cache-Friendly Programming}
 \paragraph{Maximize spatial locality}
 Access memory in sequential patterns whenever possible.
 \paragraph{Maximize temporal locality}
@@ -413,7 +445,7 @@ The blocked implementation works on small submatrices that fit in cache, improvi
 
 \subsection{Cache Organization and Addressing}
 
-\begin{KR}{Analyzing Cache Organization}\\
+\begin{KR}{Analyzing Cache Organization}
 \paragraph{Identify cache parameters}
 \begin{itemize}
     \item Cache size: Total data storage capacity
@@ -511,7 +543,7 @@ Consider a system with a 4 KiB direct-mapped cache with 16-byte cache lines. The
 
 \subsection{Cache Performance Analysis}
 
-\begin{KR}{Analyzing Cache Hit Rates and Performance}\\
+\begin{KR}{Analyzing Cache Hit Rates and Performance}
 \paragraph{Calculate basic cache metrics}
 \begin{itemize}
     \item Hit rate = Number of hits / Total number of accesses
@@ -596,7 +628,7 @@ Therefore, using configuration B saves 2 million processor cycles for the progra
 
 \subsection{Cache Programming Considerations}
 
-\begin{KR}{Optimizing Code for Cache Performance}\\
+\begin{KR}{Optimizing Code for Cache Performance}
 \paragraph{Analyze array access patterns}
 \begin{itemize}
     \item Understand memory layout in your language (e.g., row-major in C, column-major in Fortran)
