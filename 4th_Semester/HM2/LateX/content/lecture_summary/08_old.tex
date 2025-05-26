@@ -1,0 +1,575 @@
+
+
+\section{Ordinary Differential Equations}
+
+\subsection{Introduction and Motivation}
+
+\begin{definition}{Ordinary Differential Equation}\\
+An ordinary differential equation (ODE) is an equation that contains derivatives of an unknown function with respect to a single independent variable. 
+
+A first-order ODE has the form:
+\begin{align*}
+\frac{dy}{dt} = f(t, y(t))
+\end{align*}
+where $y(t)$ is the unknown function, $t$ is the independent variable, and $f$ is a given function.
+
+An $n^{th}$-order ODE has the form:
+\begin{align*}
+y^{(n)}(x) = f(x, y(x), y'(x), ..., y^{(n-1)}(x))
+\end{align*}
+where $y^{(n)}$ denotes the $n^{th}$ derivative of $y$.
+\end{definition}
+
+\begin{definition}{Initial Value Problem}\\
+An initial value problem (IVP) for an $n^{th}$-order ODE specifies the function values and its first $n-1$ derivatives at a particular point $x_0$:
+\begin{align*}
+y^{(n)}(x) &= f(x, y(x), y'(x), ..., y^{(n-1)}(x))\\
+y(x_0) &= y_0\\
+y'(x_0) &= y_1\\
+&\vdots\\
+y^{(n-1)}(x_0) &= y_{n-1}
+\end{align*}
+
+For a first-order ODE, an IVP simply specifies $y(x_0) = y_0$.
+\end{definition}
+
+\subsection{Examples from Natural Sciences}
+
+\subsubsection{Free Fall}
+
+\begin{example2}{Free Fall}\\
+Consider an object falling freely in a vacuum near Earth's surface. If we denote the position by $s(t)$ (with positive direction upward), the motion is governed by:
+\begin{align*}
+\ddot{s}(t) = -g
+\end{align*}
+where $g \approx 9.81 \text{ m/s}^2$ is the gravitational acceleration, and $\ddot{s}(t)$ is the second derivative of position with respect to time (i.e., acceleration).
+
+This is a second-order ODE, which can be solved by direct integration:
+\begin{align*}
+\ddot{s}(t) &= -g\\
+\dot{s}(t) &= -gt + v_0\\
+s(t) &= -\frac{1}{2}gt^2 + v_0t + s_0
+\end{align*}
+
+Here, $v_0 = \dot{s}(0)$ is the initial velocity, and $s_0 = s(0)$ is the initial height.
+
+For $s_0 = 1000 \text{ m}$, $v_0 = 0$, and $g = 10 \text{ m/s}^2$, the position after 3 seconds is:
+\begin{align*}
+s(3) &= -\frac{1}{2} \cdot 10 \cdot 3^2 + 0 \cdot 3 + 1000\\
+&= -45 + 1000 = 955 \text{ m}
+\end{align*}
+
+The object reaches the ground ($s = 0$) when:
+\begin{align*}
+-\frac{1}{2} \cdot 10 \cdot t^2 + 1000 &= 0\\
+t &= \sqrt{\frac{2 \cdot 1000}{10}} = 14.14 \text{ s}
+\end{align*}
+
+At impact, its velocity is:
+\begin{align*}
+\dot{s}(14.14) = -10 \cdot 14.14 = -141.4 \text{ m/s} \approx -509.1 \text{ km/h}
+\end{align*}
+\end{example2}
+
+\subsubsection{Harmonic Oscillator}
+
+\begin{example2}{Harmonic Oscillator}\\
+The motion of a mass $m$ attached to a spring with spring constant $c$ is governed by:
+\begin{align*}
+m\ddot{x} = -cx
+\end{align*}
+where $x$ is displacement from equilibrium.
+
+This equation can be rewritten as:
+\begin{align*}
+\ddot{x} = -\frac{c}{m}x = -\omega_0^2 x
+\end{align*}
+where $\omega_0 = \sqrt{\frac{c}{m}}$ is the natural frequency.
+
+The general solution is:
+\begin{align*}
+x(t) = A \sin(\omega_0 t + \phi)
+\end{align*}
+where $A$ is the amplitude and $\phi$ is the phase shift, determined by initial conditions.
+
+The position $x(t)$ oscillates with period $T = \frac{2\pi}{\omega_0}$, demonstrating the characteristic behavior of simple harmonic motion.
+\end{example2}
+
+\subsection{Direction Fields}
+
+\begin{definition}{Direction Field}\\
+A direction field (or slope field) is a graphical representation of a first-order ODE $y' = f(x,y)$. At each point $(x,y)$ in the plane, a small line segment with slope $f(x,y)$ is drawn, indicating the direction a solution curve would take through that point.
+
+Direction fields help visualize the behavior of solutions without actually solving the ODE. Solution curves to the ODE are always tangent to the direction field at each point.
+\end{definition}
+
+\begin{example2}{Direction Field Example}\\
+Consider the ODE $y' = x^2 + 0.1y$. The direction field shows small line segments with slope $x^2 + 0.1y$ at various points in the $(x,y)$-plane.
+
+For example:
+\begin{itemize}
+    \item At point $(-1, 1)$, the slope is $(-1)^2 + 0.1 \cdot 1 = 1.1$
+    \item At point $(0.5, 1)$, the slope is $(0.5)^2 + 0.1 \cdot 1 = 0.35$
+\end{itemize}
+
+Solution curves pass through these points tangent to these slopes, gradually revealing the complete solution path.
+\end{example2}
+
+\subsection{Numerical Methods for First-Order ODEs}
+
+\subsubsection{Euler's Method}
+
+\begin{KR}{Euler's Method}\\
+Euler's method is the simplest numerical approach for solving first-order IVPs. It approximates the solution by using the tangent line at each step.
+
+\paragraph{Problem Statement}
+Given an IVP $y' = f(x,y)$ with $y(a) = y_0$ on interval $[a,b]$.
+
+\paragraph{Algorithm}
+\begin{enumerate}
+    \item Choose a step size $h = \frac{b-a}{n}$ for some integer $n > 0$
+    \item Set $x_0 = a$ and calculate $x_i = a + ih$ for $i = 1, 2, \ldots, n$
+    \item Set $y_0 = y(a)$
+    \item For $i = 0, 1, \ldots, n-1$, compute:
+    \begin{align*}
+    y_{i+1} = y_i + h \cdot f(x_i, y_i)
+    \end{align*}
+\end{enumerate}
+
+\paragraph{Error Analysis}
+The local truncation error (error after one step) is $O(h^2)$, and the global truncation error (total accumulated error) is $O(h)$.
+
+\paragraph{Interpretation}
+Euler's method follows the tangent line at $(x_i, y_i)$ for a distance $h$. It approximates the curve by a sequence of short line segments.
+\end{KR}
+
+\begin{example2}{Euler's Method Application}\\
+Solve the IVP $y' = t^2 + 0.1y$ with $y(-1.5) = 0$ on $[-1.5, 1.5]$ using Euler's method with $n = 5$ steps.
+
+Step size: $h = \frac{1.5-(-1.5)}{5} = 0.6$
+
+Points: $x_0 = -1.5, x_1 = -0.9, x_2 = -0.3, x_3 = 0.3, x_4 = 0.9, x_5 = 1.5$
+
+Computations:
+\begin{align*}
+y_0 &= 0\\
+y_1 &= y_0 + h \cdot f(x_0, y_0) = 0 + 0.6 \cdot ((-1.5)^2 + 0.1 \cdot 0) = 0.6 \cdot 2.25 = 1.35\\
+y_2 &= y_1 + h \cdot f(x_1, y_1) = 1.35 + 0.6 \cdot ((-0.9)^2 + 0.1 \cdot 1.35)\\
+&= 1.35 + 0.6 \cdot (0.81 + 0.135) = 1.35 + 0.6 \cdot 0.945 = 1.917\\
+\end{align*}
+
+Continuing this process gives the approximate solution at the specified points.
+\end{example2}
+
+\subsubsection{Midpoint Method}
+
+\begin{KR}{Midpoint Method}\\
+The midpoint method (also called the modified Euler method or the second-order Runge-Kutta method) improves on Euler's method by using the slope at the midpoint of each interval.
+
+\paragraph{Problem Statement}
+Given an IVP $y' = f(x,y)$ with $y(a) = y_0$ on interval $[a,b]$.
+
+\paragraph{Algorithm}
+\begin{enumerate}
+    \item Choose a step size $h = \frac{b-a}{n}$ for some integer $n > 0$
+    \item Set $x_0 = a$ and calculate $x_i = a + ih$ for $i = 1, 2, \ldots, n$
+    \item Set $y_0 = y(a)$
+    \item For $i = 0, 1, \ldots, n-1$:
+    \begin{itemize}
+        \item Calculate midpoint values:
+        \begin{align*}
+        x_{h/2} &= x_i + \frac{h}{2}\\
+        y_{h/2} &= y_i + \frac{h}{2} \cdot f(x_i, y_i)
+        \end{align*}
+        \item Update using the midpoint slope:
+        \begin{align*}
+        y_{i+1} &= y_i + h \cdot f(x_{h/2}, y_{h/2})
+        \end{align*}
+    \end{itemize}
+\end{enumerate}
+
+\paragraph{Error Analysis}
+Both the local and global truncation errors are better than Euler's method, with a global error of $O(h^2)$.
+\end{KR}
+
+\begin{example2}{Midpoint Method Application}\\
+Solve the IVP $y' = t^2 + 0.1y$ with $y(-1.5) = 0$ on $[-1.5, 1.5]$ using the midpoint method with $n = 5$ steps.
+
+Step size: $h = \frac{1.5-(-1.5)}{5} = 0.6$
+
+First step:
+\begin{align*}
+x_{h/2} &= x_0 + \frac{h}{2} = -1.5 + 0.3 = -1.2\\
+y_{h/2} &= y_0 + \frac{h}{2} \cdot f(x_0, y_0) = 0 + 0.3 \cdot ((-1.5)^2 + 0.1 \cdot 0)\\
+&= 0.3 \cdot 2.25 = 0.675\\
+y_1 &= y_0 + h \cdot f(x_{h/2}, y_{h/2})\\
+&= 0 + 0.6 \cdot ((-1.2)^2 + 0.1 \cdot 0.675)\\
+&= 0.6 \cdot (1.44 + 0.0675)\\
+&= 0.6 \cdot 1.5075 = 0.9045
+\end{align*}
+
+Similar calculations are performed for each subsequent step.
+\end{example2}
+
+\subsubsection{Heun's Method (Modified Euler Method)}
+
+\begin{KR}{Heun's Method}\\
+Heun's method, also known as the improved Euler method, uses the average of the slopes at the beginning and end of each interval.
+
+\paragraph{Problem Statement}
+Given an IVP $y' = f(x,y)$ with $y(a) = y_0$ on interval $[a,b]$.
+
+\paragraph{Algorithm}
+\begin{enumerate}
+    \item Choose a step size $h = \frac{b-a}{n}$ for some integer $n > 0$
+    \item Set $x_0 = a$ and calculate $x_i = a + ih$ for $i = 1, 2, \ldots, n$
+    \item Set $y_0 = y(a)$
+    \item For $i = 0, 1, \ldots, n-1$:
+    \begin{itemize}
+        \item Calculate predictor (Euler step):
+        \begin{align*}
+        k_1 &= f(x_i, y_i)\\
+        y_{i+1}^{Euler} &= y_i + h \cdot k_1
+        \end{align*}
+        \item Calculate corrector (average slope):
+        \begin{align*}
+        k_2 &= f(x_{i+1}, y_{i+1}^{Euler})\\
+        y_{i+1} &= y_i + h \cdot \frac{k_1 + k_2}{2}
+        \end{align*}
+    \end{itemize}
+\end{enumerate}
+
+\paragraph{Error Analysis}
+Like the midpoint method, Heun's method has a global error of $O(h^2)$, making it significantly more accurate than Euler's method.
+\end{KR}
+
+\begin{example2}{Heun's Method Application}\\
+Solve the IVP $y' = t^2 + 0.1y$ with $y(-1.5) = 0$ on $[-1.5, 1.5]$ using Heun's method with $n = 5$ steps.
+
+Step size: $h = \frac{1.5-(-1.5)}{5} = 0.6$
+
+First step:
+\begin{align*}
+k_1 &= f(x_0, y_0) = (-1.5)^2 + 0.1 \cdot 0 = 2.25\\
+y_1^{Euler} &= y_0 + h \cdot k_1 = 0 + 0.6 \cdot 2.25 = 1.35\\
+k_2 &= f(x_1, y_1^{Euler}) = (-0.9)^2 + 0.1 \cdot 1.35 = 0.81 + 0.135 = 0.945\\
+y_1 &= y_0 + h \cdot \frac{k_1 + k_2}{2}\\
+&= 0 + 0.6 \cdot \frac{2.25 + 0.945}{2}\\
+&= 0.6 \cdot 1.5975 = 0.9585
+\end{align*}
+
+Similar calculations are performed for each subsequent step.
+\end{example2}
+
+\subsection{Runge-Kutta Methods}
+
+\begin{definition}{Runge-Kutta Methods}\\
+Runge-Kutta methods are a family of iterative methods for approximating solutions to ODEs, with varying orders of accuracy. They evaluate the function $f(x,y)$ at several points within each step to build a more accurate approximation.
+\end{definition}
+
+\subsubsection{Fourth-Order Runge-Kutta Method}
+
+\begin{KR}{Classical Fourth-Order Runge-Kutta Method}\\
+The most commonly used Runge-Kutta method is the fourth-order method (RK4), which provides an excellent balance of accuracy and computational efficiency.
+
+\paragraph{Problem Statement}
+Given an IVP $y' = f(x,y)$ with $y(a) = y_0$ on interval $[a,b]$.
+
+\paragraph{Algorithm}
+\begin{enumerate}
+    \item Choose a step size $h = \frac{b-a}{n}$ for some integer $n > 0$
+    \item Set $x_0 = a$ and calculate $x_i = a + ih$ for $i = 1, 2, \ldots, n$
+    \item Set $y_0 = y(a)$
+    \item For $i = 0, 1, \ldots, n-1$:
+    \begin{align*}
+    k_1 &= f(x_i, y_i)\\
+    k_2 &= f\left(x_i + \frac{h}{2}, y_i + \frac{h}{2}k_1\right)\\
+    k_3 &= f\left(x_i + \frac{h}{2}, y_i + \frac{h}{2}k_2\right)\\
+    k_4 &= f(x_i + h, y_i + hk_3)\\
+    y_{i+1} &= y_i + h \cdot \frac{1}{6}(k_1 + 2k_2 + 2k_3 + k_4)
+    \end{align*}
+\end{enumerate}
+
+\paragraph{Error Analysis}
+The local truncation error is $O(h^5)$, and the global truncation error is $O(h^4)$, making RK4 significantly more accurate than lower-order methods for the same step size.
+
+\paragraph{Interpretation}
+RK4 combines four evaluations of the function $f$ at different points to create a weighted average slope. This approach effectively samples the behavior of the solution over the interval to achieve higher accuracy.
+\end{KR}
+
+\begin{example2}{Fourth-Order Runge-Kutta Method}\\
+Solve the IVP $y' = t^2 + 0.1y$ with $y(-1.5) = 0$ on $[-1.5, 1.5]$ using the RK4 method with $n = 5$ steps.
+
+Step size: $h = \frac{1.5-(-1.5)}{5} = 0.6$
+
+First step:
+\begin{align*}
+k_1 &= f(x_0, y_0) = (-1.5)^2 + 0.1 \cdot 0 = 2.25\\
+k_2 &= f\left(x_0 + \frac{h}{2}, y_0 + \frac{h}{2}k_1\right)\\
+&= f(-1.5 + 0.3, 0 + 0.3 \cdot 2.25)\\
+&= f(-1.2, 0.675)\\
+&= (-1.2)^2 + 0.1 \cdot 0.675 = 1.44 + 0.0675 = 1.5075\\
+k_3 &= f\left(x_0 + \frac{h}{2}, y_0 + \frac{h}{2}k_2\right)\\
+&= f(-1.2, 0 + 0.3 \cdot 1.5075)\\
+&= f(-1.2, 0.45225)\\
+&= 1.44 + 0.1 \cdot 0.45225 = 1.44 + 0.045225 = 1.485\\
+k_4 &= f(x_0 + h, y_0 + hk_3)\\
+&= f(-1.5 + 0.6, 0 + 0.6 \cdot 1.485)\\
+&= f(-0.9, 0.891)\\
+&= (-0.9)^2 + 0.1 \cdot 0.891 = 0.81 + 0.0891 = 0.8991\\
+y_1 &= y_0 + h \cdot \frac{1}{6}(k_1 + 2k_2 + 2k_3 + k_4)\\
+&= 0 + 0.6 \cdot \frac{1}{6}(2.25 + 2 \cdot 1.5075 + 2 \cdot 1.485 + 0.8991)\\
+&= 0.6 \cdot \frac{1}{6}(2.25 + 3.015 + 2.97 + 0.8991)\\
+&= 0.6 \cdot \frac{9.1341}{6} = 0.6 \cdot 1.5224 = 0.9134
+\end{align*}
+
+Similar calculations would be performed for each subsequent step.
+\end{example2}
+
+\subsubsection{General Runge-Kutta Methods}
+
+\begin{definition}{General Runge-Kutta Method}\\
+A general $s$-stage Runge-Kutta method for solving an ODE $y'=f(x,y)$ is defined by:
+\begin{align*}
+k_n &= f\left(x_i + c_n h, y_i + h \sum_{m=1}^{n-1} a_{nm} k_m \right), \text{ for } n = 1, 2, \ldots, s\\
+y_{i+1} &= y_i + h \sum_{n=1}^{s} b_n k_n
+\end{align*}
+
+where $s \in \mathbb{N}$ is the number of stages, and $a_{nm}$, $b_n$, and $c_n$ are constants. The choice of these constants determines the specific method and its order of accuracy.
+\end{definition}
+
+\begin{concept}{Butcher Tableau}\\
+The coefficients of a Runge-Kutta method are typically presented in a Butcher tableau:
+\begin{center}
+$\begin{array}{c|cccc}
+c_1 & & & & \\
+c_2 & a_{21} & & & \\
+c_3 & a_{31} & a_{32} & & \\
+\vdots & \vdots & \vdots & \ddots & \\
+c_s & a_{s1} & a_{s2} & \ldots & a_{s,s-1} \\
+\hline
+& b_1 & b_2 & \ldots & b_s
+\end{array}$
+\end{center}
+
+For example, the classical fourth-order Runge-Kutta method (RK4) has the Butcher tableau:
+\begin{center}
+$\begin{array}{c|cccc}
+0 & & & & \\
+1/2 & 1/2 & & & \\
+1/2 & 0 & 1/2 & & \\
+1 & 0 & 0 & 1 & \\
+\hline
+& 1/6 & 1/3 & 1/3 & 1/6
+\end{array}$
+\end{center}
+\end{concept}
+
+\subsection{Systems of Differential Equations}
+
+\subsubsection{Reduction of Higher-Order ODEs to First-Order Systems}
+
+\begin{KR}{Converting an $n^{th}$-order ODE to a System of First-Order ODEs}\\
+Any $n^{th}$-order ODE can be converted into a system of $n$ first-order ODEs, which can then be solved using numerical methods for first-order systems.
+
+\paragraph{Steps}
+\begin{enumerate}
+    \item Given an $n^{th}$-order ODE $y^{(n)} = f(x, y, y', y'', \ldots, y^{(n-1)})$
+    \item Solve for the highest-order derivative: $y^{(n)} = f(x, y, y', y'', \ldots, y^{(n-1)})$
+    \item Introduce new variables: 
+    \begin{align*}
+    z_1(x) &= y(x)\\
+    z_2(x) &= y'(x)\\
+    z_3(x) &= y''(x)\\
+    &\vdots\\
+    z_n(x) &= y^{(n-1)}(x)
+    \end{align*}
+    \item Derive a system of first-order ODEs:
+    \begin{align*}
+    z_1' &= z_2\\
+    z_2' &= z_3\\
+    &\vdots\\
+    z_{n-1}' &= z_n\\
+    z_n' &= f(x, z_1, z_2, \ldots, z_n)
+    \end{align*}
+    \item Express in vector form:
+    \begin{align*}
+    \mathbf{z}' = \mathbf{F}(x, \mathbf{z})
+    \end{align*}
+    where $\mathbf{z} = (z_1, z_2, \ldots, z_n)^T$
+    \item Apply numerical methods for first-order systems to solve this system
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Converting a Third-Order ODE to a System}\\
+Consider the third-order ODE:
+\begin{align*}
+y''' + 5y'' + 8y' + 6y = 10e^{-x}
+\end{align*}
+with initial conditions $y(0) = 2$, $y'(0) = y''(0) = 0$.
+
+Step 1: Solve for the highest-order derivative:
+\begin{align*}
+y''' = 10e^{-x} - 5y'' - 8y' - 6y
+\end{align*}
+
+Step 2: Introduce new variables:
+\begin{align*}
+z_1(x) &= y(x)\\
+z_2(x) &= y'(x)\\
+z_3(x) &= y''(x)
+\end{align*}
+
+Step 3: Derive the system of first-order ODEs:
+\begin{align*}
+z_1' &= z_2\\
+z_2' &= z_3\\
+z_3' &= 10e^{-x} - 5z_3 - 8z_2 - 6z_1
+\end{align*}
+
+Step 4: Initial conditions for the system:
+\begin{align*}
+\mathbf{z}(0) = \begin{pmatrix} 2 \\ 0 \\ 0 \end{pmatrix}
+\end{align*}
+
+This system can now be solved using numerical methods for first-order systems.
+\end{example2}
+
+\subsubsection{Solving Systems of First-Order ODEs}
+
+\begin{KR}{Numerical Methods for Systems of ODEs}\\
+The numerical methods previously discussed for scalar first-order ODEs can be extended to systems of first-order ODEs.
+
+\paragraph{Problem Statement}
+Consider a system of $n$ first-order ODEs:
+\begin{align*}
+\mathbf{y}'(x) = \mathbf{f}(x, \mathbf{y}(x))
+\end{align*}
+with initial condition $\mathbf{y}(x_0) = \mathbf{y}_0$, where $\mathbf{y}(x) \in \mathbb{R}^n$ and $\mathbf{f}: \mathbb{R} \times \mathbb{R}^n \rightarrow \mathbb{R}^n$.
+
+\paragraph{Applying Numerical Methods}
+For any numerical method defined for scalar ODEs:
+\begin{align*}
+y_{i+1} = y_i + h \cdot \text{Steigung}
+\end{align*}
+the extension to systems is:
+\begin{align*}
+\mathbf{y}_{i+1} = \mathbf{y}_i + h \cdot \mathbf{Steigung}
+\end{align*}
+where:
+\begin{align*}
+\mathbf{y}(x) &= \begin{pmatrix} y_1(x) \\ y_2(x) \\ \vdots \\ y_n(x) \end{pmatrix}, \quad
+\mathbf{y}' = \begin{pmatrix} y_1'(x) \\ y_2'(x) \\ \vdots \\ y_n'(x) \end{pmatrix}, \quad
+\mathbf{f}(x, \mathbf{y}(x)) = \begin{pmatrix} f_1(x, \mathbf{y}(x)) \\ f_2(x, \mathbf{y}(x)) \\ \vdots \\ f_n(x, \mathbf{y}(x)) \end{pmatrix}
+\end{align*}
+
+For example, Euler's method becomes:
+\begin{align*}
+\mathbf{y}_{i+1} = \mathbf{y}_i + h \cdot \mathbf{f}(x_i, \mathbf{y}_i)
+\end{align*}
+
+The fourth-order Runge-Kutta method becomes:
+\begin{align*}
+\mathbf{k}_1 &= \mathbf{f}(x_i, \mathbf{y}_i)\\
+\mathbf{k}_2 &= \mathbf{f}\left(x_i + \frac{h}{2}, \mathbf{y}_i + \frac{h}{2}\mathbf{k}_1\right)\\
+\mathbf{k}_3 &= \mathbf{f}\left(x_i + \frac{h}{2}, \mathbf{y}_i + \frac{h}{2}\mathbf{k}_2\right)\\
+\mathbf{k}_4 &= \mathbf{f}(x_i + h, \mathbf{y}_i + h\mathbf{k}_3)\\
+\mathbf{y}_{i+1} &= \mathbf{y}_i + h \cdot \frac{1}{6}(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4)
+\end{align*}
+\end{KR}
+
+\subsection{Stability of Numerical Methods}
+
+\begin{definition}{Stability}\\
+Stability refers to the behavior of a numerical method when applied to an ODE. A method is stable if small errors in the computation do not lead to unbounded growth in the numerical solution.
+
+For explicit methods, stability often depends on the step size $h$. A method is said to be conditionally stable if it is stable only for certain ranges of $h$.
+\end{definition}
+
+\begin{example2}{Stability Analysis}\\
+Consider the test equation $y' = -\alpha y$ with $\alpha > 0$ and initial condition $y(0) = 1$. The exact solution is $y(x) = e^{-\alpha x}$, which decays to zero as $x$ increases.
+
+Applying Euler's method:
+\begin{align*}
+y_{i+1} &= y_i + h \cdot f(x_i, y_i)\\
+&= y_i - h\alpha y_i\\
+&= (1 - h\alpha)y_i
+\end{align*}
+
+Iterating recursively:
+\begin{align*}
+y_{i+1} = (1 - h\alpha)^{i+1}y_0 = (1 - h\alpha)^{i+1}
+\end{align*}
+
+For the numerical solution to decay (as the exact solution does), we need $|1 - h\alpha| < 1$, which leads to the condition $0 < h\alpha < 2$.
+
+Thus, for stability with Euler's method, the step size must satisfy $h < \frac{2}{\alpha}$.
+\end{example2}
+
+\begin{definition}{Stability Function and Stability Interval}\\
+When applying a numerical method to the test equation $y' = -\alpha y$, if the numerical solution can be written in the form:
+\begin{align*}
+y_{i+1} = g(h\alpha) \cdot y_i
+\end{align*}
+then $g(z)$ is called the stability function of the method (with $z = h\alpha$).
+
+The open interval $z \in (0, \alpha)$ for which $|g(z)| < 1$ is called the stability interval of the method.
+\end{definition}
+
+\subsection{Advanced Topics}
+
+\subsubsection{Single-Step vs. Multi-Step Methods}
+
+\begin{concept}{Single-Step vs. Multi-Step Methods}\\
+Single-step methods (like Euler and Runge-Kutta) calculate $y_{i+1}$ using only information from the previous point $(x_i, y_i)$.
+
+Multi-step methods use information from several previous points $(x_{i-k}, y_{i-k}), \ldots, (x_i, y_i)$ to calculate $y_{i+1}$. Examples include Adams-Bashforth methods, like:
+\begin{align*}
+y_{i+1} = y_i + \frac{h}{12}(23f(x_i, y_i) - 16f(x_{i-1}, y_{i-1}) + 5f(x_{i-2}, y_{i-2}))
+\end{align*}
+
+Multi-step methods can be more efficient but require special starting procedures since multiple previous points are needed.
+\end{concept}
+
+\subsubsection{Implicit vs. Explicit Methods}
+
+\begin{concept}{Implicit vs. Explicit Methods}\\
+Explicit methods express $y_{i+1}$ directly in terms of previously computed values. All methods discussed so far have been explicit.
+
+Implicit methods involve $y_{i+1}$ on both sides of the equation, requiring the solution of an (often nonlinear) equation at each step. The implicit Euler method has the form:
+\begin{align*}
+y_{i+1} = y_i + h \cdot f(x_{i+1}, y_{i+1})
+\end{align*}
+
+While more computationally intensive, implicit methods often have better stability properties and can handle "stiff" ODEs more effectively.
+\end{concept}
+
+\subsubsection{Stiff ODEs and Adaptive Step Size}
+
+\begin{concept}{Stiff ODEs}\\
+A stiff ODE exhibits behavior at widely varying time scales, making numerical solution challenging. For stiff equations, explicit methods require extremely small step sizes to maintain stability, making them impractical.
+
+Implicit methods are generally preferred for stiff problems because of their superior stability properties.
+\end{concept}
+
+\begin{concept}{Adaptive Step Size Control}\\
+Instead of using a fixed step size $h$, adaptive methods adjust the step size based on local error estimates:
+\begin{itemize}
+    \item Smaller steps are used in regions where the solution changes rapidly
+    \item Larger steps are used in regions where the solution changes slowly
+\end{itemize}
+
+This approach improves efficiency while maintaining accuracy.
+\end{concept}
+
+\subsection{Python Implementation}
+
+\begin{concept}{SciPy's ODE Solvers}\\
+Python's SciPy library provides several functions for solving ODEs, including:
+\begin{itemize}
+    \item \texttt{scipy.integrate.solve\_ivp()}: A comprehensive function that supports various methods including RK45, Radau, BDF, and LSODA
+    \item Methods are specified as parameters, along with options for error control and step size adaptation
+\end{itemize}
+
+SciPy can handle both single equations and systems of equations, with support for events and dense output options.
+\end{concept}
