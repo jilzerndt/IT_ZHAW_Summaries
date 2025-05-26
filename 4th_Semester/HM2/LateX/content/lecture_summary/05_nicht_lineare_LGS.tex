@@ -1,3 +1,279 @@
+\section{Numerische Lösung nicht linearer Gleichungssysteme}
+
+\subsection{Funktionen mit mehreren Variablen}
+
+\begin{definition}{Skalarwertige Funktionen mit mehreren Variablen}\\
+Unter einer Funktion mit $n$ unabhängigen Variablen $x_1, ..., x_n$ und einer abhängigen Variablen $y$ versteht man eine Vorschrift, die jedem geordneten Zahlentupel $(x_1, x_2, ..., x_n)$ aus einer Definitionsmenge $D \subset \mathbb{R}^n$ genau ein Element $y$ aus einer Wertemenge $W \subset \mathbb{R}$ zuordnet.
+
+Symbolische Schreibweise:
+$$f: D \subset \mathbb{R}^n \rightarrow W \subset \mathbb{R}$$
+$$(x_1, x_2, ..., x_n) \mapsto y = f(x_1, x_2, ..., x_n)$$
+
+Da das Ergebnis $y \in \mathbb{R}$ ein Skalar ist, spricht man von einer skalarwertigen Funktion.
+\end{definition}
+
+\begin{concept}{Vektorwertige Funktionen}\\
+Für vektorwertige Funktionen $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ gilt:
+$$f(x_1, ..., x_n) = \begin{psmallmatrix}
+y_1 = f_1(x_1, x_2, ..., x_n) \\
+y_2 = f_2(x_1, x_2, ..., x_n) \\
+\vdots \\
+y_m = f_m(x_1, x_2, ..., x_n)
+\end{psmallmatrix}$$
+
+wobei die $m$ Komponenten $f_i: \mathbb{R}^n \rightarrow \mathbb{R}$ wieder skalarwertige Funktionen sind.
+\end{concept}
+
+\begin{example2}{Beispiele für Funktionen mehrerer Variablen}\\
+\textbf{Aufgabe:} Gegeben seien verschiedene Funktionen. Bestimmen Sie deren Typ.
+\tcblower
+\textbf{Lösung:}
+\begin{enumerate}
+    \item Addition: $f(x,y) = x + y$ (skalarwertig, $\mathbb{R}^2 \rightarrow \mathbb{R}$)
+    \item Ohmsches Gesetz: $U(R,I) = R \cdot I$ (skalarwertig)
+    \item Wurfweite: $W(v_0, \alpha) = \frac{v_0^2 \sin(2\alpha)}{g}$ (skalarwertig)
+    \item Vektorwertige Funktion: $f(x_1, x_2, x_3) = \begin{psmallmatrix} x_1^2 + x_2^2 \\ x_1^2 + x_3^2 \\ x_2^2 + x_3^2 \\ x_1^2 + x_2^2 + x_3^2 \end{psmallmatrix}$
+\end{enumerate}
+\end{example2}
+
+\subsection{Partielle Ableitungen}
+
+\begin{definition}{Partielle Ableitungen 1. Ordnung}\\
+Unter den partiellen Ableitungen 1. Ordnung einer Funktion $z = f(x,y)$ an der Stelle $(x,y)$ werden die folgenden Grenzwerte verstanden:
+
+\textbf{Partielle Ableitung nach x:}
+$$\frac{\partial f}{\partial x}(x,y) = \lim_{\Delta x \rightarrow 0} \frac{f(x + \Delta x, y) - f(x,y)}{\Delta x}$$
+
+\textbf{Partielle Ableitung nach y:}
+$$\frac{\partial f}{\partial y}(x,y) = \lim_{\Delta y \rightarrow 0} \frac{f(x, y + \Delta y) - f(x,y)}{\Delta y}$$
+
+Alternative Notationen: $f_x(x,y)$, $f_y(x,y)$ oder $f_x$, $f_y$
+\end{definition}
+
+\begin{KR}{Partielle Ableitungen berechnen}\\
+\paragraph{Schritt 1: Variable identifizieren}
+Bestimme, nach welcher Variable abgeleitet werden soll.
+
+\paragraph{Schritt 2: Andere Variablen als Konstanten behandeln}
+Alle anderen Variablen werden während der Ableitung als Konstanten betrachtet.
+
+\paragraph{Schritt 3: Standardableitungsregeln anwenden}
+Verwende die bekannten Ableitungsregeln für Funktionen einer Variablen.
+
+\paragraph{Schritt 4: Ergebnis notieren}
+Schreibe das Ergebnis mit der korrekten Notation auf.
+\end{KR}
+
+\begin{example2}{Partielle Ableitungen berechnen}\\
+\textbf{Aufgabe:} Berechnen Sie die partiellen Ableitungen von $z = f(x,y) = 3xy^2 + \ln(x^3 y^2)$ an der Stelle $(x_0, y_0) = (-1, 1)$.
+\tcblower
+\textbf{Lösung:}
+$$f_x = 3 \cdot 1 \cdot y^2 + \frac{1}{x^3 y^2} \cdot 3x^2 \cdot y^2 = 3y^2 + \frac{3}{x}$$
+$$f_y = 3x \cdot 2y + \frac{1}{x^3 y^2} \cdot x^3 \cdot 2y = 6xy + \frac{2}{y}$$
+
+An der Stelle $(-1, 1)$:
+$$f_x(-1, 1) = 3 \cdot 1^2 + \frac{3}{-1} = 3 - 3 = 0$$
+$$f_y(-1, 1) = 6 \cdot (-1) \cdot 1 + \frac{2}{1} = -6 + 2 = -4$$
+\end{example2}
+
+\subsection{Jacobi-Matrix und Linearisierung}
+
+\begin{definition}{Jacobi-Matrix}\\
+Sei $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ mit $y = f(x)$ und $x = (x_1, x_2, ..., x_n)^T \in \mathbb{R}^n$. Die Jacobi-Matrix enthält sämtliche partiellen Ableitungen 1. Ordnung von $f$ und ist definiert als:
+
+$$Df(x) := \begin{bsmallmatrix}
+\frac{\partial f_1}{\partial x_1}(x) & \frac{\partial f_1}{\partial x_2}(x) & \cdots & \frac{\partial f_1}{\partial x_n}(x) \\
+\frac{\partial f_2}{\partial x_1}(x) & \frac{\partial f_2}{\partial x_2}(x) & \cdots & \frac{\partial f_2}{\partial x_n}(x) \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial f_m}{\partial x_1}(x) & \frac{\partial f_m}{\partial x_2}(x) & \cdots & \frac{\partial f_m}{\partial x_n}(x)
+\end{bsmallmatrix}$$
+\end{definition}
+
+\begin{concept}{Linearisierung}\\
+Die verallgemeinerte Tangentengleichung
+$$g(x) = f(x^{(0)}) + Df(x^{(0)}) \cdot (x - x^{(0)})$$
+beschreibt eine lineare Funktion und es gilt $f(x) \approx g(x)$ in einer Umgebung eines gegebenen Vektors $x^{(0)}$. Man spricht von der \textbf{Linearisierung} der Funktion $y = f(x)$ in einer Umgebung von $x^{(0)}$.
+\end{concept}
+
+\begin{KR}{Jacobi-Matrix berechnen und linearisieren}
+\paragraph{Schritt 1: Komponentenfunktionen identifizieren}
+Bestimme alle Komponentenfunktionen $f_1, f_2, ..., f_m$ und Variablen $x_1, x_2, ..., x_n$.
+
+\paragraph{Schritt 2: Partielle Ableitungen berechnen}
+Berechne alle partiellen Ableitungen $\frac{\partial f_i}{\partial x_j}$ für $i = 1, ..., m$ und $j = 1, ..., n$.
+
+\paragraph{Schritt 3: Jacobi-Matrix aufstellen}
+Ordne die partiellen Ableitungen in Matrixform an.
+
+\paragraph{Schritt 4: An Entwicklungspunkt auswerten}
+Setze den Entwicklungspunkt $x^{(0)}$ in die Jacobi-Matrix ein.
+
+\paragraph{Schritt 5: Linearisierung berechnen}
+Verwende die Formel $g(x) = f(x^{(0)}) + Df(x^{(0)}) \cdot (x - x^{(0)})$.
+\end{KR}
+
+\begin{example2}{Jacobi-Matrix und Linearisierung}\\
+\textbf{Aufgabe:} Berechnen Sie die Jacobi-Matrix von $f(x_1, x_2) = \begin{psmallmatrix} 5x_1 x_2 \\ x_1^2 x_2^2 + x_1 + 2x_2 \end{psmallmatrix}$ an der Stelle $\begin{psmallmatrix} x_1 \\ x_2 \end{psmallmatrix} = \begin{psmallmatrix} 1 \\ 2 \end{psmallmatrix}$ und linearisieren Sie die Funktion dort.
+\tcblower
+\textbf{Lösung:}
+
+\textbf{Schritt 1:} Partielle Ableitungen berechnen
+$$\frac{\partial f_1}{\partial x_1} = 5x_2, \quad \frac{\partial f_1}{\partial x_2} = 5x_1$$
+$$\frac{\partial f_2}{\partial x_1} = 2x_1 x_2^2 + 1, \quad \frac{\partial f_2}{\partial x_2} = 2x_1^2 x_2 + 2$$
+
+\textbf{Schritt 2:} Jacobi-Matrix aufstellen
+$$Df(x_1, x_2) = \begin{bsmallmatrix} 5x_2 & 5x_1 \\ 2x_1 x_2^2 + 1 & 2x_1^2 x_2 + 2 \end{bsmallmatrix}$$
+
+\textbf{Schritt 3:} An der Stelle $(1, 2)$ auswerten
+$$Df(1, 2) = \begin{bsmallmatrix} 10 & 5 \\ 9 & 6 \end{bsmallmatrix}$$
+
+\textbf{Schritt 4:} Funktionswert berechnen
+$$f(1, 2) = \begin{psmallmatrix} 10 \\ 9 \end{psmallmatrix}$$
+
+\textbf{Schritt 5:} Linearisierung
+$$g(x) = \begin{psmallmatrix} 10 \\ 9 \end{psmallmatrix} + \begin{bsmallmatrix} 10 & 5 \\ 9 & 6 \end{bsmallmatrix} \begin{psmallmatrix} x_1 - 1 \\ x_2 - 2 \end{psmallmatrix}$$
+\end{example2}
+
+\subsection{Newton-Verfahren für Systeme}
+
+\begin{definition}{Problemstellung zur Nullstellenbestimmung}\\
+Gegeben sei $n \in \mathbb{N}$ und eine Funktion $f: \mathbb{R}^n \rightarrow \mathbb{R}^n$. Gesucht ist ein Vektor $\bar{x} \in \mathbb{R}^n$ mit $f(\bar{x}) = 0$.
+
+Komponentenweise bedeutet dies: Gegeben sind $n$ Funktionen $f_i: \mathbb{R}^n \rightarrow \mathbb{R}$, die die Komponenten von $f$ bilden. Gesucht ist ein Vektor $\bar{x} \in \mathbb{R}^n$ mit $f_i(\bar{x}) = 0$ für $i = 1, ..., n$.
+\end{definition}
+
+\begin{theorem}{Newton-Verfahren für Systeme}\\
+Gesucht sind Nullstellen von $f: \mathbb{R}^n \rightarrow \mathbb{R}^n$. Sei $x^{(0)}$ ein Startvektor in der Nähe einer Nullstelle. Das Newton-Verfahren zur näherungsweisen Bestimmung dieser Nullstelle lautet:
+
+Für $n = 0, 1, ...$:
+\begin{enumerate}
+    \item Berechne $\delta^{(n)}$ als Lösung des linearen Gleichungssystems
+    $$Df(x^{(n)}) \delta^{(n)} = -f(x^{(n)})$$
+    \item Setze $x^{(n+1)} := x^{(n)} + \delta^{(n)}$
+\end{enumerate}
+\end{theorem}
+
+\begin{KR}{Newton-Verfahren für nichtlineare Gleichungssysteme}
+\paragraph{Schritt 1: Funktionen und Jacobi-Matrix aufstellen}
+Definiere $f(x) = 0$ und berechne die Jacobi-Matrix $Df(x)$.
+
+\paragraph{Schritt 2: Startvektor wählen}
+Wähle einen geeigneten Startvektor $x^{(0)}$ nahe der vermuteten Lösung.
+
+\paragraph{Schritt 3: Iterative Berechnung}
+Für jede Iteration $k$:
+\begin{itemize}
+    \item Berechne $f(x^{(k)})$ und $Df(x^{(k)})$
+    \item Löse das LGS: $Df(x^{(k)}) \delta^{(k)} = -f(x^{(k)})$
+    \item Setze $x^{(k+1)} = x^{(k)} + \delta^{(k)}$
+\end{itemize}
+
+\paragraph{Schritt 4: Konvergenzprüfung}
+Prüfe Abbruchkriterien wie $\|f(x^{(k+1)})\|_2 < \text{TOL}$ oder $\|x^{(k+1)} - x^{(k)}\|_2 < \text{TOL}$.
+
+\paragraph{Schritt 5: Lösung interpretieren}
+Die konvergierte Lösung $x^{(k)}$ ist eine Näherung für die Nullstelle.
+\end{KR}
+
+\begin{example2}{Newton-Verfahren anwenden}\\
+\textbf{Aufgabe:} Lösen Sie das Gleichungssystem 
+$$f(x_1, x_2) = \begin{psmallmatrix} 20 - 18x_1 - 2x_2^2 \\ -4x_2(x_1 - x_2^2) \end{psmallmatrix} = \begin{psmallmatrix} 0 \\ 0 \end{psmallmatrix}$$
+mit dem Newton-Verfahren für den Startvektor $x^{(0)} = (1.1, 0.9)^T$.
+\tcblower
+\textbf{Lösung:}
+
+\textbf{Schritt 1:} Jacobi-Matrix berechnen
+$$Df(x_1, x_2) = \begin{bsmallmatrix} -18 & -4x_2 \\ -4x_2 & -4(x_1 - 3x_2^2) \end{bsmallmatrix}$$
+
+\textbf{Schritt 2:} Erste Iteration ($k = 0$)
+$$f(1.1, 0.9) = \begin{psmallmatrix} -1.42 \\ -0.036 \end{psmallmatrix}$$
+$$Df(1.1, 0.9) = \begin{bsmallmatrix} -18 & -3.6 \\ -3.6 & -5.32 \end{bsmallmatrix}$$
+
+LGS lösen: $\begin{bsmallmatrix} -18 & -3.6 \\ -3.6 & -5.32 \end{bsmallmatrix} \delta^{(0)} = \begin{psmallmatrix} 1.42 \\ 0.036 \end{psmallmatrix}$
+
+$\Rightarrow \delta^{(0)} = \begin{psmallmatrix} -0.0822 \\ 0.0178 \end{psmallmatrix}$
+
+$x^{(1)} = \begin{psmallmatrix} 1.1 \\ 0.9 \end{psmallmatrix} + \begin{psmallmatrix} -0.0822 \\ 0.0178 \end{psmallmatrix} = \begin{psmallmatrix} 1.0178 \\ 0.9178 \end{psmallmatrix}$
+
+Weitere Iterationen führen zur Konvergenz.
+\end{example2}
+
+\subsection{Gedämpftes Newton-Verfahren}
+
+\begin{concept}{Dämpfung für bessere Konvergenz}\\
+Falls die Jacobi-Matrix $Df(x^{(n)})$ schlecht konditioniert ist, kann das Standard Newton-Verfahren divergieren. Das gedämpfte Newton-Verfahren verwendet eine variable Schrittweite:
+
+$$x^{(n+1)} = x^{(n)} + \frac{\delta^{(n)}}{2^p}$$
+
+wobei $p$ das kleinste Element aus $\{0, 1, ..., p_{\max}\}$ ist, für das gilt:
+$$\|f(x^{(n)} + \frac{\delta^{(n)}}{2^p})\|_2 < \|f(x^{(n)})\|_2$$
+\end{concept}
+
+\begin{KR}{Gedämpftes Newton-Verfahren}\\
+\paragraph{Schritt 1-3: Wie beim Standard Newton-Verfahren}
+Berechne $\delta^{(k)}$ durch Lösen von $Df(x^{(k)}) \delta^{(k)} = -f(x^{(k)})$.
+
+\paragraph{Schritt 4: Dämpfungsparameter bestimmen}
+Finde das kleinste $p \in \{0, 1, ..., p_{\max}\}$ mit:
+$$\|f(x^{(k)} + \frac{\delta^{(k)}}{2^p})\|_2 < \|f(x^{(k)})\|_2$$
+
+\paragraph{Schritt 5: Gedämpften Schritt ausführen}
+Setze $x^{(k+1)} = x^{(k)} + \frac{\delta^{(k)}}{2^p}$.
+
+\paragraph{Schritt 6: Bei Nicht-Konvergenz}
+Falls kein geeignetes $p$ gefunden wird, setze $p = 0$ und fahre fort.
+\end{KR}
+
+\begin{example2}{Anwendung des gedämpften Newton-Verfahrens}\\
+\textbf{Aufgabe:} Lösen Sie das System aus dem vorigen Beispiel mit gedämpftem Newton-Verfahren und einem "schlechteren" Startvektor $x^{(0)} = (2, 2)^T$.
+\tcblower
+\textbf{Lösung:}
+Das gedämpfte Newton-Verfahren konvergiert auch für diesen weiter entfernten Startvektor, während das ungedämpfte Verfahren divergieren würde. Die Dämpfung sorgt dafür, dass in jeder Iteration das Fehlerfunktional $\|f(x)\|_2$ abnimmt, wodurch die Stabilität erhöht wird.
+\end{example2}
+
+\begin{remark}
+Das gedämpfte Newton-Verfahren ist besonders nützlich bei:
+\begin{itemize}
+    \item Schlecht konditionierten Problemen
+    \item Startvektoren, die weit von der Lösung entfernt sind  
+    \item Systemen mit mehreren Lösungen
+    \item Praktischen Anwendungen, wo Robustheit wichtiger als Geschwindigkeit ist
+\end{itemize}
+\end{remark}
+
+\subsection{Anwendungsbeispiele}
+
+\begin{example2}{LORAN-Navigationssystem}\\
+\textbf{Aufgabe:} Bestimmen Sie die Position eines Empfängers aus den hyperbelförmigen Ortskurven:
+$$f_1(x,y) = \frac{x^2}{186^2} - \frac{y^2}{300^2 - 186^2} - 1 = 0$$
+$$f_2(x,y) = \frac{(y-500)^2}{279^2} - \frac{(x-300)^2}{500^2 - 279^2} - 1 = 0$$
+\tcblower
+\textbf{Lösung:}
+\begin{enumerate}
+    \item \textbf{Grafische Analyse:} Plotte beide Hyperbeln und bestimme visuell die vier Schnittpunkte
+    \item \textbf{Numerische Lösung:} Verwende die geschätzten Positionen als Startvektoren für das Newton-Verfahren
+    \item \textbf{Iteration:} Führe Newton-Verfahren mit Genauigkeit $\|f(x^{(k)})\|_2 < 10^{-5}$ durch
+\end{enumerate}
+
+Die vier Lösungen entsprechen den möglichen Positionen des Empfängers, wobei durch zusätzliche Information (z.B. dritter Sender) die eindeutige Position bestimmt werden kann.
+\end{example2}
+
+\begin{example2}{Dreidimensionales nichtlineares System}\\
+\textbf{Aufgabe:} Lösen Sie das System:
+$$f(x_1, x_2, x_3) = \begin{psmallmatrix}
+x_1 + x_2^2 - x_3^2 - 13 \\
+\ln\frac{x_2}{4} + e^{0.5x_3-1} - 1 \\
+(x_2 - 3)^2 - x_3^3 + 7
+\end{psmallmatrix} = \begin{psmallmatrix} 0 \\ 0 \\ 0 \end{psmallmatrix}$$
+
+mit Startvektor $x^{(0)} = (1.5, 3, 2.5)^T$.
+\tcblower
+\textbf{Lösung:}
+Dieses System erfordert das gedämpfte Newton-Verfahren aufgrund der komplexen nichtlinearen Terme. Die Jacobi-Matrix enthält sowohl polynomiale als auch transzendente Funktionen, was eine sorgfältige numerische Behandlung erfordert.
+\end{example2}
+
+\section{Persönliche Notizen}
+
 \section{Numerische Lösung nichtlinearer Gleichungssysteme}
 
 \begin{remark}
@@ -379,6 +655,8 @@ $$
 
 \raggedcolumns
 
+\section{Claude try 1}
+
 \section{Numerical Solution of Nonlinear Equation Systems}
 
 \subsection{Introduction and Motivation}
@@ -593,4 +871,6 @@ When the Jacobian matrix is nearly singular, the standard Newton step may cause 
     \item Damped Newton's method generally converges more reliably than the standard method
 \end{itemize}
 \end{KR}
+
+
 

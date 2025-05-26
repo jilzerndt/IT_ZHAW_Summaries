@@ -2,6 +2,355 @@
 
 \subsection{Interpolation}
 
+\begin{definition}{Interpolationsproblem}\\
+Gegeben sind $n+1$ Wertepaare $(x_i, y_i)$, $i = 0, ..., n$, mit $x_i \neq x_j$ für $i \neq j$. Gesucht ist eine stetige Funktion $g$ mit der Eigenschaft $g(x_i) = y_i$ für alle $i = 0, ..., n$.
+
+Die $n+1$ Wertepaare $(x_i, y_i)$ heißen \textbf{Stützpunkte}, die $x_i$ \textbf{Stützstellen} und die $y_i$ \textbf{Stützwerte}.
+\end{definition}
+
+\begin{concept}{Interpolation vs. Ausgleichsrechnung}\\
+\begin{itemize}
+    \item \textbf{Interpolation:} Die gesuchte Funktion geht \emph{exakt} durch alle Datenpunkte
+    \item \textbf{Ausgleichsrechnung:} Die gesuchte Funktion \emph{approximiert} die Datenpunkte möglichst gut
+    \item Interpolation ist ein Spezialfall der Ausgleichsrechnung ($m = n$, Fehlerfunktional $E(f) = 0$)
+\end{itemize}
+\end{concept}
+
+\subsubsection{Polynominterpolation}
+
+\begin{theorem}{Lagrange Interpolationsformel}\\
+Durch $n+1$ Stützpunkte mit verschiedenen Stützstellen gibt es genau ein Polynom $P_n(x)$ vom Grade $\leq n$, welches alle Stützpunkte interpoliert.
+
+$P_n(x)$ lautet in der Lagrangeform:
+$$P_n(x) = \sum_{i=0}^{n} l_i(x) y_i$$
+
+dabei sind die $l_i(x)$ die Lagrangepolynome vom Grad $n$ definiert durch:
+$$l_i(x) = \prod_{\substack{j=0 \\ j \neq i}}^{n} \frac{x - x_j}{x_i - x_j}$$
+\end{theorem}
+
+\begin{KR}{Lagrange-Interpolation durchführen}\\
+\paragraph{Schritt 1: Stützpunkte identifizieren}
+Gegeben: $(x_0, y_0), (x_1, y_1), ..., (x_n, y_n)$ und gesuchter Punkt $x$.
+
+\paragraph{Schritt 2: Lagrangepolynome berechnen}
+Für jeden Index $i = 0, 1, ..., n$ berechne:
+$$l_i(x) = \frac{(x-x_0)(x-x_1)\cdots(x-x_{i-1})(x-x_{i+1})\cdots(x-x_n)}{(x_i-x_0)(x_i-x_1)\cdots(x_i-x_{i-1})(x_i-x_{i+1})\cdots(x_i-x_n)}$$
+
+\paragraph{Schritt 3: Interpolationspolynom aufstellen}
+$$P_n(x) = y_0 \cdot l_0(x) + y_1 \cdot l_1(x) + \cdots + y_n \cdot l_n(x)$$
+
+\paragraph{Schritt 4: Funktionswert berechnen}
+Setze den gewünschten $x$-Wert ein: $P_n(x) = $ gesuchter Interpolationswert.
+\end{KR}
+
+\begin{example2}{Lagrange-Interpolation anwenden}\\
+\textbf{Aufgabe:} Bestimmen Sie den Atmosphärendruck in 3750m Höhe mittels Lagrange-Interpolation:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Höhe [m] & 0 & 2500 & 5000 & 10000 \\
+\hline
+Druck [hPa] & 1013 & 747 & 540 & 226 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+\textbf{Lösung:}
+Verwende die Stützpunkte $(0, 1013)$, $(2500, 747)$, $(5000, 540)$ für $x = 3750$.
+
+\textbf{Schritt 1:} Lagrangepolynome berechnen
+$$l_0(3750) = \frac{(3750-2500)(3750-5000)}{(0-2500)(0-5000)} = \frac{1250 \cdot (-1250)}{(-2500) \cdot (-5000)} = -0.125$$
+
+$$l_1(3750) = \frac{(3750-0)(3750-5000)}{(2500-0)(2500-5000)} = \frac{3750 \cdot (-1250)}{2500 \cdot (-2500)} = 0.75$$
+
+$$l_2(3750) = \frac{(3750-0)(3750-2500)}{(5000-0)(5000-2500)} = \frac{3750 \cdot 1250}{5000 \cdot 2500} = 0.375$$
+
+\textbf{Schritt 2:} Interpolationswert berechnen
+$$P(3750) = 1013 \cdot (-0.125) + 747 \cdot 0.75 + 540 \cdot 0.375 = 636.0 \text{ hPa}$$
+\end{example2}
+
+\subsubsection{Splineinterpolation}
+
+\begin{concept}{Probleme der Polynominterpolation}\\
+Polynome mit hohem Grad oszillieren stark, besonders an den Rändern des Interpolationsintervalls. Für viele Stützpunkte ist Polynominterpolation daher ungeeignet.
+
+\textbf{Lösung:} Spline-Interpolation verwendet stückweise kubische Polynome mit glatten Übergängen.
+\end{concept}
+
+\begin{definition}{Natürliche kubische Splinefunktion}\\
+Eine natürliche kubische Splinefunktion $S(x)$ ist in jedem Intervall $[x_i, x_{i+1}]$ durch ein kubisches Polynom dargestellt:
+$$S_i(x) = a_i + b_i(x - x_i) + c_i(x - x_i)^2 + d_i(x - x_i)^3$$
+
+mit den Randbedingungen $S''_0(x_0) = 0$ und $S''_{n-1}(x_n) = 0$.
+\end{definition}
+
+\begin{KR}{Natürliche kubische Splinefunktion berechnen}\\
+\paragraph{Schritt 1: Parameter initialisieren}
+$a_i = y_i$ und $h_i = x_{i+1} - x_i$
+
+\paragraph{Schritt 2: Randbedingungen setzen}
+$c_0 = 0$, $c_n = 0$
+
+\paragraph{Schritt 3: Gleichungssystem für $c_i$ lösen}
+Für $i = 1, ..., n-1$:
+$$h_{i-1} c_{i-1} + 2(h_{i-1} + h_i) c_i + h_i c_{i+1} = 3\left(\frac{y_{i+1} - y_i}{h_i} - \frac{y_i - y_{i-1}}{h_{i-1}}\right)$$
+
+\paragraph{Schritt 4: Restliche Koeffizienten berechnen}
+$$b_i = \frac{y_{i+1} - y_i}{h_i} - \frac{h_i}{3}(c_{i+1} + 2c_i)$$
+$$d_i = \frac{1}{3h_i}(c_{i+1} - c_i)$$
+\end{KR}
+
+\begin{example2}{Kubische Splinefunktion berechnen}\\
+\textbf{Aufgabe:} Bestimmen Sie die natürliche kubische Splinefunktion für die Stützpunkte:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & 4 & 6 & 8 & 10 \\
+\hline
+$y_i$ & 6 & 3 & 9 & 0 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+\textbf{Lösung:}
+
+\textbf{Schritt 1:} $a_0 = 6, a_1 = 3, a_2 = 9$
+$h_0 = h_1 = h_2 = 2$
+
+\textbf{Schritt 2:} $c_0 = 0, c_3 = 0$
+
+\textbf{Schritt 3:} Gleichungssystem für $c_1, c_2$:
+$$2 \cdot 8 \cdot c_1 + 2 \cdot c_2 = 3(3 - (-1.5)) = 13.5$$
+$$2 \cdot c_1 + 2 \cdot 8 \cdot c_2 = 3((-4.5) - 3) = -22.5$$
+
+Lösung: $c_1 = 1.2, c_2 = -1.8$
+
+\textbf{Schritt 4:} Restliche Koeffizienten:
+$b_0 = -2.8, b_1 = 2.2, b_2 = -7.2$
+$d_0 = 0.6, d_1 = -1.5, d_2 = 0.9$
+
+Die Splinefunktionen sind:
+$S_0(x) = 6 - 2.8(x-4) + 0.6(x-4)^3$
+$S_1(x) = 3 + 2.2(x-6) + 1.2(x-6)^2 - 1.5(x-6)^3$
+$S_2(x) = 9 - 7.2(x-8) - 1.8(x-8)^2 + 0.9(x-8)^3$
+\end{example2}
+
+\subsection{Ausgleichsrechnung}
+
+\begin{definition}{Ausgleichsproblem}\\
+Gegeben sind $n$ Wertepaare $(x_i, y_i)$, $i = 1, ..., n$ mit $x_i \neq x_j$ für $i \neq j$.
+
+Gesucht ist eine stetige Funktion $f: \mathbb{R} \rightarrow \mathbb{R}$, die die Wertepaare in einem gewissen Sinn bestmöglich annähert, d.h. dass möglichst genau gilt:
+$$f(x_i) \approx y_i \quad \text{für alle } i = 1, ..., n$$
+\end{definition}
+
+\begin{concept}{Fehlerfunktional und kleinste Fehlerquadrate}\\
+Eine Ausgleichsfunktion $f$ minimiert das \textbf{Fehlerfunktional}:
+$$E(f) := \|y - f(x)\|_2^2 = \sum_{i=1}^{n} (y_i - f(x_i))^2$$
+
+Man nennt das so gefundene $f$ optimal im Sinne der \textbf{kleinsten Fehlerquadrate} (least squares fit).
+\end{concept}
+
+\subsubsection{Lineare Ausgleichsprobleme}
+
+\begin{definition}{Lineares Ausgleichsproblem}\\
+Gegeben seien $n$ Wertepaare $(x_i, y_i)$ und $m$ Basisfunktionen $f_1, ..., f_m$. Die Ansatzfunktion hat die Form:
+$$f(x) = \lambda_1 f_1(x) + \lambda_2 f_2(x) + \cdots + \lambda_m f_m(x)$$
+
+Das Fehlerfunktional lautet:
+$$E(f) = \|y - A\lambda\|_2^2$$
+
+wobei $A$ die $n \times m$ Matrix ist:
+$$A = \begin{bsmallmatrix}
+f_1(x_1) & f_2(x_1) & \cdots & f_m(x_1) \\
+f_1(x_2) & f_2(x_2) & \cdots & f_m(x_2) \\
+\vdots & \vdots & \ddots & \vdots \\
+f_1(x_n) & f_2(x_n) & \cdots & f_m(x_n)
+\end{bsmallmatrix}$$
+\end{definition}
+
+\begin{theorem}{Normalgleichungen}\\
+Die Lösung des linearen Ausgleichsproblems ergibt sich aus dem \textbf{Normalgleichungssystem}:
+$$A^T A \lambda = A^T y$$
+
+Für bessere numerische Stabilität sollte die QR-Zerlegung $A = QR$ verwendet werden:
+$$R\lambda = Q^T y$$
+\end{theorem}
+
+\begin{KR}{Lineare Ausgleichsrechnung durchführen}\\
+\paragraph{Schritt 1: Ansatzfunktion festlegen}
+Bestimme die Basisfunktionen $f_1(x), f_2(x), ..., f_m(x)$.
+
+\paragraph{Schritt 2: Matrix $A$ aufstellen}
+Berechne $A_{ij} = f_j(x_i)$ für alle $i = 1, ..., n$ und $j = 1, ..., m$.
+
+\paragraph{Schritt 3: Normalgleichungssystem aufstellen}
+Berechne $A^T A$ und $A^T y$.
+
+\paragraph{Schritt 4: LGS lösen}
+Löse $A^T A \lambda = A^T y$ (bevorzugt mit QR-Zerlegung).
+
+\paragraph{Schritt 5: Ausgleichsfunktion angeben}
+$f(x) = \lambda_1 f_1(x) + \lambda_2 f_2(x) + \cdots + \lambda_m f_m(x)$
+\end{KR}
+
+\begin{example2}{Lineare Ausgleichsrechnung - Ausgleichsgerade}\\
+\textbf{Aufgabe:} Bestimmen Sie die Ausgleichsgerade $f(x) = ax + b$ für die Datenpunkte:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & 1 & 2 & 3 & 4 \\
+\hline
+$y_i$ & 6 & 6.8 & 10 & 10.5 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+\textbf{Lösung:}
+Basisfunktionen: $f_1(x) = x$, $f_2(x) = 1$
+
+\textbf{Schritt 1:} Matrix $A$ aufstellen
+$$A = \begin{bsmallmatrix} 1 & 1 \\ 2 & 1 \\ 3 & 1 \\ 4 & 1 \end{bsmallmatrix}, \quad y = \begin{psmallmatrix} 6 \\ 6.8 \\ 10 \\ 10.5 \end{psmallmatrix}$$
+
+\textbf{Schritt 2:} Normalgleichungen berechnen
+$$A^T A = \begin{bsmallmatrix} 30 & 10 \\ 10 & 4 \end{bsmallmatrix}, \quad A^T y = \begin{psmallmatrix} 91.6 \\ 33.3 \end{psmallmatrix}$$
+
+\textbf{Schritt 3:} LGS lösen
+$$\begin{bsmallmatrix} 30 & 10 \\ 10 & 4 \end{bsmallmatrix} \begin{psmallmatrix} a \\ b \end{psmallmatrix} = \begin{psmallmatrix} 91.6 \\ 33.3 \end{psmallmatrix}$$
+
+Lösung: $a = 1.67$, $b = 4.15$
+
+Die Ausgleichsgerade lautet: $f(x) = 1.67x + 4.15$
+\end{example2}
+
+\begin{example2}{Dichte von Wasser - Polynomfit}\\
+\textbf{Aufgabe:} Fitten Sie die Wasserdichte $\rho(T)$ mit einem Polynom 2. Grades $f(T) = aT^2 + bT + c$:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$T$ [°C] & 0 & 20 & 40 & 60 & 80 & 100 \\
+\hline
+$\rho$ [g/l] & 999.9 & 998.2 & 992.2 & 983.2 & 971.8 & 958.4 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+\textbf{Lösung:}
+Basisfunktionen: $f_1(T) = T^2$, $f_2(T) = T$, $f_3(T) = 1$
+
+Die Matrix $A$ ist:
+$$A = \begin{bsmallmatrix}
+0 & 0 & 1 \\
+400 & 20 & 1 \\
+1600 & 40 & 1 \\
+3600 & 60 & 1 \\
+6400 & 80 & 1 \\
+10000 & 100 & 1
+\end{bsmallmatrix}$$
+
+Nach Lösung des Normalgleichungssystems erhält man die Koeffizienten für die optimale Ausgleichsfunktion.
+\end{example2}
+
+\subsubsection{Nichtlineare Ausgleichsprobleme}
+
+\begin{definition}{Allgemeines Ausgleichsproblem}\\
+Gegeben seien $n$ Wertepaare $(x_i, y_i)$ und eine nichtlineare Ansatzfunktion $f_p(x, \lambda_1, ..., \lambda_m)$ mit $m$ Parametern.
+
+Das allgemeine Ausgleichsproblem besteht darin, die Parameter $\lambda_1, ..., \lambda_m$ zu bestimmen, so dass das Fehlerfunktional minimal wird:
+$$E(\lambda) = \sum_{i=1}^{n} (y_i - f_p(x_i, \lambda_1, ..., \lambda_m))^2$$
+\end{definition}
+
+\begin{concept}{Gauss-Newton-Verfahren}\\
+Das Gauss-Newton-Verfahren löst nichtlineare Ausgleichsprobleme durch Linearisierung:
+
+Definiere $g(\lambda) := y - f(\lambda)$, dann ist das Problem äquivalent zur Minimierung von $\|g(\lambda)\|_2^2$.
+
+In jeder Iteration wird $g(\lambda)$ linearisiert:
+$$g(\lambda) \approx g(\lambda^{(k)}) + Dg(\lambda^{(k)}) \cdot (\lambda - \lambda^{(k)})$$
+\end{concept}
+
+\begin{KR}{Gauss-Newton-Verfahren}\\
+\paragraph{Schritt 1: Funktionen definieren}
+$g(\lambda) := y - f(\lambda)$ und Jacobi-Matrix $Dg(\lambda)$ berechnen.
+
+\paragraph{Schritt 2: Iterationsschleife}
+Für $k = 0, 1, ...$:
+\begin{itemize}
+    \item Löse das lineare Ausgleichsproblem: $\min \|g(\lambda^{(k)}) + Dg(\lambda^{(k)}) \cdot \delta^{(k)}\|_2^2$
+    \item Das ergibt: $Dg(\lambda^{(k)})^T Dg(\lambda^{(k)}) \delta^{(k)} = -Dg(\lambda^{(k)})^T g(\lambda^{(k)})$
+    \item Setze $\lambda^{(k+1)} = \lambda^{(k)} + \delta^{(k)}$
+\end{itemize}
+
+\paragraph{Schritt 3: Dämpfung (optional)}
+Bei Konvergenzproblemen: $\lambda^{(k+1)} = \lambda^{(k)} + \frac{\delta^{(k)}}{2^p}$ mit geeignetem $p$.
+
+\paragraph{Schritt 4: Konvergenzprüfung}
+Abbruch wenn $\|\delta^{(k)}\| < \text{TOL}$ oder $\|g(\lambda^{(k+1)})\| < \text{TOL}$.
+\end{KR}
+
+\begin{example2}{Exponentialfunktion fitten}\\
+\textbf{Aufgabe:} Fitten Sie die Funktion $f(x) = ae^{bx}$ an die Daten:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$x_i$ & 0 & 1 & 2 & 3 & 4 \\
+\hline
+$y_i$ & 3 & 1 & 0.5 & 0.2 & 0.05 \\
+\hline
+\end{tabular}
+\end{center}
+\tcblower
+\textbf{Lösung:}
+
+\textbf{Methode 1: Linearisierung durch Logarithmieren}
+$$\ln f(x) = \ln(a) + bx$$
+Setze $\tilde{y}_i = \ln(y_i)$ und löse lineares Problem.
+
+\textbf{Methode 2: Gauss-Newton-Verfahren}
+$g(a,b) = y - f(a,b)$ mit $f_i(a,b) = ae^{bx_i}$
+
+Jacobi-Matrix:
+$$Dg(a,b) = \begin{bsmallmatrix}
+-e^{bx_1} & -ax_1 e^{bx_1} \\
+-e^{bx_2} & -ax_2 e^{bx_2} \\
+\vdots & \vdots \\
+-e^{bx_5} & -ax_5 e^{bx_5}
+\end{bsmallmatrix}$$
+
+Mit Startvektor $(a^{(0)}, b^{(0)}) = (3, -1)$ konvergiert das Verfahren zu $a \approx 2.98$, $b \approx -1.00$.
+\end{example2}
+
+\begin{example2}{Komplexere nichtlineare Funktion}\\
+\textbf{Aufgabe:} Fitten Sie die Funktion 
+$$f(x) = \frac{\lambda_0 + \lambda_1 \cdot 10^{\lambda_2 + \lambda_3 x}}{1 + 10^{\lambda_2 + \lambda_3 x}}$$
+an Datenpunkte mit dem gedämpften Gauss-Newton-Verfahren.
+\tcblower
+\textbf{Lösung:}
+Diese sigmoide Funktion erfordert:
+\begin{itemize}
+    \item Sorgfältige Wahl des Startvektors
+    \item Verwendung der Dämpfung für Stabilität
+    \item Berechnung der komplexen Jacobi-Matrix mit partiellen Ableitungen
+    \item Iterative Lösung bis zur gewünschten Genauigkeit
+\end{itemize}
+
+Das gedämpfte Gauss-Newton-Verfahren ist hier dem ungedämpften überlegen, da es auch bei schlechten Startwerten konvergiert.
+\end{example2}
+
+\begin{remark}
+\textbf{Wahl zwischen linearer und nichtlinearer Ausgleichsrechnung:}
+\begin{itemize}
+    \item \textbf{Linear:} Wenn die Ansatzfunktion linear in den Parametern ist
+    \item \textbf{Nichtlinear:} Wenn Parameter "verwoben" mit der Funktionsgleichung auftreten
+    \item \textbf{Linearisierung:} Manchmal kann durch Transformation (z.B. Logarithmieren) ein nichtlineares Problem linearisiert werden
+    \item \textbf{Stabilität:} Gedämpfte Verfahren sind robuster, aber aufwendiger
+\end{itemize}
+\end{remark}
+
+\section{Persönliche Notizen}
+
+\subsection{Interpolation}
+
 \begin{remark}
 Die Interpolation ist ein Spezialfall der linearen Ausgleichsrechnung, bei dem wir zu einer Menge von vorgegebenen Punkten eine Funktion suchen, die exakt durch diese Punkte verlăuft.
 \end{remark}
@@ -158,6 +507,8 @@ $$
 \end{example2}
 
 \raggedcolumns
+
+\section{Claude try 1}
 
 \section{Curve Fitting and Approximation}
 
@@ -576,3 +927,4 @@ Dg(a,b) = \begin{pmatrix}
 
 Solving the normal equations gives a correction vector, and after several iterations, we get the parameters $a \approx 2.98$ and $b \approx -1.00$.
 \end{example2}
+
