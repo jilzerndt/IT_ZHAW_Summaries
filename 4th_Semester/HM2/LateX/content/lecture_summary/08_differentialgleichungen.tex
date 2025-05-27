@@ -299,23 +299,29 @@ Jede DGL $n$-ter Ordnung kann in ein System von $n$ DGL 1. Ordnung umgewandelt w
 \begin{KR}{DGL höherer Ordnung auf System 1. Ordnung zurückführen}
 \paragraph{Schritt 1: Nach höchster Ableitung auflösen}
 Bringe die DGL in die Form $y^{(n)} = f(x, y, y', ..., y^{(n-1)})$.
-
+\vspace{2mm}\\
+\begin{minipage}{0.45\linewidth}
 \paragraph{Schritt 2: Hilfsvariablen einführen}
+\vspace{-3mm}
 $$z_1(x) = y(x)$$
 $$z_2(x) = y'(x)$$
 $$z_3(x) = y''(x)$$
-$$\vdots$$
+$$...$$
 $$z_n(x) = y^{(n-1)}(x)$$
-
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}{0.5\linewidth}
 \paragraph{Schritt 3: System aufstellen}
+\vspace{-3mm}
 $$z_1' = z_2$$
 $$z_2' = z_3$$
-$$\vdots$$
+$$...$$
 $$z_{n-1}' = z_n$$
 $$z_n' = f(x, z_1, z_2, ..., z_n)$$
+\end{minipage}
 
 \paragraph{Schritt 4: Vektorielle Schreibweise}
-$$\mathbf{z}' = \mathbf{f}(x, \mathbf{z})$$ mit $\mathbf{z}(x_0) = \begin{psmallmatrix} y(x_0) \\ y'(x_0) \\ \vdots \\ y^{(n-1)}(x_0) \end{psmallmatrix}$
+$\mathbf{z}' = \mathbf{f}(x, \mathbf{z})$ mit $\mathbf{z}(x_0) = \begin{psmallmatrix} y(x_0) \\ y'(x_0) \\ \vdots \\ y^{(n-1)}(x_0) \end{psmallmatrix}$
 \end{KR}
 
 \begin{example2}{Landende Boeing - DGL 2. Ordnung}\\
@@ -323,8 +329,6 @@ $$\mathbf{z}' = \mathbf{f}(x, \mathbf{z})$$ mit $\mathbf{z}(x_0) = \begin{psmall
 $$m\ddot{x} = -5\dot{x}^2 - 570000$$
 mit $m = 97000$ kg. Formen Sie in ein System 1. Ordnung um.
 \tcblower
-\textbf{Lösung:}
-
 \textbf{Schritt 1:} Nach $\ddot{x}$ auflösen:
 $$\ddot{x} = \frac{-5\dot{x}^2 - 570000}{97000}$$
 
@@ -350,8 +354,6 @@ mit $v_{rel} = 2600$ m/s, $m_A = 300000$ kg, $m_E = 80000$ kg, $t_E = 190$ s.
 
 Berechnen Sie Geschwindigkeit und Höhe als Funktion der Zeit.
 \tcblower
-\textbf{Lösung:}
-
 \textbf{Parameter:} $\mu = \frac{m_A - m_E}{t_E} = \frac{220000}{190} = 1158$ kg/s
 
 \textbf{System 1. Ordnung:}
@@ -375,6 +377,9 @@ $$h(t) = -\frac{v_{rel}(m_A - \mu t)}{\mu} \ln\left(\frac{m_A}{m_A - \mu t}\righ
     \item Beschleunigung: $\approx 2.5g$
 \end{itemize}
 \end{example2}
+
+\raggedcolumns
+\columnbreak
 
 \subsection{Stabilität}
 
@@ -400,8 +405,6 @@ Das offene Intervall $z \in (0, \alpha)$, in dem $|g(z)| < 1$ gilt, bezeichnet m
 \begin{example2}{Stabilität des Euler-Verfahrens}\\
 \textbf{Aufgabe:} Untersuchen Sie die Stabilität des Euler-Verfahrens für $y' = -2.5y$ mit $y(0) = 1$.
 \tcblower
-\textbf{Lösung:}
-
 \textbf{Euler-Verfahren:} $y_{i+1} = y_i - h \cdot 2.5 y_i = y_i(1 - 2.5h)$
 
 \textbf{Stabilitätsfunktion:} $g(z) = 1 - z$ mit $z = 2.5h$
@@ -418,8 +421,7 @@ $\Rightarrow 0 < 2.5h < 2 \Rightarrow 0 < h < 0.8$
 \textbf{Exakte Lösung:} $y(x) = e^{-2.5x}$ (streng monoton fallend)
 \end{example2}
 
-\begin{remark}
-\textbf{Praktische Hinweise zur Stabilität:}
+\begin{theorem}{Praktische Hinweise zur Stabilität:}
 \begin{itemize}
     \item \textbf{Schrittweiten-Kontrolle:} Beginne mit kleiner Schrittweite und prüfe Konvergenz
     \item \textbf{Verfahrensvergleich:} Teste verschiedene Verfahren und vergleiche Ergebnisse
@@ -427,24 +429,22 @@ $\Rightarrow 0 < 2.5h < 2 \Rightarrow 0 < h < 0.8$
     \item \textbf{Steife DGL:} Verwende implizite Verfahren für steife Probleme
     \item \textbf{Python-Tools:} Nutze \texttt{scipy.integrate.solve\_ivp()} für robuste Implementierungen
 \end{itemize}
-\end{remark}
+\end{theorem}
 
 \subsection{Python-Implementierung}
 
-\begin{code}{DGL-Löser in Python}\\
+\begin{code}{DGL-Löser in Python}
 Standard-Bibliothek für DGL-Probleme:
 \begin{lstlisting}[language=Python, style=basesmol]
 from scipy.integrate import solve_ivp
 import numpy as np
 import matplotlib.pyplot as plt
 
-def f(t, y):
-    # DGL: y' = -2*y + sin(t)
+def f(t, y): # DGL: y' = -2*y + sin(t)
     return -2*y + np.sin(t)
 
 # Anfangswertproblem loesen
 sol = solve_ivp(f, [0, 5], [1], dense_output=True)
-
 # Losung plotten
 t = np.linspace(0, 5, 100)
 y = sol.sol(t)
@@ -472,7 +472,8 @@ plt.show()
 def runge_kutta_4(f, a, b, n, y0):
     h = (b - a) / n
     x = np.linspace(a, b, n+1)
-    y = np.zeros(n+1)
+    y = np.zeros(n+1) 
+# erweitert fuer Systeme: y = np.zeros((n+1, len(y0)))
     y[0] = y0
     
     for i in range(n):
@@ -486,26 +487,7 @@ def runge_kutta_4(f, a, b, n, y0):
     return x, y
 \end{lstlisting}
 
-\paragraph{Schritt 2: Für Systeme erweitern}
-\begin{lstlisting}[language=Python, style=basesmol]
-def runge_kutta_system(f, a, b, n, y0):
-    h = (b - a) / n
-    x = np.linspace(a, b, n+1)
-    y = np.zeros((n+1, len(y0)))
-    y[0] = y0
-    
-    for i in range(n):
-        k1 = f(x[i], y[i])
-        k2 = f(x[i] + h/2, y[i] + h/2 * k1)
-        k3 = f(x[i] + h/2, y[i] + h/2 * k2)
-        k4 = f(x[i] + h, y[i] + h * k3)
-        
-        y[i+1] = y[i] + h/6 * (k1 + 2*k2 + 2*k3 + k4)
-    
-    return x, y
-\end{lstlisting}
-
-\paragraph{Schritt 3: Richtungsfeld visualisieren}
+\paragraph{Schritt 2: Richtungsfeld visualisieren}
 \begin{lstlisting}[language=Python, style=basesmol]
 def plot_direction_field(f, xmin, xmax, ymin, ymax, hx, hy):
     x = np.arange(xmin, xmax, hx)
@@ -525,16 +507,16 @@ def plot_direction_field(f, xmin, xmax, ymin, ymax, hx, hy):
 \subsection{Fehlerordnung und Konvergenz}
 
 \begin{definition}{Lokaler und globaler Fehler}\\
-\textbf{Lokaler Fehler:} Der Fehler nach einer Iteration
+\textbf{Lokaler Fehler:} Der Fehler nach einer Iteration\\
 $\varphi(x_i, h) := y(x_{i+1}) - y_{i+1}$
 
 \textbf{Globaler Fehler:} Der Fehler nach $n$ Iterationen
 $y(x_n) - y_n$
 
-\textbf{Konsistenzordnung $p$:} Ein Verfahren hat Konsistenzordnung $p$, falls
+\textbf{Konsistenzordnung $p$:} \\ Ein Verfahren hat Konsistenzordnung $p$, falls
 $|\varphi(x_i, h)| \leq C \cdot h^{p+1}$
 
-\textbf{Konvergenzordnung $p$:} Ein Verfahren hat Konvergenzordnung $p$, falls
+\textbf{Konvergenzordnung $p$:} \\ Ein Verfahren hat Konvergenzordnung $p$, falls
 $|y(x_n) - y_n| \leq C \cdot h^p$
 \end{definition}
 
@@ -552,8 +534,6 @@ $|y(x_n) - y_n| \leq C \cdot h^p$
 \begin{example2}{Konvergenzverhalten untersuchen}\\
 \textbf{Aufgabe:} Untersuchen Sie das Konvergenzverhalten verschiedener Verfahren für $\frac{dy}{dx} = \frac{x^2}{y}$ mit $y(0) = 2$ auf $[0, 10]$.
 \tcblower
-\textbf{Lösung:}
-
 \textbf{Exakte Lösung:} $y(x) = \sqrt{\frac{2x^3}{3} + 4}$
 
 \textbf{Fehler bei $x = 10$ für verschiedene $h$:}
@@ -585,8 +565,6 @@ $h$ & Euler & Mittelpunkt & Mod. Euler & Runge-Kutta \\
 \begin{example2}{Schwingungsgleichung - Gekoppeltes System}\\
 \textbf{Aufgabe:} Lösen Sie die Schwingungsgleichung $\ddot{x} + \omega^2 x = 0$ mit $x(0) = 1$, $\dot{x}(0) = 0$ und $\omega = 2$.
 \tcblower
-\textbf{Lösung:}
-
 \textbf{System 1. Ordnung:}
 $z_1' = z_2$
 $z_2' = -\omega^2 z_1 = -4z_1$
@@ -597,8 +575,7 @@ $z_2' = -\omega^2 z_1 = -4z_1$
 
 \textbf{Numerische Implementierung:}
 \begin{lstlisting}[language=Python, style=basesmol]
-def harmonic_oscillator(t, z):
-    # z[0] = x, z[1] = dx/dt
+def harmonic_oscillator(t, z): # z[0] = x, z[1] = dx/dt
     return [z[1], -4*z[0]]
 
 # Losung mit scipy
@@ -609,7 +586,6 @@ t = np.linspace(0, 10, 1000)
 z = sol.sol(t)
 x_num = z[0]
 x_exact = np.cos(2*t)
-
 plt.plot(t, x_num, 'b-', label='Numerisch')
 plt.plot(t, x_exact, 'r--', label='Exakt')
 plt.legend()
@@ -624,8 +600,6 @@ $E = \frac{1}{2}\dot{x}^2 + \frac{1}{2}\omega^2 x^2 = \text{const}$
 $\frac{dP}{dt} = rP\left(1 - \frac{P}{K}\right)$
 mit Wachstumsrate $r = 0.1$ und Kapazität $K = 1000$. Anfangspopulation: $P(0) = 50$.
 \tcblower
-\textbf{Lösung:}
-
 \textbf{Analytische Lösung:}
 $P(t) = \frac{K}{1 + \left(\frac{K}{P_0} - 1\right)e^{-rt}}$
 
@@ -633,14 +607,11 @@ $P(t) = \frac{K}{1 + \left(\frac{K}{P_0} - 1\right)e^{-rt}}$
 \begin{lstlisting}[language=Python, style=basesmol]
 def logistic_growth(t, P, r=0.1, K=1000):
     return r * P * (1 - P/K)
-
 # Parameter
 r, K, P0 = 0.1, 1000, 50
-
 # Numerische Loesung
 sol = solve_ivp(lambda t, P: logistic_growth(t, P, r, K), 
                 [0, 100], [P0], dense_output=True)
-
 # Analytische Loesung
 def P_exact(t):
     return K / (1 + (K/P0 - 1) * np.exp(-r*t))
@@ -660,43 +631,419 @@ plt.legend()
 \textbf{Charakteristisches Verhalten:} Exponentielles Wachstum für kleine $P$, Sättigung bei $K$.
 \end{example2}
 
-\subsection{Erweiterte Themen}
+\begin{example2}{Prüfungsaufgabe 8.1 - Vergleich numerischer Verfahren}\\
+\textbf{Aufgabe:} Lösen Sie das Anfangswertproblem:
+$\frac{dy}{dx} = x + y^2, \quad y(0) = 0$
 
-\begin{concept}{Mehrschrittverfahren}\\
-Im Gegensatz zu Einschrittverfahren verwenden Mehrschrittverfahren mehrere vorhergehende Punkte:
+auf dem Intervall $[0, 1]$ mit Schrittweite $h = 0.2$.
 
-\textbf{Adams-Bashforth 2. Ordnung:}
-$y_{i+1} = y_i + \frac{h}{2}(3f(x_i, y_i) - f(x_{i-1}, y_{i-1}))$
+a) Verwenden Sie das Euler-Verfahren
+b) Verwenden Sie das klassische Runge-Kutta Verfahren  
+c) Vergleichen Sie die Genauigkeit bei $x = 1$
+d) Welche Konvergenzordnung erwarten Sie?
+\tcblower
+\textbf{a) Euler-Verfahren:}
+$f(x,y) = x + y^2$, $h = 0.2$, $n = 5$
 
-\textbf{Adams-Bashforth 3. Ordnung:}
-$y_{i+1} = y_i + \frac{h}{12}(23f(x_i, y_i) - 16f(x_{i-1}, y_{i-1}) + 5f(x_{i-2}, y_{i-2}))$
+\textbf{Iteration 0 $\rightarrow$ 1:}
+$x_0 = 0, y_0 = 0$
+$f(0, 0) = 0 + 0^2 = 0$
+$x_1 = 0.2, y_1 = 0 + 0.2 \cdot 0 = 0$
 
-\textbf{Vorteil:} Effizienter (weniger Funktionsauswertungen pro Schritt)
-\textbf{Nachteil:} Benötigen Startwerte von Einschrittverfahren
-\end{concept}
+\textbf{Iteration 1 $\rightarrow$ 2:}
+$x_1 = 0.2, y_1 = 0$
+$f(0.2, 0) = 0.2 + 0^2 = 0.2$
+$x_2 = 0.4, y_2 = 0 + 0.2 \cdot 0.2 = 0.04$
 
-\begin{concept}{Implizite Verfahren}\\
-Implizite Verfahren sind stabiler, aber aufwendiger zu berechnen:
+\textbf{Iteration 2 $\rightarrow$ 3:}
+$x_2 = 0.4, y_2 = 0.04$
+$f(0.4, 0.04) = 0.4 + 0.04^2 = 0.4016$
+$x_3 = 0.6, y_3 = 0.04 + 0.2 \cdot 0.4016 = 0.1203$
 
-\textbf{Implizites Euler-Verfahren:}
-$y_{i+1} = y_i + h \cdot f(x_{i+1}, y_{i+1})$
+\textbf{Iteration 3 $\rightarrow$ 4:}
+$x_3 = 0.6, y_3 = 0.1203$
+$f(0.6, 0.1203) = 0.6 + 0.1203^2 = 0.6145$
+$x_4 = 0.8, y_4 = 0.1203 + 0.2 \cdot 0.6145 = 0.2432$
 
-Erfordert Lösung einer nichtlinearen Gleichung in jedem Schritt (z.B. mit Newton-Verfahren).
+\textbf{Iteration 4 $\rightarrow$ 5:}
+$x_4 = 0.8, y_4 = 0.2432$
+$f(0.8, 0.2432) = 0.8 + 0.2432^2 = 0.8591$
+$x_5 = 1.0, y_5 = 0.2432 + 0.2 \cdot 0.8591 = 0.4150$
 
-\textbf{Anwendung:} Steife Differentialgleichungen, bei denen explizite Verfahren sehr kleine Schrittweiten erfordern.
-\end{concept}
+\textbf{Euler-Ergebnis:} $y(1) \approx 0.4150$
 
-\begin{concept}{Steife Differentialgleichungen}\\
-Steife DGL haben stark unterschiedliche Zeitskalen und erfordern spezielle Behandlung:
+\textbf{b) Runge-Kutta Verfahren:}
 
-\textbf{Beispiel:} $y' = -1000y + \sin(x)$
+\textbf{Schritt 0 $\rightarrow$ 1:} $x_0 = 0, y_0 = 0$
+$k_1 = f(0, 0) = 0$
+$k_2 = f(0.1, 0) = 0.1$
+$k_3 = f(0.1, 0.01) = 0.1 + 0.01^2 = 0.1001$
+$k_4 = f(0.2, 0.02002) = 0.2 + 0.02002^2 = 0.2004$
+$y_1 = 0 + \frac{0.2}{6}(0 + 2 \cdot 0.1 + 2 \cdot 0.1001 + 0.2004) = 0.0200$
 
-Die exakte Lösung hat sowohl schnell abklingende ($e^{-1000x}$) als auch langsam variierende ($\sin(x)$) Komponenten.
+\textbf{Schritt 1 $\rightarrow$ 2:} $x_1 = 0.2, y_1 = 0.0200$
+$k_1 = f(0.2, 0.0200) = 0.2 + 0.0004 = 0.2004$
+$k_2 = f(0.3, 0.0400) = 0.3 + 0.0016 = 0.3016$
+$k_3 = f(0.3, 0.0502) = 0.3 + 0.0025 = 0.3025$
+$k_4 = f(0.4, 0.0805) = 0.4 + 0.0065 = 0.4065$
+$y_2 = 0.0200 + \frac{0.2}{6}(0.2004 + 2 \cdot 0.3016 + 2 \cdot 0.3025 + 0.4065) = 0.0801$
 
-\textbf{Problem:} Explizite Verfahren benötigen $h < \frac{2}{1000}$ für Stabilität, auch wenn nur die langsame Komponente interessiert.
+Fortführung analog...
 
-\textbf{Lösung:} Implizite Verfahren (BDF, Radau) oder adaptive Verfahren mit Steifigkeitserkennung.
-\end{concept}
+\textbf{Runge-Kutta Ergebnisse:}
+$y_1 = 0.0200, y_2 = 0.0801, y_3 = 0.1806, y_4 = 0.3214, y_5 = 0.5027$
+
+\textbf{Runge-Kutta-Ergebnis:} $y(1) \approx 0.5027$
+
+\textbf{c) Genauigkeitsvergleich:}
+Für diese DGL gibt es keine einfache analytische Lösung, aber numerische Referenzlösungen mit sehr kleiner Schrittweite ergeben: $y(1) \approx 0.5463$
+
+Fehler:
+\begin{itemize}
+    \item Euler: $|0.5463 - 0.4150| = 0.1313$
+    \item Runge-Kutta: $|0.5463 - 0.5027| = 0.0436$
+\end{itemize}
+
+Das Runge-Kutta Verfahren ist etwa 3-mal genauer.
+
+\textbf{d) Konvergenzordnung:}
+\begin{itemize}
+    \item Euler-Verfahren: Konvergenzordnung $p = 1$
+    \item Runge-Kutta 4: Konvergenzordnung $p = 4$
+\end{itemize}
+
+Bei Halbierung der Schrittweite erwarten wir:
+\begin{itemize}
+    \item Euler: Fehler halbiert sich
+    \item RK4: Fehler wird um Faktor 16 kleiner
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Prüfungsaufgabe 8.2 - System von DGL}\\
+\textbf{Aufgabe:} Ein Satellit kreist um die Erde. Seine Bewegung wird beschrieben durch:
+$\ddot{x} = -\frac{GM x}{(x^2 + y^2)^{3/2}}, \quad \ddot{y} = -\frac{GM y}{(x^2 + y^2)^{3/2}}$
+
+mit $GM = 3.986 \times 10^{14}$ m³/s².
+
+Anfangsbedingungen: $x(0) = 7000$ km, $y(0) = 0$, $\dot{x}(0) = 0$, $\dot{y}(0) = 7500$ m/s
+
+a) Formen Sie in ein System 1. Ordnung um
+b) Implementieren Sie einen Schritt des Mittelpunkt-Verfahrens mit $h = 10$ s
+c) Interpretieren Sie die Bewegung physikalisch
+\tcblower
+\textbf{a) System 1. Ordnung:}
+Einführung der Hilfsvariablen:
+$z_1 = x$ (Position x)
+$z_2 = \dot{x}$ (Geschwindigkeit x)  
+$z_3 = y$ (Position y)
+$z_4 = \dot{y}$ (Geschwindigkeit y)
+
+System:
+$z_1' = z_2$
+$z_2' = -\frac{GM z_1}{(z_1^2 + z_3^2)^{3/2}}$
+$z_3' = z_4$  
+$z_4' = -\frac{GM z_3}{(z_1^2 + z_3^2)^{3/2}}$
+
+Vektorschreibweise:
+$\mathbf{z}' = \mathbf{f}(t, \mathbf{z}) = \begin{psmallmatrix}
+z_2 \\
+-\frac{GM z_1}{(z_1^2 + z_3^2)^{3/2}} \\
+z_4 \\
+-\frac{GM z_3}{(z_1^2 + z_3^2)^{3/2}}
+\end{psmallmatrix}$
+
+\textbf{b) Mittelpunkt-Verfahren:}
+
+\textbf{Anfangswerte:} $\mathbf{z}(0) = \begin{psmallmatrix} 7 \times 10^6 \\ 0 \\ 0 \\ 7500 \end{psmallmatrix}$ (in SI-Einheiten)
+
+\textbf{Schritt 1:} Berechne $\mathbf{f}(0, \mathbf{z}_0)$
+$r_0 = \sqrt{(7 \times 10^6)^2 + 0^2} = 7 \times 10^6$ m
+
+$a_0 = \frac{GM}{r_0^2} = \frac{3.986 \times 10^{14}}{(7 \times 10^6)^2} = 8.13$ m/s²
+$\mathbf{f}(0, \mathbf{z}_0) = \begin{psmallmatrix} 0 \\ -8.13 \\ 7500 \\ 0 \end{psmallmatrix}$
+
+\textbf{Schritt 2:} Mittelpunkt berechnen
+
+$\mathbf{z}_{1/2} = \mathbf{z}_0 + \frac{h}{2} \mathbf{f}(0, \mathbf{z}_0) = \begin{psmallmatrix} 7 \times 10^6 \\ 0 \\ 0 \\ 7500 \end{psmallmatrix} + 5 \begin{psmallmatrix} 0 \\ -8.13 \\ 7500 \\ 0 \end{psmallmatrix}$
+$= \begin{psmallmatrix} 7 \times 10^6 \\ -40.65 \\ 37500 \\ 7500 \end{psmallmatrix}$
+
+\textbf{Schritt 3:} $\mathbf{f}$ am Mittelpunkt berechnen
+
+$r_{1/2} = \sqrt{(7 \times 10^6)^2 + (37500)^2} = 7.0001 \times 10^6$ m
+$\mathbf{f}(5, \mathbf{z}_{1/2}) = \begin{psmallmatrix} -40.65 \\ -8.128 \\ 7500 \\ -0.043 \end{psmallmatrix}$
+
+\textbf{Schritt 4:} Neuen Punkt berechnen
+
+$\mathbf{z}_1 = \mathbf{z}_0 + h \cdot \mathbf{f}(5, \mathbf{z}_{1/2}) = \begin{psmallmatrix} 7 \times 10^6 - 406.5 \\ -81.28 \\ 75000 \\ 7499.57 \end{psmallmatrix}$
+$= \begin{psmallmatrix} 6.9996 \times 10^6 \\ -81.28 \\ 75000 \\ 7499.57 \end{psmallmatrix}$
+
+\textbf{c) Physikalische Interpretation:}
+\begin{itemize}
+    \item Der Satellit startet in 7000 km Höhe ($\approx$ 400 km über Erdoberfläche)
+    \item Anfangsgeschwindigkeit 7500 m/s ist nahe der Kreisbahngeschwindigkeit 
+    \item Die Gravitationskraft sorgt für die zentripetale Beschleunigung
+    \item Nach 10 s hat sich der Satellit bereits deutlich bewegt: $\Delta x = -406.5$ m, $\Delta y = 75000$ m
+    \item Die Bahn ist eine Ellipse (oder bei passender Geschwindigkeit ein Kreis)
+    \item Erhaltungsgrößen: Energie und Drehimpuls (sollten bei genauer numerischer Lösung konstant bleiben)
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Prüfungsaufgabe 8.3 - Stabilität und Fehleranalyse}\\
+\textbf{Aufgabe:} Betrachten Sie die DGL:
+$y' = -5y + \cos(x), \quad y(0) = 1$
+
+a) Bestimmen Sie die analytische Lösung
+b) Untersuchen Sie die Stabilität des Euler-Verfahrens  
+c) Für welche Schrittweiten ist das Verfahren stabil?
+d) Vergleichen Sie numerische und analytische Lösung für $h = 0.3$ und $h = 0.5$
+\tcblower
+\textbf{a) Analytische Lösung:}
+Die DGL $y' + 5y = \cos(x)$ ist eine lineare DGL 1. Ordnung.
+
+Homogene Lösung: $y_h = Ce^{-5x}$
+
+Partikuläre Lösung durch Ansatz $y_p = A\cos(x) + B\sin(x)$:
+$y_p' = -A\sin(x) + B\cos(x)$
+
+Einsetzen: $-A\sin(x) + B\cos(x) + 5(A\cos(x) + B\sin(x)) = \cos(x)$
+$(-A + 5B)\sin(x) + (B + 5A)\cos(x) = \cos(x)$
+
+Koeffizientenvergleich:
+$-A + 5B = 0 \Rightarrow A = 5B$
+$B + 5A = 1 \Rightarrow B + 25B = 1 \Rightarrow B = \frac{1}{26}, A = \frac{5}{26}$
+
+$y_p = \frac{5}{26}\cos(x) + \frac{1}{26}\sin(x)$
+
+Allgemeine Lösung: $y = Ce^{-5x} + \frac{5}{26}\cos(x) + \frac{1}{26}\sin(x)$
+
+Anfangsbedingung: $y(0) = C + \frac{5}{26} = 1 \Rightarrow C = \frac{21}{26}$
+
+$y(x) = \frac{21}{26}e^{-5x} + \frac{5}{26}\cos(x) + \frac{1}{26}\sin(x)$
+
+\textbf{b) Stabilität des Euler-Verfahrens:}
+Für die Testgleichung $y' = -\alpha y$ (hier $\alpha = 5$) lautet die Stabilitätsfunktion:
+$g(z) = 1 - z \quad \text{mit } z = h\alpha = 5h$
+
+Stabilitätsbedingung: $|1 - 5h| < 1$
+$-1 < 1 - 5h < 1$
+$-2 < -5h < 0$
+$0 < h < \frac{2}{5} = 0.4$
+
+\textbf{c) Stabilitätsbereich:}
+Das Euler-Verfahren ist stabil für $0 < h < 0.4$.
+
+\textbf{d) Numerischer Vergleich:}
+
+\textbf{Für $h = 0.3$ (stabil):}
+Euler-Iteration mit $f(x,y) = -5y + \cos(x)$:
+
+$x_0 = 0, y_0 = 1$
+$y_1 = 1 + 0.3(-5 \cdot 1 + \cos(0)) = 1 + 0.3(-4) = -0.2$
+$y_2 = -0.2 + 0.3(-5 \cdot (-0.2) + \cos(0.3)) = -0.2 + 0.3(1 + 0.955) = 0.387$
+$y_3 = 0.387 + 0.3(-5 \cdot 0.387 + \cos(0.6)) = 0.387 + 0.3(-1.935 + 0.825) = 0.054$
+
+Bei $x = 0.9$: $y_{\text{Euler}} \approx 0.054$
+Analytisch: $y(0.9) = \frac{21}{26}e^{-4.5} + \frac{5}{26}\cos(0.9) + \frac{1}{26}\sin(0.9) = 0.197$
+
+\textbf{Für $h = 0.5$ (instabil):}
+$x_0 = 0, y_0 = 1$
+$y_1 = 1 + 0.5(-5 \cdot 1 + 1) = 1 + 0.5(-4) = -1$
+$y_2 = -1 + 0.5(-5 \cdot (-1) + \cos(0.5)) = -1 + 0.5(5 + 0.878) = 1.939$
+$y_3 = 1.939 + 0.5(-5 \cdot 1.939 + \cos(1)) = 1.939 + 0.5(-9.695 + 0.540) = -2.639$
+
+Die Lösung oszilliert mit wachsender Amplitude $\rightarrow$ instabil!
+
+\textbf{Interpretation:}
+\begin{itemize}
+    \item Für $h = 0.3$: Das Verfahren ist stabil, aber nicht sehr genau
+    \item Für $h = 0.5$: Das Verfahren wird instabil und divergiert
+    \item Die Stabilitätsgrenze $h < 0.4$ muss eingehalten werden
+    \item Der schnell abfallende Term $e^{-5x}$ macht die DGL steif
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Prüfungsaufgabe 8.4 - Anwendung: Populationsdynamik}\\
+\textbf{Aufgabe:} Das Räuber-Beute-System wird beschrieben durch:
+$\frac{dx}{dt} = ax - bxy$
+$\frac{dy}{dt} = -cy + dxy$
+
+wobei $x(t)$ die Beutepopulation und $y(t)$ die Räuberpopulation darstellt.
+
+Parameter: $a = 1.0$, $b = 0.5$, $c = 0.75$, $d = 0.25$
+Anfangsbedingungen: $x(0) = 4$, $y(0) = 4$
+
+a) Interpretieren Sie die Gleichungen biologisch
+b) Lösen Sie das System numerisch mit Runge-Kutta für $t \in [0, 15]$ mit $h = 0.1$
+c) Analysieren Sie das Langzeitverhalten
+d) Was passiert mit der Gesamtenergie des Systems?
+\tcblower
+
+\textbf{a) Biologische Interpretation:}
+\textbf{Beutegleichung:} $\frac{dx}{dt} = ax - bxy$
+\begin{itemize}
+    \item $ax$: Exponentielles Wachstum der Beute bei Abwesenheit von Räubern
+    \item $-bxy$: Verluste durch Räuber (proportional zu beiden Populationen)
+    \item $a = 1.0$: Wachstumsrate der Beute
+    \item $b = 0.5$: Effizienz der Räuber beim Beutefang
+\end{itemize}
+
+\textbf{Räubergleichung:} $\frac{dy}{dt} = -cy + dxy$
+\begin{itemize}
+    \item $-cy$: Exponentieller Rückgang bei Abwesenheit von Beute
+    \item $dxy$: Wachstum durch erfolgreiche Jagd
+    \item $c = 0.75$: Sterberate der Räuber
+    \item $d = 0.25$: Effizienz der Nahrungsumwandlung
+\end{itemize}
+
+\textbf{b) Numerische Lösung:}
+
+System in Vektorform:
+
+$\mathbf{z}' = \mathbf{f}(t, \mathbf{z}) = \begin{psmallmatrix}
+1.0 z_1 - 0.5 z_1 z_2 \\
+-0.75 z_2 + 0.25 z_1 z_2
+\end{psmallmatrix}$
+mit $\mathbf{z}(0) = \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix}$
+
+\textbf{Runge-Kutta Implementation (Auszug):}
+
+\textbf{Schritt 0 $\rightarrow$ 1:} $t_0 = 0$, $\mathbf{z}_0 = \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix}$
+
+$\mathbf{k}_1 = \mathbf{f}(0, \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix}) = \begin{psmallmatrix} 4 - 8 \\ -3 + 4 \end{psmallmatrix} = \begin{psmallmatrix} -4 \\ 1 \end{psmallmatrix}$
+
+$\mathbf{k}_2 = \mathbf{f}(0.05, \begin{psmallmatrix} 4 - 0.2 \\ 4 + 0.05 \end{psmallmatrix}) = \mathbf{f}(0.05, \begin{psmallmatrix} 3.8 \\ 4.05 \end{psmallmatrix})$
+
+
+$= \begin{psmallmatrix} 3.8 - 3.8 \cdot 4.05 \\ -3.0375 + 0.25 \cdot 3.8 \cdot 4.05 \end{psmallmatrix} = \begin{psmallmatrix} -11.59 \\ 0.81 \end{psmallmatrix}$
+
+$\mathbf{k}_3 = \mathbf{f}(0.05, \begin{psmallmatrix} 4 - 0.58 \\ 4 + 0.041 \end{psmallmatrix}) = \begin{psmallmatrix} -11.73 \\ 0.69 \end{psmallmatrix}$
+
+$\mathbf{k}_4 = \mathbf{f}(0.1, \begin{psmallmatrix} 4 - 1.17 \\ 4 + 0.069 \end{psmallmatrix}) = \begin{psmallmatrix} -15.77 \\ -0.23 \end{psmallmatrix}$
+
+$\mathbf{z}_1 = \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix} + \frac{0.1}{6}\begin{psmallmatrix} -4 - 23.18 - 23.46 - 15.77 \\ 1 + 1.62 + 1.38 - 0.23 \end{psmallmatrix}$
+$= \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix} + \begin{psmallmatrix} -1.11 \\ 0.063 \end{psmallmatrix} = \begin{psmallmatrix} 2.89 \\ 4.063 \end{psmallmatrix}$
+
+\textbf{Typische Ergebnisse nach vollständiger Integration:}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+$t$ & $x(t)$ & $y(t)$ \\
+\hline
+0 & 4.00 & 4.00 \\
+3 & 1.32 & 2.85 \\
+6 & 2.67 & 1.13 \\
+9 & 6.21 & 2.34 \\
+12 & 3.89 & 5.67 \\
+15 & 1.45 & 3.12 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{c) Langzeitverhalten:}
+\begin{itemize}
+    \item Das System zeigt periodische Oszillationen (Grenzzyklus)
+    \item Periode: $T \approx 6.3$ Zeiteinheiten
+    \item Phasenverschiebung: Räuberpopulation folgt der Beutepopulation mit Verzögerung
+    \item Typischer Zyklus:
+    \begin{enumerate}
+        \item Viel Beute $\rightarrow$ Räuber vermehren sich
+        \item Viele Räuber $\rightarrow$ Beute wird dezimiert  
+        \item Wenig Beute $\rightarrow$ Räuber sterben aus
+        \item Wenige Räuber $\rightarrow$ Beute erholt sich
+    \end{enumerate}
+\end{itemize}
+
+\textbf{d) Erhaltungsgrößen:}
+Das Lotka-Volterra System hat eine Erhaltungsgröße (Hamiltonfunktion):
+$H(x,y) = d \cdot x + b \cdot y - c \cdot \ln(x) - a \cdot \ln(y)$
+$= 0.25x + 0.5y - 0.75\ln(x) - \ln(y)$
+\end{example2}
+
+\begin{example2}{Prüfungsaufgabe 8.4- continued}\\
+\textbf{Numerische Verifikation:}
+\begin{itemize}
+    \item $H(4,4) = 1 + 2 - 0.75 \cdot 1.386 - 1.386 = 0.575$
+    \item Nach einer Periode sollte $H \approx 0.575$ sein
+    \item Abweichungen zeigen numerische Fehler an
+    \item Das System ist konservativ (keine Dämpfung)
+\end{itemize}
+
+\textbf{Praktische Bedeutung:}
+Diese Gleichungen beschreiben reale Ökosysteme nur näherungsweise, da sie:
+\begin{itemize}
+    \item Kapazitätsgrenzen ignorieren
+    \item Andere Nahrungsquellen vernachlässigen
+    \item Umwelteinflüsse nicht berücksichtigen
+    \item Trotzdem wichtig für das Verständnis von Populationsdynamik
+\end{itemize}
+\end{example2}
+
+\subsection{Zusätzliche Musteraufgaben}
+
+\begin{example2}{Musteraufgabe: Kombinierte Anwendung}\\
+\textbf{Aufgabe:} Ein Unternehmen modelliert seine Umsatzentwicklung durch die DGL:
+$\frac{dU}{dt} = 0.1U(100 - U) - S(t)$
+
+wobei $U(t)$ der Umsatz in Millionen € und $S(t) = 20\sin(2\pi t)$ saisonale Schwankungen sind.
+
+a) Klassifizieren Sie die DGL
+b) Für konstante Terme ($S = 0$): Bestimmen Sie Gleichgewichtspunkte
+c) Lösen Sie numerisch für $U(0) = 30$ und $t \in [0, 5]$
+d) Erstellen Sie eine Ausgleichsrechnung für die numerischen Daten
+\tcblower
+\textbf{a) Klassifikation:}
+\begin{itemize}
+    \item Nichtlineare DGL 1. Ordnung (wegen $U(100-U)$ Term)
+    \item Zeitabhängiger Störterm $S(t)$
+    \item Ähnlich zur logistischen Gleichung mit Störung
+\end{itemize}
+
+\textbf{b) Gleichgewichtspunkte für $S = 0$:}
+$\frac{dU}{dt} = 0.1U(100 - U) = 0$
+
+Lösungen: $U^* = 0$ oder $U^* = 100$
+
+Stabilität:
+$\frac{d}{dU}\left(0.1U(100-U)\right) = 0.1(100 - 2U)$
+
+\begin{itemize}
+    \item Bei $U^* = 0$: $\frac{df}{dU} = 10 > 0 \rightarrow$ instabil
+    \item Bei $U^* = 100$: $\frac{df}{dU} = -10 < 0 \rightarrow$ stabil
+\end{itemize}
+
+\textbf{c) Numerische Lösung:}
+Mit Runge-Kutta ($h = 0.1$):
+
+System: $\frac{dU}{dt} = 0.1U(100-U) - 20\sin(2\pi t)$
+
+Typische Ergebnisse:
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$t$ & $U(t)$ & $S(t)$ & $\frac{dU}{dt}$ \\
+\hline
+0 & 30.0 & 0 & 210.0 \\
+1 & 45.2 & 0 & 247.6 \\
+2 & 62.8 & 0 & 233.9 \\
+3 & 76.1 & 0 & 182.0 \\
+4 & 85.3 & 0 & 125.4 \\
+5 & 91.1 & 0 & 81.2 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{d) Ausgleichsrechnung:}
+Fitten der numerischen Daten mit logistischer Funktion:
+$U(t) = \frac{K}{1 + Ae^{-rt}}$
+
+Linearisierung durch: $\ln\left(\frac{K-U}{U}\right) = \ln(A) - rt$
+
+Nach linearer Regression: $K \approx 100$, $A \approx 2.33$, $r \approx 0.693$
+
+Güte des Fits: $R^2 > 0.98$ (sehr gute Anpassung an ungestörtes Wachstum)
+\end{example2}
+
+\subsection{Last Words}
 
 \begin{KR}{Verfahren auswählen}
 \paragraph{Schritt 1: Problemanalyse}
@@ -724,6 +1071,8 @@ Die exakte Lösung hat sowohl schnell abklingende ($e^{-1000x}$) als auch langsa
 \end{itemize}
 \end{KR}
 
+\raggedcolumns
+
 \begin{formula}{Zusammenfassung - Wann welches Verfahren?}
 \begin{itemize}
     \item \textbf{Euler:} Einfachste Implementierung, Lernzwecke, grobe Näherungen
@@ -737,3 +1086,25 @@ Die exakte Lösung hat sowohl schnell abklingende ($e^{-1000x}$) als auch langsa
 \textbf{Praktischer Tipp:} Verwende \texttt{scipy.integrate.solve\_ivp()} mit automatischer Methodenwahl für die meisten Anwendungen.
 \end{formula}
 
+
+\begin{concept}
+\textbf{Tipps für die Prüfungsvorbereitung:}
+\begin{itemize}
+    \item \textbf{Newton-Verfahren:} Üben Sie das Aufstellen und Lösen der Jacobi-Matrix
+    \item \textbf{Ausgleichsrechnung:} Unterscheiden Sie klar zwischen linearen und nichtlinearen Problemen
+    \item \textbf{Integration:} Beherrschen Sie Trapez-, Simpson-Regel und Romberg-Extrapolation
+    \item \textbf{DGL:} Können Sie Systeme aufstellen und verschiedene Verfahren anwenden
+    \item \textbf{Stabilität:} Verstehen Sie die Stabilitätsbedingungen der numerischen Verfahren
+    \item \textbf{Interpretation:} Verbinden Sie mathematische Ergebnisse mit physikalischen/praktischen Bedeutungen
+    \item \textbf{Fehleranalyse:} Können Sie Konvergenzordnungen bestimmen und Fehler abschätzen
+\end{itemize}
+
+\textbf{Häufige Prüfungsthemen:}
+\begin{itemize}
+    \item Kombination von Verfahren (z.B. Newton + Ausgleichsrechnung)
+    \item Anwendungsbezogene Aufgaben mit Interpretation
+    \item Vergleich verschiedener numerischer Methoden
+    \item Fehler- und Stabilitätsanalyse
+    \item Implementierung in Python (Pseudocode)
+\end{itemize}
+\end{concept}
