@@ -1,0 +1,513 @@
+\section{File Systems II}
+
+\subsection{Advanced Storage Management}
+
+\begin{concept}{Beyond Basic Partitioning}\\
+    Modern storage management goes beyond simple partitioning:
+    \begin{itemize}
+        \item Traditional approach: Fixed partitions with static sizing
+        \item Advanced approach: Dynamic, flexible storage allocation
+        \item Enables efficient use of storage resources
+        \item Supports features like snapshots, thin provisioning, and live resizing
+        \item Provides better fault tolerance and performance optimization
+    \end{itemize}
+\end{concept}
+
+\subsection{Non-persistent Storage: tmpfs}
+
+\begin{definition}{tmpfs (Temporary File System)}\\
+    tmpfs is a file system that stores files in volatile memory:
+    \begin{itemize}
+        \item Files stored in RAM (not on disk)
+        \item Extremely fast read and write operations based on memcpy
+        \item Data is lost on system crash or shutdown (non-persistent)
+        \item Used by many distributions for temporary directories (/tmp, /run)
+        \item Can be mounted with size limits to prevent memory exhaustion
+        \item Ideal for fast access to non-critical, temporary data
+    \end{itemize}
+\end{definition}
+
+\begin{example}
+    Working with tmpfs:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Create a directory for tmpfs mount
+mkdir -p /mnt/tmp
+
+# Mount tmpfs with 2GB size limit
+sudo mount -t tmpfs -o size=2G tmpfs /mnt/tmp
+
+# Check filesystem usage
+df -h /mnt/tmp
+
+# Test performance
+dd if=/dev/zero of=/mnt/tmp/speedtest bs=10M count=100
+
+# Compare with disk-based filesystem
+dd if=/dev/zero of=/tmp/speedtest bs=10M count=100
+
+# Unmount when done
+sudo umount /mnt/tmp
+\end{lstlisting}
+\end{example}
+
+\subsection{Logical Volume Management (LVM)}
+
+\begin{definition}{Logical Volume Management}\\
+    LVM provides a method of allocating space on mass-storage devices that is more flexible than conventional partitioning:
+    \begin{itemize}
+        \item \textbf{Physical Volumes (PV)}: Physical disks or partitions providing block storage
+        \item \textbf{Volume Groups (VG)}: Collections of physical volumes that form a storage pool
+        \item \textbf{Logical Volumes (LV)}: Virtual partitions created from volume group space
+        \item Logical volumes can span multiple physical devices
+        \item Enables dynamic resizing without unmounting filesystems
+        \item Supports advanced features like snapshots and thin provisioning
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{LVM Features}\\
+    LVM provides several advanced storage management features:
+    \begin{itemize}
+        \item \textbf{Free space management}: Allocate space from any available physical volume
+        \item \textbf{Online space management}: Resize logical volumes while mounted
+        \item \textbf{Snapshots}: Create point-in-time copies using copy-on-write
+        \item \textbf{Balancing}: Distribute data evenly across physical volumes
+        \item \textbf{Thin provisioning}: Allocate space on demand rather than upfront
+        \item \textbf{Software RAID}: Combine multiple disks for redundancy or performance
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Setting up LVM}\\
+    \paragraph{Initialize physical volumes}
+    \begin{itemize}
+        \item Prepare disks: \texttt{sudo pvcreate /dev/sdb /dev/sdc}
+        \item Display PVs: \texttt{sudo pvdisplay}
+        \item Scan for PVs: \texttt{sudo pvscan}
+    \end{itemize}
+    
+    \paragraph{Create volume group}
+    \begin{itemize}
+        \item Create VG: \texttt{sudo vgcreate myVG /dev/sdb /dev/sdc}
+        \item Display VGs: \texttt{sudo vgdisplay}
+        \item Extend VG: \texttt{sudo vgextend myVG /dev/sdd}
+    \end{itemize}
+    
+    \paragraph{Create logical volumes}
+    \begin{itemize}
+        \item Create LV: \texttt{sudo lvcreate -L 10G -n myLV myVG}
+        \item Create LV using percentage: \texttt{sudo lvcreate -l 50\%FREE -n myLV2 myVG}
+        \item Display LVs: \texttt{sudo lvdisplay}
+    \end{itemize}
+    
+    \paragraph{Resize logical volumes}
+    \begin{itemize}
+        \item Extend LV: \texttt{sudo lvextend --resizefs -L +5G /dev/myVG/myLV}
+        \item Reduce LV: \texttt{sudo lvreduce --resizefs -L -2G /dev/myVG/myLV}
+        \item Resize to specific size: \texttt{sudo lvresize --resizefs -L 20G /dev/myVG/myLV}
+    \end{itemize}
+    
+    \paragraph{Snapshot management}
+    \begin{itemize}
+        \item Create snapshot: \texttt{sudo lvcreate --size 1G --snapshot --name myLV-snap /dev/myVG/myLV}
+        \item Mount snapshot: \texttt{sudo mount /dev/myVG/myLV-snap /mnt/snapshot}
+        \item Remove snapshot: \texttt{sudo lvremove /dev/myVG/myLV-snap}
+    \end{itemize}
+\end{KR}
+
+\subsection{Copy-on-Write and Snapshots}
+
+\begin{definition}{Copy-on-Write (COW)}\\
+    COW is a resource management technique for efficient duplication:
+    \begin{itemize}
+        \item \textbf{Goal}: Efficiently duplicate or copy modifiable resources
+        \item \textbf{Principle}: If a resource is shared but not modified, no copy is needed
+        \item \textbf{Implementation}: Copy is made only upon modification (write operation)
+        \item \textbf{Benefits}:
+            \begin{itemize}
+                \item Saves storage space for identical data
+                \item Reduces initial duplication time
+                \item Minimizes I/O operations
+            \end{itemize}
+        \item \textbf{Applications}: Virtual machines, snapshots, process forking
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Snapshots}\\
+    Snapshots provide point-in-time copies of data:
+    \begin{itemize}
+        \item \textbf{Purpose}: Allow full backup without disabling write access
+        \item \textbf{Implementation}: Fix the state of a filesystem at a specific time using COW
+        \item \textbf{Process}:
+            \begin{itemize}
+                \item Create snapshot at time T
+                \item Original data continues to be accessible
+                \item New writes create copies, preserving original blocks
+                \item Snapshot contains the data as it existed at time T
+            \end{itemize}
+        \item \textbf{Use cases}: Backups, testing, rollback scenarios
+    \end{itemize}
+\end{definition}
+
+\subsection{BtrFS (B-tree File System)}
+
+\begin{definition}{BtrFS Overview}\\
+    BtrFS is a modern copy-on-write filesystem for Linux:
+    \begin{itemize}
+        \item Open source general-purpose COW filesystem (developed since 2007)
+        \item Highly scalable (max volume size: 16 EB, max file size: 16 EB)
+        \item Consolidates advanced features from multiple filesystems
+        \item Includes copy-on-write, snapshots, logical volume management
+        \item Built-in data and metadata integrity checking with checksums
+        \item Integrated RAID support and compression capabilities
+        \item Foundation for distributed storage systems like Ceph
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{BtrFS Design Goals}\\
+    BtrFS aims to address limitations of traditional filesystems:
+    \begin{itemize}
+        \item Work well for diverse workloads and hardware configurations
+        \item Maintain performance as the filesystem ages (avoid fragmentation issues)
+        \item Scale from small devices (smartphones) to enterprise systems
+        \item Provide scalability in multiple dimensions (disk space, memory, CPUs)
+        \item Ensure data integrity through checksums and metadata duplication
+        \item Support diverse storage devices (HDDs, SSDs, mixed arrays)
+        \item Deliver performance comparable to or better than ext4 and XFS
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{BtrFS Key Concepts}\\
+    BtrFS introduces several important concepts:
+    \begin{itemize}
+        \item \textbf{COW filesystem}: Uses copy-on-write for all updates instead of in-place modifications
+        \item \textbf{Subvolumes}: Independent file trees that can be mounted separately
+        \item \textbf{Extents}: Mappings from logical file areas to contiguous physical areas
+        \item \textbf{Physical chunks}: Division of each device into manageable segments
+        \item \textbf{Logical chunks}: Groupings of physical chunks for RAID and allocation
+        \item \textbf{B-tree forest}: Multiple B-trees manage different aspects of the filesystem
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{BtrFS Architecture}\\
+    BtrFS is constructed from a forest of COW-friendly B-trees:
+    \begin{itemize}
+        \item \textbf{Superblock}: Fixed location anchor point
+        \item \textbf{Tree of tree roots}: Manages the forest of B-trees
+        \item \textbf{Filesystem trees}: Manage directories and files within subvolumes
+        \item \textbf{Extent tree}: Manages allocation of data blocks
+        \item \textbf{Chunk tree}: Maps logical chunks to physical chunks
+        \item \textbf{Device tree}: Manages multiple storage devices
+        \item \textbf{Checksum tree}: Stores checksums for data integrity
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{BtrFS Advanced Features}\\
+    BtrFS provides numerous advanced features:
+    \begin{itemize}
+        \item \textbf{Efficient small file storage}: Store file data inline within inodes
+        \item \textbf{Data integrity}: Checksums for both data and metadata
+        \item \textbf{Compression}: ZLIB (strong) or LZO (fast) compression at extent level
+        \item \textbf{Multi-device support}: RAID 0, 1, 10 via logical chunks
+        \item \textbf{Dynamic device management}: Add, remove, and rebalance devices online
+        \item \textbf{Writable snapshots}: Memory-efficient clones as "first-class citizens"
+        \item \textbf{Online operations}: Resize, defragmentation, extent relocation
+    \end{itemize}
+\end{definition}
+
+\begin{example2}{BtrFS Setup and Management}\\
+    Setting up and using BtrFS features:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Create BtrFS filesystem on a single device
+sudo mkfs.btrfs /dev/sdb1
+
+# Mount the filesystem
+sudo mount /dev/sdb1 /mnt/btrfs
+
+# Create subvolumes
+sudo btrfs subvolume create /mnt/btrfs/home
+sudo btrfs subvolume create /mnt/btrfs/var
+
+# List subvolumes
+sudo btrfs subvolume list /mnt/btrfs
+
+# Create a snapshot of a subvolume
+sudo btrfs subvolume snapshot /mnt/btrfs/home /mnt/btrfs/home-snapshot
+
+# Add another device to the filesystem
+sudo btrfs device add /dev/sdc1 /mnt/btrfs
+
+# Balance data across devices
+sudo btrfs balance start -draid1 -mraid1 /mnt/btrfs
+
+# Check filesystem status
+sudo btrfs filesystem show /mnt/btrfs
+sudo btrfs filesystem usage /mnt/btrfs
+
+# Enable compression
+sudo mount -o remount,compress=zlib /mnt/btrfs
+
+# Defragment with compression
+sudo btrfs filesystem defragment -czlib /mnt/btrfs/home
+
+# Check for errors
+sudo btrfs scrub start /mnt/btrfs
+sudo btrfs scrub status /mnt/btrfs
+\end{lstlisting}
+\end{example2}
+
+\subsection{RAID (Redundant Array of Independent Disks)}
+
+\begin{definition}{RAID Concept}\\
+    RAID combines multiple physical drives for performance and/or reliability:
+    \begin{itemize}
+        \item \textbf{Goal}: Build performant and reliable mass storage systems
+        \item \textbf{Methods}: Use multiple disks, parity information, and data striping
+        \item \textbf{Benefits}: Improved performance, fault tolerance, or both
+        \item \textbf{Implementation}: Hardware RAID (dedicated controllers) or software RAID (OS-based)
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Common RAID Levels}\\
+    Different RAID levels provide various combinations of performance and redundancy:
+    \begin{itemize}
+        \item \textbf{RAID 0 (Striping)}:
+            \begin{itemize}
+                \item Data striped across multiple drives
+                \item Improved performance, no redundancy
+                \item Total capacity equals sum of all drives
+                \item Failure of any drive results in total data loss
+            \end{itemize}
+        \item \textbf{RAID 1 (Mirroring)}:
+            \begin{itemize}
+                \item Data duplicated on multiple drives
+                \item High redundancy, no performance improvement for writes
+                \item Total capacity equals smallest drive
+                \item Can survive failure of all but one drive
+            \end{itemize}
+        \item \textbf{RAID 5 (Striping with parity)}:
+            \begin{itemize}
+                \item Data and parity information striped across drives
+                \item Good balance of performance, storage efficiency, and redundancy
+                \item Can survive failure of one drive
+                \item Requires minimum of three drives
+            \end{itemize}
+        \item \textbf{RAID 10 (Stripe of mirrors)}:
+            \begin{itemize}
+                \item Combines RAID 0 and RAID 1
+                \item High performance and redundancy
+                \item Requires minimum of four drives
+                \item Can survive multiple drive failures if not in same mirror set
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\subsection{Union File Systems}
+
+\begin{definition}{Union File Systems Concept}\\
+    Union file systems overlay multiple file systems to create a unified view:
+    \begin{itemize}
+        \item \textbf{Purpose}: Combine read-only and read-write filesystems
+        \item \textbf{Original motivation}: Enable writing on read-only media (LiveCDs, DVDs)
+        \item \textbf{Modern applications}: Container technologies, software distribution
+        \item \textbf{Key implementations}: AuFS (Another Union File System), OverlayFS
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{OverlayFS}\\
+    OverlayFS is the mainline Linux union filesystem:
+    \begin{itemize}
+        \item \textbf{Components}:
+            \begin{itemize}
+                \item \textbf{lowerdir}: Read-only base layer(s)
+                \item \textbf{upperdir}: Read-write layer for modifications
+                \item \textbf{workdir}: Working directory for atomic operations
+                \item \textbf{merged}: Combined view of all layers
+            \end{itemize}
+        \item \textbf{Operation}:
+            \begin{itemize}
+                \item All modifications go to the upper layer
+                \item Lower layers remain unchanged
+                \item Files in upper layer "shadow" files in lower layers
+                \item Deletions marked with "whiteout" files
+            \end{itemize}
+        \item \textbf{Use cases}: Docker containers, software packaging, live systems
+    \end{itemize}
+\end{definition}
+
+\begin{example2}{OverlayFS Setup}\\
+    Creating and using an overlay filesystem:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Create directory structure
+mkdir -p /tmp/overlay/{lower,upper,work,merged}
+
+# Populate lower directory (read-only base)
+echo "Original file from lower" > /tmp/overlay/lower/file1.txt
+echo "Lower layer file" > /tmp/overlay/lower/file2.txt
+
+# Create the overlay mount
+sudo mount -t overlay overlay \
+    -o lowerdir=/tmp/overlay/lower,upperdir=/tmp/overlay/upper,workdir=/tmp/overlay/work \
+    /tmp/overlay/merged
+
+# View merged contents
+ls -la /tmp/overlay/merged/
+
+# Modify a file (goes to upper layer)
+echo "Modified content" > /tmp/overlay/merged/file1.txt
+
+# Create a new file (goes to upper layer)
+echo "New file in upper" > /tmp/overlay/merged/file3.txt
+
+# Check what's in each layer
+echo "=== Lower layer ==="
+ls -la /tmp/overlay/lower/
+
+echo "=== Upper layer ==="
+ls -la /tmp/overlay/upper/
+
+echo "=== Merged view ==="
+ls -la /tmp/overlay/merged/
+
+# Delete a file from lower layer (creates whiteout)
+rm /tmp/overlay/merged/file2.txt
+
+# Check for whiteout file
+ls -la /tmp/overlay/upper/
+
+# Unmount overlay
+sudo umount /tmp/overlay/merged
+\end{lstlisting}
+\end{example2}
+
+\begin{KR}{Working with Advanced Filesystems}\\
+    \paragraph{Partition and format management}
+    \begin{itemize}
+        \item Create GPT partition table: \texttt{sudo parted /dev/sdb mklabel gpt}
+        \item Create partition: \texttt{sudo parted /dev/sdb mkpart primary 0\% 100\%}
+        \item Format with different filesystems:
+            \begin{itemize}
+                \item ext4: \texttt{sudo mkfs.ext4 /dev/sdb1}
+                \item XFS: \texttt{sudo mkfs.xfs /dev/sdb1}
+                \item BtrFS: \texttt{sudo mkfs.btrfs /dev/sdb1}
+            \end{itemize}
+    \end{itemize}
+    
+    \paragraph{Filesystem mounting and options}
+    \begin{itemize}
+        \item Mount with compression: \texttt{sudo mount -o compress=zlib /dev/sdb1 /mnt}
+        \item Mount with specific options: \texttt{sudo mount -o noatime,nodiratime /dev/sdb1 /mnt}
+        \item Check mount options: \texttt{mount | grep /mnt}
+        \item Add to fstab: \texttt{echo '/dev/sdb1 /mnt btrfs defaults,compress=zlib 0 2' | sudo tee -a /etc/fstab}
+    \end{itemize}
+    
+    \paragraph{Performance testing}
+    \begin{itemize}
+        \item Test sequential write: \texttt{dd if=/dev/zero of=/mnt/testfile bs=1M count=1000}
+        \item Test random I/O: \texttt{fio --name=random-rw --ioengine=posix --rw=randrw --bs=4k --numjobs=1 --size=1g --runtime=60 --time\_based --filename=/mnt/testfile}
+        \item Monitor I/O: \texttt{iotop -a}
+        \item Check compression ratio: \texttt{btrfs filesystem usage /mnt}
+    \end{itemize}
+    
+    \paragraph{Filesystem maintenance}
+    \begin{itemize}
+        \item Check filesystem: \texttt{sudo fsck /dev/sdb1}
+        \item Defragment (ext4): \texttt{sudo e4defrag /mnt}
+        \item Defragment (BtrFS): \texttt{sudo btrfs filesystem defragment /mnt}
+        \item Balance (BtrFS): \texttt{sudo btrfs balance start /mnt}
+        \item Scrub (BtrFS): \texttt{sudo btrfs scrub start /mnt}
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Comparing Filesystem Performance}\\
+    Testing different filesystems for performance characteristics:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Create test partitions
+sudo parted /dev/sdb mklabel gpt
+sudo parted /dev/sdb mkpart primary 0% 33%
+sudo parted /dev/sdb mkpart primary 33% 66%
+sudo parted /dev/sdb mkpart primary 66% 100%
+
+# Format with different filesystems
+sudo mkfs.ext4 /dev/sdb1
+sudo mkfs.xfs /dev/sdb2
+sudo mkfs.btrfs -f /dev/sdb3
+
+# Create mount points
+sudo mkdir -p /mnt/{ext4,xfs,btrfs}
+
+# Mount filesystems
+sudo mount /dev/sdb1 /mnt/ext4
+sudo mount /dev/sdb2 /mnt/xfs
+sudo mount -o compress=zlib /dev/sdb3 /mnt/btrfs
+
+# Test file creation performance
+for fs in ext4 xfs btrfs; do
+    echo "Testing $fs file creation..."
+    time sh -c "for i in {1..1000}; do touch /mnt/$fs/file_$i; done"
+done
+
+# Test large file write performance
+for fs in ext4 xfs btrfs; do
+    echo "Testing $fs large file write..."
+    time dd if=/dev/zero of=/mnt/$fs/bigfile bs=1M count=500 2>/dev/null
+done
+
+# Test compression ratio (BtrFS only)
+echo "=== BtrFS compression analysis ==="
+sudo btrfs filesystem usage /mnt/btrfs
+
+# Clean up
+sudo umount /mnt/{ext4,xfs,btrfs}
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Container Storage with OverlayFS}\\
+    Demonstrating container-like storage layering:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Create base image layer
+mkdir -p /tmp/container/{base,app,runtime,merged,work}
+
+# Base layer (OS files)
+echo "#!/bin/bash" > /tmp/container/base/entrypoint.sh
+echo "echo 'Hello from base layer'" >> /tmp/container/base/entrypoint.sh
+chmod +x /tmp/container/base/entrypoint.sh
+
+# Application layer
+echo "config_file=app.conf" > /tmp/container/app/app.config
+echo "#!/bin/bash" > /tmp/container/app/start-app.sh
+echo "echo 'Starting application...'" >> /tmp/container/app/start-app.sh
+chmod +x /tmp/container/app/start-app.sh
+
+# Create overlay combining base and app layers
+sudo mount -t overlay overlay \
+    -o lowerdir=/tmp/container/app:/tmp/container/base,upperdir=/tmp/container/runtime,workdir=/tmp/container/work \
+    /tmp/container/merged
+
+# View combined filesystem
+ls -la /tmp/container/merged/
+
+# Make runtime changes (goes to runtime layer)
+echo "Runtime log entry" > /tmp/container/merged/runtime.log
+echo "user_data=changed" > /tmp/container/merged/app.config
+
+# Show layering
+echo "=== Base layer ==="
+ls -la /tmp/container/base/
+
+echo "=== App layer ==="
+ls -la /tmp/container/app/
+
+echo "=== Runtime layer ==="
+ls -la /tmp/container/runtime/
+
+echo "=== Merged view ==="
+ls -la /tmp/container/merged/
+
+# Unmount
+sudo umount /tmp/container/merged
+\end{lstlisting}
+\end{example2}
