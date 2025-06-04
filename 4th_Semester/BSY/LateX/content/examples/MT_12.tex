@@ -1,0 +1,452 @@
+\section{Midterm 2012}
+
+\subsection{Resource Management and Deadlocks}
+
+\begin{example2}{Resource Graph Analysis}\\
+    Ein Rechnersystem besitzt zwei Tapestationen (T1, T2) und zwei Disks (D1, D2). Zur Zeit laufen drei Prozesse (P1, P2, P3), wobei folgendes gilt:
+    \begin{itemize}
+        \item Prozess P1 kopiert Daten von Disk D1 auf die Tapestation T2 und moechte Daten auf den Disk D2 schreiben
+        \item Prozess P2 hat Tapestation T1 alloziert und moechte Daten auf Disk D2 schreiben
+        \item Prozess P3 hat Disk D2 alloziert und moechte Daten nach Tapestation T2 kopieren
+    \end{itemize}
+    
+    Ist das eine Deadlocksituation, wenn die Ressourcen exklusiv alloziert werden und wenn moechte schreiben das Gleiche wie anfordern bedeutet? Begruenden Sie Ihre Antwort (Ressourcengraphen zeichnen und analysieren).
+    
+    \tcblower
+    
+    \textbf{Loesung:}\\
+    Ja, dies ist eine Deadlocksituation. Analyse:
+    \begin{itemize}
+        \item P1 haelt D1, moechte T2 und D2
+        \item P2 haelt T1, moechte D2  
+        \item P3 haelt D2, moechte T2
+    \end{itemize}
+    
+    Es entsteht ein Zyklus: P1 $\rightarrow$ D2 $\rightarrow$ P3 $\rightarrow$ T2 $\rightarrow$ P1
+    
+    \textbf{Bedingungen fuer Deadlock:}
+    \begin{itemize}
+        \item Mutual Exclusion: Ressourcen werden exklusiv alloziert
+        \item No Preemption: Ressourcen koennen nicht weggenommen werden
+        \item Hold \& Wait: Prozesse halten Ressourcen und warten auf weitere
+        \item Circular Wait: Es gibt einen Zyklus im Ressourcengraph
+    \end{itemize}
+    
+    Alle vier Bedingungen sind erfuellt $\rightarrow$ Deadlock!
+\end{example2}
+
+\begin{KR}{Deadlock Detection in Resource Allocation Graphs}
+    \paragraph{Resource Graph erstellen}
+    \begin{itemize}
+        \item Kreise: Prozesse (P1, P2, P3, ...)
+        \item Rechtecke: Ressourcen (R1, R2, R3, ...)
+        \item Pfeile von Prozess zu Ressource: Request (Anforderung)
+        \item Pfeile von Ressource zu Prozess: Allocation (Zuteilung)
+    \end{itemize}
+    
+    \paragraph{Deadlock-Analyse}
+    \begin{itemize}
+        \item Suche nach Zyklen im Graph
+        \item Ein Zyklus bedeutet Deadlock bei Single-Instance Ressourcen
+        \item Bei Multi-Instance Ressourcen: Pruefe ob alle Instanzen blockiert
+    \end{itemize}
+    
+    \paragraph{Deadlock-Bedingungen pruefen}
+    \begin{itemize}
+        \item Mutual Exclusion: Exklusive Ressourcennutzung
+        \item Hold \& Wait: Halten und gleichzeitig warten
+        \item No Preemption: Keine Unterbrechung moeglich
+        \item Circular Wait: Zyklische Warteabhaengigkeiten
+    \end{itemize}
+    
+    \paragraph{Loesungsansaetze}
+    \begin{itemize}
+        \item Prevention: Eine der vier Bedingungen verhindern
+        \item Avoidance: Banker's Algorithm
+        \item Detection \& Recovery: Deadlock erkennen und aufloesen
+    \end{itemize}
+\end{KR}
+
+\subsection{Synchronization with Semaphores}
+
+\begin{example2}{Semaphore Implementation}\\
+    Gegeben sind drei Prozess P0, P1, und P2 die nach folgendem Schema abgearbeitet werden soll:
+    
+    \begin{center}
+    P0 $\rightarrow$ P2 $\rightarrow$ P0 $\rightarrow$ P2 $\rightarrow$ ...\\
+    P1 (parallel)
+    \end{center}
+    
+    Die Verarbeitung startet mit den beiden Prozessen P0 und P1, die parallel verarbeitet werden sollen (es spielt kein Rolle, welcher der beiden Prozesse zuerst mit seiner Verarbeitung beginnt oder aufhoert). Wenn beide Prozesse eine Iteration ihrer Funktion working(x) beendet haben, folgt Prozess P2, etc.
+    
+    Schreiben Sie Pseudocode mit maximal 3 Semaphoren S0, S1 und S3, der garantiert, dass die oben skizzierte Reihenfolge eingehalten wird. Verwenden Sie dazu ausschliesslich Befehle der Form up(S0) und down(S0), etc. Geben Sie an, wie die Semaphore initialisiert werden muessen.
+    
+    \tcblower
+    
+    \textbf{Loesung:}
+    \begin{center}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{P0} & \textbf{P1} & \textbf{P2} \\
+    \hline
+    Sem S0: 1 & Sem S1: 1 & Sem S2: 0 \\
+    Sem S3: 0 & Sem S3: 0 & \\
+    \hline
+    while(1) \{ & while(1) \{ & while(1) \{ \\
+    \quad down(S0); & \quad down(S1); & \quad down(S2); \\
+    \quad working(0); & \quad working(1); & \quad working(2); \\
+    \quad up(S3); & \quad up(S3); & \quad up(S0); \\
+    \} & \} & \quad up(S1); \\
+     &  & \} \\
+    \hline
+    \end{tabular}
+    \end{center}
+    
+    \textbf{Initialisierung:}
+    \begin{itemize}
+        \item S0 = 1 (P0 kann starten)
+        \item S1 = 1 (P1 kann starten) 
+        \item S2 = 0 (P2 muss warten)
+        \item S3 = 0 (Synchronisation zwischen P0/P1 und P2)
+    \end{itemize}
+    
+    \textbf{Ablauf:}
+    \begin{itemize}
+        \item P0 und P1 starten parallel
+        \item Beide signalisieren mit up(S3) wenn fertig
+        \item P2 wartet mit down(S2) bis beide P0 und P1 fertig sind
+        \item P2 gibt mit up(S0) und up(S1) die naechste Runde frei
+    \end{itemize}
+\end{example2}
+
+\begin{KR}{Semaphore-basierte Synchronisation}
+    \paragraph{Semaphore verstehen}
+    \begin{itemize}
+        \item Semaphore S ist ein Zaehler mit atomaren Operationen
+        \item down(S) oder P(S): Dekrementiert S, blockiert bei S $\leq$  0
+        \item up(S) oder V(S): Inkrementiert S, weckt wartende Prozesse
+        \item Initialisierung bestimmt verfuegbare Ressourcen
+    \end{itemize}
+    
+    \paragraph{Synchronisationsmuster}
+    \begin{itemize}
+        \item Mutual Exclusion: Binary Semaphore (0/1) um kritische Bereiche
+        \item Signaling: Ein Prozess signalisiert einem anderen (Producer-Consumer)
+        \item Rendezvous: Zwei Prozesse warten aufeinander
+        \item Barrier: Mehrere Prozesse warten aufeinander
+    \end{itemize}
+    
+    \paragraph{Typische Synchronisationsprobleme}
+    \begin{itemize}
+        \item Producer-Consumer: Buffer-Management mit vollen/leeren Plaetzen
+        \item Reader-Writer: Mehrere Leser oder ein Schreiber
+        \item Dining Philosophers: Deadlock-Vermeidung bei zyklischen Abhaengigkeiten
+        \item Barrier Synchronization: Alle warten aufeinander
+    \end{itemize}
+    
+    \paragraph{Implementierungsschritte}
+    \begin{itemize}
+        \item Identifiziere Synchronisationspunkte
+        \item Bestimme benoetigte Semaphore und deren Initialisierung
+        \item Verwende down() vor kritischen Bereichen/Warten
+        \item Verwende up() nach kritischen Bereichen/Signaling
+        \item Teste auf Deadlock-Freiheit und korrekte Reihenfolge
+    \end{itemize}
+\end{KR}
+
+\subsection{Memory Management}
+
+\begin{example2}{Buddy System}\\
+    Ein Betriebssystem-Kernel verwaltet seine Datenbuffer mit einem Buddy System, wobei insgesamt 8MByte Speicher zur Verfuegung stehen. Zur Zeit sind folgende Buffer mit 62KByte, 34KByte und 9KByte alloziert worden. Wie viel Speicher geht dabei durch interne Fragmentierung insgesamt verloren, Angabe in KByte:
+    
+    \tcblower
+    
+    \textbf{Loesung:}\\
+    Buddy System alloziert in Potenzen von 2:
+    
+    \begin{itemize}
+        \item 62 KByte $\rightarrow$ naechste 2er-Potenz: 64 KByte
+        \item 34 KByte $\rightarrow$ naechste 2er-Potenz: 64 KByte  
+        \item 9 KByte $\rightarrow$ naechste 2er-Potenz: 16 KByte
+    \end{itemize}
+    
+    Interne Fragmentierung = Alloziert - Angefordert:
+    \begin{itemize}
+        \item (64 - 62) = 2 KByte
+        \item (64 - 34) = 30 KByte
+        \item (16 - 9) = 7 KByte
+    \end{itemize}
+    
+    Gesamt: 2 + 30 + 7 = \textbf{39 KByte} interne Fragmentierung
+\end{example2}
+
+\begin{example2}{Page Tables}\\
+    Ein Prozessor besitzt eine Wortbreite von 32Bit. Pointer (Adressen) werden in 32Bit Worten gespeichert, aber nur die 24 tieferwertigen Bits werden fuer die Adressbildung verwendet (Bits 25-31sind auf 0 gesetzt).
+    
+    Die logische Adresse ist wie folgt strukturiert:
+    \begin{center}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    6-Bit Page Directory & 8-Bit Page Nummer & 10-Bit Offset \\
+    \hline
+    \end{tabular}
+    \end{center}
+    
+    a) Wie gross ist eine Page, Angabe in KBytes?\\
+    b) Wie viele Bytes enthaelt das Page Directory, wenn pro Eintrag ein Pointer (Adresse) auf eine Page Tabelle eingetragen wird, Angabe in KBytes?\\
+    c) Wie viele Page Tabellen kann ein Prozess maximal haben?\\
+    d) Wie viele Frames kann das System maximal haben?
+    
+    \tcblower
+    
+    \textbf{Loesung:}
+    
+    a) Page-Groesse = 2\textsuperscript{10} Bit = 1024 Bytes = \textbf{1 KByte}
+    
+    b) Page Directory:
+    \begin{itemize}
+        \item 6 Bit $\rightarrow$ 2\textsuperscript{6} = 64 Eintraege
+        \item 4 Bytes pro Adresse
+        \item 64 × 4 = 256 Bytes = \textbf{0.25 KBytes}
+    \end{itemize}
+    
+    c) Page Tabellen: 6 Bit $\rightarrow$ 2\textsuperscript{6} = \textbf{64 Page Tabellen}
+    
+    d) Frames im System:
+    \begin{itemize}
+        \item 24 Bit physische Adresse
+        \item 10 Bit Offset pro Frame
+        \item Frame-Bits: 24 - 10 = 14 Bit
+        \item Maximale Frames: 2\textsuperscript{14} = \textbf{16384 Frames}
+    \end{itemize}
+\end{example2}
+
+\begin{KR}{Memory Management Analysis}
+    \paragraph{Buddy System}
+    \begin{itemize}
+        \item Alloziert in Potenzen von 2 (1, 2, 4, 8, 16, ... KByte)
+        \item Interne Fragmentierung = Alloziert - Angefordert
+        \item Naechste groessere 2er-Potenz finden: 2\textsuperscript{n} $\geq$ Anforderung
+        \item Beispiel: 33 KByte $\rightarrow$ 64 KByte (2\textsuperscript{6})
+    \end{itemize}
+    
+    \paragraph{Page Table Berechnung}
+    \begin{itemize}
+        \item Page-Groesse = 2\textsuperscript{Offset-Bits} Bytes
+        \item Anzahl Pages = 2\textsuperscript{Page-Number-Bits}
+        \item Page Directory Groesse = 2\textsuperscript{Directory-Bits} × Pointer-Groesse
+        \item Maximale Frames = 2\textsuperscript{(Physische-Adress-Bits - Offset-Bits)}
+    \end{itemize}
+    
+    \paragraph{Adressaufteilung}
+    \begin{itemize}
+        \item Logische Adresse = Page Directory + Page Number + Offset
+        \item Physische Adresse = Frame Number + Offset
+        \item Page Table Entry enthaelt Frame Number
+        \item Translation: Page Number $\rightarrow$ Frame Number
+    \end{itemize}
+    
+    \paragraph{Memory Hierarchie}
+    \begin{itemize}
+        \item Page Directory zeigt auf Page Tables
+        \item Page Tables zeigen auf Frames
+        \item Mehrstufige Page Tables reduzieren Speicherbedarf
+        \item TLB cached haeufig verwendete Translations
+    \end{itemize}
+\end{KR}
+
+\subsection{Page Replacement Algorithms}
+
+\begin{example2}{Least Recently Used (LRU)}\\
+    Ein Prozess referenziert der Reihe nach folgende Pages:
+    \begin{center}
+    8 7 5 8 7 3 5 1 3 4 2 1 8 3 1 2
+    \end{center}
+    
+    Gehen Sie davon aus, dass zu Beginn keine Pages im Speicher stehen und dass auch das erstmalige Laden einer Page als Page Fault gezaehlt wird (demand paging). Pro Prozess stehen 4 Frames zur Verfuegung.
+    
+    Tragen Sie in unten stehender Tabelle die den Frames zugewiesenen Pages fuer den Least Recently Used Algorithmus. Das Page mit diesem Zugriff am weitesten zurueckliegend wird dann mit ein neues Page ersetzt.
+    
+    Markieren Sie die Spalten mit einem Stern, wo ein Page Fault auftritt. Nehmen Sie an, dass ausschliesslich Demand Paging verwendet wird. Wenn mehrere Frames fuer das placement resp. replacement in Frage kommen, muss der Frame mit der kleinsten Nummer gewaehlt werden.
+    
+    \tcblower
+    
+    \textbf{Loesung:}
+    
+    \begin{center}
+    \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    Referenzen & 8 & 7 & 5 & 8 & 7 & 3 & 5 & 1 & 3 & 4 & 2 & 1 & 8 & 3 & 1 & 2 \\
+    \hline
+    frame 1 & 8* & 8 & 8 & 8 & 8 & 8 & 8 & 1* & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+    \hline
+    frame 2 & & 7* & 7 & 7 & 7 & 7 & 7 & 7 & 7 & 4* & 4 & 4 & 8* & 8 & 8 & 8 \\
+    \hline
+    frame 3 & & & 5* & 5 & 5 & 5 & 5 & 5 & 5 & 5 & 2* & 2 & 2 & 2 & 2 & 2 \\
+    \hline
+    frame 4 & & & & & & 3* & 3 & 3 & 3 & 3 & 3 & 3 & 3 & 3 & 3 & 3 \\
+    \hline
+    page fault & × & × & × & & & × & & × & & × & × & & × & & & \\
+    \hline
+    \end{tabular}
+    \end{center}
+    
+    \textbf{Page Faults:} 8 von 16 Zugriffen
+    
+    \textbf{LRU-Logik:}
+    \begin{itemize}
+        \item Bei jedem Zugriff wird die "letzte Verwendung" der Page aktualisiert
+        \item Bei einem Page Fault wird die am laengsten nicht verwendete Page ersetzt
+        \item Zeitstempel oder Zugriffs-Historie bestimmen LRU-Page
+    \end{itemize}
+\end{example2}
+
+\begin{KR}{Page Replacement Algorithms}
+    \paragraph{Least Recently Used (LRU)}
+    \begin{itemize}
+        \item Ersetze die Page, die am laengsten nicht verwendet wurde
+        \item Gute Performance, aber aufwaendig zu implementieren
+        \item Benoetigt Zeitstempel oder Zugriffs-Historie
+        \item Approximation durch Clock Algorithm oder Second Chance
+    \end{itemize}
+    
+    \paragraph{First-In-First-Out (FIFO)}
+    \begin{itemize}
+        \item Ersetze die aelteste Page (first loaded)
+        \item Einfach zu implementieren mit Queue
+        \item Kann zu Belady's Anomaly fuehren
+        \item Nicht optimal, da alte Pages oft noch verwendet werden
+    \end{itemize}
+    
+    \paragraph{Optimal (OPT)}
+    \begin{itemize}
+        \item Ersetze Page, die am spaetesten wieder verwendet wird
+        \item Theoretisch optimal, praktisch nicht implementierbar
+        \item Benoetigt Zukunftswissen ueber Page-Zugriffe
+        \item Wird als Benchmark fuer andere Algorithmen verwendet
+    \end{itemize}
+    
+    \paragraph{Implementation Tips}
+    \begin{itemize}
+        \item Page Fault tritt auf bei erstem Zugriff auf neue Page
+        \item Bei mehreren Kandidaten: Waehle Frame mit kleinster Nummer
+        \item Clock Algorithm: Circular list mit Reference Bit
+        \item Working Set: Beruecksichtige lokale vs. globale Ersetzung
+    \end{itemize}
+\end{KR}
+
+\subsection{Operating System Concepts}
+
+\begin{example2}{Multiple Choice Questions}\\
+    Pro Teilfrage koennen eine, mehrere oder keine Antworten zutreffen, kreuzen Sie die richtige(n) Antwort(en) an.
+    
+    a) Welche der folgenden Aussagen treffen zu?
+    \begin{itemize}
+        \item[$\checkmark$] Alle Mutexes koennen mit Semaphoren realisiert werden
+        \item[$\times$] Semaphore koennen in allen Faellen durch Mutexes ersetzt werden  
+        \item[$\times$] Mutexes sollten immer anstelle von Semaphoren eingesetzt werden, weil es dann keine Deadlocks geben kann
+        \item[$\checkmark$] Mit Semaphoren laesst sich die Verarbeitungsreihenfolge von Prozessen und Threads erzwingen
+    \end{itemize}
+    
+    b) Welcher der folgenden Aussagen treffen zu?
+    \begin{itemize}
+        \item[$\times$] Pages muessen groesser als Frames dimensioniert werden
+        \item[$\times$] Es muessen mindestens so viele Pages wie Frames in einem System vorhanden sein
+        \item[$\times$] Sowohl interne wie auch externe Fragmentierung treten bei Paging auf
+        \item[$\checkmark$] Pages und Frames muessen gleich gross dimensioniert werden
+    \end{itemize}
+    
+    c) Welcher der folgenden Aussagen treffen zu?
+    \begin{itemize}
+        \item[$\checkmark$] Ein MMU uebersetzt Logischen Adressen zu Physikalische Adressen
+        \item[$\times$] Swap in bedeutet dass ein Prozess auf die Hard-Disk verlagert wird
+        \item[$\times$] Ein Prozess der auf der Harddisk verlagert worden ist kann sich im Zustand Running befinden
+    \end{itemize}
+    
+    d) Welcher der folgenden Aussagen treffen zu?
+    \begin{itemize}
+        \item[$\times$] Bei Static Partitioning tritt External Fragmentation auf
+        \item[$\checkmark$] Bei Dynamic Partitioning tritt External Fragmentation auf  
+        \item[$\times$] Nur bei Best Fit Allocation wird kein Compaction benoetigt
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Erklaerungen:}
+    
+    a) Semaphore vs. Mutexes:
+    \begin{itemize}
+        \item[$\checkmark$] Mutexes sind Binary Semaphores (0/1) - koennen mit Semaphoren realisiert werden
+        \item[$\times$] Counting Semaphores (>1) koennen nicht durch Mutexes ersetzt werden
+        \item[$\times$] Auch mit Mutexes sind Deadlocks moeglich
+        \item[$\checkmark$] Semaphore eignen sich gut fuer Prozess-Synchronisation
+    \end{itemize}
+    
+    b) Paging:
+    \begin{itemize}
+        \item[$\times$] Pages und Frames sind gleich gross
+        \item[$\times$] Anzahl ist unabhaengig - Virtual Memory ermoeglicht mehr Pages als Frames
+        \item[$\times$] Nur interne Fragmentierung (innerhalb Pages)
+        \item[$\checkmark$] Pages (logisch) = Frames (physisch) in der Groesse
+    \end{itemize}
+    
+    c) Memory Management:
+    \begin{itemize}
+        \item[$\checkmark$] MMU (Memory Management Unit) macht Address Translation
+        \item[$\times$] Swap in = von Disk in Memory (nicht umgekehrt)
+        \item[$\times$] Ausgelagerte Prozesse sind nicht Running
+    \end{itemize}
+    
+    d) Partitioning:
+    \begin{itemize}
+        \item[$\times$] Static: Interne Fragmentierung (feste Groessen)
+        \item[$\checkmark$] Dynamic: Externe Fragmentierung (variable Groessen)
+        \item[$\times$] Alle Dynamic Allocation Methoden benoetigen eventuell Compaction
+    \end{itemize}
+\end{example2}
+
+\begin{KR}{Operating System Core Concepts}
+    \paragraph{Synchronisation Mechanisms}
+    \begin{itemize}
+        \item Mutex: Binary lock (0/1) fuer kritische Bereiche
+        \item Semaphore: Counting mechanism fuer Resource Management
+        \item Monitor: High-level synchronization construct
+        \item Condition Variables: Wait/Signal mechanism
+    \end{itemize}
+    
+    \paragraph{Memory Management}
+    \begin{itemize}
+        \item Pages: Logische Memory-Einheiten (Virtual Memory)
+        \item Frames: Physische Memory-Einheiten (Physical Memory)  
+        \item MMU: Hardware fuer Address Translation
+        \item TLB: Cache fuer Address Translation
+    \end{itemize}
+    
+    \paragraph{Process States und Swapping}
+    \begin{itemize}
+        \item Running: Prozess auf CPU
+        \item Ready: Bereit zur Ausfuehrung
+        \item Blocked: Wartet auf I/O oder Resource
+        \item Swapped: Auf Disk ausgelagert (nicht Ready/Running)
+    \end{itemize}
+    
+    \paragraph{Memory Allocation}
+    \begin{itemize}
+        \item Static Partitioning: Feste Groessen $\rightarrow$ Interne Fragmentierung
+        \item Dynamic Partitioning: Variable Groessen $\rightarrow$ Externe Fragmentierung
+        \item Paging: Feste Page/Frame Groesse $\rightarrow$ Nur interne Fragmentierung
+        \item Compaction: Loest externe Fragmentierung durch Memory-Reorganisation
+    \end{itemize}
+\end{KR}
+
+\begin{remark}
+    Diese Exam-Beispiele decken die wichtigsten Konzepte des Betriebssystem-Kurses ab:
+    \begin{itemize}
+        \item Deadlock Detection und Resource Management
+        \item Process Synchronization mit Semaphoren
+        \item Memory Management (Buddy System, Paging)
+        \item Page Replacement Algorithms
+        \item Grundlegende OS-Konzepte
+    \end{itemize}
+    Die KRs bieten systematische Herangehensweisen fuer aehnliche Aufgaben in Pruefungen.
+\end{remark}
