@@ -600,3 +600,206 @@ int main(void) {
     \item Test boundary conditions and error cases
 \end{itemize}
 \end{KR}
+
+\section{Software State Machines}
+
+\subsection{UML State Diagrams}
+
+\begin{KR}{UML State Diagram erstellen}\\
+    \paragraph{Grundelemente}
+    \begin{itemize}
+        \item States (Zustände): Rechtecke mit Namen
+        \item Transitions (Übergänge): Pfeile zwischen States
+        \item Initial State: Gefüllter Kreis mit Pfeil
+        \item Events: Auslöser für Transitions
+        \item Actions: Aktionen bei Transitions
+    \end{itemize}
+    
+    \paragraph{Transition-Syntax}
+    Event / Action
+    \begin{itemize}
+        \item Event: Was löst den Übergang aus
+        \item Action: Was wird beim Übergang ausgeführt
+        \item Beispiel: \texttt{start / water\_on, timer\_start}
+    \end{itemize}
+    
+    \paragraph{Vorgehen}
+    \begin{enumerate}
+        \item Alle Zustände identifizieren
+        \item Events (Eingaben) definieren
+        \item Actions (Ausgaben) definieren
+        \item Übergänge zwischen Zuständen zeichnen
+        \item Initial State festlegen
+        \item Entry/Exit Actions definieren (falls nötig)
+    \end{enumerate}
+    
+    \paragraph{Regeln beachten}
+    \begin{itemize}
+        \item Jeder State muss erreichbar sein
+        \item Determinismus: Eindeutige Transitions
+        \item Vollständigkeit: Alle Events behandeln
+    \end{itemize}
+\end{KR}
+
+\important{include SEP\_Handout UML and State Diagram Example}
+
+\begin{example2}{Autowaschanlage State Machine}\\
+    Spezifikation:
+    \begin{itemize}
+        \item Ruhezustand wartet auf Start
+        \item Drei Schritte: wash, rinse, dry (je gleich lang)
+        \item wash: Wasser + Shampoo
+        \item rinse: nur Wasser  
+        \item dry: nur Luftstrom
+        \item Stop-Taste bricht ab $\rightarrow$ alles aus, zurück zu Rest
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Events:}
+    \begin{itemize}
+        \item start: Starttaste gedrückt
+        \item stop: Stoptaste gedrückt
+        \item time\_out: Timer abgelaufen
+    \end{itemize}
+    
+    \textbf{Actions:}
+    \begin{itemize}
+        \item water\_on/off, shampoo\_on/off, air\_on/off
+        \item timer\_start
+    \end{itemize}
+    
+    \textbf{State Diagram:}\\
+    \includegraphics[width=\linewidth]{waschanlage_state_diagram.png}
+    \begin{itemize}
+        \item \textbf{rest}: Ausgangszustand
+        \item \textbf{wash}: start / water\_on, shampoo\_on, timer\_start
+        \item \textbf{rinse}: time\_out / shampoo\_off, timer\_start
+        \item \textbf{dry}: time\_out / water\_off, air\_on, timer\_start
+        \item Zurück zu rest: stop / water\_off, shampoo\_off, air\_off
+    \end{itemize}
+\end{example2}
+
+\subsection{C-Implementation}
+
+\begin{KR}{State Machine in C implementieren}\\
+    \paragraph{Datenstrukturen}
+    \begin{itemize}
+        \item Enum für States: \texttt{typedef enum \{STATE1, STATE2\} state\_t;}
+        \item Enum für Events: \texttt{typedef enum \{EVENT1, EVENT2\} event\_t;}
+        \item Statische Variable: \texttt{static state\_t current\_state;}
+    \end{itemize}
+    
+    \paragraph{Hauptschleife}
+\begin{lstlisting}[style=basesmol]
+int main(void) {
+    event_t event;
+    fsm_init();
+    while (1) {
+        event = get_event();
+        if (event != NO_EVENT) {
+            fsm_handle_event(event);
+        }
+    }
+}
+\end{lstlisting}
+    
+    \paragraph{FSM Handler (Switch-Case)}
+\begin{lstlisting}[style=basesmol]
+void fsm_handle_event(event_t event) {
+    switch (current_state) {
+        case STATE1:
+            switch (event) {
+                case EVENT1:
+                    action1();
+                    current_state = STATE2;
+                    break;
+                default:
+                    // unbehandelte Events
+                    break;
+            }
+            break;
+        case STATE2:
+            // ...
+            break;
+        default:
+            current_state = INITIAL_STATE;
+            break;
+    }
+}
+\end{lstlisting}
+    
+    \paragraph{Event Detection}
+    \begin{itemize}
+        \item Polling: Regelmäßige Abfrage in Hauptschleife
+        \item Interrupt-driven: Events in ISR in Queue einreihen
+        \item Edge Detection: Flanken erkennen (static Variable)
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{LED-Steuerung State Machine}\\
+    Spezifikation:
+    \begin{itemize}
+        \item WAIT: Beide LEDs aus, warten auf S0
+        \item ALL\_ON: Beide LEDs an bei S0
+        \item S0 oder S1 in ALL\_ON $\rightarrow$ entsprechende LED aus, zurück zu WAIT
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Implementierung:}
+\begin{lstlisting}[style=basesmol]
+typedef enum {
+    WAIT,
+    ALL_ON
+} fsm_state_t;
+
+typedef enum {
+    NO_SWITCH = 0x00,
+    S0 = 0x01,
+    S1 = 0x02
+} event_t;
+
+static fsm_state_t state = WAIT;
+
+void fsm_handle_event(event_t event) {
+    switch (state) {
+        case WAIT:
+            switch (event) {
+                case S0:
+                    led_turn_on(LED0_LED1);
+                    state = ALL_ON;
+                    break;
+                default:
+                    state = WAIT;
+                    break;
+            }
+            break;
+            
+        case ALL_ON:
+            switch (event) {
+                case S0:
+                    led_turn_off(LED0);
+                    state = WAIT;
+                    break;
+                case S1:
+                    led_turn_off(LED1);
+                    state = WAIT;
+                    break;
+                default:
+                    state = ALL_ON;
+                    break;
+            }
+            break;
+            
+        default:
+            state = WAIT;
+            break;
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{remark}
+    State Machines eignen sich besonders für reaktive Systeme mit klaren Zuständen und definierten Übergängen. Die Trennung von Event-Detection, State-Logic und Actions macht den Code wartbar und testbar.
+\end{remark}

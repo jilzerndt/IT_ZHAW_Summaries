@@ -1,6 +1,5 @@
-\section{Serial Data Transfer - UART \& I2C}
 
-\subsection{UART Fundamentals}
+\section{UART and I2C}
 
 \mult{2}
 
@@ -382,145 +381,10 @@ void I2C_MasterTransmit(I2C_TypeDef *i2c, uint8_t address, uint8_t *data, uint16
 \end{lstlisting}
 \end{KR}
 
-\subsection{Comparison of Serial Interfaces}
 
-\begin{concept}{UART vs. SPI vs. I2C Comparison}
-\begin{center}
-\begin{tabular}{|p{2.5cm}|p{4cm}|p{4cm}|p{4cm}|}
-\hline
-\textbf{Feature} & \textbf{UART} & \textbf{SPI} & \textbf{I2C} \\
-\hline
-Wires & 2 (TX, RX) & 4 (MOSI, MISO, SCLK, SS) & 2 (SDA, SCL) \\
-\hline
-Clock & Asynchronous & Synchronous & Synchronous \\
-\hline
-Connection Type & Point-to-point & Point-to-multipoint & Multi-point \\
-\hline
-Duplex & Full-duplex & Full-duplex & Half-duplex \\
-\hline
-Addressing & Higher layer only & Device selection via SS & 7/10-bit addressing \\
-\hline
-Error Detection & Optional parity bit & None & ACK/NACK \\
-\hline
-Speed & Up to ~5 Mbps & Up to ~50 Mbps & 100 kbps to 5 Mbps \\
-\hline
-Master/Slave & Peer-to-peer & Single master, multiple slaves & Multiple masters, multiple slaves \\
-\hline
-Typical Use & Terminal communication, debug ports & On-board high-speed communication & Board-to-board, chip-to-chip \\
-\hline
-\end{tabular}
-\end{center}
-\end{concept}
 
-\section{Serial Data Transfer}
 
-\begin{concept}{Overview}\\
-    \includegraphics[width=\linewidth]{SDT_overview.png}
-    \vspace{2mm}\\
-    \textbf{SPI - Serial Peripheral Interface}
-    \begin{itemize}
-        \item Master/slave
-        \item Synchronous full-duplex transmissions (MOSI, MISO)
-        \item Selection of device through Slave Select (SS)
-        \item no acknowledge, no error detection
-        \item Clock signal (SCK) for synchronization: four mode $\rightarrow$ CPOL (clock polarity), CPHA (clock phase)
-    \end{itemize}
-    \vspace{2mm}
 
-    \textbf{UART - Universal Asynchronous Receiver Transmitter} (Serial Interface)
-    \begin{itemize}
-        \item Transmitter and receiver use diverging clocks
-        \item synchronization using start and stop bits $\rightarrow$ overhead
-        \item longer connections require line drivers $\rightarrow$ RS-232/RS-485
-    \end{itemize}
-    \vspace{2mm}
-
-    \textbf{I2C - Inter-Integrated Circuit}
-    \begin{itemize}
-        \item Synchronous half-duplex transmission (SCL, SDA)
-        \item 7-bit slave addresses
-        \item Acknowledge, error detection
-        \item Clock signal (SCL) for synchronization
-    \end{itemize}
-\end{concept}
-
-\begin{definition}{Single Master - Multiple Slaves}
-    \begin{itemize}
-        \item Master generates a common clock signal for all Slaves
-        \item MOSI: From Master Output to all Slave Inputs
-        \item MISO: From Master Input to all Slave Outputs $\rightarrow$ all slave outpuzs connected to single master input
-        \item Slaves: Selectable by Slave Select (SS) signal
-        \begin{itemize}
-            \item Individual Select $\overline{SS1}$, $\overline{SS2}$, $\overline{SS3}$
-            \item $\overline{SSx}$ = 1 $\rightarrow$ slave output MISOx is tri-state 
-        \end{itemize}
-    \end{itemize}
-    \includegraphics[width=\linewidth]{single_master_mult_slaves.png}
-\end{definition}
-
-\begin{formula}{Clock Polarity (CPOL) Clock Phase (CPHA)}
-    \begin{itemize}
-        \item \textbf{CPOL:} Clock Polarity
-        \begin{itemize}
-            \item 0: Clock is low in idle state
-            \item 1: Clock is high in idle state
-        \end{itemize}
-        \item \textbf{CPHA:} Clock Phase
-        \begin{itemize}
-            \item 0: Data is sampled on the first edge of the clock
-            \item 1: Data is sampled on the second edge of the clock
-        \end{itemize}
-    \end{itemize}
-    \includegraphics[width=\linewidth]{clockpolarity.png}
-    \begin{itemize}
-        \item TX provides data on \oq Toggling Edge\cq
-        \item RX takes over data with \oq Sampling Edge\cq
-    \end{itemize}
-\end{formula}
-
-\subsection{Serial Connection - SPI}
-
-\begin{definition}{Properties of SPI}
-    \begin{itemize}
-        \item No defined addressing scheme
-        \begin{itemize}
-            \item Use of $\overline{SS}$ instead $\rightarrow$ KISS (Keep It Simple Stupid)
-        \end{itemize}
-        \item Transmission without receive acknowledge and error detection
-        \begin{itemize}
-            \item Has to be implemented in higher level protocols
-        \end{itemize}
-        \item Originally used only for transmission of single bytes
-        \begin{itemize}
-            \item $\overline{SS}$ deactivated after each byte
-            \item Today also used for streams 
-        \end{itemize}
-        \item Data rate: Highly flexible as clock signal is transmitted
-        \item No flow-control available
-        \begin{itemize}
-            \item Master can delay the next clock edge
-            \item Slave can't influence the data rate
-        \end{itemize}
-        \item Susceptible to noise (spikes on clock signal)
-    \end{itemize}
-\end{definition}
-
-\begin{example2}{SPI - Serial Peripheral Interface}\\
-    Ein Prozessor (SPI Master) sendet das Byte 0x3D = 0011 1101\\
-    Die Schnittstelle ist wie folgt konfiguriert:\\
-    Mode = 3, CPOL = 1, CPHA = 1, MSB first\\
-    \includegraphics[width=\linewidth]{spi_example.png}
-\end{example2}
-
-\begin{concept}{Synchronizing Hardware and Software}
-    \begin{itemize}
-        \item TXE (TX Buffer Empty) $\rightarrow$ Software can write next TX Byte to SPI\_DR
-        \item RXNE (RX Buffer Not Empty) $\rightarrow$ a byte has been received. Software can read it from SPI\_DR
-        \item BSY (Busy) $\rightarrow$ Transmission in progress
-    \end{itemize}
-    \includegraphics[width=\linewidth]{transmitting_spi.png}\\
-    \includegraphics[width=\linewidth]{receiving_spi.png}
-\end{concept}
 
 \subsection{UART/I2C}
 
@@ -564,4 +428,263 @@ Typical Use & Terminal communication, debug ports & On-board high-speed communic
         \item off-board connections require strong output drivers
     \end{itemize}
 \end{concept}
+
+
+
+\section{UART (Universal Asynchronous Receiver Transmitter)}
+
+\begin{KR}{UART Timing-Diagramm zeichnen}\\
+    \paragraph{Bit-Struktur}
+    \begin{itemize}
+        \item Start-Bit: immer '0' (fallende Flanke)
+        \item Daten-Bits: 5-8 Bits, LSB first
+        \item Parity-Bit: optional (even/odd/mark/space)
+        \item Stop-Bit(s): 1, 1.5 oder 2 Bits, immer '1'
+        \item Idle: '1' (keine Uebertragung)
+    \end{itemize}
+    
+    \paragraph{Zeitberechnung}
+    \begin{itemize}
+        \item Bit-Zeit T = 1 / Baudrate
+        \item Beispiel: 19200 Baud $\rightarrow$ T = 1/19200 s = 52.1 $\mu$s
+    \end{itemize}
+    
+    \paragraph{Taktabweichung}
+    \begin{itemize}
+        \item Synchronisation nur am Start-Bit
+        \item Maximale Abweichung: 0.5 Bit-Zeit am letzten Daten-Bit
+        \item Formel: Max. Abweichung = 0.5 / (Anzahl Bits bis letztes Daten-Bit)
+    \end{itemize}
+    
+    \paragraph{Durchsatz berechnen}
+    \begin{itemize}
+        \item Nutzdaten-Rate = Baudrate / Gesamtbits pro Zeichen
+        \item Gesamtbits = Start + Daten + Parity + Stop
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{UART Uebertragung "AC"}\\
+    UART mit 19200 Bit/s, 7 Daten-Bits, 1 Stop-Bit (kein Parity)
+    \begin{itemize}
+        \item ASCII('A') = 0x41 = 100 0001b
+        \item ASCII('C') = 0x43 = 100 0011b
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Bit-Zeit:} T = 1/19200 s = 52.1 $\mu$s
+    
+    \textbf{Timing-Diagramm:}\\
+    \includegraphics[width=\linewidth]{uart_timing_ex.png}
+    
+    \textbf{Legende:}
+    \begin{itemize}
+        \item I = Idle-Bit, S = Start-Bit, D = Daten-Bit, E = Stop-Bit
+        \item LSB first: Daten-Bits werden von rechts nach links uebertragen
+    \end{itemize}
+    
+    \textbf{Taktabweichung:}
+    \begin{itemize}
+        \item Fallende Flanke Start-Bit bis Mitte D6 = 7.5 Bits
+        \item Max. Abweichung fuer D6: 0.5 Bits
+        \item Taktabweichung: 100\% $\times$ 0.5 / 7.5 = 6.67\%
+    \end{itemize}
+\end{example2}
+
+\begin{KR}{UART Synchronisation und Durchsatz}\\
+    \paragraph{Synchronisation bei UART}
+    \begin{itemize}
+        \item Mit Hilfe der negativen Flanke des Start-Bits
+        \item Letztes Bit (Stop) oder Idle = '1'
+        \item Erstes Bit (Start) = '0'
+        \item Empfaenger synchronisiert sich bei jeder Uebertragung neu
+    \end{itemize}
+    
+    \paragraph{Durchsatz-Berechnung}
+    \begin{enumerate}
+        \item Zaehle alle Bits pro Zeichen: Start + Daten + Parity + Stop
+        \item Nutzdaten-Rate = Baudrate / Gesamtbits pro Zeichen
+        \item Beispiel: 9600 Baud, 8 Daten, 2 Stop, 1 Parity
+        \item Gesamtbits = 1 + 8 + 1 + 2 = 12 Bits
+        \item Nutzdaten-Rate = 9600/12 = 800 Bytes/s
+    \end{enumerate}
+\end{KR}
+
+\subsection{UART Communication}
+
+\begin{KR}{Analyzing UART Transmission}
+\paragraph{Determine bit timing}
+\begin{itemize}
+    \item Calculate bit period (T) from baud rate: T = 1/baud\_rate
+    \item Example: 19200 baud = 1/19200 s = 52.1 µs per bit
+\end{itemize}
+
+\paragraph{Identify frame structure}
+\begin{itemize}
+    \item Start bit: Always '0'
+    \item Data bits: LSB first, typically 7 or 8 bits
+    \item Parity bit: Optional, can be even, odd, mark ('1'), or space ('0')
+    \item Stop bit(s): Always '1', can be 1, 1.5, or 2 bits
+    \item Idle state: Line remains high ('1')
+\end{itemize}
+
+\paragraph{Calculate total frame time}
+\begin{itemize}
+    \item Add up all bits: Start bit + Data bits + Parity bit + Stop bits
+    \item Multiply by bit period (T)
+    \item Example: 8N1 (8 data bits, no parity, 1 stop bit) = 10 bits total
+\end{itemize}
+
+\paragraph{Calculate maximum throughput}
+\begin{itemize}
+    \item Divide baud rate by total number of bits per frame
+    \item Example: 9600 baud, 8N1 format = 9600/10 = 960 bytes/second
+\end{itemize}
+
+\paragraph{Evaluate clock tolerance}
+\begin{itemize}
+    \item Maximum tolerable deviation is typically ±(0.5/n) where n is the number of bits from start bit to the last data bit
+    \item Example: For 8 data bits, max deviation = ±(0.5/8.5) $\approx$ ±5.9\%
+\end{itemize}
+\end{KR}
+
+\begin{example2}{UART Transmission Analysis}\\
+For a UART transmission with 19,200 bits/s, 7 data bits, and one stop bit (no parity), draw the timing diagram for transmitting the ASCII characters "AC".
+
+ASCII values:
+\begin{itemize}
+    \item 'A' = 0x41 = 100 0001b
+    \item 'C' = 0x43 = 100 0011b
+\end{itemize}
+
+\tcblower
+\paragraph{Solution:}
+First, calculate the bit period:
+\begin{itemize}
+    \item T = 1/19200 s = 52.1 µs
+\end{itemize}
+
+For each character, the frame consists of:
+\begin{itemize}
+    \item 1 start bit (S) - always '0'
+    \item 7 data bits (D) - LSB first
+    \item 1 stop bit (E) - always '1'
+\end{itemize}
+
+Between frames, the line is idle (I) - high.
+
+Frame for 'A' (0x41 = 100 0001b):
+\begin{itemize}
+    \item Start bit (S): 0
+    \item Data bits (D), LSB first: 1, 0, 0, 0, 0, 0, 1
+    \item Stop bit (E): 1
+\end{itemize}
+
+Frame for 'C' (0x43 = 100 0011b):
+\begin{itemize}
+    \item Start bit (S): 0
+    \item Data bits (D), LSB first: 1, 1, 0, 0, 0, 0, 1
+    \item Stop bit (E): 1
+\end{itemize}
+
+The timing diagram:
+\begin{verbatim}
+   I I S D D D D D D D E S D D D D D D D E I I I
+   1 1 0 1 0 0 0 0 0 1 1 0 1 1 0 0 0 0 1 1 1 1 1
+   <--------------'A'------------><--------------'C'------------->
+\end{verbatim}
+
+Each bit has a duration of T = 52.1 µs, so the total transmission time for both characters is:
+\begin{itemize}
+    \item 2 characters × 9 bits per character × 52.1 µs = 937.8 µs
+\end{itemize}
+
+The clock tolerance can be calculated as:
+\begin{itemize}
+    \item For 7 data bits: max deviation = ±(0.5/7.5) $\approx$ ±6.67\%
+\end{itemize}
+\end{example2}
+
+\subsection{I2C Communication}
+
+\begin{concept}{I2C Timing} MSB first!\\
+    \includegraphics[width=\linewidth]{I2C_Timing.png}\\
+    ACK = 0 $\rightarrow$ Übertragung erfolgreich\\
+    ACK = 1 $\rightarrow$ Übertragung nicht erfolgreich
+\end{concept}
+
+
+\begin{KR}{Analyzing I2C Communication}
+\paragraph{Identify I2C protocol elements}
+\begin{itemize}
+    \item Start condition: SDA falls while SCL is high
+    \item Stop condition: SDA rises while SCL is high
+    \item Data bit transfer: SDA stable while SCL is high
+    \item Acknowledge (ACK): Receiver pulls SDA low during 9th clock cycle
+    \item Not-acknowledge (NACK): SDA remains high during 9th clock cycle
+\end{itemize}
+
+\paragraph{Parse I2C frames}
+\begin{itemize}
+    \item First byte after start: 7-bit address + R/W bit
+    \begin{itemize}
+        \item R/W = 0: Write operation
+        \item R/W = 1: Read operation
+    \end{itemize}
+    \item Check for ACK/NACK after each byte
+    \item Data bytes follow (8 bits each)
+    \item Master or slave can end transmission with STOP condition
+\end{itemize}
+
+\paragraph{Interpret timing diagram}
+\begin{itemize}
+    \item Examine SCL and SDA lines
+    \item Identify start and stop conditions
+    \item Group bits into bytes (8 bits + ACK/NACK)
+    \item Determine if each byte is address or data
+    \item Note the direction of data transfer
+\end{itemize}
+\end{KR}
+
+\begin{example2}{I2C Communication Analysis}\\
+Analyze the following I2C timing diagram and describe the transaction:
+
+\begin{verbatim}
+SCL  _____|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|...|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|___
+                     
+SDA  ___\_|1|_|1|_|0|_|0|_|1|_|1|_|0|_|1|_|0|_\_|0|_|0|_|1|_|1|_|1|_|0|_|0|_|1|_/___
+     Start                              ACK                 NACK  Stop
+\end{verbatim}
+
+\tcblower
+\paragraph{Solution:}
+The I2C transaction consists of:
+\begin{enumerate}
+    \item Start condition (SDA falls while SCL is high)
+    \item First byte: 11001101 (data transmitted MSB first)
+    \begin{itemize}
+        \item This is the address byte: 1100110 (0x66) with R/W bit = 1 (read operation)
+        \item Followed by an ACK (SDA pulled low during 9th clock cycle)
+    \end{itemize}
+    \item Second byte: 00111001 (data received from slave)
+    \begin{itemize}
+        \item This is data: 0x39 or 0x9C (depending on bit order interpretation)
+        \item Followed by a NACK (SDA remains high during 9th clock cycle)
+        \item NACK indicates that the master does not want to receive more data
+    \end{itemize}
+    \item Stop condition (SDA rises while SCL is high)
+\end{enumerate}
+
+The complete transaction is:
+\begin{itemize}
+    \item Master initiates communication with device at address 0x66
+    \item Master requests to read from the device (R/W=1)
+    \item Device acknowledges (ACK)
+    \item Device sends one data byte (0x39 or 0x9C)
+    \item Master signals end of transfer with NACK
+    \item Master terminates communication
+\end{itemize}
+\end{example2}
+
+
 

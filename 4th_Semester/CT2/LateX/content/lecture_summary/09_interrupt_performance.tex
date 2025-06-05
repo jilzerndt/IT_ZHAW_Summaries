@@ -1402,3 +1402,241 @@ void main(void) {
 
 This design provides an efficient, interrupt-driven UART interface that meets all requirements with minimal CPU overhead.
 \end{example2}
+
+\section{Interrupts}
+
+\subsection{Polling vs. Interrupt-driven I/O}
+
+\begin{definition}{Polling}\\
+    Periodische Abfrage von Status-Informationen durch die CPU.
+    \begin{itemize}
+        \item Synchron mit dem Hauptprogramm
+        \item CPU fragt aktiv nach Status-Aenderungen
+        \item Einfach zu implementieren, deterministisch
+        \item Verschwendet CPU-Zeit durch \important{Busy Wait}
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Interrupt-driven I/O}\\
+    Peripheriegeraete signalisieren Events asynchron an die CPU.
+    \begin{itemize}
+        \item Hardware setzt Interrupt-Flag bei Event
+        \item CPU wird unterbrochen und fuehrt ISR aus
+        \item Effiziente CPU-Nutzung
+        \item Komplexere Implementierung
+    \end{itemize}
+\end{definition}
+
+\subsection{Interrupt Performance}
+
+\begin{concept}{Interrupt Performance Metriken}\\
+    Wichtige Kenngroessen zur Bewertung von Interrupt-Systemen:
+    \begin{itemize}
+        \item \important{Interrupt-Frequenz} $f_{INT}$ [Hz]: Wie oft tritt ein Interrupt auf?
+        \item \important{Interrupt Service Time} $t_{ISR}$ [s]: Wie lange dauert die ISR-Ausfuehrung?
+        \item \important{Impact} [\%]: Welcher Anteil der CPU-Zeit wird fuer Interrupts verwendet?
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Impact Berechnung}\\
+    Der Einfluss von Interrupts auf die Systemleistung:
+    $$\text{Impact} = f_{INT} \times t_{ISR} \times 100\%$$
+    
+    Dabei ist:
+    \begin{itemize}
+        \item $f_{INT}$: Interrupt-Frequenz in Hz
+        \item $t_{ISR}$: Interrupt Service Time in Sekunden
+        \item Impact: Prozentuale CPU-Belastung durch Interrupts
+    \end{itemize}
+\end{formula}
+
+\begin{KR}{Interrupt Performance Analyse}\\
+    \paragraph{Schritt 1: Interrupt-Frequenz bestimmen}
+    \begin{itemize}
+        \item Datenrate und Puffergroesse analysieren
+        \item $f_{INT} = \frac{\text{Datenrate [bit/s]}}{\text{Puffergroesse [bit]}}$
+    \end{itemize}
+    
+    \paragraph{Schritt 2: Service Time berechnen}
+    \begin{itemize}
+        \item Anzahl Clockzyklen fuer ISR bestimmen
+        \item $t_{ISR} = \frac{\text{Clockzyklen}}{\text{CPU-Frequenz [Hz]}}$
+    \end{itemize}
+    
+    \paragraph{Schritt 3: Impact berechnen}
+    \begin{itemize}
+        \item $\text{Impact} = f_{INT} \times t_{ISR} \times 100\%$
+        \item Pruefung: Impact $<$ 100\% fuer stabilen Betrieb
+    \end{itemize}
+    
+    \paragraph{Schritt 4: Kritische Datenrate bestimmen}
+    \begin{itemize}
+        \item Fuer 100\% CPU-Auslastung: $f_{INT} \times t_{ISR} = 1$
+        \item Maximale Datenrate: $\text{Rate}_{max} = \frac{\text{Puffergroesse}}{t_{ISR}}$
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Interrupt Performance Berechnung}\\
+    Ein Prozessorsystem (1 MHz Takt) empfaengt Daten mit 16 kbit/s. Das Peripheriegeraet kann 32 bit zwischenspeichern. Die ISR benoetigt 100 Clockzyklen.
+    
+    \tcblower
+    
+    \textbf{Loesung:}
+    
+    \textbf{a) Impact berechnen:}
+    \begin{itemize}
+        \item $f_{INT} = \frac{16 \text{ kbit/s}}{32 \text{ bit}} = 500 \text{ Hz}$
+        \item $t_{ISR} = \frac{100 \text{ Zyklen}}{1 \text{ MHz}} = 100 \mu s$
+        \item $\text{Impact} = 500 \text{ Hz} \times 100 \mu s \times 100\% = 5\%$
+    \end{itemize}
+    
+    \textbf{b) Kritische Datenrate fuer 100\% CPU-Last:}
+    \begin{itemize}
+        \item $(x / 32 \text{ bit}) \times 100 \mu s = 1$
+        \item $x = \frac{32 \text{ bit}}{100 \mu s} = 320 \text{ kbit/s}$
+    \end{itemize}
+    
+    \textbf{c) Datenverlust bei 90\% Last:}
+    \\ ISR-Zeit schwankt je nach Instruktion und Daten $\Rightarrow$ Peaks koennen zu Datenverlust fuehren.
+\end{example2}
+
+\subsection{Interrupt Latency}
+
+\begin{definition}{Interrupt Latency}\\
+    Zeit zwischen Interrupt-Event und Start der ISR-Ausfuehrung.
+    \begin{itemize}
+        \item Bereich: 50 ns bis mehrere ms
+        \item Wichtig fuer Echtzeit-Systeme
+        \item Wird beeinflusst durch Hardware und Software
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Faktoren der Interrupt Latency}\\
+    \textbf{Hardware-Faktoren:}
+    \begin{itemize}
+        \item Aktuelle Instruktion muss abgeschlossen werden
+        \item Multi-Cycle Instruktionen (SDIV/UDIV, LDM/STM)
+        \item Register auf Stack sichern
+    \end{itemize}
+    
+    \textbf{Software-Faktoren:}
+    \begin{itemize}
+        \item Laufende ISR mit hoeherer Prioritaet
+        \item Maskierte/deaktivierte Interrupts (CPSID i)
+        \item Mehrere Quellen auf gleicher Interrupt-Line
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Preemption}\\
+    Unterbrechung einer laufenden ISR durch hoeher priorisierte Interrupts.
+    \begin{itemize}
+        \item Ermoeglicht niedrige Latenz fuer kritische Events
+        \item Erfordert sorgfaeltige Prioritaetsvergabe
+        \item Kann zu hoher Latenz fuer niedrig priorisierte ISRs fuehren
+    \end{itemize}
+\end{concept}
+
+\subsection{Latency Management}
+
+\begin{KR}{Latency-Optimierung}\\
+    \paragraph{Schritt 1: ISR kurz halten}
+    \begin{itemize}
+        \item Nur zeitkritische Aufgaben in ISR
+        \item Datenverarbeitung in Main Loop verlagern
+        \item Queues/FIFOs fuer Entkopplung verwenden
+    \end{itemize}
+    
+    \paragraph{Schritt 2: Warteschleifen vermeiden}
+    \begin{itemize}
+        \item Polling-Loops aus ISR entfernen
+        \item Asynchrone Verarbeitung implementieren
+        \item Status-basierte Zustandsmaschinen nutzen
+    \end{itemize}
+    
+    \paragraph{Schritt 3: Prioritaeten setzen}
+    \begin{itemize}
+        \item Kritische Interrupts: hohe Prioritaet
+        \item Preemption gezielt einsetzen
+        \item Interrupt-Maskierung minimieren
+    \end{itemize}
+    
+    \paragraph{Schritt 4: Event-Queue System}
+    \begin{itemize}
+        \item ISRs schreiben Events in Queue
+        \item Main Loop verarbeitet Queue sequenziell
+        \item Entkopplung von Interrupt- und Verarbeitungszeit
+    \end{itemize}
+\end{KR}
+
+\subsection{Interrupt-driven FSM}
+
+\begin{concept}{Interrupt-driven Finite State Machine}\\
+    Kombination von Interrupt-System und Zustandsautomat:
+    \begin{itemize}
+        \item ISRs generieren Events und schreiben sie in Queue
+        \item FSM in Main Loop liest Events aus Queue
+        \item Deterministische Event-Verarbeitung
+        \item Saubere Trennung von Interrupt- und Anwendungslogik
+    \end{itemize}
+\end{concept}
+
+\begin{code}{Interrupt-driven FSM Struktur}\\
+\begin{lstlisting}[style=basesmol]
+// Main Loop
+int main(void) {
+    event_t event;
+    fsm_init();
+    peripherals_init();
+    
+    while (1) {
+        event = get_event_from_queue();
+        if (event != NO_EVENT) {
+            fsm_handle_event(event);
+        }
+    }
+}
+
+// Interrupt Service Routines
+void ISR_Peripheral1(void) {
+    // Event in Queue schreiben
+    write_event_to_queue(EVENT_PERIPHERAL1);
+    // Interrupt Flag loeschen
+    clear_interrupt_flag();
+}
+\end{lstlisting}
+\end{code}
+
+\begin{example2}{Interrupt Performance Problem}\\
+    System mit 90\% Interrupt-Last verliert trotzdem Daten. Erklaeren Sie eine plausible Ursache.
+    
+    \tcblower
+    
+    \textbf{Loesung:}
+    
+    Die Interrupt Service Time ist nicht konstant:
+    \begin{itemize}
+        \item \textbf{Variable Latency}: Je nach aktueller CPU-Instruktion
+        \item \textbf{Datenabhaengige ISR-Dauer}: Unterschiedliche Verarbeitungszeiten
+        \item \textbf{Jitter}: Schwankungen in der Interrupt-Behandlung
+        \item \textbf{Preemption}: Andere Interrupts koennen verzoegern
+    \end{itemize}
+    
+    Bei 90\% Durchschnittslast koennen Spitzen $>$ 100\% erreichen $\Rightarrow$ Datenverlust.
+    
+    \textbf{Abhilfe:}
+    \begin{itemize}
+        \item Puffergroesse erhoehen
+        \item ISR-Zeit reduzieren und konstanter machen
+        \item Sicherheitsmarge bei Systemauslegung einplanen
+    \end{itemize}
+\end{example2}
+
+\begin{remark}
+    \textbf{Faustregeln fuer Interrupt-Systeme:}
+    \begin{itemize}
+        \item Impact sollte $<$ 50\% bleiben fuer stabile Performance
+        \item ISR-Zeit sollte konstant und vorhersagbar sein
+        \item Kritische Daten immer puffern (Hardware oder Software)
+        \item Bei mehreren Interrupt-Quellen: Prioritaeten sorgfaeltig waehlen
+    \end{itemize}
+\end{remark}

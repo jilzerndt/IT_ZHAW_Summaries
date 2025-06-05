@@ -705,3 +705,208 @@ Therefore, the PWM signal has:
     \item Duty cycle: 66.67\% (active for 20 seconds, inactive for 10 seconds)
 \end{itemize}
 \end{example2}
+
+\section{Timer/Counter und PWM}
+
+\subsection{Timer-Funktionseinheiten}
+
+\begin{KR}{Timer-Komponenten verstehen}\\
+    \paragraph{Prescaler}
+    \begin{itemize}
+        \item Funktionalität: Divisor für Eingangssignal
+        \item Zweck: Es wird nur jeder n-te Wert gezählt
+        \item Erweitert den Zählbereich des Timers
+    \end{itemize}
+    
+    \paragraph{Counter}
+    \begin{itemize}
+        \item Funktionalität: Aktueller Timerwert
+        \item Zweck: Wird mit jedem n-ten Tick um eins erhöht/erniedrigt
+        \item Kann up- oder down-counting sein
+    \end{itemize}
+    
+    \paragraph{Auto Reload Register (ARR)}
+    \begin{itemize}
+        \item Upcounter: Timer zählt bis zu diesem Wert, dann Überlauf
+        \item Downcounter: Startwert für Timer
+        \item Definiert die Periode des Timers
+    \end{itemize}
+    
+    \paragraph{Capture/Compare Register (CCR)}
+    \begin{itemize}
+        \item Capture: Bei einem Event wird Counterwert hier gespeichert
+        \item Compare: Event/Interrupt wird ausgelöst, wenn Counter diesen Wert erreicht
+        \item Für PWM: Definiert Duty Cycle
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Timer-Funktionen}\\
+    Timer als Upcounter, Prescaler auf 4 (Register = 0x03), Capture bei steigender Flanke.
+    
+    \tcblower
+    
+    \textbf{Capture-Funktion:}
+    Bei einem Event wird der Inhalt des Counter Registers in das Capture/Compare Register kopiert. Der Counter läuft weiter.
+    
+    \textbf{Compare-Funktion:}
+    Sobald der Counter den Wert des Capture/Compare Registers erreicht hat, wird ein Event oder Interrupt ausgelöst. Der Counter läuft weiter.
+    
+    \textbf{Timing-Diagramm:}
+    \begin{itemize}
+        \item Prescaler teilt durch 4: nur jeder 4. Puls wird gezählt
+        \item Bei Event wird aktueller Counter-Wert (z.B. 0x0003) in CCR gespeichert
+        \item Counter läuft nach Capture weiter
+    \end{itemize}
+    \includegraphics[width=\linewidth]{counter_timer_ex.png}
+\end{example2}
+
+\subsection{Timer-Konfiguration STM32}
+
+\begin{KR}{Timer konfigurieren}\\
+    \paragraph{Clock-Source auswählen}
+    \begin{itemize}
+        \item TIMx\_SMCR Register: SMS[2:0] = 000 für interne Clock (CK\_INT)
+        \item Andere Quellen: externe Pins, andere Timer (siehe Reference Manual)
+    \end{itemize}
+    
+    \paragraph{Zählrichtung festlegen}
+    \begin{itemize}
+        \item TIMx\_CR1 Register: DIR Bit
+        \item DIR = 0: Upcounter, DIR = 1: Downcounter
+    \end{itemize}
+    
+    \paragraph{Overflow-Zeit berechnen}
+    \begin{enumerate}
+        \item Gewünschte Zeit und Clock-Frequenz gegeben
+        \item Wähle Prescaler-Wert: PSC = (Clock\_Freq / gewünschte\_Freq) - 1
+        \item Wähle ARR-Wert: ARR = (gewünschte\_Freq / overflow\_Freq) - 1
+        \item Mehrere Kombinationen möglich!
+    \end{enumerate}
+    
+    \paragraph{Register setzen}
+    \begin{itemize}
+        \item TIMx\_PSC: Prescaler-Wert
+        \item TIMx\_ARR: Auto-Reload-Wert
+        \item TIMx\_CR1: Timer-Konfiguration
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Timer 3 für 200ms Overflow}\\
+    Timer 3 konfigurieren:
+    \begin{itemize}
+        \item Source: CK\_INT mit 84 MHz
+        \item Upcounter
+        \item Overflow alle 200 ms
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Lösungen (mehrere möglich):}
+    
+    \textbf{Lösung 1:}
+\begin{lstlisting}[style=basesmol]
+TIM3_SMCR &= 0xFFF8;     // SMS[2:0] = 000 (CK_INT)
+TIM3_CR1 &= 0xFF8F;      // DIR = 0 (Upcounter)
+TIM3_PSC = 0x20CF;       // (8400-1) -> 10 kHz
+TIM3_ARR = 0x07CF;       // (2000-1) -> 200 ms
+\end{lstlisting}
+    
+    \textbf{Lösung 2:}
+\begin{lstlisting}[style=basesmol]
+TIM3_PSC = 0x0347;       // (840-1) -> 100 kHz
+TIM3_ARR = 0x4E1F;       // (20000-1) -> 200 ms
+\end{lstlisting}
+    
+    \textbf{Berechnung:}
+    84 MHz / 8400 = 10 kHz, 10 kHz / 2000 = 5 Hz = 200 ms Periode
+\end{example2}
+
+\subsection{PWM (Pulse Width Modulation)}
+
+\begin{KR}{PWM-Signale generieren}\\
+    \paragraph{PWM-Modi verstehen}
+    \begin{itemize}
+        \item PWM Mode 1 (Upcounting): OCxREF = '1' solange TIMx\_CNT $<$ TIMx\_CCR
+        \item PWM Mode 2 (Upcounting): OCxREF = '0' solange TIMx\_CNT $<$ TIMx\_CCR
+        \item Downcounting: Logik ist invertiert
+    \end{itemize}
+    
+    \paragraph{Duty Cycle berechnen}
+    \begin{itemize}
+        \item Upcounter PWM Mode 1: Duty = CCR / (ARR + 1)
+        \item Für gewünschten Duty Cycle: CCR = Duty $\times$ (ARR + 1)
+        \item Bei Downcounter/Mode 2: entsprechend anpassen
+    \end{itemize}
+    
+    \paragraph{Register konfigurieren}
+    \begin{itemize}
+        \item TIMx\_CCMR: OCxM[2:0] = 110 (PWM Mode 1) oder 111 (PWM Mode 2)
+        \item TIMx\_CCER: CCxE = 1 (Output Enable)
+        \item TIMx\_CCR: Duty Cycle Wert
+    \end{itemize}
+    
+    \paragraph{Periode vs. Duty Cycle}
+    \begin{itemize}
+        \item Periode wird durch ARR bestimmt
+        \item Duty Cycle wird durch CCR bestimmt
+        \item Frequenz = Timer\_Clock / ((PSC + 1) $\times$ (ARR + 1))
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{PWM mit 25\% Duty Cycle}\\
+    Timer 4 als Upcounter, TIM4\_ARR = 0x9C3F (40000-1)
+    
+    Gesucht: CCR-Wert für 25\% Duty Cycle mit PWM Mode 1
+    
+    \tcblower
+    
+    \textbf{Berechnung:}
+    \begin{itemize}
+        \item TIMx\_CNT zählt von 0...39999 = 40000 Ticks
+        \item Duty Cycle 25\% entspricht 10000 Ticks
+        \item PWM Mode 1: OCxREF = '1' solange TIMx\_CNT $<$ TIMx\_CCR
+        \item TIM4\_CCR1 = 0x2710 (10000)
+    \end{itemize}
+    
+    \textbf{Downcounter mit PWM Mode 2:}
+    Für identisches Signal bei Downcounter/PWM Mode 2:
+    \begin{itemize}
+        \item PWM Mode 2: OCxREF = '1' solange TIMx\_CNT $>$ TIMx\_CCR
+        \item Für 25\% High: CCR = 30000-1 = 0x752F
+        \item 39999...30000 = 10000 Ticks High
+        \item 29999...0 = 30000 Ticks Low
+    \end{itemize}
+\end{example2}
+
+\begin{example2}{PWM-Signal aus Registerwerten analysieren}\\
+    Gegebene Konfiguration:
+    \begin{itemize}
+        \item Source: 0.5 MHz
+        \item TIM3\_PSC = 0x01F3 (500-1)
+        \item TIM3\_ARR = 0x752F (30000-1)
+        \item TIM3\_CCR1 = 0x2710 (10000)
+        \item TIM3\_CCMR1 = 0x0070 (PWM Mode 2)
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Analyse:}
+    \begin{itemize}
+        \item Prescaler: 500-1 $\rightarrow$ 0.5 MHz / 500 = 1 kHz
+        \item ARR: 30000-1 $\rightarrow$ Periode = 30000 / 1 kHz = 30 Sekunden
+        \item CCR: 10000 $\rightarrow$ 10 Sekunden
+        \item PWM Mode 2: Low wenn CNT $<$ CCR
+    \end{itemize}
+    
+    \textbf{Resultat:}
+    \begin{itemize}
+        \item Periode: 30 Sekunden
+        \item Duty Cycle: 20 Sekunden High (30s - 10s)
+        \item 0...9999: Low (10s), 10000...29999: High (20s)
+    \end{itemize}
+    \includegraphics[width=\linewidth]{pmw_signals_ex.png}
+\end{example2}
+
+\begin{remark}
+    Bei PWM-Signalen ist es wichtig zu verstehen, dass die ARR den gesamten Zählbereich definiert (und damit die Periode), während CCR den Umschaltpunkt definiert (und damit den Duty Cycle). Die PWM-Modi bestimmen, wann das Signal High bzw. Low ist.
+\end{remark}

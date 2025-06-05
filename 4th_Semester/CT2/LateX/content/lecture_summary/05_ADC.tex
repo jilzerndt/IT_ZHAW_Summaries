@@ -600,3 +600,183 @@ void adc_operations(void) {
 }
 \end{lstlisting}
 \end{example2}
+
+\section{ADC (Analog-Digital Converter)}
+
+\subsection{ADC-Charakteristika und Fehler}
+
+\begin{KR}{ADC Timing Diagramm}\\
+    \includegraphics[width=\linewidth]{adc_timing_diagram.png}
+\end{KR}
+
+\begin{concept}{Fast Conversion Mode}\\
+    It is possible to perform faster conversion by reducing the ADC resolution. The RES bits are used to select the number of bits available in the data register. The minimum conversion time for each resolution is then as follows:
+- 12 bits: $3+12=15$ ADCCLK cycles
+- 10 bits: $3+10=13$ ADCCLK cycles
+- 8 bits: $3+8=11$ ADCCLK cycles
+- 6 bits: $3+6=9$ ADCCLK cycles
+\end{concept}
+
+\begin{KR}{ADC Interrupts}\\
+    An interrupt can be produced on the end of conversion for regular and injected groups, when the analog watchdog status bit is set and when the overrun status bit is set. Separate interrupt enable bits are available for flexibility.
+Two other flags are present in the ADC\_SR register, but there is no interrupt associated with them:
+- JSTRT (Start of conversion for channels of an injected group)
+- STRT (Start of conversion for channels of a regular group)
+
+Table 70. ADC interrupts
+\begin{tabular}{|l|c|c|}
+\hline \multicolumn{1}{|c|}{ Interrupt event } & Event flag & Enable control bit \\
+\hline End of conversion of a regular group & EOC & EOCIE \\
+\hline End of conversion of an injected group & JEOC & JEOCIE \\
+\hline Analog watchdog status bit is set & AWD & AWDIE \\
+\hline Overrun & OVR & OVRIE \\
+\hline
+\end{tabular}
+\end{KR}
+
+\important{SEP Handout Beilage ADC control register!!}
+
+\begin{KR}{ADC Transfer-Funktion und Offset-Fehler}\\
+    \paragraph{Grundlagen}
+    \begin{itemize}
+        \item LSB = V\_REF / $2^n$ (n = Anzahl Bits)
+        \item FSR (Full Scale Range) = V\_REF - 1 LSB
+        \item Idealer ADC: erste Transition bei 0.5 LSB
+    \end{itemize}
+    
+    \paragraph{Offset-Fehler}
+    \begin{itemize}
+        \item Definition: Abweichung bei Eingangsspannung = 0V
+        \item Messung: Zero-Scale-Spannung bis erste Transition
+        \item Berechnung: Offset\_Error = gemessene\_Transition - 0.5 LSB
+    \end{itemize}
+    
+    \paragraph{Fehler in Prozent FSR}
+    \begin{itemize}
+        \item Offset\_Error (\%FSR) = (Offset\_Error\_V $\times$ 100) / FSR\_V
+        \item FSR\_V = V\_REF - 1 LSB
+    \end{itemize}
+    
+    \paragraph{Transfer-Funktion zeichnen}
+    \begin{enumerate}
+        \item Zeichne ideale Treppenfunktion
+        \item Verschiebe um Offset-Fehler (positiv = rechts, negativ = links)
+        \item Erste Transition: 0.5 LSB + Offset\_Error
+    \end{enumerate}
+\end{KR}
+
+\begin{example2}{3-Bit ADC mit Offset-Fehler}\\
+    Idealer 3-Bit ADC mit V\_REF = 2V, Offset-Fehler = -1.5 LSB
+    
+    \tcblower
+
+    \includegraphics[width=\linewidth]{adc_offset_ex.png}
+    
+    \textbf{Berechnungen:}
+    \begin{itemize}
+        \item 1 LSB = 2V / $2^3$ = 2V / 8 = 0.25V
+        \item Offset-Fehler = -1.5 $\times$ 0.25V = -0.375V
+        \item FSR = 2V - 0.25V = 1.75V
+        \item Offset-Fehler (\%FSR) = 0.375V $\times$ 100 / 1.75V = 21.43\%
+    \end{itemize}
+    
+    \textbf{Transfer-Funktion:}
+    \begin{itemize}
+        \item Ideale erste Transition: 0.5 LSB = 0.125V
+        \item Reale erste Transition: 0.125V - 0.375V = -0.25V
+        \item Gesamte Kurve um 1.5 LSB nach links verschoben
+    \end{itemize}
+    
+    \textbf{Digitale Werte:}
+    Real-ADC erreicht digitalen Wert 001 bereits bei negativer Eingangsspannung, während ideal-ADC erst bei 0.125V den Wert 001 erreichen würde.
+\end{example2}
+
+\begin{example2}{ADC Positive Offset Error} In case of a positive offset error of +1.5 LSB, the graph will look like this:\\
+\includegraphics[width=\linewidth]{adc_positive_offset.png}
+\end{example2}
+
+\subsection{ADC-Programmierung STM32}
+
+\begin{KR}{ADC-Register programmieren}\\
+    \paragraph{Status-Register auswerten}
+    \begin{itemize}
+        \item EOC (End of Conversion): Bit 1 in ADC\_SR
+        \item OVR (Overrun): Bit 5 in ADC\_SR
+        \item Warten auf Conversion: \texttt{while (!(ADC\_SR \& 0x02))}
+        \item Overrun prüfen: \texttt{if (ADC\_SR \& 0x20)}
+    \end{itemize}
+    
+    \paragraph{Auflösung konfigurieren}
+    \begin{itemize}
+        \item RES[1:0] in ADC\_CR1 Register (Bits 25:24)
+        \item 00: 12-bit, 01: 10-bit, 10: 8-bit, 11: 6-bit
+        \item Einzelne Bits setzen/löschen mit Bit-Masken
+    \end{itemize}
+    
+    \paragraph{Adressen berechnen}
+    \begin{itemize}
+        \item ADC1: 0x40012000 + Register\_Offset
+        \item ADC2: 0x40012100 + Register\_Offset  
+        \item ADC3: 0x40012200 + Register\_Offset
+        \item Siehe Reference Manual für genaue Offsets
+    \end{itemize}
+    
+    \paragraph{Bit-Manipulation}
+    \begin{itemize}
+        \item Bit setzen: \texttt{REG |= (1 << bit\_nr)}
+        \item Bit löschen: \texttt{REG \&= \~{}(1 << bit\_nr)}
+        \item Mehrere Bits: erst löschen, dann setzen
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{ADC-Programmierung Aufgaben}\\
+    ADCs sind korrekt initialisiert. Schreibe C-Code für:
+    \begin{enumerate}
+        \item Warten bis ADC1 Conversion fertig
+        \item Variable auf 0xFF setzen bei ADC2 Datenverlust
+        \item ADC3 Auflösung auf 10-bit setzen
+    \end{enumerate}
+    
+    \tcblower
+    
+    \textbf{Lösungen:}
+    
+    \textbf{a) Warten auf ADC1 EOC (Bit 1):}
+\begin{lstlisting}[style=basesmol]
+#define ADC1_SR (*((volatile uint32_t *)(0x40012000)))
+while (!(ADC1_SR & 0x02)) {
+    // Warten bis EOC gesetzt
+}
+\end{lstlisting}
+Addresse des ADC1 Status-Registers ist 0x40012000 + base offset of ADC1 + status reg offset = 0x40012000
+\vspace{2mm}\\
+
+    \textbf{b) ADC2 Overrun prüfen (Bit 5):}
+\begin{lstlisting}[style=basesmol]
+#define ADC2_SR (*((volatile uint32_t *)(0x40012100)))
+uint8_t var2;
+if (ADC2_SR & 0x20) {
+    var2 = 0xFF;  // Overrun aufgetreten
+} else {
+    var2 = 0x00;  // Kein Overrun
+}
+\end{lstlisting}
+Addresse des ADC2 Status-Registers ist 0x40012000 + base offset of ADC2 + status reg offset = 0x40012100
+\vspace{2mm}\\
+
+    \textbf{c) ADC3 auf 10-bit (RES[25:24] = 01):}
+\begin{lstlisting}[style=basesmol]
+#define ADC3_CR1 (*((volatile uint32_t *)(0x40012204)))
+ADC3_CR1 &= 0xFCFFFFFF;  // Bits 25:24 loeschen
+ADC3_CR1 |= 0x01000000;  // Bit 24 setzen (01)
+
+// kann auch so geschrieben werden:
+ADC3_CR1 |= 0x01000000;  // force bit24 to 1
+ADC3_CR1 &= 0xFDFFFFFF;  // force bit25 to 0
+\end{lstlisting}
+Addresse des ADC3 Status-Registers ist 0x40012000 + base offset of ADC3 + control reg1 offset = 0x40012204
+\end{example2}
+
+\begin{remark}
+    Bei ADC-Registern ist es wichtig, die korrekten Bit-Positionen zu verwenden. EOC ist Bit 1 (nicht Bit 0), OVR ist Bit 5. Die Auflösung wird durch zwei Bits (RES[1:0]) in Bits 25:24 des CR1-Registers gesteuert.
+\end{remark}

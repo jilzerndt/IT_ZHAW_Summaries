@@ -650,3 +650,209 @@ A 16-bit wide asynchronous SRAM is connected to the FMC of an STM32F429 microcon
      \end{itemize}
    \end{itemize}
 \end{example2}
+
+\section{Memory (Speicher)}
+
+\subsection{Speicher-Technologien}
+
+\begin{KR}{SRAM vs. SDRAM Unterschiede}\\
+    \paragraph{Speichertyp}
+    \begin{itemize}
+        \item SRAM: Statisch (Flip-Flop basiert)
+        \item SDRAM: Dynamisch (Kondensator basiert)
+    \end{itemize}
+    
+    \paragraph{Refresh-Verhalten}
+    \begin{itemize}
+        \item SRAM: Kein Refresh nötig (Inhalt bleibt solange Spannung anliegt)
+        \item SDRAM: Periodischer Refresh notwendig (Leckströme)
+    \end{itemize}
+    
+    \paragraph{Schnittstelle}
+    \begin{itemize}
+        \item SRAM: Asynchron (NWE, NOE Signale)
+        \item SDRAM: Synchron (RAS, CAS Signale, getaktet)
+    \end{itemize}
+    
+    \paragraph{Zugriffszeit}
+    \begin{itemize}
+        \item SRAM: Alle Zugriffe gleich schnell
+        \item SDRAM: Hohe Latenz für ersten Zugriff, kurze Zeit für Folgeadressen
+    \end{itemize}
+    
+    \paragraph{Speicherdichte}
+    \begin{itemize}
+        \item SRAM: Größere Zellen $\rightarrow$ geringere Dichte, teurer
+        \item SDRAM: Kleinere Zellen $\rightarrow$ höhere Dichte, günstiger
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Asynchronous SRAM vs. SDRAM}\\
+    Vergleiche die beiden Speichertypen anhand ihrer Eigenschaften.
+    
+    \tcblower
+    
+    \textbf{SRAM (Static RAM):}
+    \begin{itemize}
+        \item Speicherelement: Flip-Flop (6 Transistoren)
+        \item Kein Refresh erforderlich
+        \item Asynchrone Schnittstelle (einfache Anbindung)
+        \item Konstante Zugriffszeit
+        \item Hoher Preis pro Bit, niedrige Dichte
+    \end{itemize}
+    
+    \textbf{SDRAM (Synchronous Dynamic RAM):}
+    \begin{itemize}
+        \item Speicherelement: Kondensator + Transistor
+        \item Periodischer Refresh notwendig
+        \item Synchrone Schnittstelle (komplexe Anbindung)
+        \item Variable Zugriffszeit (Burst-optimiert)
+        \item Niedriger Preis pro Bit, hohe Dichte
+    \end{itemize}
+    
+    \textbf{OE-Pin Funktion bei SRAM:}
+    Kontrolliert, ob das Memory Daten auf den Bus treibt oder ob sich die Ausgangstreiber im Floating-Zustand befinden.
+\end{example2}
+
+\subsection{SRAM-Anbindung und Address Decoding}
+
+\begin{KR}{SRAM-Anbindung berechnen}
+    \paragraph{Anzahl Adresspins}
+    Für x K $\times$ y Bit SRAM: Adresspins = $\log_2$(x K) = $\log_2$(x $\times$ 1024)\\
+    \includegraphics[width=\linewidth]{sram_pins_ex.png}
+    
+    \paragraph{Basisadresse + Anzahl Adressen}
+    \begin{itemize}
+        \item Basisadresse: niedrigste Adresse des Bausteins
+        \item Höchste Adresse: Basisadresse + Speichergröße - 1
+        \item Beispiel 64K: 64K = 64 $\times$ 1024 = 65536 = 0x10000
+    \end{itemize}
+    
+    \paragraph{Partial Address Decoding}
+    \begin{itemize}
+        \item Nicht alle Adressleitungen werden dekodiert
+        \item Führt zu mehreren gültigen Adressbereichen (Aliasing)
+        \item Anzahl Bereiche = $2^{nicht\_dekodierte\_Bits}$
+    \end{itemize}
+    
+    \paragraph{FMC-Signale zuordnen}
+    \begin{itemize}
+        \item NE[x]: Chip Select (Bank-Auswahl)
+        \item NOE: Output Enable
+        \item NWE: Write Enable
+        \item A[n:0]: Adressleitungen
+        \item D[m:0]: Datenleitungen
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{64K x 8 Bit SRAM Anbindung}\\
+    SRAM soll bei Basisadresse 0x6800'0000 angeschlossen werden.
+    
+    \tcblower
+    
+    \textbf{a) Anzahl Adresspins:}
+    64K = $2^{16}$ $\rightarrow$ 16 Adresspins $\rightarrow$ A[15:0]
+    
+    \textbf{b) FMC-Signale:}
+    \begin{itemize}
+        \item NE[3] (Bank 3: 0x6800'0000 - 0x6BFF'FFFF)
+        \item NOE (Output Enable)
+        \item NWE (Write Enable)
+        \item A[15:0] (Adressleitungen)
+        \item D[7:0] (8-bit Datenbus)
+    \end{itemize}
+    
+    \textbf{c) Höchste Adresse:}
+    0x6800'0000 + 64K - 1 = 0x6800'0000 + 0xFFFF = 0x6800'FFFF
+    
+    \textbf{d) Partial Address Decoding:}
+    Bits A[25:16] nicht angeschlossen $\rightarrow$ 10 Bits $\rightarrow$ $2^{10}$ = 1024 Adressblöcke
+    
+    \textbf{e) Aliasing-Bereiche:}
+    0x68XX'0000, 0x69XX'0000, 0x6AXX'0000, 0x6BXX'0000
+\end{example2}
+
+\subsection{Flash-Speicher und DRAM}
+
+\begin{KR}{DRAM-Eigenschaften bewerten}\\
+    \paragraph{Speicherzelle}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Kondensator + Transistor (nicht RS Flip-Flop)
+        \item \textcolor{frog}{$\checkmark$} Sehr kleine Zelle $\rightarrow$ hohe Dichte
+    \end{itemize}
+    
+    \paragraph{Zugriffsmuster}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Hohe Latenz für einzelne Zugriffe
+        \item \textcolor{frog}{$\checkmark$} Optimiert für Blockzugriffe (Burst)
+    \end{itemize}
+    
+    \paragraph{Refresh und Leistung}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Periodischer Refresh wegen Leckströmen
+        \item \textcolor{frog}{$\checkmark$} Volatiler Speicher
+        \item \textcolor{red}{$\times$} Kein niedriger Leistungsverbrauch (Refresh erforderlich)
+    \end{itemize}
+    
+    \paragraph{Kosten}
+    \begin{itemize}
+        \item \textcolor{red}{$\times$} Niedriger Preis pro Speicherzelle (nicht hoch)
+    \end{itemize}
+\end{KR}
+
+\begin{KR}{NOR vs. NAND Flash Vergleich}\\
+    \paragraph{NOR Flash}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Direkter Code-Execution (XIP - Execute in Place)
+        \item \textcolor{frog}{$\checkmark$} Wahlfreie Byte-Zugriffe
+        \item \textcolor{frog}{$\checkmark$} SRAM-kompatible Schnittstelle
+        \item \textcolor{frog}{$\checkmark$} Bits einzeln auf '0' schreibbar
+        \item \textcolor{frog}{$\checkmark$} Für Programmcode und persistente Daten
+        \item \textcolor{red}{$\times$} Nicht für große Datenblöcke optimiert
+    \end{itemize}
+    
+    \paragraph{NAND Flash}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Effizient für große Datenblöcke
+        \item \textcolor{frog}{$\checkmark$} Hohe Schreibgeschwindigkeit für Blöcke
+        \item \textcolor{frog}{$\checkmark$} Spezielle Schnittstelle (nicht SRAM-kompatibel)
+        \item \textcolor{frog}{$\checkmark$} Hohe Latenz für ersten Zugriff
+        \item \textcolor{frog}{$\checkmark$} Für SSDs verwendet
+        \item \textcolor{red}{$\times$} Code muss ins RAM geladen werden
+        \item \textcolor{red}{$\times$} Keine wahlfreien Byte-Zugriffe
+    \end{itemize}
+    
+    \paragraph{Gemeinsame Eigenschaften}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Floating Gate Technologie
+        \item \textcolor{frog}{$\checkmark$} Nur sektorweises Löschen auf '1'
+        \item \textcolor{red}{$\times$} Bits können nicht einzeln auf '1' geschrieben werden
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Flash-Speicher Eigenschaften}\\
+    Bewerte Aussagen für NOR und NAND Flash.
+    
+    \tcblower
+    
+    \textbf{NOR Flash - Anwendungen:}
+    \begin{itemize}
+        \item Mikrocontroller-Firmware (direkte Ausführung)
+        \item BIOS/UEFI Code
+        \item Embedded Systems mit wenig RAM
+    \end{itemize}
+    
+    \textbf{NAND Flash - Anwendungen:}
+    \begin{itemize}
+        \item Solid State Drives (SSDs)
+        \item SD-Karten, USB-Sticks
+        \item Smartphones (App-Speicher)
+    \end{itemize}
+    
+    \textbf{Wichtiger Unterschied:}
+    NOR ermöglicht wahlfreie Zugriffe wie RAM, während NAND blockweise gelesen werden muss und eine spezielle Controller-Logik benötigt.
+\end{example2}
+
+\begin{remark}
+    Bei der Speicher-Auswahl ist das Anwendungsprofil entscheidend: NOR Flash für direkten Code-Zugriff, NAND Flash für große Datenmengen, SRAM für schnelle Zwischenspeicherung, DRAM für große Arbeitsspeicher mit hoher Dichte.
+\end{remark}
