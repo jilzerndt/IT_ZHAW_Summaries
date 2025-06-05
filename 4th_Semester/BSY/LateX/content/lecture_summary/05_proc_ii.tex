@@ -1,4 +1,4 @@
-\section{Resource Control}
+\section{Resource Control in Linux}
 
 \mult{2}
 
@@ -396,3 +396,61 @@ for pid in $(cat /mnt/cgroups/cpuset/group1/cgroup.procs); do
 done
 \end{lstlisting}
 \end{example2}
+
+\begin{KR}{System Call Analysis}
+    \paragraph{Key concepts}
+    \begin{itemize}
+        \item fork() duplicates current process
+        \item exec() family replaces current process image
+        \item Code after exec() only runs if exec() fails
+        \item Count processes by tracing fork() calls
+    \end{itemize}
+    
+    \paragraph{Analysis steps}
+    \begin{itemize}
+        \item Draw execution tree showing parent/child branches
+        \item Mark where each printf() executes
+        \item Identify exec() calls that replace process image
+        \item Determine unreachable code after successful exec()
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{System Call Analysis}
+    Analyze the output of a program using fork() and exec():
+    
+\begin{lstlisting}[language=C, style=basesmol]
+int pid = fork();
+printf("%s\n", "[1] Time for case distinction");
+if (pid) {
+    printf("%s\n", "[2] Starting emacs/fstab");
+    execl("/bin/emacs", "/etc/fstab", (char *)NULL);
+} else {
+    printf("%s\n", "[3] Starting emacs/hosts");
+    execl("/bin/emacs", "/etc/hosts", (char *)NULL);
+}
+printf("%s\n", "[4] Two editors started successfully");
+// More code follows...
+\end{lstlisting}
+    
+    \tcblower
+    
+    \textbf{Analysis:}\\
+    Programm startet mit 2 Editoren:\\
+    \includegraphics[width=0.5\linewidth]{system_calls_SEP07.png}
+
+    \begin{itemize}
+        \item Two editors are started
+        \item Output: [1], [1], [2], [3]
+        \item The code after execl() calls is never reached
+        \item execl() replaces the process image, so [4] is never printed
+    \end{itemize}
+    
+    \textbf{Execution flow:}
+    \begin{itemize}
+        \item fork() creates parent and child
+        \item Both print [1]
+        \item Parent (pid $\neq$ 0) prints [2], then execl() replaces it with emacs
+        \item Child (pid == 0) prints [3], then execl() replaces it with emacs
+    \end{itemize}
+\end{example2}
+

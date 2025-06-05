@@ -1,4 +1,4 @@
-\section{Midterm 2012}
+\section{Midterm 2012} 
 
 \subsection{Resource Management and Deadlocks}
 
@@ -13,6 +13,7 @@
     Ist das eine Deadlocksituation, wenn die Ressourcen exklusiv alloziert werden und wenn möchte schreiben das Gleiche wie anfordern bedeutet? Begründen Sie Ihre Antwort (Ressourcengraphen zeichnen und analysieren).
     
     \tcblower
+    \includegraphics[width=0.5\linewidth]{deadlock_resource_graph.png}\\
     Ja, dies ist eine Deadlocksituation. 
     
     \textbf{Analyse:}
@@ -23,7 +24,6 @@
     \end{itemize}
     
     Es entsteht ein Zyklus: P1 $\rightarrow$ D2 $\rightarrow$ P3 $\rightarrow$ T2 $\rightarrow$ P1\\
-    \important{DRAW RESOURCE GRAPH! AND ADD HERE} 
     
     \textbf{Bedingungen für Deadlock:}
     \begin{itemize}
@@ -39,6 +39,7 @@
 \raggedcolumns
 
 \begin{KR}{Deadlock Detection in Resource Allocation Graphs}
+    \important{HOW TO DRAW A RESOURCE GRAPH!}
     \paragraph{Resource Graph erstellen}
     \begin{itemize}
         \item Kreise: Prozesse (P1, P2, P3, ...)
@@ -73,32 +74,30 @@
 \subsection{Synchronization with Semaphores}
 
 \begin{example2}{Semaphore Implementation}\\
+    \important{NEUE LÖSUNG ACHTUNG!}
     Gegeben sind drei Prozess P0, P1, und P2 die nach folgendem Schema abgearbeitet werden soll:\\
     \includegraphics[width=\linewidth]{semaphore_mt12.png}
-    \begin{center}
-    P0 $\rightarrow$ P2 $\rightarrow$ P0 $\rightarrow$ P2 $\rightarrow$ ...\\
-    P1 (parallel)
-    \end{center}
     
     Die Verarbeitung startet mit den beiden Prozessen P0 und P1, die parallel verarbeitet werden sollen (es spielt kein Rolle, welcher der beiden Prozesse zürst mit seiner Verarbeitung beginnt oder aufhört). Wenn beide Prozesse eine Iteration ihrer Funktion working(x) beendet haben, folgt Prozess P2, etc.
     
-    Schreiben Sie Pseudocode mit maximal 3 Semaphoren S0, S1 und S3, der garantiert, dass die oben skizzierte Reihenfolge eingehalten wird. Verwenden Sie dazu ausschliesslich Befehle der Form up(S0) und down(S0), etc. Geben Sie an, wie die Semaphore initialisiert werden müssen.
+    Schreiben Sie Pseudocode mit maximal 3 Semaphoren S0, S1 und S2, der garantiert, dass die oben skizzierte Reihenfolge eingehalten wird. Verwenden Sie dazu ausschliesslich Befehle der Form up(S0) und down(S0), etc. Geben Sie an, wie die Semaphore initialisiert werden müssen.
     
     \tcblower
-    \important{ABGLEICHEN MIT LÖSUNG UND BESSER FORMATIEREN}
+    
     \begin{center}
     \begin{tabular}{|c|c|c|}
     \hline
     \textbf{P0} & \textbf{P1} & \textbf{P2} \\
     \hline
-    Sem S0: 1 & Sem S1: 1 & Sem S2: 0 \\
-    Sem S3: 0 & Sem S3: 0 & \\
+    Sem S0: 1 &  & \\
+    Sem S1: 1 &  & \\
+    Sem S2: 0 &  & \\
     \hline
     while(1) \{ & while(1) \{ & while(1) \{ \\
-    \quad down(S0); & \quad down(S1); & \quad down(S2); \\
-    \quad working(0); & \quad working(1); & \quad working(2); \\
-    \quad up(S3); & \quad up(S3); & \quad up(S0); \\
-    \} & \} & \quad up(S1); \\
+    \quad \quad down(S0); & \quad \quad down(S1); & \quad \quad down(S2); \\
+    \quad \quad working(0); & \quad \quad working(1); & \quad \quad working(2); \\
+    \quad \quad up(S2); & \quad \quad up(S2); & \quad \quad up(S0); \\
+    \} & \} & \quad \quad up(S1); \\
      &  & \} \\
     \hline
     \end{tabular}
@@ -108,14 +107,13 @@
     \begin{itemize}
         \item S0 = 1 (P0 kann starten)
         \item S1 = 1 (P1 kann starten) 
-        \item S2 = 0 (P2 muss warten)
-        \item S3 = 0 (Synchronisation zwischen P0/P1 und P2)
+        \item S2 = 0 (P2 muss warten - Synchronisation zwischen P0/P1 und P2)
     \end{itemize}
     
     \textbf{Ablauf:}
     \begin{itemize}
         \item P0 und P1 starten parallel
-        \item Beide signalisieren mit up(S3) wenn fertig
+        \item Beide signalisieren mit up(S2) wenn fertig
         \item P2 wartet mit down(S2) bis beide P0 und P1 fertig sind
         \item P2 gibt mit up(S0) und up(S1) die nächste Runde frei
     \end{itemize}
@@ -262,9 +260,10 @@
     \end{itemize}
 \end{KR}
 
-\subsection{Page Replacement Algorithms}
+\subsubsection{Page Replacement Algorithms}
 
 \begin{example2}{Least Recently Used (LRU)}\\
+    \important{NEUE LÖSUNG ACHTUNG!}
     Ein Prozess referenziert der Reihe nach folgende Pages:
     \begin{center}
     8 7 5 8 7 3 5 1 3 4 2 1 8 3 1 2
@@ -298,7 +297,8 @@
     \end{tabular}
     \end{center}
     
-    \textbf{Page Faults:} 8 von 16 Zugriffen
+    \textbf{Page Faults:} 8 von 16 Zugriffen\\
+    Compulsory Page Faults: die ersten 4 (8, 7, 5, 3) sind unvermeidlich, da die Pages noch nicht im Speicher sind.\\
     
     \textbf{LRU-Logik:}
     \begin{itemize}

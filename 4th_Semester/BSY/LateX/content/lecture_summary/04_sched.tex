@@ -66,6 +66,8 @@
 
 \multend
 
+
+
 \subsection{Scheduling Algorithms}
 
 \mult{2}
@@ -84,7 +86,17 @@
         \item Round Robin within each queue
         \item Challenge: High-priority tasks can cause starvation of low-priority tasks
     \end{itemize}
+    \includegraphics[width=\linewidth]{multilevel_queue.png}
 \end{concept}
+
+\begin{definition}{Fair Share Scheduling} aim for equal CPU time:
+    \begin{itemize}
+        \item Maintains a running clock of CPU time used per process
+        \item Uses a Virtual Clock (VC) to track usage
+        \item Ensures average run-time is roughly equal for all tasks
+        \item Better balance between CPU-bound and I/O-bound tasks
+    \end{itemize}
+\end{definition}
 
 \begin{concept}{Multi-level Feedback Queues} \\
     Addresses starvation (tasks move between queues):
@@ -93,18 +105,16 @@
         \item Low-priority queues may get larger time quantum
         \item Balances responsiveness with throughput
     \end{itemize}
+    \includegraphics[width=\linewidth]{multilevel_feedback_queue.png}
 \end{concept}
 
-\begin{concept}{Fair Share Scheduling} aim for equal CPU time:
-    \begin{itemize}
-        \item Maintains a running clock of CPU time used per process
-        \item Uses a Virtual Clock (VC) to track usage
-        \item Ensures average run-time is roughly equal for all tasks
-        \item Better balance between CPU-bound and I/O-bound tasks
-    \end{itemize}
-\end{concept}
 
-\begin{formula}{First-In-First-Out (FIFO)} \\ basic scheduling algorithm: 
+
+\multend
+
+\mult{2}
+
+\begin{formula}{First-In-First-Out (FIFO/FCFS)} \\ basic scheduling algorithm: 
     \begin{itemize}
         \item Processes are executed in the order they arrive
         \item Single queue, no preemption
@@ -114,6 +124,8 @@
         \item No awareness of process type (interactive vs. batch)
     \end{itemize}
     $\rightarrow$ also known as First-Come-First-Served (FCFS)
+
+    \includegraphics[width=\linewidth]{fifo_algorithm.png}
 \end{formula}
 
 \begin{formula}{Round Robin (RR)} time-sharing algorithm:
@@ -129,11 +141,284 @@
                 \item Too small: too much context switching overhead
             \end{itemize}
     \end{itemize}
+    \includegraphics[width=\linewidth]{rr_algorithm.png}
+\end{formula}
+
+\begin{formula}{Shortest Job First (SJF)} \\ non-preemptive scheduling algorithm:
+    \begin{itemize}
+        \item Selects the process with the shortest burst time
+        \item Minimizes average waiting time
+        \item Non-preemptive, runs to completion
+        \item Can lead to starvation for longer processes
+        \item Optimal for average turnaround time
+    \end{itemize}
+    \includegraphics[width=\linewidth]{sjf_algorithm.png}
+\end{formula}
+
+\begin{formula}{Shortest Remaining Time (SRT)} \\ preemptive version of SJF:
+    \begin{itemize}
+        \item At each time unit, selects the process with the shortest remaining time
+        \item Preempts running processes if a new process arrives with shorter remaining time
+        \item Can lead to high context switching overhead
+        \item Optimal for minimizing average waiting time
+    \end{itemize}
+   \includegraphics[width=\linewidth]{srt_algorithm.png}
 \end{formula}
 
 
 
+
+
+\begin{example2}{FIFO and RR Scheduling Comparison}\\
+    Given the following task list:
+    
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Task & Arrival Time & Burst Time \\
+        \hline
+        T1 & 0 & 10 \\
+        T2 & 3 & 6 \\
+        T3 & 7 & 1 \\
+        T4 & 8 & 3 \\
+        \hline
+    \end{tabular}
+    
+    \textbf{FIFO Schedule}:
+    
+    T1 runs from 0-10, T2 runs from 10-16, T3 runs from 16-17, T4 runs from 17-20
+    
+    \textbf{Round Robin Schedule} (quantum = 2):
+    
+    T1(0-2), T1(2-4), T2(4-6), T1(6-8), T2(8-10), T3(10-11), T4(11-13), \\ T1(13-15), T2(15-17), T1(17-19), T1(19-20)
+    
+    RR provides better response time but potentially longer turnaround time due to context switches.
+\end{example2}
+
 \multend
+
+\subsubsection{Scheduling Algorithm Analysis}
+
+\mult{2}
+
+\begin{KR}{Scheduling Algorithm Analysis}
+    \paragraph{FIFO/FCFS approach}
+    \begin{itemize}
+        \item Execute processes in arrival order
+        \item Non-preemptive
+        \item Simple but may cause long wait times
+    \end{itemize}
+    
+    \paragraph{SJF approach}
+    \begin{itemize}
+        \item At decision point, choose process with shortest total time
+        \item Non-preemptive
+        \item Optimal for average waiting time
+    \end{itemize}
+    
+    \paragraph{SRT approach}
+    \begin{itemize}
+        \item At each time unit, choose process with shortest remaining time
+        \item Preemptive version of SJF
+        \item May cause frequent context switches
+    \end{itemize}
+    
+    \paragraph{Problem-solving steps}
+    \begin{itemize}
+        \item Create timeline showing all events (arrivals, completions)
+        \item For each algorithm, trace through decision points
+        \item Calculate metrics: turnaround time, waiting time, response time
+    \end{itemize}
+\end{KR}
+
+
+
+\begin{KR}{Round Robin Analysis}
+    \paragraph{Quantum size considerations}
+    \begin{itemize}
+        \item Too large: Approaches FIFO, poor response time
+        \item Too small: High context switching overhead
+        \item Optimal: Slightly larger than typical interaction time
+    \end{itemize}
+    
+    \paragraph{Performance factors}
+    \begin{itemize}
+        \item Context switch overhead
+        \item Interactive response requirements
+        \item CPU-bound vs. I/O-bound process mix
+        \item System throughput vs. responsiveness trade-off
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Round Robin Scheduling}
+    Why should the time quantum be larger than typical interaction time?
+    
+    \textbf{Reason:}
+    If the quantum is larger than interaction processing time, the entire user interaction can be completed within one quantum. This ensures the system responds quickly to user input without interrupting the interactive process.
+    
+    If the quantum is too small, interactive processes get interrupted before completing their response, leading to poor user experience.
+\end{example2}
+
+\multend
+
+\begin{example2}{FIFO{,} SJF{,} and SRT Scheduling}
+    Given processes with arrival and burst times, determine execution order:
+
+    \begin{minipage}{0.35\linewidth}    
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Process & Arrival T. & Burst T. \\
+        \hline
+        P & 0 & 10 \\
+        Q & 4 & 5 \\
+        R & 5 & 10 \\
+        S & 6 & 1 \\
+        \hline
+    \end{tabular}
+    \end{minipage}
+    \begin{minipage}{0.65\linewidth}    
+    \includegraphics[width=\linewidth]{SCHEDULING_sep07.png}
+    \end{minipage}
+\end{example2}
+
+\subsubsection{Multi-level Scheduling}
+
+\begin{KR}{Priority-Based Multi-Level Scheduling}
+    \paragraph{Organize by priority levels}
+    \begin{itemize}
+        \item Group processes by priority (higher number = higher priority)
+        \item Maintain separate ready queue for each priority level
+        \item Always schedule from highest priority non-empty queue
+    \end{itemize}
+    
+    \paragraph{Apply Round Robin within priority}
+    \begin{itemize}
+        \item Use time quantum for processes at same priority level
+        \item Move process to end of same priority queue when quantum expires
+        \item New arrivals join appropriate priority queue
+    \end{itemize}
+    
+    \paragraph{Handle preemption}
+    \begin{itemize}
+        \item Higher priority process always preempts lower priority
+        \item Preemption occurs immediately when higher priority task arrives
+        \item Preempted task returns to head of its priority queue
+    \end{itemize}
+\end{KR}
+
+\begin{minipage}{0.45\linewidth}
+
+\begin{theorem}{Priority-Based Scheduling Issues}
+    \begin{itemize}
+        \item Priority inversion
+        \item Starvation of low-priority processes
+        \item Priority assignment difficulties
+        \item Real-time deadline misses
+    \end{itemize}
+    
+    \textbf{Solution approaches:}
+    \begin{itemize}
+        \item Priority inheritance protocols
+        \item Aging mechanisms
+        \item Fair-share scheduling
+        \item Deadline-based scheduling
+    \end{itemize}
+\end{theorem}
+\end{minipage}
+\begin{minipage}{0.55\linewidth}
+
+\begin{example}
+    \textbf{Priority inversion occurs when:}
+    \begin{itemize}
+        \item High-priority process waits for low-priority process
+        \item Medium-priority processes preempt low-priority process
+        \item High-priority process effectively blocked by medium-priority processes
+    \end{itemize}
+    
+    \textbf{Prevention methods:}
+    \begin{itemize}
+        \item \textbf{Priority inheritance}: Low-priority process temporarily inherits high priority
+        \item \textbf{Priority ceiling}: Resources assigned maximum priority of potential users
+        \item \textbf{Dynamic priority adjustment}: Increase priority of waiting processes over time
+    \end{itemize}
+\end{example}
+\end{minipage}
+
+
+
+
+\begin{KR}{Multi-Level Round Robin Scheduling}
+
+    \begin{minipage}{0.6\linewidth}
+    \paragraph{Multi-level principles}
+    \begin{itemize}
+        \item Separate queues for different priority levels
+        \item Higher priority queues are served first
+        \item Round robin within each priority level
+        \item Lower priority tasks only run when higher queues are empty
+    \end{itemize}
+    
+    \paragraph{Timeline construction}
+    \begin{itemize}
+        \item Mark process arrivals on timeline
+        \item At each time unit, determine which process should run
+        \item Apply round robin within the highest non-empty priority queue
+        \item Show context switches and queue changes
+    \end{itemize}
+    \end{minipage}
+    \hspace{2mm}
+    \begin{minipage}{0.35\linewidth}
+    \paragraph{Scheduling algorithm}
+    \begin{itemize}
+        \item Group processes by priority level
+        \item Always check highest priority queue first
+        \item Use round robin with specified time quantum within each queue
+        \item Preemption occurs when higher priority process arrives
+        \item Track remaining execution time for each process
+    \end{itemize}
+    \end{minipage}
+\end{KR}
+
+\begin{example2}{Multi-Level Scheduling with RR}
+    Five processes with time quantum = 1:
+    
+    \begin{minipage}{0.45\linewidth}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        Process & Priority & Arrival & Execution \\
+        \hline
+        P1 & 0 & 0 & 4 \\
+        P2 & 1 & 1 & 3 \\
+        P3 & 1 & 2 & 2 \\
+        P4 & 0 & 5 & 3 \\
+        P5 & 0 & 7 & 2 \\
+        \hline
+    \end{tabular}
+    \end{minipage}
+    \begin{minipage}{0.55\linewidth} 
+    \includegraphics[width=\linewidth]{multilevelsched2.png}
+    \end{minipage}
+    \vspace{2mm}\\
+    \includegraphics[width=\linewidth]{multilevel_scheduling_SEP19.png}
+    \vspace{2mm}\\
+    \textbf{Execution timeline:}
+    \begin{itemize}
+        \item t=0-1: P1 (only process available)
+        \item t=1-2: P2 (higher priority, preempts P1)
+        \item t=2-3: P3 (same priority as P2, P2's quantum expired)
+        \item t=3-4: P2 (continues RR at priority 1)
+        \item t=4-5: P3 (completes)
+        \item t=5-6: P2 (completes), then P4 starts
+        \item t=6-7: P1 (RR at priority 0)
+        \item t=7-8: P4 (continues RR), P5 arrives
+        \item And so on with RR between P1, P4, P5 at priority 0...
+    \end{itemize}
+\end{example2}
+
+
+
+
+
+
 
 \subsubsection{Real-Time Schedulers}
 
@@ -188,6 +473,122 @@
 \end{formula}
 
 \multend
+
+\begin{example2}{Rate Monotonic Scheduling}
+    Given tasks with the following characteristics:
+    
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Task & WCET (C) & Period (T) \\
+        \hline
+        T1 & 10 & 20 \\
+        T2 & 10 & 50 \\
+        T3 & 5 & 30 \\
+        \hline
+    \end{tabular}
+    
+    \tcblower
+    
+    \textbf{Analysis}:\\
+    1. T1 has the highest priority (shortest period)\\
+    2. Utilization: $U = \frac{10}{20} + \frac{10}{50} + \frac{5}{30} = 0.5 + 0.2 + 0.167 = 0.867$\\
+    3. Maximum utilization for 3 tasks: $3(2^{1/3} - 1) \approx 0.779$\\
+    4. Since $0.867 > 0.779$, there is no guaranteed schedule\\    
+    However, a feasible schedule might still exist. Testing would be required to confirm.
+\end{example2}
+
+\begin{example2}{Rate Monotonic Scheduling Example}\\
+    \includegraphics[width=\linewidth]{general_scheduling_example.png}
+\end{example2}
+
+\begin{minipage}{0.53\linewidth}
+\begin{KR}{Earliest Deadline First Scheduling}
+    \paragraph{EDF Algorithm principles}
+    \begin{itemize}
+        \item Always schedule the task with the earliest deadline
+        \item Preemption occurs when a task with earlier deadline arrives
+        \item Re-scheduling happens at specified intervals or task completion
+    \end{itemize}
+    
+    \paragraph{Scheduling steps}
+    \begin{itemize}
+        \item Calculate all task deadlines for the scheduling period
+        \item At each scheduling point, identify available tasks
+        \item Select task with earliest deadline
+        \item Handle ties with specified priority rules (e.g., shorter period)
+        \item Mark execution periods in timeline diagram
+    \end{itemize}
+    
+    \paragraph{Timeline construction}
+    \begin{itemize}
+        \item Create timeline with scheduling intervals marked
+        \item For each interval, determine which task should run
+        \item Show task execution as filled blocks
+        \item Verify all deadlines are met
+    \end{itemize}
+\end{KR}
+\end{minipage}
+\begin{minipage}{0.46\linewidth}
+\begin{theorem}{EDF Details}
+    \paragraph{Calculating absolute deadlines}
+    \begin{itemize}
+        \item For each task instance:\\ Deadline = Arrival time + Period
+        \item Track all active tasks \\ (arrived but not completed)
+        \item Update deadlines when new instances arrive
+    \end{itemize}
+    
+    \paragraph{Scheduling by earliest deadline}
+    \begin{itemize}
+        \item At each scheduling point, select task with earliest absolute deadline
+        \item Preempt running task if new arrival has earlier deadline
+        \item Use period as tiebreaker for equal deadlines (shorter period wins)
+    \end{itemize}
+    
+    \paragraph{Handling rescheduling points}
+    \begin{itemize}
+        \item Reschedule when task completes or suspends
+        \item Reschedule at fixed intervals if specified
+        \item Reschedule when new task arrives \\ (if preemptive)
+    \end{itemize}
+\end{theorem}
+\end{minipage}
+
+
+\begin{example2}{EDF Scheduling}
+    Three periodic tasks with rescheduling every 4ms or when a task is suspended: 
+    
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Task & Period & Execution Time \\
+        \hline
+        \textcolor{red}{T1} & 4ms & 1ms \\
+        \textcolor{red}{T2} & 8ms & 4ms \\
+        \textcolor{red}{T3} & 12ms & 3ms \\
+        \hline
+    \end{tabular}
+
+    Priority: in case of equal deadlines, shorter period wins.
+
+    \tcblower
+    \textbf{Preemptive Diagram:}\\
+    \includegraphics[width=\linewidth]{scheduling_diagram_SEP19.png}
+    
+    \textbf{Timeline analysis (first 24ms):}
+    \begin{itemize}
+        \item t=0: T1(dl=4), T2(dl=8), T3(dl=12) arrive $\rightarrow$ Schedule T1
+        \item t=1: T1 completes $\rightarrow$ Schedule T2  
+        \item t=4: T1(dl=8) arrives, T2 continues (dl=8, but T2 started first)
+        \item t=5: T1 executes (same deadline, shorter period wins)
+        \item t=6: T1 completes $\rightarrow$ Schedule T2
+        \item t=8: T1(dl=12), T2(dl=16) arrive, T3 continues
+        \item And so on...
+    \end{itemize}
+    
+    The schedule ensures all deadlines are met with this task set.
+\end{example2}
+
+\raggedcolumns
+\columnbreak
 
 \subsection{Linux Scheduling}
 
@@ -294,11 +695,14 @@
 
 \multend
 
+\raggedcolumns
+\columnbreak
+
 \subsection{Multi-core Scheduling}
 
 \mult{2}
 
-\begin{definition}{Load Balancing} implemented on multicore systems:
+\begin{definition}{Load Balancing} on multicore systems:
     \begin{itemize}
         \item Dynamic distribution of tasks across CPU cores
         \item Applied based on scheduling policy
@@ -347,53 +751,48 @@
     \end{itemize}
 \end{KR}
 
-\begin{example2}{FIFO and RR Scheduling Comparison}
-    Given the following task list:
+
+
+
+\subsubsection{Complexity Analysis}
+
+
+\begin{KR}{Algorithm Complexity Analysis}
+    \paragraph{Time complexity evaluation}
+    \begin{itemize}
+        \item O(1): Constant time, independent of input size
+        \item O(log n): Logarithmic time, scales well
+        \item O(n): Linear time, proportional to input size
+        \item Identify bottleneck operations
+    \end{itemize}
     
-    \begin{tabular}{|c|c|c|}
-        \hline
-        Task & Arrival Time & Burst Time \\
-        \hline
-        T1 & 0 & 10 \\
-        T2 & 3 & 6 \\
-        T3 & 7 & 1 \\
-        T4 & 8 & 3 \\
-        \hline
-    \end{tabular}
+    \paragraph{Scheduler efficiency factors}
+    \begin{itemize}
+        \item Process selection time
+        \item Context switch overhead
+        \item Load balancing cost
+        \item Priority calculation complexity
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Linux O(1) Scheduler}
+    Explain why the Linux O(1) scheduler is called O(1):
     
-    \tcblower
+    \textbf{O(1) refers to constant time complexity:}
+    \begin{itemize}
+        \item Time to find next process is independent of total number of processes
+        \item Uses active and expired arrays with 140 priority levels each
+        \item Bitmap indicates which priority levels have waiting processes
+        \item Simply finds highest priority bit set and takes first process from that queue
+    \end{itemize}
     
-    \textbf{FIFO Schedule}:
-    
-    T1 runs from 0-10, T2 runs from 10-16, T3 runs from 16-17, T4 runs from 17-20
-    
-    \textbf{Round Robin Schedule} (quantum = 2):
-    
-    T1(0-2), T1(2-4), T2(4-6), T1(6-8), T2(8-10), T3(10-11), T4(11-13), \\ T1(13-15), T2(15-17), T1(17-19), T1(19-20)
-    
-    RR provides better response time but potentially longer turnaround time due to context switches.
+    \textbf{Algorithm:}
+    \begin{itemize}
+        \item Check bitmap for highest priority with waiting processes
+        \item Take first process from that priority queue
+        \item Constant time regardless of system load
+    \end{itemize}
 \end{example2}
 
-\begin{example2}{Rate Monotonic Scheduling}
-    Given tasks with the following characteristics:
-    
-    \begin{tabular}{|c|c|c|}
-        \hline
-        Task & WCET (C) & Period (T) \\
-        \hline
-        T1 & 10 & 20 \\
-        T2 & 10 & 50 \\
-        T3 & 5 & 30 \\
-        \hline
-    \end{tabular}
-    
-    \tcblower
-    
-    \textbf{Analysis}:\\
-    1. T1 has the highest priority (shortest period)\\
-    2. Utilization: $U = \frac{10}{20} + \frac{10}{50} + \frac{5}{30} = 0.5 + 0.2 + 0.167 = 0.867$\\
-    3. Maximum utilization for 3 tasks: $3(2^{1/3} - 1) \approx 0.779$\\
-    4. Since $0.867 > 0.779$, there is no guaranteed schedule\\    
-    However, a feasible schedule might still exist. Testing would be required to confirm.
-\end{example2}
+
 

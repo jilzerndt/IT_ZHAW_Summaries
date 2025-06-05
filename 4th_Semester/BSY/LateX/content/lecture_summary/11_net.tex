@@ -16,6 +16,8 @@
 
 \subsection{Network Interface Hardware}
 
+\mult{2}
+
 \begin{definition}{Network Interface Card (NIC) Architecture}\\
     Network interface cards connect systems to networks via the system bus:
     \begin{itemize}
@@ -38,7 +40,9 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{DMA and Data Transfer}\\
+
+
+\begin{concept}{DMA and Data Transfer}\\
     Modern NICs use Direct Memory Access for efficient data transfer:
     \begin{itemize}
         \item MAC-memory data transfer performed by DMA
@@ -48,9 +52,9 @@
         \item Prevents buffer underflow and overflow conditions
         \item Reduces CPU overhead for bulk data transfers
     \end{itemize}
-\end{definition}
+\end{concept}
 
-\begin{definition}{NIC Device Drivers}\\
+\begin{theorem}{NIC Device Drivers}\\
     NIC drivers operate in kernel space and manage hardware interaction:
     \begin{itemize}
         \item \textbf{Receive (Rx) side}:
@@ -67,9 +71,13 @@
             \end{itemize}
         \item Requires host-side buffering system for efficient operation
     \end{itemize}
-\end{definition}
+\end{theorem}
+
+\multend
 
 \subsection{Network Stack Architecture}
+
+\mult{2}
 
 \begin{concept}{Zero-Copy Stack Design}\\
     Traditional layered networking creates inefficiencies:
@@ -98,7 +106,11 @@
     \end{itemize}
 \end{definition}
 
-\subsection{Layer 2 - Data Link Layer}
+\multend
+
+\subsubsection{Layer 2 - Data Link Layer}
+
+\mult{2}
 
 \begin{definition}{Layer 2 Processing}\\
     The data link layer handles frame-level operations:
@@ -112,7 +124,7 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Layer 2 Bridging}\\
+\begin{concept}{Layer 2 Bridging}\\
     Bridging connects multiple network segments:
     \begin{itemize}
         \item \textbf{Network bridging}: Connects two or more LAN segments
@@ -125,11 +137,15 @@
         \item \textbf{Virtual bridges}: Software-based bridging for virtual networks
         \item Integration with Linux netfilter system for filtering and processing
     \end{itemize}
-\end{definition}
+\end{concept}
 
-\subsection{Layer 3 - Network Layer}
+\multend
 
-\begin{definition}{Layer 3 Network Processing}\\
+\subsubsection{Layer 3 - Network Layer}
+
+\mult{2}
+
+\begin{definition}{Layer 3 Network Processing}
     The network layer provides internetworking capabilities:
     \begin{itemize}
         \item \textbf{Addressing}: IP addressing beyond LAN boundaries
@@ -140,7 +156,19 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Linux Netfilter System}\\
+\begin{concept}{IP Packet Processing}\\
+    Linux IP layer processing involves several steps:
+    \begin{itemize}
+        \item Network driver calls IP handler (ip\_rcv)
+        \item Perform sanity checks on IP header (length, checksum)
+        \item Routing subsystem determines packet destination
+        \item Local delivery or forwarding decision
+        \item Integration with netfilter hooks for security and processing
+        \item Connection tracking for stateful operations
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{Linux Netfilter System}\\
     Netfilter provides packet filtering and manipulation:
     \begin{itemize}
         \item \textbf{Functions}:
@@ -162,33 +190,34 @@
             \end{itemize}
         \item \textbf{Frontends}: iptables, nftables for user configuration
     \end{itemize}
-\end{definition}
+\end{theorem}
 
-\begin{definition}{IP Packet Processing}\\
-    Linux IP layer processing involves several steps:
-    \begin{itemize}
-        \item Network driver calls IP handler (ip\_rcv)
-        \item Perform sanity checks on IP header (length, checksum)
-        \item Routing subsystem determines packet destination
-        \item Local delivery or forwarding decision
-        \item Integration with netfilter hooks for security and processing
-        \item Connection tracking for stateful operations
-    \end{itemize}
-\end{definition}
+
+
+\multend
+
+
+
+\raggedcolumns
+\columnbreak
 
 \subsection{Layer 4 - Transport Layer}
 
-\begin{definition}{Transport Layer Protocols}\\
+\begin{definition}{Transport Layer Protocols}
     Layer 4 provides end-to-end communication services:
-    \begin{itemize}
-        \item \textbf{UDP (User Datagram Protocol)}:
+    \vspace{2mm}\\
+
+    \begin{minipage}{0.5\linewidth}
+   \textbf{UDP (User Datagram Protocol)}:
             \begin{itemize}
                 \item Thin wrapper around IP frames
                 \item Provides unreliable, connectionless transmission
                 \item Minimal overhead for simple request-response applications
                 \item Used for DNS, DHCP, streaming media
             \end{itemize}
-        \item \textbf{TCP (Transmission Control Protocol)}:
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+        \textbf{TCP (Transmission Control Protocol)}:
             \begin{itemize}
                 \item Reliable, connection-oriented transport
                 \item Manages connections, flow control, congestion control
@@ -196,59 +225,11 @@
                 \item Provides error detection and recovery
                 \item Used for HTTP, FTP, SSH, email
             \end{itemize}
-    \end{itemize}
+    \end{minipage}
+
 \end{definition}
 
-\subsection{Layer 7 - Application Interface}
-
-\begin{definition}{Berkeley Sockets}\\
-    Sockets provide the user-facing API for network programming:
-    \begin{itemize}
-        \item Connect port numbers and network addresses with protocols and processes
-        \item \textbf{Socket types}:
-            \begin{itemize}
-                \item SOCK\_STREAM: Reliable, ordered, connection-based (TCP)
-                \item SOCK\_DGRAM: Unreliable, unordered, connectionless (UDP)
-                \item SOCK\_RAW: Direct access to IP layer
-            \end{itemize}
-        \item \textbf{Address families}:
-            \begin{itemize}
-                \item AF\_INET: IPv4 Internet protocols
-                \item AF\_INET6: IPv6 Internet protocols
-                \item AF\_UNIX: Local inter-process communication
-                \item AF\_NETLINK: Kernel-userspace communication
-            \end{itemize}
-        \item Sockets have states and support standard file operations
-    \end{itemize}
-\end{definition}
-
-\begin{definition}{Special Socket Types}\\
-    Linux supports various specialized socket types:
-    \begin{itemize}
-        \item \textbf{Unix Domain Sockets}:
-            \begin{itemize}
-                \item Inter-process communication using socket interface
-                \item Operates over the filesystem namespace
-                \item Cannot traverse host boundaries
-                \item Higher performance than network sockets for local communication
-            \end{itemize}
-        \item \textbf{Loopback Interface}:
-            \begin{itemize}
-                \item Host network interface with itself
-                \item Can be accessed like any network interface
-                \item Used for local services and testing
-            \end{itemize}
-        \item \textbf{Netlink Sockets}:
-            \begin{itemize}
-                \item Kernel-userspace IPC mechanism
-                \item Used for configuration and monitoring
-                \item Families include NETLINK\_ROUTE, NETLINK\_AUDIT, etc.
-                \item Standard message format with adaptable headers
-            \end{itemize}
-    \end{itemize}
-\end{definition}
-
-\begin{code}{Basic TCP Socket Programming}\\
+\begin{code}{Basic TCP Socket Programming}
     Example of TCP socket server and client:
     
 \begin{lstlisting}[language=C, style=basesmol]
@@ -305,9 +286,66 @@ read(sock, buffer, 1024);
 \end{lstlisting}
 \end{code}
 
+
+\subsubsection{Layer 7 - Application Interface}
+
+
+
+\begin{definition}{Berkeley Sockets}
+    Sockets provide the user-facing API for network programming:
+    \begin{itemize}
+        \item Connect port numbers and network addresses with protocols and processes
+        \item \textbf{Socket types}:
+            \begin{itemize}
+                \item SOCK\_STREAM: Reliable, ordered, connection-based (TCP)
+                \item SOCK\_DGRAM: Unreliable, unordered, connectionless (UDP)
+                \item SOCK\_RAW: Direct access to IP layer
+            \end{itemize}
+        \item \textbf{Address families}:
+            \begin{itemize}
+                \item AF\_INET: IPv4 Internet protocols
+                \item AF\_INET6: IPv6 Internet protocols
+                \item AF\_UNIX: Local inter-process communication
+                \item AF\_NETLINK: Kernel-userspace communication
+            \end{itemize}
+        \item Sockets have states and support standard file operations
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Special Socket Types}
+    Linux supports various specialized socket types:
+    \begin{itemize}
+        \item \textbf{Unix Domain Sockets}:
+            \begin{itemize}
+                \item Inter-process communication using socket interface
+                \item Operates over the filesystem namespace
+                \item Cannot traverse host boundaries
+                \item Higher performance than network sockets for local communication
+            \end{itemize}
+        \item \textbf{Loopback Interface}:
+            \begin{itemize}
+                \item Host network interface with itself
+                \item Can be accessed like any network interface
+                \item Used for local services and testing
+            \end{itemize}
+        \item \textbf{Netlink Sockets}:
+            \begin{itemize}
+                \item Kernel-userspace IPC mechanism
+                \item Used for configuration and monitoring
+                \item Families include NETLINK\_ROUTE, NETLINK\_AUDIT, etc.
+                \item Standard message format with adaptable headers
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+
+\raggedcolumns
+\columnbreak
+
+
 \subsection{Network Configuration Tools}
 
-\begin{definition}{Linux Network Configuration}\\
+\begin{definition}{Linux Network Configuration}
     Linux provides various tools for network management:
     \begin{itemize}
         \item \textbf{iproute2 suite} (modern, preferred):
@@ -328,7 +366,7 @@ read(sock, buffer, 1024);
     \end{itemize}
 \end{definition}
 
-\begin{KR}{Network Configuration and Troubleshooting}\\
+\begin{KR}{Network Configuration and Troubleshooting}
     \paragraph{Interface management}
     \begin{itemize}
         \item Show interfaces: \texttt{ip link show}
@@ -367,7 +405,7 @@ read(sock, buffer, 1024);
     \end{itemize}
 \end{KR}
 
-\begin{example2}{Network Interface Configuration}\\
+\begin{example2}{Network Interface Configuration}
     Complete network interface setup:
     
 \begin{lstlisting}[language=bash, style=basesmol]
@@ -528,6 +566,57 @@ sudo ip link delete veth0
 \end{lstlisting}
 \end{example2}
 
+
+
+\begin{KR}{Network Service Management}\\
+    \paragraph{Service discovery and management}
+    \begin{itemize}
+        \item Check listening services: \texttt{sudo ss -tulpn}
+        \item Find process using port: \texttt{sudo lsof -i :80}
+        \item Check service status: \texttt{systemctl status nginx}
+        \item Control network services: \texttt{sudo systemctl start/stop/restart nginx}
+    \end{itemize}
+    
+    \paragraph{Network security}
+    \begin{itemize}
+        \item Check open ports: \texttt{nmap localhost}
+        \item Monitor failed connections: \texttt{sudo journalctl -f | grep ssh}
+        \item Configure fail2ban: \texttt{sudo systemctl enable fail2ban}
+        \item Check SELinux network policies: \texttt{getsebool -a | grep httpd}
+    \end{itemize}
+    
+    \paragraph{Performance optimization}
+    \begin{itemize}
+        \item Tune network buffers: \texttt{sysctl -w net.core.rmem\_max=16777216}
+        \item Enable TCP window scaling: \texttt{sysctl -w net.ipv4.tcp\_window\_scaling=1}
+        \item Configure congestion control: \texttt{sysctl -w net.ipv4.tcp\_congestion\_control=bbr}
+        \item Monitor network performance: \texttt{iperf3 -c server\_ip}
+    \end{itemize}
+\end{KR}
+
+\begin{definition}{Extended Berkeley Packet Filter (eBPF)}\\
+    Modern Linux networking includes advanced packet filtering:
+    \begin{itemize}
+        \item \textbf{eBPF}: Extended packet filtering beyond traditional BPF
+        \item \textbf{Features}:
+            \begin{itemize}
+                \item Programmable packet processing in kernel space
+                \item JIT compilation for performance
+                \item Safe execution environment with verification
+                \item Integration with various kernel subsystems
+            \end{itemize}
+        \item \textbf{Applications}:
+            \begin{itemize}
+                \item High-performance networking
+                \item Container networking
+                \item Network security and monitoring
+                \item Traffic analysis and manipulation
+            \end{itemize}
+        \item Represents the future of Linux packet filtering and network programming
+    \end{itemize}
+\end{definition}
+
+
 \begin{example2}{Advanced Network Monitoring}\\
     Comprehensive network monitoring and analysis:
     
@@ -572,51 +661,3 @@ sysctl -a | grep net.ipv4 | head -10
 netstat -i
 \end{lstlisting}
 \end{example2}
-
-\begin{definition}{Extended Berkeley Packet Filter (eBPF)}\\
-    Modern Linux networking includes advanced packet filtering:
-    \begin{itemize}
-        \item \textbf{eBPF}: Extended packet filtering beyond traditional BPF
-        \item \textbf{Features}:
-            \begin{itemize}
-                \item Programmable packet processing in kernel space
-                \item JIT compilation for performance
-                \item Safe execution environment with verification
-                \item Integration with various kernel subsystems
-            \end{itemize}
-        \item \textbf{Applications}:
-            \begin{itemize}
-                \item High-performance networking
-                \item Container networking
-                \item Network security and monitoring
-                \item Traffic analysis and manipulation
-            \end{itemize}
-        \item Represents the future of Linux packet filtering and network programming
-    \end{itemize}
-\end{definition}
-
-\begin{KR}{Network Service Management}\\
-    \paragraph{Service discovery and management}
-    \begin{itemize}
-        \item Check listening services: \texttt{sudo ss -tulpn}
-        \item Find process using port: \texttt{sudo lsof -i :80}
-        \item Check service status: \texttt{systemctl status nginx}
-        \item Control network services: \texttt{sudo systemctl start/stop/restart nginx}
-    \end{itemize}
-    
-    \paragraph{Network security}
-    \begin{itemize}
-        \item Check open ports: \texttt{nmap localhost}
-        \item Monitor failed connections: \texttt{sudo journalctl -f | grep ssh}
-        \item Configure fail2ban: \texttt{sudo systemctl enable fail2ban}
-        \item Check SELinux network policies: \texttt{getsebool -a | grep httpd}
-    \end{itemize}
-    
-    \paragraph{Performance optimization}
-    \begin{itemize}
-        \item Tune network buffers: \texttt{sysctl -w net.core.rmem\_max=16777216}
-        \item Enable TCP window scaling: \texttt{sysctl -w net.ipv4.tcp\_window\_scaling=1}
-        \item Configure congestion control: \texttt{sysctl -w net.ipv4.tcp\_congestion\_control=bbr}
-        \item Monitor network performance: \texttt{iperf3 -c server\_ip}
-    \end{itemize}
-\end{KR}

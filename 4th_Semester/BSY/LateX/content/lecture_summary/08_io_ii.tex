@@ -1,3 +1,5 @@
+\section{Linux Kernel and Device Drivers}
+
 \subsection{Building and Using a Custom Linux Kernel}
 
 \begin{concept}{Custom Kernel Motivation}
@@ -55,14 +57,15 @@
     
     \paragraph{Installing build dependencies}
     \begin{itemize}
-        \item On Debian/Ubuntu: \texttt{sudo apt-get install build-essential gcc bc bison flex libssl-dev libncurses5-dev libelf-dev}
+        \item On Debian/Ubuntu: \\ \texttt{sudo apt-get install build-essential gcc bc bison flex libssl-dev libncurses5-dev libelf-dev}
     \end{itemize}
-    
+
+    \begin{minipage}{0.5\linewidth}
     \paragraph{Configuring the kernel}
     \begin{itemize}
         \item Start from existing config (recommended):
             \begin{itemize}
-                \item Current running kernel: \texttt{cp /boot/config-\$(uname -r) ./.config}
+                \item Current running kernel: \\ \texttt{cp /boot/config-\$(uname -r) ./.config}
                 \item Distribution default: \texttt{make defconfig}
             \end{itemize}
         \item Update config for new options: \texttt{make oldconfig}
@@ -78,13 +81,14 @@
                 \item CPU and architecture options, Device drivers \& File systems
             \end{itemize}
     \end{itemize}
-    
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
     \paragraph{Building the kernel}
     \begin{itemize}
         \item Compile: \texttt{make -j\$(nproc)}
         \item Build modules: \texttt{make modules}
-        \item Create Debian/Ubuntu packages: \texttt{make -j\$(nproc) deb-pkg}
-        \item For RPM-based systems: \texttt{make -j\$(nproc) rpm-pkg}
+        \item Create Debian/Ubuntu packages: \\ \texttt{make -j\$(nproc) deb-pkg}
+        \item For RPM-based systems: \\ \texttt{make -j\$(nproc) rpm-pkg}
     \end{itemize}
     
     \paragraph{Installing the kernel}
@@ -98,6 +102,7 @@
             \end{itemize}
         \item Update bootloader: \texttt{sudo update-grub} (GRUB)
     \end{itemize}
+    \end{minipage}
     
     \paragraph{Booting the new kernel}
     \begin{itemize}
@@ -176,6 +181,11 @@ module_exit(hello_exit);
     \end{itemize}
 \end{code}
 
+\raggedcolumns
+\columnbreak
+
+\subsubsection{Kernel Module Building Process}
+
 \begin{definition}{Module Building Process}
     Building a kernel module requires:
     \begin{itemize}
@@ -193,39 +203,6 @@ module_exit(hello_exit);
         \item Distribution-specific kernel headers needed for module compatibility
     \end{itemize}
 \end{definition}
-
-\begin{code}{Module Makefile}
-    Example Makefile for a kernel module:
-    
-\begin{lstlisting}[style=basesmol]
-# Define the module name
-obj-m := hello.o
-
-# For standalone module build
-all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
-
-# Clean up
-clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-\end{lstlisting}
-
-    For multiple source files:
-    
-\begin{lstlisting}[style=basesmol]
-# Module with multiple source files
-hello-y := hello_main.o hello_func.o
-obj-m := hello.o
-
-# For standalone module build
-all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
-
-# Clean up
-clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-\end{lstlisting}
-\end{code}
 
 \begin{KR}{Working with Kernel Modules}
     \paragraph{Building a module}
@@ -262,6 +239,98 @@ clean:
     \end{itemize}
 \end{KR}
 
+\subsubsection{Kernel Module Makefile}
+
+\begin{code}{Module Makefile}
+    Example Makefile for a kernel module:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Define the module name
+obj-m := hello.o
+
+# For standalone module build all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+# Clean up:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+\end{lstlisting}
+
+    For multiple source files:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Module with multiple source files
+hello-y := hello_main.o hello_func.o
+obj-m := hello.o
+
+# For standalone module build all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+# Clean up:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+\end{lstlisting}
+\end{code}
+
+\begin{KR}{Makefile Dependency Analysis}
+    \paragraph{Understanding make behavior}
+    \begin{itemize}
+        \item Make compares timestamps of targets and dependencies
+        \item Target is rebuilt if it's older than any dependency
+        \item Missing targets are always built
+        \item Implicit rules (.c.o:) handle automatic compilation
+    \end{itemize}
+    
+    \paragraph{Analysis steps}
+    \begin{itemize}
+        \item Identify target dependencies from makefile
+        \item Check file timestamps in directory listing
+        \item Determine which object files need recompilation
+        \item Follow linking rules to determine final executable name
+    \end{itemize}
+    
+    \paragraph{Common patterns}
+    \begin{itemize}
+        \item .c.o: rule compiles .c files to .o files automatically
+        \item \$@ refers to the target name
+        \item If .c file is newer than .o file, recompilation occurs
+        \item Missing .o files are always created
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Makefile Analysis}
+    Given Makefile:
+    
+\begin{lstlisting}[style=basesmol]
+CFL = -g
+CMP = gcc $(CFL)
+app: main1.o mythread.o scheduler.o queues.o mylist.o
+	$(CMP) main1.o mythread.o scheduler.o queues.o mylist.o -o $@.e
+.c.o:
+	$(CMP) -c $<
+\end{lstlisting}
+
+    Directory listing shows:
+    \begin{itemize}
+        \item mylist.c: Feb 24 09:31 (newer)
+        \item mylist.o: Feb 24 09:21 (older)  
+        \item queues.c: Feb 24 09:25 (newer)
+        \item queues.o: Feb 24 09:21 (older)
+        \item All other .o files are newer than corresponding .c files
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Solution:}
+    \begin{itemize}
+        \item Files to be compiled: mylist.c, queues.c (because .c files are newer than .o files)
+        \item Executable name: app.e (from \$@.e where \$@ = app)
+    \end{itemize}
+\end{example2}
+
+
+
+\raggedcolumns
+\columnbreak
+
 \subsection{Character Device Drivers}
 
 \begin{definition}{Character Device Drivers}\\
@@ -275,6 +344,62 @@ clean:
         \item Minor number identifies the specific device
     \end{itemize}
 \end{definition}
+
+
+
+\begin{KR}{Character Device Driver Key Components}
+    \begin{itemize}
+        \item \texttt{file\_operations} structure defines callbacks for file operations
+        \item \texttt{register\_chrdev} allocates a major number
+        \item Device methods handle open, read, write, and close operations
+        \item \texttt{put\_user} safely copies data from kernel to user space
+        \item Reference counting with \texttt{try\_module\_get} and \texttt{module\_put}
+    \end{itemize}
+\end{KR}
+
+
+\begin{example2}{Building\, Installing\, and Using a Character Device Module}
+    Complete workflow for a character device driver:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# 1. Create source file (chardev.c) and Makefile as shown above
+
+# 2. Build the module
+make
+
+# 3. Load the module
+sudo insmod chardev.ko
+
+# 4. Check kernel messages for major number
+dmesg | tail
+
+# 5. Create device node (assuming major number is 250)
+sudo mknod /dev/chardev c 250 0
+sudo chmod 666 /dev/chardev
+
+# 6. Test reading from the device
+cat /dev/chardev
+
+# 7. Check module information in sysfs
+ls -l /sys/module/chardev/
+cat /sys/module/chardev/parameters/* 2>/dev/null
+
+# 8. Unload the module when done
+sudo rmmod chardev
+
+# 9. Clean up the device node
+sudo rm /dev/chardev
+\end{lstlisting}
+
+    This demonstrates:
+    \begin{itemize}
+        \item Building and loading a custom character device driver
+        \item Creating a device node with appropriate permissions
+        \item Interacting with the device through standard file operations
+        \item Examining module information through sysfs
+        \item Proper cleanup when the module is no longer needed
+    \end{itemize}
+\end{example2}
 
 \begin{code}{Basic Character Device Driver}
     Structure of a simple character device driver:
@@ -348,60 +473,6 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 }
 \end{lstlisting}
 \end{code}
-
-\begin{KR}{Character Device Driver Key Components}
-    \begin{itemize}
-        \item \texttt{file\_operations} structure defines callbacks for file operations
-        \item \texttt{register\_chrdev} allocates a major number
-        \item Device methods handle open, read, write, and close operations
-        \item \texttt{put\_user} safely copies data from kernel to user space
-        \item Reference counting with \texttt{try\_module\_get} and \texttt{module\_put}
-    \end{itemize}
-\end{KR}
-
-
-\begin{example2}{Building\, Installing\, and Using a Character Device Module}
-    Complete workflow for a character device driver:
-    
-\begin{lstlisting}[language=bash, style=basesmol]
-# 1. Create source file (chardev.c) and Makefile as shown above
-
-# 2. Build the module
-make
-
-# 3. Load the module
-sudo insmod chardev.ko
-
-# 4. Check kernel messages for major number
-dmesg | tail
-
-# 5. Create device node (assuming major number is 250)
-sudo mknod /dev/chardev c 250 0
-sudo chmod 666 /dev/chardev
-
-# 6. Test reading from the device
-cat /dev/chardev
-
-# 7. Check module information in sysfs
-ls -l /sys/module/chardev/
-cat /sys/module/chardev/parameters/* 2>/dev/null
-
-# 8. Unload the module when done
-sudo rmmod chardev
-
-# 9. Clean up the device node
-sudo rm /dev/chardev
-\end{lstlisting}
-
-    This demonstrates:
-    \begin{itemize}
-        \item Building and loading a custom character device driver
-        \item Creating a device node with appropriate permissions
-        \item Interacting with the device through standard file operations
-        \item Examining module information through sysfs
-        \item Proper cleanup when the module is no longer needed
-    \end{itemize}
-\end{example2}
 
 \begin{KR}{Linux Kernel Module Debugging}
     \paragraph{Using printk}

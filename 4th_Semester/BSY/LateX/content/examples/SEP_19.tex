@@ -1,4 +1,4 @@
-\section{SEP 2019}
+\section{SEP 2019}  
 
 \subsection{Cache Performance Analysis}
 
@@ -146,6 +146,7 @@ app: main1.o mythread.o scheduler.o queues.o mylist.o
 \subsection{Process Creation}
 
 \begin{KR}{Fork Analysis}
+    \important{SAME GRAPHIC AS IN SEP07}
     \paragraph{Draw process tree}
     \begin{itemize}
         \item Start with original process
@@ -227,11 +228,13 @@ else {
     
     \textbf{Allocation analysis:}
     \begin{itemize}
-        \item 62KB $\rightarrow$ 64KB block (internal fragmentation: 2KB)
-        \item 34KB $\rightarrow$ 64KB block (internal fragmentation: 30KB)
-        \item 9KB $\rightarrow$ 16KB block (internal fragmentation: 7KB)
+        \item \textcolor{orange}{62KB} $\rightarrow$ 64KB block (internal fragmentation: 2KB)
+        \item \textcolor{blue}{34KB} $\rightarrow$ 64KB block (internal fragmentation: 30KB)
+        \item \textcolor{frog}{9KB} $\rightarrow$ 16KB block (internal fragmentation: 7KB)
         \item Total internal fragmentation: 2 + 30 + 7 = 39KB
     \end{itemize}
+
+    \includegraphics[width=\linewidth]{BUDDYSYSTEM_SEP19.png}
     
     The remaining memory is still available for allocation but in specific block sizes according to the buddy system structure.
 \end{example2}
@@ -294,6 +297,7 @@ else {
 \end{KR}
 
 \begin{example2}{LRU Page Replacement Trace}
+    \important{SAME EXERCISE AGAIN}
     Process references pages: 8,7,5,8,7,3,5,1,3,4,2,1,8,3,1,2
     
     4 frames available, initially empty:
@@ -322,6 +326,9 @@ else {
         \item At time 11: Page 2 replaces page 5 (LRU)
         \item At time 13: Page 8 replaces page 3 (LRU)
     \end{itemize}
+
+    \textbf{Least recently used} (Linux Approach):\\
+    \includegraphics[width=0.5\linewidth]{page_replacement_SEP19.png}
 \end{example2}
 
 \subsection{Real-Time Scheduling}
@@ -350,20 +357,24 @@ else {
 \end{KR}
 
 \begin{example2}{EDF Scheduling}
-    Three periodic tasks with rescheduling every 4ms:
+    Three periodic tasks with rescheduling every 4ms or when a task is suspended: 
     
     \begin{tabular}{|c|c|c|}
         \hline
         Task & Period & Execution Time \\
         \hline
-        T1 & 4ms & 1ms \\
-        T2 & 8ms & 4ms \\
-        T3 & 12ms & 3ms \\
+        \textcolor{red}{T1} & 4ms & 1ms \\
+        \textcolor{red}{T2} & 8ms & 4ms \\
+        \textcolor{red}{T3} & 12ms & 3ms \\
         \hline
     \end{tabular}
-    
+
+    Priority: in case of equal deadlines, shorter period wins.
+
     \tcblower
-    
+    \textbf{Preemptive Diagram:}\\
+    \includegraphics[width=\linewidth]{scheduling_diagram_SEP19.png}
+    \vspace{2mm}\\
     \textbf{Timeline analysis (first 24ms):}
     \begin{itemize}
         \item t=0: T1(dl=4), T2(dl=8), T3(dl=12) arrive $\rightarrow$ Schedule T1
@@ -376,6 +387,10 @@ else {
     \end{itemize}
     
     The schedule ensures all deadlines are met with this task set.
+\end{example2}
+
+\begin{example2}{General Scheduling Example}\\
+    \includegraphics[width=\linewidth]{general_scheduling_example.png}
 \end{example2}
 
 \subsection{Multi-Level Scheduling}
@@ -419,7 +434,11 @@ else {
     \end{tabular}
     
     \tcblower
-    
+
+    \includegraphics[width=\linewidth]{multilevelsched2.png}
+    \vspace{2mm}\\
+    \includegraphics[width=\linewidth]{multilevel_scheduling_SEP19.png}
+    \vspace{2mm}\\
     \textbf{Execution timeline:}
     \begin{itemize}
         \item t=0-1: P1 (only process available)

@@ -41,6 +41,8 @@
 
 \subsection{I/O Hardware Architecture}
 
+\mult{2}
+
 \begin{definition}{I/O Hardware Components}\\
     Key components in I/O hardware architecture:
     \begin{itemize}
@@ -56,6 +58,26 @@
         \item \textbf{Bus System}: Connects CPU, memory, and I/O devices
     \end{itemize}
 \end{definition}
+
+\begin{concept}{Direct Memory Access (DMA)}\\
+    DMA improves I/O performance:
+    \begin{itemize}
+        \item Allows devices to transfer data directly to/from memory
+        \item Bypasses CPU for bulk data transfer
+        \item CPU sets up transfer parameters:
+            \begin{itemize}
+                \item Memory address
+                \item Count of bytes to transfer
+                \item Direction (read/write)
+                \item Device-specific parameters
+            \end{itemize}
+        \item DMA controller handles the actual transfer
+        \item Interrupts CPU when transfer completes
+        \item Reduces CPU overhead for data-intensive I/O operations
+    \end{itemize}
+\end{concept}
+
+\multend
 
 \begin{definition}{I/O Address Space}\\
     X86 architecture has two approaches for I/O address allocation:
@@ -79,23 +101,6 @@
     \end{itemize}
 \end{definition}
 
-\begin{definition}{Direct Memory Access (DMA)}\\
-    DMA improves I/O performance:
-    \begin{itemize}
-        \item Allows devices to transfer data directly to/from memory
-        \item Bypasses CPU for bulk data transfer
-        \item CPU sets up transfer parameters:
-            \begin{itemize}
-                \item Memory address
-                \item Count of bytes to transfer
-                \item Direction (read/write)
-                \item Device-specific parameters
-            \end{itemize}
-        \item DMA controller handles the actual transfer
-        \item Interrupts CPU when transfer completes
-        \item Reduces CPU overhead for data-intensive I/O operations
-    \end{itemize}
-\end{definition}
 
 \subsection{I/O Principles}
 
@@ -119,6 +124,130 @@
                 \item More efficient, especially for slow devices
             \end{itemize}
 \end{definition}
+
+\begin{formula}{I/O Access Patterns}\\
+    Different access patterns affect I/O performance:\\
+        \textbf{Exclusive vs. Shared Access}:
+            \begin{itemize}
+                \item Exclusive: Device dedicated to one process
+                \item Shared: Multiple processes access same device
+                \item Shared access requires scheduling (e.g., disk I/O scheduling)
+            \end{itemize}
+        \textbf{Sequential vs. Random Access}:
+            \begin{itemize}
+                \item Sequential: Data accessed in order (e.g., tape)
+                \item Random: Data accessed in any order (e.g., disk)
+            \end{itemize}
+        \textbf{Blocking vs. Non-Blocking}:
+            \begin{itemize}
+                \item Blocking: Process waits until I/O completes
+                \item Non-Blocking: Process continues, checks completion later
+            \end{itemize}
+        \textbf{Synchronous vs. Asynchronous}:
+            \begin{itemize}
+                \item Synchronous: Process execution synchronized with I/O completion
+                \item Asynchronous: Process continues, notified of I/O completion
+            \end{itemize}
+\end{formula}
+
+\begin{definition}{Buffered vs. Direct I/O}\\
+    Buffering improves I/O performance:
+    \begin{itemize}
+        \item \textbf{Buffered I/O}:
+            \begin{itemize}
+                \item Data passes through intermediate buffer
+                \item Decouples data access from data generation
+                \item Handles different speeds between devices
+                \item Enables rate control
+                \item Allows data manipulation before final transfer
+                \item Supports data verification
+            \end{itemize}
+        \item \textbf{Direct I/O}:
+            \begin{itemize}
+                \item Data transferred directly to/from device
+                \item Bypasses system caches
+                \item Reduces memory usage and CPU overhead
+                \item Useful for applications with their own caching
+                \item May be slower for some workloads
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Error Handling}\\
+    I/O systems must handle errors effectively:
+    \begin{itemize}
+        \item Errors can occur at various levels:
+            \begin{itemize}
+                \item Bit-level, byte-level, packet-level, block-level
+                \item Hardware vs. software detection
+                \item User space vs. kernel space handling
+            \end{itemize}
+        \item Error handling approaches:
+            \begin{itemize}
+                \item Error Detection: Identify errors (e.g., checksums, parity)
+                \item Error Correction: Fix errors without retransmission
+                \item Error Recovery: Return to consistent state after error
+            \end{itemize}
+        \item Trade-offs between performance and reliability
+    \end{itemize}
+\end{concept}
+
+\multend
+
+\raggedcolumns
+\columnbreak
+
+\subsection{System Calls for I/O}
+\begin{definition}{I/O System Calls}\\
+    System calls provide the interface between user space and kernel space for I/O operations:
+    \begin{itemize}
+        \item \texttt{open()}: Open a device file
+        \item \texttt{read()}: Read data from a device
+        \item \texttt{write()}: Write data to a device
+        \item \texttt{ioctl()}: Device-specific control operations
+        \item \texttt{close()}: Close a device file
+    \end{itemize}
+    These calls allow applications to interact with devices in a standardized way.
+\end{definition}
+
+\begin{KR}{System Call Identification}
+    \paragraph{Analyze operation type}
+    \begin{itemize}
+        \item I/O operations: Screen output, file access, network communication
+        \item Resource management: Memory allocation, time delays
+        \item Process control: Process creation, inter-process communication
+    \end{itemize}
+    
+    \paragraph{Distinguish user vs kernel operations}
+    \begin{itemize}
+        \item User mode: Arithmetic, variable manipulation, function calls
+        \item Kernel mode: Hardware access, system resource management
+        \item Mode switch required for system calls
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{System Call Requirements}
+    Which operations require system calls?
+    
+    \begin{itemize}
+        \item \textcolor{frog}{$\surd$} Screen output (I/O operation)
+        \item \textcolor{red}{\textbf{X}} Variable comparison (CPU operation)
+        \item \textcolor{frog}{$\surd$} Sleep for 1 second (timer/scheduler)
+        \item \textcolor{red}{\textbf{X}} Integer increment (CPU operation)
+        \item \textcolor{red}{\textbf{X}} Float increment (CPU operation)
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Rule of thumb:}
+    Operations requiring hardware access, OS services, or resource management need system calls. Pure computational operations do not.
+\end{example2}
+
+\columnbreak
+
+\subsection{Interrupts and Interrupt Handling}
+
+\mult{2}
 
 \begin{definition}{Interrupt Handling}\\
     Interrupts are fundamental to efficient I/O:
@@ -161,74 +290,56 @@
             \end{itemize}
 \end{definition}
 
-\begin{definition}{I/O Access Patterns}\\
-    Different access patterns affect I/O performance:\\
-        \textbf{Exclusive vs. Shared Access}:
-            \begin{itemize}
-                \item Exclusive: Device dedicated to one process
-                \item Shared: Multiple processes access same device
-                \item Shared access requires scheduling (e.g., disk I/O scheduling)
-            \end{itemize}
-        \textbf{Sequential vs. Random Access}:
-            \begin{itemize}
-                \item Sequential: Data accessed in order (e.g., tape)
-                \item Random: Data accessed in any order (e.g., disk)
-            \end{itemize}
-        \textbf{Blocking vs. Non-Blocking}:
-            \begin{itemize}
-                \item Blocking: Process waits until I/O completes
-                \item Non-Blocking: Process continues, checks completion later
-            \end{itemize}
-        \textbf{Synchronous vs. Asynchronous}:
-            \begin{itemize}
-                \item Synchronous: Process execution synchronized with I/O completion
-                \item Asynchronous: Process continues, notified of I/O completion
-            \end{itemize}
-\end{definition}
-
-\begin{definition}{Buffered vs. Direct I/O}\\
-    Buffering improves I/O performance:
-    \begin{itemize}
-        \item \textbf{Buffered I/O}:
-            \begin{itemize}
-                \item Data passes through intermediate buffer
-                \item Decouples data access from data generation
-                \item Handles different speeds between devices
-                \item Enables rate control
-                \item Allows data manipulation before final transfer
-                \item Supports data verification
-            \end{itemize}
-        \item \textbf{Direct I/O}:
-            \begin{itemize}
-                \item Data transferred directly to/from device
-                \item Bypasses system caches
-                \item Reduces memory usage and CPU overhead
-                \item Useful for applications with their own caching
-                \item May be slower for some workloads
-            \end{itemize}
-    \end{itemize}
-\end{definition}
-
-\begin{definition}{Error Handling}\\
-    I/O systems must handle errors effectively:
-    \begin{itemize}
-        \item Errors can occur at various levels:
-            \begin{itemize}
-                \item Bit-level, byte-level, packet-level, block-level
-                \item Hardware vs. software detection
-                \item User space vs. kernel space handling
-            \end{itemize}
-        \item Error handling approaches:
-            \begin{itemize}
-                \item Error Detection: Identify errors (e.g., checksums, parity)
-                \item Error Correction: Fix errors without retransmission
-                \item Error Recovery: Return to consistent state after error
-            \end{itemize}
-        \item Trade-offs between performance and reliability
-    \end{itemize}
-\end{definition}
-
 \multend
+
+
+\begin{KR}{Interrupt System Analysis}
+    \paragraph{Interrupt vs. polling comparison}
+    \begin{itemize}
+        \item Efficiency: Interrupts save CPU cycles
+        \item Responsiveness: Interrupts provide better response time
+        \item Complexity: Polling is simpler to implement
+        \item Resource usage: Interrupts minimize waste
+    \end{itemize}
+    
+    \paragraph{Interrupt handling strategies}
+    \begin{itemize}
+        \item Nested vs. non-nested interrupts
+        \item Priority schemes
+        \item Top-half/bottom-half division (Linux)
+        \item Maskable vs. non-maskable interrupts
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Interrupt Handling}
+    Explain alternatives to interrupts and why interrupts improve performance:
+    
+    \tcblower
+    
+    \textbf{Alternative: Polling}
+    \begin{itemize}
+        \item OS continuously checks device status
+        \item Wastes CPU time on unnecessary checks
+        \item Creates busy-waiting loops
+    \end{itemize}
+    
+    \textbf{Interrupt advantages:}
+    \begin{itemize}
+        \item CPU only responds when device needs attention
+        \item Eliminates wasteful polling loops
+        \item Allows CPU to focus on productive work
+        \item Enables asynchronous I/O operations
+    \end{itemize}
+    
+    \textbf{Interrupt handling strategies:}
+    \begin{itemize}
+        \item Non-nested: Disable interrupts during handling (simple but may miss urgent interrupts)
+        \item Priority-based: Higher priority interrupts can preempt lower priority ones (complex but responsive)
+    \end{itemize}
+\end{example2}
+
+\raggedcolumns
+\pagebreak
 
 \subsection{Linux I/O Subsystem}
 
