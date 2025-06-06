@@ -1,10 +1,11 @@
 
 \section{UART and I2C}
 
+\subsection{UART - Universal Asynchronous Receiver Transmitter}
+
 \mult{2}
 
-\begin{concept}{UART - Universal Asynchronous Receiver Transmitter}\\
-UART is an asynchronous serial communication interface:
+\begin{definition}{UART} is an asynchronous serial communication interface:
 \begin{itemize}
     \item Asynchronous - no shared clock between transmitter and receiver
     \item Point-to-point communication (one transmitter, one receiver)
@@ -13,9 +14,9 @@ UART is an asynchronous serial communication interface:
     \item Typically 2-wire interface (TX and RX) for data
     \item Optional control signals (RTS/CTS, etc.) for flow control
 \end{itemize}
-\end{concept}
+\end{definition}
 
-\begin{definition}{UART Signals}\\
+\begin{concept}{UART Signals}
 Basic UART connections require:
 \begin{itemize}
     \item \textbf{TX} (Transmit): Data output from transmitter to receiver
@@ -27,7 +28,48 @@ Extended UART (with hardware flow control) may include:
     \item \textbf{RTS} (Request to Send): Output indicating readiness to send
     \item \textbf{CTS} (Clear to Send): Input indicating partner is ready to receive
 \end{itemize}
+\end{concept}
+
+\begin{definition}{UART - Universal Asynchronous Receiver Transmitter}\\
+    Connecting shift registers with diverging clock sources
+    \begin{itemize}
+        \item same target frequency
+        \item different tolerances and divider ratios
+        \item requires synchronization at start of each data item receiver
+    \end{itemize}
+    \includegraphics[width=\linewidth]{uart.png}
 \end{definition}
+
+\begin{concept}{UART Characteristics}
+    \vspace{2mm}\\
+    \textbf{synchronization}
+    \begin{itemize}
+        \item Each data item (5-8 bits) requires synchronization
+    \end{itemize}
+    \vspace{2mm}
+
+    \textbf{Asynchronous data transfer}
+    \begin{itemize}
+        \item mismatch of clock frequencies in TX and RX
+        \item requires overhead for synchronization $\rightarrow$ additional Bits
+        \item requires effort for synchronization $\rightarrow$ additional Hardware
+    \end{itemize}
+    \vspace{2mm}
+
+    \textbf{Advantages}
+    \begin{itemize}
+        \item Clock does not have to be transmitted
+        \item transmission delays are automatically compensated
+        \item no need for a common clock signal
+    \end{itemize}
+    \vspace{2mm}
+    
+    \textbf{on-board connections}
+    \begin{itemize}
+        \item signal levels are 3V or 5V with reference to ground
+        \item off-board connections require strong output drivers
+    \end{itemize}
+\end{concept}
 
 \multend
 
@@ -60,23 +102,6 @@ Without a common clock, UART devices synchronize as follows:
     \end{itemize}
 \end{itemize}
 \end{concept}
-
-\begin{example2}{UART Timing Diagram Analysis}\\
-Given a UART signal with 8 data bits, no parity, 1 stop bit, analyze this pattern:
-\\
-$\overline{\text{\_\_\_\_\_}}$ $\overline{\text{\_\_}}$ $\overline{\text{\_\_\_\_}}$ $\overline{\text{\_\_}}$ $\overline{\text{\_\_\_\_}}$ $\overline{\text{\_\_\_\_\_\_\_\_\_\_}}$
-\\
-I I S D D D D D D D D E I I
-\\
-Where I=Idle, S=Start, D=Data, E=Stop
-\tcblower
-Breaking down this signal:
-- Idle (high) $\rightarrow$ Start bit (low) $\rightarrow$ 8 data bits $\rightarrow$ Stop bit (high) $\rightarrow$ Idle (high)
-- Reading data bits (LSB first): 01010011
-- Converting to binary: 0b01010011 = 0x53 = ASCII 'S'
-
-This UART transmission contains the character 'S'.
-\end{example2}
 
 \begin{formula}{UART Calculations}\\
 \textbf{Bit Time (seconds):}
@@ -113,6 +138,180 @@ where N is the number of bit times between synchronization points.
 \end{example}
 
 \multend
+
+\begin{KR}{UART Timing-Diagramm zeichnen}
+    \paragraph{Bit-Struktur}
+    \begin{itemize}
+        \item Start-Bit: immer '0' (fallende Flanke)
+        \item Daten-Bits: 5-8 Bits, LSB first
+        \item Parity-Bit: optional (even/odd/mark/space)
+        \item Stop-Bit(s): 1, 1.5 oder 2 Bits, immer '1'
+        \item Idle: '1' (keine Uebertragung)
+    \end{itemize}
+    
+    \paragraph{Zeitberechnung}
+    \begin{itemize}
+        \item Bit-Zeit T = 1 / Baudrate
+        \item Beispiel: 19200 Baud $\rightarrow$ T = 1/19200 s = 52.1 $\mu$s
+    \end{itemize}
+    
+    \paragraph{Taktabweichung}
+    \begin{itemize}
+        \item Synchronisation nur am Start-Bit
+        \item Maximale Abweichung: 0.5 Bit-Zeit am letzten Daten-Bit
+        \item Formel: Max. Abweichung = 0.5 / (Anzahl Bits bis letztes Daten-Bit)
+    \end{itemize}
+    
+    \paragraph{Durchsatz berechnen}
+    \begin{itemize}
+        \item Nutzdaten-Rate = Baudrate / Gesamtbits pro Zeichen
+        \item Gesamtbits = Start + Daten + Parity + Stop
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{UART Uebertragung 'AC'}
+    UART mit 19200 Bit/s, 7 Daten-Bits, 1 Stop-Bit (kein Parity)
+    \begin{itemize}
+        \item ASCII('A') = 0x41 = 100 0001b
+        \item ASCII('C') = 0x43 = 100 0011b
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Bit-Zeit:} T = 1/19200 s = 52.1 $\mu$s
+    
+    \textbf{Timing-Diagramm:}\\
+    \includegraphics[width=\linewidth]{uart_timing_ex.png}
+    
+    \textbf{Legende:}
+    \begin{itemize}
+        \item I = Idle-Bit, S = Start-Bit, D = Daten-Bit, E = Stop-Bit
+        \item LSB first: Daten-Bits werden von rechts nach links uebertragen
+    \end{itemize}
+    
+    \textbf{Taktabweichung:}
+    \begin{itemize}
+        \item Fallende Flanke Start-Bit bis Mitte D6 = 7.5 Bits
+        \item Max. Abweichung fuer D6: 0.5 Bits
+        \item Taktabweichung: 100\% $\times$ 0.5 / 7.5 = 6.67\%
+    \end{itemize}
+\end{example2}
+
+\begin{KR}{UART Synchronisation und Durchsatz}\\
+    \paragraph{Synchronisation bei UART}
+    \begin{itemize}
+        \item Mit Hilfe der negativen Flanke des Start-Bits
+        \item Letztes Bit (Stop) oder Idle = '1'
+        \item Erstes Bit (Start) = '0'
+        \item Empfaenger synchronisiert sich bei jeder Uebertragung neu
+    \end{itemize}
+    
+    \paragraph{Durchsatz-Berechnung}
+    \begin{enumerate}
+        \item Zaehle alle Bits pro Zeichen: Start + Daten + Parity + Stop
+        \item Nutzdaten-Rate = Baudrate / Gesamtbits pro Zeichen
+        \item Beispiel: 9600 Baud, 8 Daten, 2 Stop, 1 Parity
+        \item Gesamtbits = 1 + 8 + 1 + 2 = 12 Bits
+        \item Nutzdaten-Rate = 9600/12 = 800 Bytes/s
+    \end{enumerate}
+\end{KR}
+
+
+
+\subsection{UART Communication}
+
+\begin{KR}{Analyzing UART Transmission}
+\paragraph{Determine bit timing}
+\begin{itemize}
+    \item Calculate bit period (T) from baud rate: T = 1/baud\_rate
+    \item Example: 19200 baud = 1/19200 s = 52.1 µs per bit
+\end{itemize}
+
+\paragraph{Identify frame structure}
+\begin{itemize}
+    \item Start bit: Always '0'
+    \item Data bits: LSB first, typically 7 or 8 bits
+    \item Parity bit: Optional, can be even, odd, mark ('1'), or space ('0')
+    \item Stop bit(s): Always '1', can be 1, 1.5, or 2 bits
+    \item Idle state: Line remains high ('1')
+\end{itemize}
+
+\paragraph{Calculate total frame time}
+\begin{itemize}
+    \item Add up all bits: Start bit + Data bits + Parity bit + Stop bits
+    \item Multiply by bit period (T)
+    \item Example: 8N1 (8 data bits, no parity, 1 stop bit) = 10 bits total
+\end{itemize}
+
+\paragraph{Calculate maximum throughput}
+\begin{itemize}
+    \item Divide baud rate by total number of bits per frame
+    \item Example: 9600 baud, 8N1 format = 9600/10 = 960 bytes/second
+\end{itemize}
+
+\paragraph{Evaluate clock tolerance}
+\begin{itemize}
+    \item Maximum tolerable deviation is typically ±(0.5/n) where n is the number of bits from start bit to the last data bit
+    \item Example: For 8 data bits, max deviation = ±(0.5/8.5) $\approx$ ±5.9\%
+\end{itemize}
+\end{KR}
+
+\begin{example2}{UART Transmission Analysis}\\
+For a UART transmission with 19,200 bits/s, 7 data bits, and one stop bit (no parity), draw the timing diagram for transmitting the ASCII characters "AC".
+
+ASCII values:
+\begin{itemize}
+    \item 'A' = 0x41 = 100 0001b
+    \item 'C' = 0x43 = 100 0011b
+\end{itemize}
+
+\tcblower
+\paragraph{Solution:}
+First, calculate the bit period:
+\begin{itemize}
+    \item T = 1/19200 s = 52.1 µs
+\end{itemize}
+
+For each character, the frame consists of:
+\begin{itemize}
+    \item 1 start bit (S) - always '0'
+    \item 7 data bits (D) - LSB first
+    \item 1 stop bit (E) - always '1'
+\end{itemize}
+
+Between frames, the line is idle (I) - high.
+
+Frame for 'A' (0x41 = 100 0001b):
+\begin{itemize}
+    \item Start bit (S): 0
+    \item Data bits (D), LSB first: 1, 0, 0, 0, 0, 0, 1
+    \item Stop bit (E): 1
+\end{itemize}
+
+Frame for 'C' (0x43 = 100 0011b):
+\begin{itemize}
+    \item Start bit (S): 0
+    \item Data bits (D), LSB first: 1, 1, 0, 0, 0, 0, 1
+    \item Stop bit (E): 1
+\end{itemize}
+
+The timing diagram:
+\begin{verbatim}
+   I I S D D D D D D D E S D D D D D D D E I I I
+   1 1 0 1 0 0 0 0 0 1 1 0 1 1 0 0 0 0 1 1 1 1 1
+   <--------------'A'------------><--------------'C'------------->
+\end{verbatim}
+
+Each bit has a duration of T = 52.1 µs, so the total transmission time for both characters is:
+\begin{itemize}
+    \item 2 characters × 9 bits per character × 52.1 µs = 937.8 µs
+\end{itemize}
+
+The clock tolerance can be calculated as:
+\begin{itemize}
+    \item For 7 data bits: max deviation = ±(0.5/7.5) $\approx$ ±6.67\%
+\end{itemize}
+\end{example2}
 
 
 \subsection{UART on STM32F4}
@@ -184,6 +383,12 @@ char UART_ReceiveChar(USART_TypeDef *uart) {
 }
 \end{lstlisting}
 \end{KR}
+
+
+
+
+
+
 
 
 \subsection{I2C Fundamentals}
@@ -380,230 +585,6 @@ void I2C_MasterTransmit(I2C_TypeDef *i2c, uint8_t address, uint8_t *data, uint16
 }
 \end{lstlisting}
 \end{KR}
-
-
-
-
-
-
-\subsection{UART/I2C}
-
-\begin{definition}{UART - Universal Asynchronous Receiver Transmitter}\\
-    Connecting shift registers with diverging clock sources
-    \begin{itemize}
-        \item same target frequency
-        \item different tolerances and divider ratios
-        \item requires synchronization at start of each data item receiver
-    \end{itemize}
-    \includegraphics[width=\linewidth]{uart.png}
-\end{definition}
-
-\begin{concept}{UART Characteristics}
-    \vspace{2mm}\\
-    \textbf{synchronization}
-    \begin{itemize}
-        \item Each data item (5-8 bits) requires synchronization
-    \end{itemize}
-    \vspace{2mm}
-
-    \textbf{Asynchronous data transfer}
-    \begin{itemize}
-        \item mismatch of clock frequencies in TX and RX
-        \item requires overhead for synchronization $\rightarrow$ additional Bits
-        \item requires effort for synchronization $\rightarrow$ additional Hardware
-    \end{itemize}
-    \vspace{2mm}
-
-    \textbf{Advantages}
-    \begin{itemize}
-        \item Clock does not have to be transmitted
-        \item transmission delays are automatically compensated
-        \item no need for a common clock signal
-    \end{itemize}
-    \vspace{2mm}
-    
-    \textbf{on-board connections}
-    \begin{itemize}
-        \item signal levels are 3V or 5V with reference to ground
-        \item off-board connections require strong output drivers
-    \end{itemize}
-\end{concept}
-
-
-
-\section{UART (Universal Asynchronous Receiver Transmitter)}
-
-\begin{KR}{UART Timing-Diagramm zeichnen}\\
-    \paragraph{Bit-Struktur}
-    \begin{itemize}
-        \item Start-Bit: immer '0' (fallende Flanke)
-        \item Daten-Bits: 5-8 Bits, LSB first
-        \item Parity-Bit: optional (even/odd/mark/space)
-        \item Stop-Bit(s): 1, 1.5 oder 2 Bits, immer '1'
-        \item Idle: '1' (keine Uebertragung)
-    \end{itemize}
-    
-    \paragraph{Zeitberechnung}
-    \begin{itemize}
-        \item Bit-Zeit T = 1 / Baudrate
-        \item Beispiel: 19200 Baud $\rightarrow$ T = 1/19200 s = 52.1 $\mu$s
-    \end{itemize}
-    
-    \paragraph{Taktabweichung}
-    \begin{itemize}
-        \item Synchronisation nur am Start-Bit
-        \item Maximale Abweichung: 0.5 Bit-Zeit am letzten Daten-Bit
-        \item Formel: Max. Abweichung = 0.5 / (Anzahl Bits bis letztes Daten-Bit)
-    \end{itemize}
-    
-    \paragraph{Durchsatz berechnen}
-    \begin{itemize}
-        \item Nutzdaten-Rate = Baudrate / Gesamtbits pro Zeichen
-        \item Gesamtbits = Start + Daten + Parity + Stop
-    \end{itemize}
-\end{KR}
-
-\begin{example2}{UART Uebertragung "AC"}\\
-    UART mit 19200 Bit/s, 7 Daten-Bits, 1 Stop-Bit (kein Parity)
-    \begin{itemize}
-        \item ASCII('A') = 0x41 = 100 0001b
-        \item ASCII('C') = 0x43 = 100 0011b
-    \end{itemize}
-    
-    \tcblower
-    
-    \textbf{Bit-Zeit:} T = 1/19200 s = 52.1 $\mu$s
-    
-    \textbf{Timing-Diagramm:}\\
-    \includegraphics[width=\linewidth]{uart_timing_ex.png}
-    
-    \textbf{Legende:}
-    \begin{itemize}
-        \item I = Idle-Bit, S = Start-Bit, D = Daten-Bit, E = Stop-Bit
-        \item LSB first: Daten-Bits werden von rechts nach links uebertragen
-    \end{itemize}
-    
-    \textbf{Taktabweichung:}
-    \begin{itemize}
-        \item Fallende Flanke Start-Bit bis Mitte D6 = 7.5 Bits
-        \item Max. Abweichung fuer D6: 0.5 Bits
-        \item Taktabweichung: 100\% $\times$ 0.5 / 7.5 = 6.67\%
-    \end{itemize}
-\end{example2}
-
-\begin{KR}{UART Synchronisation und Durchsatz}\\
-    \paragraph{Synchronisation bei UART}
-    \begin{itemize}
-        \item Mit Hilfe der negativen Flanke des Start-Bits
-        \item Letztes Bit (Stop) oder Idle = '1'
-        \item Erstes Bit (Start) = '0'
-        \item Empfaenger synchronisiert sich bei jeder Uebertragung neu
-    \end{itemize}
-    
-    \paragraph{Durchsatz-Berechnung}
-    \begin{enumerate}
-        \item Zaehle alle Bits pro Zeichen: Start + Daten + Parity + Stop
-        \item Nutzdaten-Rate = Baudrate / Gesamtbits pro Zeichen
-        \item Beispiel: 9600 Baud, 8 Daten, 2 Stop, 1 Parity
-        \item Gesamtbits = 1 + 8 + 1 + 2 = 12 Bits
-        \item Nutzdaten-Rate = 9600/12 = 800 Bytes/s
-    \end{enumerate}
-\end{KR}
-
-\subsection{UART Communication}
-
-\begin{KR}{Analyzing UART Transmission}
-\paragraph{Determine bit timing}
-\begin{itemize}
-    \item Calculate bit period (T) from baud rate: T = 1/baud\_rate
-    \item Example: 19200 baud = 1/19200 s = 52.1 µs per bit
-\end{itemize}
-
-\paragraph{Identify frame structure}
-\begin{itemize}
-    \item Start bit: Always '0'
-    \item Data bits: LSB first, typically 7 or 8 bits
-    \item Parity bit: Optional, can be even, odd, mark ('1'), or space ('0')
-    \item Stop bit(s): Always '1', can be 1, 1.5, or 2 bits
-    \item Idle state: Line remains high ('1')
-\end{itemize}
-
-\paragraph{Calculate total frame time}
-\begin{itemize}
-    \item Add up all bits: Start bit + Data bits + Parity bit + Stop bits
-    \item Multiply by bit period (T)
-    \item Example: 8N1 (8 data bits, no parity, 1 stop bit) = 10 bits total
-\end{itemize}
-
-\paragraph{Calculate maximum throughput}
-\begin{itemize}
-    \item Divide baud rate by total number of bits per frame
-    \item Example: 9600 baud, 8N1 format = 9600/10 = 960 bytes/second
-\end{itemize}
-
-\paragraph{Evaluate clock tolerance}
-\begin{itemize}
-    \item Maximum tolerable deviation is typically ±(0.5/n) where n is the number of bits from start bit to the last data bit
-    \item Example: For 8 data bits, max deviation = ±(0.5/8.5) $\approx$ ±5.9\%
-\end{itemize}
-\end{KR}
-
-\begin{example2}{UART Transmission Analysis}\\
-For a UART transmission with 19,200 bits/s, 7 data bits, and one stop bit (no parity), draw the timing diagram for transmitting the ASCII characters "AC".
-
-ASCII values:
-\begin{itemize}
-    \item 'A' = 0x41 = 100 0001b
-    \item 'C' = 0x43 = 100 0011b
-\end{itemize}
-
-\tcblower
-\paragraph{Solution:}
-First, calculate the bit period:
-\begin{itemize}
-    \item T = 1/19200 s = 52.1 µs
-\end{itemize}
-
-For each character, the frame consists of:
-\begin{itemize}
-    \item 1 start bit (S) - always '0'
-    \item 7 data bits (D) - LSB first
-    \item 1 stop bit (E) - always '1'
-\end{itemize}
-
-Between frames, the line is idle (I) - high.
-
-Frame for 'A' (0x41 = 100 0001b):
-\begin{itemize}
-    \item Start bit (S): 0
-    \item Data bits (D), LSB first: 1, 0, 0, 0, 0, 0, 1
-    \item Stop bit (E): 1
-\end{itemize}
-
-Frame for 'C' (0x43 = 100 0011b):
-\begin{itemize}
-    \item Start bit (S): 0
-    \item Data bits (D), LSB first: 1, 1, 0, 0, 0, 0, 1
-    \item Stop bit (E): 1
-\end{itemize}
-
-The timing diagram:
-\begin{verbatim}
-   I I S D D D D D D D E S D D D D D D D E I I I
-   1 1 0 1 0 0 0 0 0 1 1 0 1 1 0 0 0 0 1 1 1 1 1
-   <--------------'A'------------><--------------'C'------------->
-\end{verbatim}
-
-Each bit has a duration of T = 52.1 µs, so the total transmission time for both characters is:
-\begin{itemize}
-    \item 2 characters × 9 bits per character × 52.1 µs = 937.8 µs
-\end{itemize}
-
-The clock tolerance can be calculated as:
-\begin{itemize}
-    \item For 7 data bits: max deviation = ±(0.5/7.5) $\approx$ ±6.67\%
-\end{itemize}
-\end{example2}
 
 \subsection{I2C Communication}
 
