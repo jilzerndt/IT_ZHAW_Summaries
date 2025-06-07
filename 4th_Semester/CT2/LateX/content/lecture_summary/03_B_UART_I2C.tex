@@ -5,95 +5,47 @@
 
 \mult{2}
 
-\begin{definition}{UART} is an asynchronous serial communication interface:
-\begin{itemize}
-    \item Asynchronous - no shared clock between transmitter and receiver
-    \item Point-to-point communication (one transmitter, one receiver)
-    \item Full-duplex (simultaneous bidirectional communication)
-    \item Start and stop bits used for synchronization
-    \item Typically 2-wire interface (TX and RX) for data
-    \item Optional control signals (RTS/CTS, etc.) for flow control
-\end{itemize}
-\end{definition}
-
-\begin{concept}{UART Signals}
-Basic UART connections require:
-\begin{itemize}
-    \item \textbf{TX} (Transmit): Data output from transmitter to receiver
-    \item \textbf{RX} (Receive): Data input from transmitter to receiver
-    \item \textbf{GND} (Ground): Common reference level
-\end{itemize}
-Extended UART (with hardware flow control) may include:
-\begin{itemize}
-    \item \textbf{RTS} (Request to Send): Output indicating readiness to send
-    \item \textbf{CTS} (Clear to Send): Input indicating partner is ready to receive
-\end{itemize}
-\end{concept}
-
-\begin{definition}{UART - Universal Asynchronous Receiver Transmitter}\\
-    Connecting shift registers with diverging clock sources
-    \begin{itemize}
-        \item same target frequency
-        \item different tolerances and divider ratios
-        \item requires synchronization at start of each data item receiver
-    \end{itemize}
-    \includegraphics[width=\linewidth]{uart.png}
-\end{definition}
-
-\begin{concept}{UART Characteristics}
-    \vspace{2mm}\\
-    \textbf{synchronization}
-    \begin{itemize}
-        \item Each data item (5-8 bits) requires synchronization
-    \end{itemize}
-    \vspace{2mm}
-
+\begin{definition}{UART}\\ is an asynchronous serial communication interface:
+    \vspace{1mm}\\
     \textbf{Asynchronous data transfer}
     \begin{itemize}
-        \item mismatch of clock frequencies in TX and RX
-        \item requires overhead for synchronization $\rightarrow$ additional Bits
-        \item requires effort for synchronization $\rightarrow$ additional Hardware
+        \item Mismatch of clock frequencies in TX and RX $\rightarrow$ no shared clock between transmitter and receiver
+        \item Overhead for synchronization $\rightarrow$ extra Bits
+        \item Effort for synchronization $\rightarrow$ extra Hardware
     \end{itemize}
-    \vspace{2mm}
+    \vspace{1mm}
+
+    \textbf{Full-duplex communication}
+    \begin{itemize}
+        \item Point-to-point communication (one transmitter, one receiver)
+        \item Full-duplex (simultaneous bidirectional communication)
+        \item Start and stop bits used for synchronization
+        \item Typically 2-wire interface (TX and RX) for data
+        \item Optional control signals (RTS/CTS, etc.) for flow control
+    \end{itemize}
 
     \textbf{Advantages}
     \begin{itemize}
         \item Clock does not have to be transmitted
-        \item transmission delays are automatically compensated
+        \item transmission delays automatically compensated
         \item no need for a common clock signal
     \end{itemize}
-    \vspace{2mm}
+    \vspace{1mm}
     
-    \textbf{on-board connections}
+    \textbf{Disadvantages}
     \begin{itemize}
-        \item signal levels are 3V or 5V with reference to ground
-        \item off-board connections require strong output drivers
+        \item Synchronization at start of each data item
+        \item Limited to point-to-point communication
+        \item Slower than synchronous protocols (e.g., SPI)
+        \item More complex error handling due to asynchronous nature
     \end{itemize}
-\end{concept}
-
-\multend
-
-\subsection{UART Data Format and Timing}
-
-\mult{2}
-
-\begin{definition}{UART Frame Structure}\\
-A UART frame consists of:
-\begin{itemize}
-    \item \textbf{Idle state}: Line is high ('1') when no transmission occurs
-    \item \textbf{Start bit}: Always '0', indicates beginning of frame
-    \item \textbf{Data bits}: 5 to 9 bits (typically 8), LSB first
-    \item \textbf{Parity bit} (optional): For error detection
-    \item \textbf{Stop bit(s)}: 1, 1.5, or 2 bits, always '1'
-\end{itemize}
 \end{definition}
 
-\begin{concept}{UART Synchronization}\\
-Without a common clock, UART devices synchronize as follows:
+\begin{concept}{UART Synchronization}
 \begin{itemize}
-    \item Receiver detects start bit (falling edge from idle to '0')
-    \item Receiver samples middle of each bit based on configured baud rate
-    \item Both devices must use the same configuration:
+    \item Receiver \textbf{detects start bit} \\ (falling edge from idle to '0')
+    \item Receiver \textbf{samples} middle of each bit based on configured baud rate
+    \item Both devices must use the same \textbf{configuration}:
     \begin{itemize}
         \item Baud rate (e.g., 9600, 115200 bits/s)
         \item Number of data bits (5-8)
@@ -103,216 +55,162 @@ Without a common clock, UART devices synchronize as follows:
 \end{itemize}
 \end{concept}
 
-\begin{formula}{UART Calculations}\\
+\begin{concept}{UART Transmission}\\
+    Connecting shift registers with diverging clock sources:
+    \begin{itemize}
+        \item same target frequency
+        \item different tolerances and divider ratios
+        \item requires \textbf{synchronization} at start of each data item receiver \\ $\rightarrow$ each data item (5-8 bits) req. synchron.
+    \end{itemize}
+    \includegraphics[width=\linewidth]{uart.png}
+    
+    \textbf{On-Board Connections}
+    \begin{itemize}
+        \item Signal Levels: 3V or 5V with reference to ground
+        \item Off-Board connections req. strong output drivers 
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{UART Signals}
+Basic UART connections require:\\
+\textbf{TX} (Transmit): \small{Data output (transmitter to receiver)}\\
+\normalsize
+\textbf{RX} (Receive): Data input (transmitter to receiver)\\
+\textbf{GND} (Ground): Common reference level
+\vspace{1mm}\\
+\textcolor{frog}{\textbf{Extended UART}} (with hardware flow control):
+\begin{itemize}
+    \item \textbf{RTS} (Request to Send): Output indicating readiness to send
+    \item \textbf{CTS} (Clear to Send): Input indicating partner is ready to receive
+\end{itemize}
+\end{theorem}
+
+\begin{corollary}{UART Frame Structure}
+\begin{itemize}
+    \item \textbf{Idle state}: Line is high ('1') when no transmission occurs
+    \item \textbf{Start bit}: Always '0', signals beginning of frame
+    \item \textbf{Data bits}: 5 to 9 bits (typically 8), LSB first
+    \item \textbf{Parity bit} (optional): For error detection
+    \item \textbf{Stop bit(s)}: 1, 1.5, or 2 bits, always '1'
+\end{itemize}
+\end{corollary}
+
+\multend
+
+\subsection{UART Timing and Calculations}
+
+\mult{2}
+
+\begin{formula}{UART Calculations}
+\vspace{1mm}\\
 \textbf{Bit Time (seconds):}
-$T_{bit} = \frac{1}{\text{Baud Rate}}$
-
-
+$\quad T_{bit} = \frac{1}{\text{Baud Rate}}$
+\vspace{2mm}\\
 \textbf{Frame Time (seconds):}
-$T_{frame} =$\\$T_{bit} \times (1 + \text{Data Bits} + \text{Parity Bits} + \text{Stop Bits})$
-
-
-\textbf{Maximum Data Rate (bytes/second):}\\
-$\text{Data Rate} = \frac{\text{Baud Rate}}{\text{Total Bits per Byte}}$
-
-where Total Bits per Byte = 1 (start) + Data Bits + Parity Bits + Stop Bits
+$$T_{frame} = T_{bit} \times \text{Total Bits per Frame (TBF)}$$
+\small{TBF = 1 (start) + Data Bits + Parity Bits + Stop Bits}
+\vspace{2mm}\\
+\normalsize
+\textbf{Maximum Data Rate (bytes/second):}
+$$\text{Data Rate} = \frac{\text{Baud Rate}}{\text{Total Bits per Byte (TBB)}}$$
+\small{TBB = 1 (start) + Data Bits + Parity Bits + Stop Bits}
 \end{formula}
 
-\begin{KR}{Clock Tolerance in UART}
-\paragraph{Maximum clock deviation}
-The receiver must sample correctly until the last bit:
-\paragraph{Formula}
-Maximum allowed clock deviation (as percentage):
-$\text{Deviation}_{\max} = \frac{0.5}{N} \times 100\%$
+\begin{KR}{Clock Tolerance in UART}\\
+\textbf{Maximum clock deviation}:
+The receiver must sample correctly until last bit!
 
-where N is the number of bit times between synchronization points.
+Maximum allowed clock deviation (as percentage):
+$$\text{Deviation}_{\max} = \frac{0.5}{N} \times 100\%$$
+
+\small {N = number of bit times between synchronization points}
 \end{KR}
 
 \begin{example}
     For a standard UART frame (1 start, 8 data, 1 stop):\\
-    Synchronization occurs at start bit,
-    Last bit (stop bit) is 10 bits later\\
+    Synchronization at start bit,
+    Last bit (stop bit) 10 bits later
+    \vspace{1mm}\\
     Maximum clock deviation = 0.5/10 = 5\%\\
-    Sample calculation:\\
-    If sender clock is 9600 Hz: Receiver can be between 9120 Hz and 10080 Hz
+    Sample calculation:
+    If sender clock 9600 Hz: Receiver between 9120 Hz and 10080 Hz
 \end{example}
 
 \multend
 
-\begin{KR}{UART Timing-Diagramm zeichnen}
-    \paragraph{Bit-Struktur}
-    \begin{itemize}
-        \item Start-Bit: immer '0' (fallende Flanke)
-        \item Daten-Bits: 5-8 Bits, LSB first
-        \item Parity-Bit: optional (even/odd/mark/space)
-        \item Stop-Bit(s): 1, 1.5 oder 2 Bits, immer '1'
-        \item Idle: '1' (keine Uebertragung)
-    \end{itemize}
-    
-    \paragraph{Zeitberechnung}
-    \begin{itemize}
-        \item Bit-Zeit T = 1 / Baudrate
-        \item Beispiel: 19200 Baud $\rightarrow$ T = 1/19200 s = 52.1 $\mu$s
-    \end{itemize}
-    
-    \paragraph{Taktabweichung}
-    \begin{itemize}
-        \item Synchronisation nur am Start-Bit
-        \item Maximale Abweichung: 0.5 Bit-Zeit am letzten Daten-Bit
-        \item Formel: Max. Abweichung = 0.5 / (Anzahl Bits bis letztes Daten-Bit)
-    \end{itemize}
-    
-    \paragraph{Durchsatz berechnen}
-    \begin{itemize}
-        \item Nutzdaten-Rate = Baudrate / Gesamtbits pro Zeichen
-        \item Gesamtbits = Start + Daten + Parity + Stop
-    \end{itemize}
+\begin{KR}{Analyzing UART Transmission}
+
+
+\paragraph{Identify frame/bit structure}
+\begin{itemize}
+    \item Start bit: Always '0' (falling edge)
+    \item Data bits: LSB first, 5-8 bits
+    \item Parity bit: Optional, can be even, odd, mark ('1'), or space ('0')
+    \item Stop bit(s): Always '1' (can be 1, 1.5, or 2 bits)
+    \item Idle state: Line remains high ('1') $\rightarrow$ no transmission
+\end{itemize}
+Receiver synchronizes anew at each start bit.
+
+\paragraph{Calculations}
+\begin{itemize}
+    \item See formulas \textcolor{purple}{\textbf{UART Calculations}} and \textcolor{pink}{\textbf{Clock Tolerance in UART}}
+    \item Clock Tolerance/Taktabweichung: max. deviation = 0.5T (Bit-Zeit) at last data bit (sync. only at start bit)
+\end{itemize}
+
+\paragraph{Timing diagram}
+\includegraphics[width=0.8\linewidth]{uart_tiiming_diagram_overview.png}
 \end{KR}
 
-\begin{example2}{UART Uebertragung 'AC'}
+\begin{example2}{UART Übertragung 'AC'}
     UART mit 19200 Bit/s, 7 Daten-Bits, 1 Stop-Bit (kein Parity)
-    \begin{itemize}
-        \item ASCII('A') = 0x41 = 100 0001b
-        \item ASCII('C') = 0x43 = 100 0011b
-    \end{itemize}
+
+    ASCII('A') = 0x41 = 100 0001b, ASCII('C') = 0x43 = 100 0011b
     
     \tcblower
-    
-    \textbf{Bit-Zeit:} T = 1/19200 s = 52.1 $\mu$s
-    
-    \textbf{Timing-Diagramm:}\\
-    \includegraphics[width=\linewidth]{uart_timing_ex.png}
+    \textbf{Calculations:}
+    \begin{itemize}
+        \item Bit-Zeit: T = 1/19200 s = 52.1 $\mu$s
+        \item Total Bits per Frame (TBF) = 1S (start) + 7D (data) + 1E (stop) = 9 Bits $\rightarrow$ for each frame/character
+        \item Frame Time: $T_{frame}$ = TBF $\times$ T = 9 Bits $\times$ 52.1 $\mu$s = 469.0 $\mu$s $\rightarrow$ for each frame/character
+        \item Total Transmission Time: $2 \times T_{frame} = 938.0 \mu s$
+    \end{itemize}
+    Between frames, the line is idle (I) - high.
+    \vspace{1mm}\\
+    \textbf{Timing Diagram:}
+    \vspace{1mm}\\
+    \begin{minipage}{0.5\linewidth}
+    Frame for 'A' (0x41 = 100 0001b):
+    \begin{itemize}
+        \item Start bit (S): 0
+        \item Data bits (D), LSB first: 1, 0, 0, 0, 0, 0, 1
+        \item Stop bit (E): 1
+    \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+    Frame for 'C' (0x43 = 100 0011b):
+    \begin{itemize}
+        \item Start bit (S): 0
+        \item Data bits (D), LSB first: 1, 1, 0, 0, 0, 0, 1
+        \item Stop bit (E): 1
+    \end{itemize}
+    \end{minipage}
+    \vspace{1mm}\\
+    \includegraphics[width=0.7\linewidth]{uart_timing_ex.png}
     
     \textbf{Legende:}
     \begin{itemize}
         \item I = Idle-Bit, S = Start-Bit, D = Daten-Bit, E = Stop-Bit
-        \item LSB first: Daten-Bits werden von rechts nach links uebertragen
+        \item LSB first: Daten-Bits werden von rechts nach links übertragen
     \end{itemize}
     
-    \textbf{Taktabweichung:}
+    \textbf{Taktabweichung (Clock Deviation):}
     \begin{itemize}
         \item Fallende Flanke Start-Bit bis Mitte D6 = 7.5 Bits
-        \item Max. Abweichung fuer D6: 0.5 Bits
+        \item Max. Abweichung für D6: 0.5 Bits
         \item Taktabweichung: 100\% $\times$ 0.5 / 7.5 = 6.67\%
+        \item Bei 19200 Bit/s: 19200 $\times$ 6.67\% = 1280 Bit/s \\ $\Rightarrow$ Empfänger-Takt (Receiver Clock) zwischen 17920 Bit/s und 20480 Bit/s
     \end{itemize}
 \end{example2}
-
-\begin{KR}{UART Synchronisation und Durchsatz}\\
-    \paragraph{Synchronisation bei UART}
-    \begin{itemize}
-        \item Mit Hilfe der negativen Flanke des Start-Bits
-        \item Letztes Bit (Stop) oder Idle = '1'
-        \item Erstes Bit (Start) = '0'
-        \item Empfaenger synchronisiert sich bei jeder Uebertragung neu
-    \end{itemize}
-    
-    \paragraph{Durchsatz-Berechnung}
-    \begin{enumerate}
-        \item Zaehle alle Bits pro Zeichen: Start + Daten + Parity + Stop
-        \item Nutzdaten-Rate = Baudrate / Gesamtbits pro Zeichen
-        \item Beispiel: 9600 Baud, 8 Daten, 2 Stop, 1 Parity
-        \item Gesamtbits = 1 + 8 + 1 + 2 = 12 Bits
-        \item Nutzdaten-Rate = 9600/12 = 800 Bytes/s
-    \end{enumerate}
-\end{KR}
-
-
-
-\subsection{UART Communication}
-
-\begin{KR}{Analyzing UART Transmission}
-\paragraph{Determine bit timing}
-\begin{itemize}
-    \item Calculate bit period (T) from baud rate: T = 1/baud\_rate
-    \item Example: 19200 baud = 1/19200 s = 52.1 µs per bit
-\end{itemize}
-
-\paragraph{Identify frame structure}
-\begin{itemize}
-    \item Start bit: Always '0'
-    \item Data bits: LSB first, typically 7 or 8 bits
-    \item Parity bit: Optional, can be even, odd, mark ('1'), or space ('0')
-    \item Stop bit(s): Always '1', can be 1, 1.5, or 2 bits
-    \item Idle state: Line remains high ('1')
-\end{itemize}
-
-\paragraph{Calculate total frame time}
-\begin{itemize}
-    \item Add up all bits: Start bit + Data bits + Parity bit + Stop bits
-    \item Multiply by bit period (T)
-    \item Example: 8N1 (8 data bits, no parity, 1 stop bit) = 10 bits total
-\end{itemize}
-
-\paragraph{Calculate maximum throughput}
-\begin{itemize}
-    \item Divide baud rate by total number of bits per frame
-    \item Example: 9600 baud, 8N1 format = 9600/10 = 960 bytes/second
-\end{itemize}
-
-\paragraph{Evaluate clock tolerance}
-\begin{itemize}
-    \item Maximum tolerable deviation is typically ±(0.5/n) where n is the number of bits from start bit to the last data bit
-    \item Example: For 8 data bits, max deviation = ±(0.5/8.5) $\approx$ ±5.9\%
-\end{itemize}
-\end{KR}
-
-\begin{example2}{UART Transmission Analysis}\\
-For a UART transmission with 19,200 bits/s, 7 data bits, and one stop bit (no parity), draw the timing diagram for transmitting the ASCII characters "AC".
-
-ASCII values:
-\begin{itemize}
-    \item 'A' = 0x41 = 100 0001b
-    \item 'C' = 0x43 = 100 0011b
-\end{itemize}
-
-\tcblower
-\paragraph{Solution:}
-First, calculate the bit period:
-\begin{itemize}
-    \item T = 1/19200 s = 52.1 µs
-\end{itemize}
-
-For each character, the frame consists of:
-\begin{itemize}
-    \item 1 start bit (S) - always '0'
-    \item 7 data bits (D) - LSB first
-    \item 1 stop bit (E) - always '1'
-\end{itemize}
-
-Between frames, the line is idle (I) - high.
-
-Frame for 'A' (0x41 = 100 0001b):
-\begin{itemize}
-    \item Start bit (S): 0
-    \item Data bits (D), LSB first: 1, 0, 0, 0, 0, 0, 1
-    \item Stop bit (E): 1
-\end{itemize}
-
-Frame for 'C' (0x43 = 100 0011b):
-\begin{itemize}
-    \item Start bit (S): 0
-    \item Data bits (D), LSB first: 1, 1, 0, 0, 0, 0, 1
-    \item Stop bit (E): 1
-\end{itemize}
-
-The timing diagram:
-\begin{verbatim}
-   I I S D D D D D D D E S D D D D D D D E I I I
-   1 1 0 1 0 0 0 0 0 1 1 0 1 1 0 0 0 0 1 1 1 1 1
-   <--------------'A'------------><--------------'C'------------->
-\end{verbatim}
-
-Each bit has a duration of T = 52.1 µs, so the total transmission time for both characters is:
-\begin{itemize}
-    \item 2 characters × 9 bits per character × 52.1 µs = 937.8 µs
-\end{itemize}
-
-The clock tolerance can be calculated as:
-\begin{itemize}
-    \item For 7 data bits: max deviation = ±(0.5/7.5) $\approx$ ±6.67\%
-\end{itemize}
-\end{example2}
-
 
 \subsection{UART on STM32F4}
 
@@ -354,7 +252,7 @@ USART2->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
 \end{lstlisting}
 \end{code}
 
-\begin{KR}{UART Data Transmission and Reception}
+\begin{KR}{UART Data Transmission and Reception}\\
 \textbf{Transmitting Data}
 Write data to the data register after checking the TXE flag.\\
 \textbf{Receiving Data}
@@ -384,17 +282,71 @@ char UART_ReceiveChar(USART_TypeDef *uart) {
 \end{lstlisting}
 \end{KR}
 
+\includegraphics[width=\linewidth]{uart_on_stm.png}
+\vspace{2mm}\\
+\includegraphics[width=\linewidth]{uart_registers.png}
+
+
+\raggedcolumns
+\pagebreak
+\subsubsection{Electrical Characteristics of UART}
+
+\begin{definition}{RS232 - Interconnecting Equipment by Cable}
+
+    \begin{minipage}{0.7\linewidth}
+        \begin{itemize}
+            \item Simple, bidirectional point-to-point interface based on UART
+            \item Optional control signals, e.g. CTS - Clear To Send
+            \item Ground $\rightarrow$ common reference level for all signals (single ended)
+            \item Driver circuit allows transmissions up to $\sim 10 \mathrm{~m}$
+            \item Logic '1' -3V to -15V and Logic '0' 3 V to 15 V
+        \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.3\linewidth}
+    \includegraphics[width=\linewidth]{uart_cable.png}
+    \end{minipage}
+    
+\end{definition}
+
+
+
+\begin{concept}{RS232 - Interconnecting Equipment by Cable}
+    RS-485 - Differential Transmission Based on UART
+    \begin{itemize}
+        \item Differential signals 
+        \item Less susceptible to disturbances $\rightarrow$ longer distances, 100+ Meters
+        \item Transmit and receive share the same lines
+        \item Industrial automation: lowest layer of Profibus
+    \end{itemize}
+    \includegraphics[width=0.8\linewidth]{uart_interconnection1.png}
+\end{concept}
+
+\begin{theorem}
+    {RS-485 - Differential Transmission}
+    \begin{itemize}
+        \item Transmitter transforms single-ended signal into differential signal
+        \item Capacitive coupled noise affects both lines
+        \item Receiver forms the difference of the two signals
+        \item Noise on the two lines cancels itself to a large extent
+    \end{itemize}
+    \includegraphics[width=\linewidth]{uart_interconnection2.png}
+\end{theorem}
+
+
+\raggedcolumns
+\pagebreak
 
 
 
 
 
 
+\subsection{I2C - Inter-Integrated Circuit}
 
-\subsection{I2C Fundamentals}
 
-\begin{concept}{I2C - Inter-Integrated Circuit}\\
-I2C is a synchronous, half-duplex, multi-master bus:
+\mult{2}
+
+\begin{definition}{I2C} is a synchronous, half-duplex, multi-master bus:
 \begin{itemize}
     \item Developed by Philips (now NXP) in 1982
     \item 2-wire interface (SCL and SDA)
@@ -405,47 +357,48 @@ I2C is a synchronous, half-duplex, multi-master bus:
     \item Well-suited for connecting multiple boards or chips
     \item Bit rates from 100 kbit/s (standard) to 5 Mbit/s (ultra-fast)
 \end{itemize}
-\end{concept}
+\end{definition}
 
-\begin{definition}{I2C Signals}\\
+\begin{concept}{I2C Signals}
 I2C requires just two bidirectional lines with pull-up resistors:
 \begin{itemize}
     \item \textbf{SCL} (Serial Clock Line): Clock signal generated by master
     \item \textbf{SDA} (Serial Data Line): Bidirectional data line
 \end{itemize}
+\includegraphics[width=\linewidth]{sda_data_lines.png}
+
 Both lines are open-drain, requiring external pull-up resistors.
-\end{definition}
+\end{concept}
 
-\subsection{I2C Protocol}
+\multend
 
-\begin{concept}{I2C Bus Conditions}\\
-Special conditions on the I2C bus:
+\includegraphics[width=\linewidth]{i2c_bus.png}
+
+
+
+\begin{theorem}{I2C Bus Conditions}
 \begin{itemize}
     \item \textbf{START condition}: SDA goes from high to low while SCL is high
     \item \textbf{STOP condition}: SDA goes from low to high while SCL is high
     \item \textbf{Data valid}: SDA remains stable while SCL is high
     \item \textbf{Data change}: SDA changes only when SCL is low
 \end{itemize}
+\end{theorem}
+
+\begin{minipage}{0.6\linewidth}
+
+\begin{concept}{I2C Accesses}\\
+\includegraphics[width=\linewidth]{i2c_accesses.png}
 \end{concept}
-
-\begin{definition}{I2C Data Transfer}\\
-Data transfer sequence:
-\begin{itemize}
-    \item Master initiates transfer with START condition
-    \item Master sends 7-bit slave address + R/W bit (0 = write, 1 = read)
-    \item Addressed slave acknowledges (ACK) by pulling SDA low
-    \item Data bytes transferred (8 bits followed by ACK/NACK)
-    \item Master terminates transfer with STOP condition
-\end{itemize}
-Data is transferred MSB first, with the receiver acknowledging each byte.
-\end{definition}
-
-\begin{concept}{I2C Acknowledge and Not-Acknowledge}\\
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+\begin{corollary}{I2C Acknowledge and Not-Acknowledge}\\
 After each byte transfer:
 \begin{itemize}
     \item \textbf{ACK} (Acknowledge): Receiver pulls SDA low during 9th clock cycle
     \item \textbf{NACK} (Not-Acknowledge): SDA remains high during 9th clock cycle
 \end{itemize}
+\vspace{1mm}
 NACK can indicate:
 \begin{itemize}
     \item No receiver with the transmitted address
@@ -454,7 +407,29 @@ NACK can indicate:
     \item Receiver cannot receive more data
     \item Master-receiver signals end of transfer to slave-transmitter
 \end{itemize}
-\end{concept}
+\end{corollary}
+\end{minipage}
+
+
+
+
+
+\begin{formula}{I2C Data Transfer}
+Data transfer sequence:
+\begin{itemize}
+    \item Master initiates transfer with START condition
+    \item Master sends 7-bit slave address \\ + R/W bit (0 = write, 1 = read)
+    \item Addressed slave acknowledges (ACK) \\ by pulling SDA low
+    \item Data bytes transferred \\ (8 bits followed by ACK/NACK)
+    \item Master terminates transfer with STOP condition
+\end{itemize}
+Data is transferred MSB first, with the receiver acknowledging each byte.
+\vspace{1mm}\\
+\includegraphics[width=\linewidth]{i2c_data_transfer.png}
+
+\end{formula}
+
+
 
 \begin{example2}{I2C Write Operation}\\
 Master wants to write data 0x9C to slave with address 0x66
@@ -484,115 +459,15 @@ I2C bus:
 START - 0xCD - ACK - 0x9C - NACK - STOP
 \end{example2}
 
-\subsection{I2C on STM32F4}
-
-\begin{concept}{STM32F4 I2C Peripherals}\\
-The STM32F4 includes I2C modules with features:
-\begin{itemize}
-    \item Compatible with I2C standard protocol
-    \item Multiple speed modes (standard, fast)
-    \item 7-bit and 10-bit addressing
-    \item Multi-master capability
-    \item Programmable clock stretching
-    \item Programmable NOSTRETCH capability
-    \item DMA support for efficient data transfer
-    \item SMBus support
-\end{itemize}
-\end{concept}
-
-\begin{code}{STM32F4 I2C Configuration}
-\begin{lstlisting}[language=C, style=basesmol]
-// Configure I2C1 for 100kHz standard mode
-
-// 1. Enable I2C1 and GPIO clock
-RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;   // Enable I2C1 clock
-RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;  // Enable GPIOB clock
-
-// 2. Configure GPIO pins for I2C (PB6 = SCL, PB7 = SDA)
-// Set alternate function mode (0x10)
-GPIOB->MODER &= ~(0x3 << (2*6) | 0x3 << (2*7));
-GPIOB->MODER |= (0x2 << (2*6) | 0x2 << (2*7));
-
-// Set open-drain output type
-GPIOB->OTYPER |= (1 << 6) | (1 << 7);
-
-// Set to AF4 (I2C1)
-GPIOB->AFR[0] &= ~(0xF << (4*6) | 0xF << (4*7));
-GPIOB->AFR[0] |= (0x4 << (4*6) | 0x4 << (4*7));
-
-// 3. Reset I2C
-I2C1->CR1 = I2C_CR1_SWRST;  // Software reset
-I2C1->CR1 = 0;              // Clear reset
-
-// 4. Configure I2C
-// Set peripheral clock frequency (42MHz)
-I2C1->CR2 = 42;  // FREQ = 42MHz
-
-// Set CCR for 100kHz standard mode
-// CCR = PCLK1 / (2 * I2C_FREQ) = 42MHz / (2 * 100kHz) = 210
-I2C1->CCR = 210;
-
-// Set TRISE
-// TRISE = (max rise time * PCLK1) + 1 = (1000ns * 42MHz) + 1 = 43
-I2C1->TRISE = 43;
-
-// 5. Enable I2C
-I2C1->CR1 |= I2C_CR1_PE;  // Peripheral enable
-\end{lstlisting}
-\end{code}
-
-\begin{KR}{I2C Master Transmit and Receive}
-\paragraph{Master Transmit Sequence}
-Generate START, send address+write, send data bytes, generate STOP.
-\paragraph{Master Receive Sequence}
-Generate START, send address+read, receive data bytes with ACK/NACK, generate STOP.
-
-\begin{lstlisting}[language=C, style=basesmol]
-// I2C Master Transmit
-void I2C_MasterTransmit(I2C_TypeDef *i2c, uint8_t address, uint8_t *data, uint16_t size) {
-    // 1. Wait until I2C bus is free
-    while (i2c->SR2 & I2C_SR2_BUSY) { }
-    
-    // 2. Generate START condition
-    i2c->CR1 |= I2C_CR1_START;
-    
-    // 3. Wait for EV5 (START sent)
-    while (!(i2c->SR1 & I2C_SR1_SB)) { }
-    
-    // 4. Send slave address (write mode)
-    i2c->DR = address << 1;  // Address + Write bit (0)
-    
-    // 5. Wait for EV6 (address sent)
-    while (!(i2c->SR1 & I2C_SR1_ADDR)) { }
-    
-    // 6. Clear ADDR by reading SR2
-    (void)i2c->SR2;
-    
-    // 7. Send data bytes
-    for (uint16_t i = 0; i < size; i++) {
-        // Wait until TXE is set
-        while (!(i2c->SR1 & I2C_SR1_TXE)) { }
-        
-        // Send data byte
-        i2c->DR = data[i];
-    }
-    
-    // 8. Wait for transfer to complete
-    while (!(i2c->SR1 & I2C_SR1_TXE) || !(i2c->SR1 & I2C_SR1_BTF)) { }
-    
-    // 9. Generate STOP condition
-    i2c->CR1 |= I2C_CR1_STOP;
-}
-\end{lstlisting}
-\end{KR}
-
-\subsection{I2C Communication}
+\subsubsection{I2C Timing and Protocol}
 
 \begin{concept}{I2C Timing} MSB first!\\
-    \includegraphics[width=\linewidth]{I2C_Timing.png}\\
+    \includegraphics[width=0.8\linewidth]{i2c_timing_slave_addressing.png}\\
     ACK = 0 $\rightarrow$ Übertragung erfolgreich\\
     ACK = 1 $\rightarrow$ Übertragung nicht erfolgreich
 \end{concept}
+
+
 
 
 \begin{KR}{Analyzing I2C Communication}
@@ -628,14 +503,9 @@ void I2C_MasterTransmit(I2C_TypeDef *i2c, uint8_t address, uint8_t *data, uint16
 \end{KR}
 
 \begin{example2}{I2C Communication Analysis}\\
-Analyze the following I2C timing diagram and describe the transaction:
+Analyze the following I2C timing diagram and describe the transaction: (ACK is active low)
 
-\begin{verbatim}
-SCL  _____|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|...|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|_|¯¯¯|___
-                     
-SDA  ___\_|1|_|1|_|0|_|0|_|1|_|1|_|0|_|1|_|0|_\_|0|_|0|_|1|_|1|_|1|_|0|_|0|_|1|_/___
-     Start                              ACK                 NACK  Stop
-\end{verbatim}
+\includegraphics[width=\linewidth]{i2c_timing_example.png}
 
 \tcblower
 \paragraph{Solution:}
@@ -666,6 +536,115 @@ The complete transaction is:
     \item Master terminates communication
 \end{itemize}
 \end{example2}
+
+
+\raggedcolumns
+\pagebreak
+
+\subsubsection{I2C on STM32F4}
+
+\begin{concept}{STM32F4 I2C Peripherals}\\
+The STM32F4 includes I2C modules with features:
+\vspace{2mm}\\
+\begin{minipage}{0.5\linewidth}
+\begin{itemize}
+    \item Compatible with I2C standard protocol
+    \item Multiple speed modes (standard, fast)
+    \item 7-bit and 10-bit addressing
+    \item Multi-master capability
+    \end{itemize}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\begin{itemize}
+    \item Programmable clock stretching
+    \item Programmable NOSTRETCH capability
+    \item DMA support for efficient data transfer
+    \item SMBus support
+\end{itemize}
+\end{minipage}
+\end{concept}
+
+\begin{code}{STM32F4 I2C Configuration}
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure I2C1 for 100kHz standard mode
+// 1. Enable I2C1 and GPIO clock
+RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;   // Enable I2C1 clock
+RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;  // Enable GPIOB clock
+
+// 2. Configure GPIO pins for I2C (PB6 = SCL, PB7 = SDA)
+// Set alternate function mode (0x10)
+GPIOB->MODER &= ~(0x3 << (2*6) | 0x3 << (2*7));
+GPIOB->MODER |= (0x2 << (2*6) | 0x2 << (2*7));
+// Set open-drain output type
+GPIOB->OTYPER |= (1 << 6) | (1 << 7);
+// Set to AF4 (I2C1)
+GPIOB->AFR[0] &= ~(0xF << (4*6) | 0xF << (4*7));
+GPIOB->AFR[0] |= (0x4 << (4*6) | 0x4 << (4*7));
+
+// 3. Reset I2C
+I2C1->CR1 = I2C_CR1_SWRST;  // Software reset
+I2C1->CR1 = 0;              // Clear reset
+
+// 4. Configure I2C
+// Set peripheral clock frequency (42MHz)
+I2C1->CR2 = 42;  // FREQ = 42MHz
+// Set CCR for 100kHz standard mode
+// CCR = PCLK1 / (2 * I2C_FREQ) = 42MHz / (2 * 100kHz) = 210
+I2C1->CCR = 210;
+// Set TRISE
+// TRISE = (max rise time * PCLK1) + 1 = (1000ns * 42MHz) + 1 = 43
+I2C1->TRISE = 43;
+// 5. Enable I2C
+I2C1->CR1 |= I2C_CR1_PE;  // Peripheral enable
+\end{lstlisting}
+\end{code}
+
+\includegraphics[width=\linewidth]{i2c_registers.png}
+
+\begin{KR}{I2C Master Transmit and Receive}
+\paragraph{Master Transmit Sequence}
+Generate START, send address+write, send data bytes, generate STOP.
+\paragraph{Master Receive Sequence}
+Generate START, send address+read, receive data bytes with ACK/NACK, generate STOP.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// I2C Master Transmit
+void I2C_MasterTransmit(I2C_TypeDef *i2c, uint8_t address, uint8_t *data, uint16_t size) {
+    // 1. Wait until I2C bus is free
+    while (i2c->SR2 & I2C_SR2_BUSY) { }
+    // 2. Generate START condition
+    i2c->CR1 |= I2C_CR1_START;
+    // 3. Wait for EV5 (START sent)
+    while (!(i2c->SR1 & I2C_SR1_SB)) { }
+    // 4. Send slave address (write mode)
+    i2c->DR = address << 1;  // Address + Write bit (0)
+    // 5. Wait for EV6 (address sent)
+    while (!(i2c->SR1 & I2C_SR1_ADDR)) { }
+    // 6. Clear ADDR by reading SR2
+    (void)i2c->SR2;
+    // 7. Send data bytes
+    for (uint16_t i = 0; i < size; i++) {
+        // Wait until TXE is set
+        while (!(i2c->SR1 & I2C_SR1_TXE)) { }
+        
+        // Send data byte
+        i2c->DR = data[i];
+    }
+    // 8. Wait for transfer to complete
+    while (!(i2c->SR1 & I2C_SR1_TXE) || !(i2c->SR1 & I2C_SR1_BTF)) { }
+    // 9. Generate STOP condition
+    i2c->CR1 |= I2C_CR1_STOP;
+}
+\end{lstlisting}
+\end{KR}
+
+\includegraphics[width=\linewidth]{i2c_registerbits.png}
+
+
+
+
+
+
 
 
 
