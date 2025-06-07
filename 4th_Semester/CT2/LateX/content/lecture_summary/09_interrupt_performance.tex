@@ -2,7 +2,7 @@
 
 \subsection{Event Detection Methods}
 
-\begin{concept}{Polling vs. Interrupt-Driven I/O}\\
+\begin{theorem}{Polling vs. Interrupt-Driven I/O}\\
 Two primary methods for detecting events in embedded systems:
 \begin{itemize}
     \item \textbf{Polling}: Periodically checking status registers
@@ -20,7 +20,20 @@ Two primary methods for detecting events in embedded systems:
         \item More complex implementation
     \end{itemize}
 \end{itemize}
-\end{concept}
+\end{theorem}
+
+\subsubsection{Polling}
+
+\begin{definition}{Polling}\\
+    Periodische Abfrage von Status-Informationen durch die CPU.
+    \begin{itemize}
+        \item Synchron mit dem Hauptprogramm
+        \item CPU fragt aktiv nach Status-Aenderungen
+        \item Einfach zu implementieren, deterministisch
+        \item Verschwendet CPU-Zeit durch \important{Busy Wait}
+    \end{itemize}
+\end{definition}
+
 
 \begin{concept}{Polling Implementation}\\
 In polling, the CPU periodically checks status registers to detect events:
@@ -48,33 +61,9 @@ Disadvantages:
 \end{itemize}
 \end{concept}
 
-\begin{concept}{Interrupt-Driven I/O}\\
-In interrupt-driven I/O, peripherals notify the CPU when events occur:
-\begin{itemize}
-    \item Peripherals assert interrupt signal when they need servicing
-    \item CPU temporarily suspends current execution
-    \item Control transfers to an Interrupt Service Routine (ISR)
-    \item After handling the interrupt, control returns to previous execution
-\end{itemize}
 
-Advantages:
-\begin{itemize}
-    \item Efficient CPU utilization (only responds when needed)
-    \item Fast response to events
-    \item Good for infrequent, time-critical events
-    \item Main program can focus on primary tasks
-\end{itemize}
 
-Disadvantages:
-\begin{itemize}
-    \item More complex implementation
-    \item Can introduce timing uncertainties (non-deterministic behavior)
-    \item Potential for interrupt conflicts and priority issues
-    \item Overhead for context switching
-\end{itemize}
-\end{concept}
-
-\begin{KR}{Implementing Polling in C}\\
+\begin{KR}{Implementing Polling in C}
 \paragraph{Step 1: Identify status registers}
 Determine which peripheral registers contain status information.
 \paragraph{Step 2: Create a polling loop}
@@ -86,7 +75,7 @@ Process events when their status flags are set.
 \paragraph{Step 5: Clear status flags}
 Reset status flags to prepare for next event detection.
 
-\begin{lstlisting}[style=basesmol]
+\begin{lstlisting}[language=C, style=basesmol]
 // Main polling loop
 while (1) {
     // Check SPI transmit buffer empty flag
@@ -117,7 +106,48 @@ while (1) {
 \end{lstlisting}
 \end{KR}
 
-\begin{KR}{Configuring Interrupt-Driven I/O}\\
+\raggedcolumns
+\columnbreak
+
+\subsubsection{Interrupt-Driven I/O}
+
+\begin{definition}{Interrupt-driven I/O}\\
+    Peripheriegeraete signalisieren Events asynchron an die CPU.
+    \begin{itemize}
+        \item Hardware setzt Interrupt-Flag bei Event
+        \item CPU wird unterbrochen und fuehrt ISR aus
+        \item Effiziente CPU-Nutzung
+        \item Komplexere Implementierung
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Interrupt-Driven I/O}
+In interrupt-driven I/O, peripherals notify the CPU when events occur:
+\begin{itemize}
+    \item Peripherals assert interrupt signal when they need servicing
+    \item CPU temporarily suspends current execution
+    \item Control transfers to an Interrupt Service Routine (ISR)
+    \item After handling the interrupt, control returns to previous execution
+\end{itemize}
+
+Advantages:
+\begin{itemize}
+    \item Efficient CPU utilization (only responds when needed)
+    \item Fast response to events
+    \item Good for infrequent, time-critical events
+    \item Main program can focus on primary tasks
+\end{itemize}
+
+Disadvantages:
+\begin{itemize}
+    \item More complex implementation
+    \item Can introduce timing uncertainties (non-deterministic behavior)
+    \item Potential for interrupt conflicts and priority issues
+    \item Overhead for context switching
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Configuring Interrupt-Driven I/O}
 \paragraph{Step 1: Configure interrupt sources}
 Enable specific interrupt sources in peripherals.
 \paragraph{Step 2: Configure NVIC}
@@ -127,7 +157,7 @@ Create Interrupt Service Routines to handle specific events.
 \paragraph{Step 4: Enable global interrupts}
 Enable the global interrupt flag.
 
-\begin{lstlisting}[style=basesmol]
+\begin{lstlisting}[language=C, style=basesmol]
 // Step 1: Configure SPI interrupt
 void configure_spi_interrupt(void) {
     // Enable SPI peripheral clock
@@ -177,7 +207,82 @@ int main(void) {
 \end{lstlisting}
 \end{KR}
 
+\raggedcolumns
+\columnbreak
+
 \subsection{Interrupt Performance Analysis}
+
+\begin{concept}{Interrupt Performance Metriken}\\
+    Wichtige Kenngroessen zur Bewertung von Interrupt-Systemen:
+    \begin{itemize}
+        \item \important{Interrupt-Frequenz} $f_{INT}$ [Hz]: Wie oft tritt ein Interrupt auf?
+        \item \important{Interrupt Service Time} $t_{ISR}$ [s]: Wie lange dauert die ISR-Ausfuehrung?
+        \item \important{Impact} [\%]: Welcher Anteil der CPU-Zeit wird fuer Interrupts verwendet?
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Impact Berechnung}\\
+    Der Einfluss von Interrupts auf die Systemleistung:
+    $$\text{Impact} = f_{INT} \times t_{ISR} \times 100\%$$
+    
+    Dabei ist:
+    \begin{itemize}
+        \item $f_{INT}$: Interrupt-Frequenz in Hz
+        \item $t_{ISR}$: Interrupt Service Time in Sekunden
+        \item Impact: Prozentuale CPU-Belastung durch Interrupts
+    \end{itemize}
+\end{formula}
+
+\begin{KR}{Interrupt Performance Analyse}
+    \paragraph{Schritt 1: Interrupt-Frequenz bestimmen}
+    \begin{itemize}
+        \item Datenrate und Puffergroesse analysieren
+        \item $f_{INT} = \frac{\text{Datenrate [bit/s]}}{\text{Puffergroesse [bit]}}$
+    \end{itemize}
+    
+    \paragraph{Schritt 2: Service Time berechnen}
+    \begin{itemize}
+        \item Anzahl Clockzyklen fuer ISR bestimmen
+        \item $t_{ISR} = \frac{\text{Clockzyklen}}{\text{CPU-Frequenz [Hz]}}$
+    \end{itemize}
+    
+    \paragraph{Schritt 3: Impact berechnen}
+    \begin{itemize}
+        \item $\text{Impact} = f_{INT} \times t_{ISR} \times 100\%$
+        \item Pruefung: Impact $<$ 100\% fuer stabilen Betrieb
+    \end{itemize}
+    
+    \paragraph{Schritt 4: Kritische Datenrate bestimmen}
+    \begin{itemize}
+        \item Fuer 100\% CPU-Auslastung: $f_{INT} \times t_{ISR} = 1$
+        \item Maximale Datenrate: $\text{Rate}_{max} = \frac{\text{Puffergroesse}}{t_{ISR}}$
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Interrupt Performance Berechnung}\\
+    Ein Prozessorsystem (1 MHz Takt) empfaengt Daten mit 16 kbit/s. Das Peripheriegeraet kann 32 bit zwischenspeichern. Die ISR benoetigt 100 Clockzyklen.
+    
+    \tcblower
+    
+    \textbf{Loesung:}
+    
+    \textbf{a) Impact berechnen:}
+    \begin{itemize}
+        \item $f_{INT} = \frac{16 \text{ kbit/s}}{32 \text{ bit}} = 500 \text{ Hz}$
+        \item $t_{ISR} = \frac{100 \text{ Zyklen}}{1 \text{ MHz}} = 100 \mu s$
+        \item $\text{Impact} = 500 \text{ Hz} \times 100 \mu s \times 100\% = 5\%$
+    \end{itemize}
+    
+    \textbf{b) Kritische Datenrate fuer 100\% CPU-Last:}
+    \begin{itemize}
+        \item $(x / 32 \text{ bit}) \times 100 \mu s = 1$
+        \item $x = \frac{32 \text{ bit}}{100 \mu s} = 320 \text{ kbit/s}$
+    \end{itemize}
+    
+    \textbf{c) Datenverlust bei 90\% Last:}
+    \\ ISR-Zeit schwankt je nach Instruktion und Daten $\Rightarrow$ Peaks koennen zu Datenverlust fuehren.
+\end{example2}
+
 
 \begin{definition}{Key Performance Metrics}\\
 Several metrics characterize interrupt performance:
@@ -227,7 +332,7 @@ Factors that may lead to overload:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Optimizing ISR Performance}\\
+\begin{KR}{Optimizing ISR Performance}
 \paragraph{Keep ISRs short}
 Perform only time-critical operations in the ISR.
 \paragraph{Defer processing to main loop}
@@ -239,7 +344,7 @@ Assign higher priorities to more time-critical interrupts.
 \paragraph{Disable interrupts judiciously}
 Disable interrupts only when necessary, for as short a time as possible.
 
-\begin{lstlisting}[style=basesmol]
+\begin{lstlisting}[language=C, style=basesmol]
 // Non-optimized ISR
 void USART2_IRQHandler(void) {
     if (USART2->SR & USART_SR_RXNE) {
@@ -334,7 +439,7 @@ Several factors contribute to interrupt latency:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Managing Interrupt Latency}\\
+\begin{KR}{Managing Interrupt Latency}
 \paragraph{Use interrupt priorities}
 Assign appropriate priorities based on timing requirements.
 \paragraph{Limit interrupt disable periods}
@@ -346,7 +451,7 @@ Allow high-priority interrupts to preempt less critical ones.
 \paragraph{Move waiting loops to main program}
 Don't block inside ISRs waiting for slow peripherals.
 
-\begin{lstlisting}[style=basesmol]
+\begin{lstlisting}[language=C, style=basesmol]
 // Poor: Blocking in ISR
 void SPI1_IRQHandler(void) {
     // Read data from input
@@ -440,7 +545,7 @@ Key aspects of priority-based interrupt handling:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Configuring Interrupt Priorities}\\
+\begin{KR}{Configuring Interrupt Priorities}
 \paragraph{Step 1: Analyze timing requirements}
 Determine which interrupts are most time-critical.
 \paragraph{Step 2: Group interrupts by importance}
@@ -450,7 +555,7 @@ Configure NVIC priority registers for each interrupt.
 \paragraph{Step 4: Configure priority grouping}
 Set priority group using NVIC\_SetPriorityGrouping().
 
-\begin{lstlisting}[style=basesmol]
+\begin{lstlisting}[language=C, style=basesmol]
 // Configure interrupt priorities
 void configure_interrupt_priorities(void) {
     // Set priority grouping (4 bits for pre-emption priority, 0 bits for sub-priority)
@@ -479,7 +584,81 @@ void configure_interrupt_priorities(void) {
 \end{lstlisting}
 \end{KR}
 
+\raggedcolumns
+\pagebreak
+
 \subsection{Interrupt-Driven State Machines}
+
+\begin{concept}{Interrupt-driven Finite State Machine}\\
+    Kombination von Interrupt-System und Zustandsautomat:
+    \begin{itemize}
+        \item ISRs generieren Events und schreiben sie in Queue
+        \item FSM in Main Loop liest Events aus Queue
+        \item Deterministische Event-Verarbeitung
+        \item Saubere Trennung von Interrupt- und Anwendungslogik
+    \end{itemize}
+\end{concept}
+
+\begin{code}{Interrupt-driven FSM Struktur}
+\begin{lstlisting}[language=C, style=basesmol]
+// Main Loop
+int main(void) {
+    event_t event;
+    fsm_init();
+    peripherals_init();
+    
+    while (1) {
+        event = get_event_from_queue();
+        if (event != NO_EVENT) {
+            fsm_handle_event(event);
+        }
+    }
+}
+
+// Interrupt Service Routines
+void ISR_Peripheral1(void) {
+    // Event in Queue schreiben
+    write_event_to_queue(EVENT_PERIPHERAL1);
+    // Interrupt Flag loeschen
+    clear_interrupt_flag();
+}
+\end{lstlisting}
+\end{code}
+
+\begin{example2}{Interrupt Performance Problem}
+    System mit 90\% Interrupt-Last verliert trotzdem Daten. Erklaeren Sie eine plausible Ursache.
+    
+    \tcblower
+    
+    \textbf{Loesung:}
+    
+    Die Interrupt Service Time ist nicht konstant:
+    \begin{itemize}
+        \item \textbf{Variable Latency}: Je nach aktueller CPU-Instruktion
+        \item \textbf{Datenabhaengige ISR-Dauer}: Unterschiedliche Verarbeitungszeiten
+        \item \textbf{Jitter}: Schwankungen in der Interrupt-Behandlung
+        \item \textbf{Preemption}: Andere Interrupts koennen verzoegern
+    \end{itemize}
+    
+    Bei 90\% Durchschnittslast koennen Spitzen $>$ 100\% erreichen $\Rightarrow$ Datenverlust.
+    
+    \textbf{Abhilfe:}
+    \begin{itemize}
+        \item Puffergroesse erhoehen
+        \item ISR-Zeit reduzieren und konstanter machen
+        \item Sicherheitsmarge bei Systemauslegung einplanen
+    \end{itemize}
+\end{example2}
+
+\begin{remark}
+    \textbf{Faustregeln fuer Interrupt-Systeme:}
+    \begin{itemize}
+        \item Impact sollte $<$ 50\% bleiben fuer stabile Performance
+        \item ISR-Zeit sollte konstant und vorhersagbar sein
+        \item Kritische Daten immer puffern (Hardware oder Software)
+        \item Bei mehreren Interrupt-Quellen: Prioritaeten sorgfaeltig waehlen
+    \end{itemize}
+\end{remark}
 
 \begin{concept}{Integrating Interrupts and State Machines}\\
 Combining interrupt-driven I/O with state machines creates efficient event-driven systems:
@@ -504,7 +683,7 @@ Combining interrupt-driven I/O with state machines creates efficient event-drive
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Implementing Interrupt-Driven FSM}\\
+\begin{KR}{Implementing Interrupt-Driven FSM}
 \paragraph{Step 1: Create event queue}
 Implement a buffer to store events from ISRs.
 \paragraph{Step 2: Implement ISRs}
@@ -514,7 +693,7 @@ Create state machine logic to process events from queue.
 \paragraph{Step 4: Connect with main loop}
 Pull events from queue and feed to state machine in main loop.
 
-\begin{lstlisting}[style=basesmol]
+\begin{lstlisting}[language=C, style=basesmol]
 // Define event types and queue
 typedef enum {
     EVENT_BUTTON_PRESS,
@@ -550,6 +729,12 @@ event_t queue_get_event(void) {
     
     return event;
 }
+
+\end{lstlisting}
+\end{KR}
+
+\begin{KR}{Part 2: Implementing the State Machine}
+\begin{lstlisting}[language=C, style=basesmol]
 
 // Button interrupt handler
 void EXTI0_IRQHandler(void) {
@@ -599,7 +784,7 @@ int main(void) {
 \end{lstlisting}
 \end{KR}
 
-\begin{example2}{Complete Interrupt-Driven FSM Example}\\
+\begin{example2}{Complete Interrupt-Driven FSM Example}
 Implement a button-controlled LED system with debouncing using timer interrupts.
 \tcblower
 The system has three states:
@@ -673,7 +858,11 @@ void EXTI0_IRQHandler(void) {
         EXTI->PR = EXTI_PR_PR0;
     }
 }
+\end{lstlisting}
+\end{example2}
 
+\begin{example2}{Complete Interrupt-Driven FSM Example (continued)}
+\begin{lstlisting}[language=C, style=basesmol]
 // Timer interrupt for blinking (TIM3)
 void TIM3_IRQHandler(void) {
     if (TIM3->SR & TIM_SR_UIF) {
@@ -740,6 +929,12 @@ void fsm_handle_event(event_t event) {
     }
 }
 
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Complete Interrupt-Driven FSM Example (continued)}
+\begin{lstlisting}[language=C, style=basesmol]
+
 // Main function
 int main(void) {
     // Initialize hardware
@@ -776,7 +971,7 @@ int main(void) {
 
 \subsection{Interrupt Performance Analysis}
 
-\begin{KR}{Analyzing Interrupt System Performance}\\
+\begin{KR}{Analyzing Interrupt System Performance}
 \paragraph{Calculate interrupt frequency}
 \begin{itemize}
     \item Identify the source and rate of interrupts
@@ -882,7 +1077,7 @@ The Interrupt Service Routine (ISR) requires 100 clock cycles on average, includ
 
 \subsection{Interrupt Latency Optimization}
 
-\begin{KR}{Managing Interrupt Latency}\\
+\begin{KR}{Managing Interrupt Latency}
 \paragraph{Understand latency components}
 \begin{itemize}
     \item \textbf{Hardware latency:}
@@ -1014,6 +1209,12 @@ void configure_adc(void) {
     ADC1->CR2 |= ADC_CR2_ADON;
 }
 
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Complete Interrupt-Driven FSM Example (continued)}
+\begin{lstlisting}[language=C, style=basesmol]
+
 // Configure DMA for ADC
 void configure_dma(uint16_t* buffer, uint32_t buffer_size) {
     // Enable DMA clock
@@ -1080,7 +1281,7 @@ This solution eliminates software-induced jitter by leveraging hardware synchron
 
 \subsection{Interrupt-Driven System Design}
 
-\begin{KR}{Designing Efficient Interrupt-Driven Systems}\\
+\begin{KR}{Designing Efficient Interrupt-Driven Systems}
 \paragraph{Choose between polling and interrupts}
 \begin{itemize}
     \item \textbf{Use interrupts when:}
@@ -1208,6 +1409,12 @@ extern bool uart_hw_rx_ready(void);
 extern void uart_hw_enable_tx_interrupt(bool enable);
 extern void uart_hw_enable_rx_interrupt(bool enable);
 
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Complete Interrupt-Driven FSM Example (continued)}
+\begin{lstlisting}[language=C, style=basesmol]
+
 // Buffer operations
 static bool buffer_is_full(const circular_buffer_t* buffer) {
     return ((buffer->head + 1) & UART_BUFFER_MASK) == buffer->tail;
@@ -1257,6 +1464,12 @@ void uart_init(uint32_t baudrate) {
     uart_hw_enable_rx_interrupt(true);
     // Transmit interrupt will be enabled when data is available
 }
+
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Complete Interrupt-Driven FSM Example (continued)}
+\begin{lstlisting}[language=C, style=basesmol]
 
 // Send a single byte (non-blocking)
 bool uart_send_byte(uint8_t data) {
@@ -1326,6 +1539,12 @@ void UART_RX_IRQHandler(void) {
         buffer_push(&rx_buffer, data);
     }
 }
+
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Complete Interrupt-Driven FSM Example (continued)}
+\begin{lstlisting}[language=C, style=basesmol]
 
 // TX interrupt handler
 void UART_TX_IRQHandler(void) {
@@ -1402,241 +1621,3 @@ void main(void) {
 
 This design provides an efficient, interrupt-driven UART interface that meets all requirements with minimal CPU overhead.
 \end{example2}
-
-\section{Interrupts}
-
-\subsection{Polling vs. Interrupt-driven I/O}
-
-\begin{definition}{Polling}\\
-    Periodische Abfrage von Status-Informationen durch die CPU.
-    \begin{itemize}
-        \item Synchron mit dem Hauptprogramm
-        \item CPU fragt aktiv nach Status-Aenderungen
-        \item Einfach zu implementieren, deterministisch
-        \item Verschwendet CPU-Zeit durch \important{Busy Wait}
-    \end{itemize}
-\end{definition}
-
-\begin{definition}{Interrupt-driven I/O}\\
-    Peripheriegeraete signalisieren Events asynchron an die CPU.
-    \begin{itemize}
-        \item Hardware setzt Interrupt-Flag bei Event
-        \item CPU wird unterbrochen und fuehrt ISR aus
-        \item Effiziente CPU-Nutzung
-        \item Komplexere Implementierung
-    \end{itemize}
-\end{definition}
-
-\subsection{Interrupt Performance}
-
-\begin{concept}{Interrupt Performance Metriken}\\
-    Wichtige Kenngroessen zur Bewertung von Interrupt-Systemen:
-    \begin{itemize}
-        \item \important{Interrupt-Frequenz} $f_{INT}$ [Hz]: Wie oft tritt ein Interrupt auf?
-        \item \important{Interrupt Service Time} $t_{ISR}$ [s]: Wie lange dauert die ISR-Ausfuehrung?
-        \item \important{Impact} [\%]: Welcher Anteil der CPU-Zeit wird fuer Interrupts verwendet?
-    \end{itemize}
-\end{concept}
-
-\begin{formula}{Impact Berechnung}\\
-    Der Einfluss von Interrupts auf die Systemleistung:
-    $$\text{Impact} = f_{INT} \times t_{ISR} \times 100\%$$
-    
-    Dabei ist:
-    \begin{itemize}
-        \item $f_{INT}$: Interrupt-Frequenz in Hz
-        \item $t_{ISR}$: Interrupt Service Time in Sekunden
-        \item Impact: Prozentuale CPU-Belastung durch Interrupts
-    \end{itemize}
-\end{formula}
-
-\begin{KR}{Interrupt Performance Analyse}\\
-    \paragraph{Schritt 1: Interrupt-Frequenz bestimmen}
-    \begin{itemize}
-        \item Datenrate und Puffergroesse analysieren
-        \item $f_{INT} = \frac{\text{Datenrate [bit/s]}}{\text{Puffergroesse [bit]}}$
-    \end{itemize}
-    
-    \paragraph{Schritt 2: Service Time berechnen}
-    \begin{itemize}
-        \item Anzahl Clockzyklen fuer ISR bestimmen
-        \item $t_{ISR} = \frac{\text{Clockzyklen}}{\text{CPU-Frequenz [Hz]}}$
-    \end{itemize}
-    
-    \paragraph{Schritt 3: Impact berechnen}
-    \begin{itemize}
-        \item $\text{Impact} = f_{INT} \times t_{ISR} \times 100\%$
-        \item Pruefung: Impact $<$ 100\% fuer stabilen Betrieb
-    \end{itemize}
-    
-    \paragraph{Schritt 4: Kritische Datenrate bestimmen}
-    \begin{itemize}
-        \item Fuer 100\% CPU-Auslastung: $f_{INT} \times t_{ISR} = 1$
-        \item Maximale Datenrate: $\text{Rate}_{max} = \frac{\text{Puffergroesse}}{t_{ISR}}$
-    \end{itemize}
-\end{KR}
-
-\begin{example2}{Interrupt Performance Berechnung}\\
-    Ein Prozessorsystem (1 MHz Takt) empfaengt Daten mit 16 kbit/s. Das Peripheriegeraet kann 32 bit zwischenspeichern. Die ISR benoetigt 100 Clockzyklen.
-    
-    \tcblower
-    
-    \textbf{Loesung:}
-    
-    \textbf{a) Impact berechnen:}
-    \begin{itemize}
-        \item $f_{INT} = \frac{16 \text{ kbit/s}}{32 \text{ bit}} = 500 \text{ Hz}$
-        \item $t_{ISR} = \frac{100 \text{ Zyklen}}{1 \text{ MHz}} = 100 \mu s$
-        \item $\text{Impact} = 500 \text{ Hz} \times 100 \mu s \times 100\% = 5\%$
-    \end{itemize}
-    
-    \textbf{b) Kritische Datenrate fuer 100\% CPU-Last:}
-    \begin{itemize}
-        \item $(x / 32 \text{ bit}) \times 100 \mu s = 1$
-        \item $x = \frac{32 \text{ bit}}{100 \mu s} = 320 \text{ kbit/s}$
-    \end{itemize}
-    
-    \textbf{c) Datenverlust bei 90\% Last:}
-    \\ ISR-Zeit schwankt je nach Instruktion und Daten $\Rightarrow$ Peaks koennen zu Datenverlust fuehren.
-\end{example2}
-
-\subsection{Interrupt Latency}
-
-\begin{definition}{Interrupt Latency}\\
-    Zeit zwischen Interrupt-Event und Start der ISR-Ausfuehrung.
-    \begin{itemize}
-        \item Bereich: 50 ns bis mehrere ms
-        \item Wichtig fuer Echtzeit-Systeme
-        \item Wird beeinflusst durch Hardware und Software
-    \end{itemize}
-\end{definition}
-
-\begin{concept}{Faktoren der Interrupt Latency}\\
-    \textbf{Hardware-Faktoren:}
-    \begin{itemize}
-        \item Aktuelle Instruktion muss abgeschlossen werden
-        \item Multi-Cycle Instruktionen (SDIV/UDIV, LDM/STM)
-        \item Register auf Stack sichern
-    \end{itemize}
-    
-    \textbf{Software-Faktoren:}
-    \begin{itemize}
-        \item Laufende ISR mit hoeherer Prioritaet
-        \item Maskierte/deaktivierte Interrupts (CPSID i)
-        \item Mehrere Quellen auf gleicher Interrupt-Line
-    \end{itemize}
-\end{concept}
-
-\begin{concept}{Preemption}\\
-    Unterbrechung einer laufenden ISR durch hoeher priorisierte Interrupts.
-    \begin{itemize}
-        \item Ermoeglicht niedrige Latenz fuer kritische Events
-        \item Erfordert sorgfaeltige Prioritaetsvergabe
-        \item Kann zu hoher Latenz fuer niedrig priorisierte ISRs fuehren
-    \end{itemize}
-\end{concept}
-
-\subsection{Latency Management}
-
-\begin{KR}{Latency-Optimierung}\\
-    \paragraph{Schritt 1: ISR kurz halten}
-    \begin{itemize}
-        \item Nur zeitkritische Aufgaben in ISR
-        \item Datenverarbeitung in Main Loop verlagern
-        \item Queues/FIFOs fuer Entkopplung verwenden
-    \end{itemize}
-    
-    \paragraph{Schritt 2: Warteschleifen vermeiden}
-    \begin{itemize}
-        \item Polling-Loops aus ISR entfernen
-        \item Asynchrone Verarbeitung implementieren
-        \item Status-basierte Zustandsmaschinen nutzen
-    \end{itemize}
-    
-    \paragraph{Schritt 3: Prioritaeten setzen}
-    \begin{itemize}
-        \item Kritische Interrupts: hohe Prioritaet
-        \item Preemption gezielt einsetzen
-        \item Interrupt-Maskierung minimieren
-    \end{itemize}
-    
-    \paragraph{Schritt 4: Event-Queue System}
-    \begin{itemize}
-        \item ISRs schreiben Events in Queue
-        \item Main Loop verarbeitet Queue sequenziell
-        \item Entkopplung von Interrupt- und Verarbeitungszeit
-    \end{itemize}
-\end{KR}
-
-\subsection{Interrupt-driven FSM}
-
-\begin{concept}{Interrupt-driven Finite State Machine}\\
-    Kombination von Interrupt-System und Zustandsautomat:
-    \begin{itemize}
-        \item ISRs generieren Events und schreiben sie in Queue
-        \item FSM in Main Loop liest Events aus Queue
-        \item Deterministische Event-Verarbeitung
-        \item Saubere Trennung von Interrupt- und Anwendungslogik
-    \end{itemize}
-\end{concept}
-
-\begin{code}{Interrupt-driven FSM Struktur}\\
-\begin{lstlisting}[style=basesmol]
-// Main Loop
-int main(void) {
-    event_t event;
-    fsm_init();
-    peripherals_init();
-    
-    while (1) {
-        event = get_event_from_queue();
-        if (event != NO_EVENT) {
-            fsm_handle_event(event);
-        }
-    }
-}
-
-// Interrupt Service Routines
-void ISR_Peripheral1(void) {
-    // Event in Queue schreiben
-    write_event_to_queue(EVENT_PERIPHERAL1);
-    // Interrupt Flag loeschen
-    clear_interrupt_flag();
-}
-\end{lstlisting}
-\end{code}
-
-\begin{example2}{Interrupt Performance Problem}\\
-    System mit 90\% Interrupt-Last verliert trotzdem Daten. Erklaeren Sie eine plausible Ursache.
-    
-    \tcblower
-    
-    \textbf{Loesung:}
-    
-    Die Interrupt Service Time ist nicht konstant:
-    \begin{itemize}
-        \item \textbf{Variable Latency}: Je nach aktueller CPU-Instruktion
-        \item \textbf{Datenabhaengige ISR-Dauer}: Unterschiedliche Verarbeitungszeiten
-        \item \textbf{Jitter}: Schwankungen in der Interrupt-Behandlung
-        \item \textbf{Preemption}: Andere Interrupts koennen verzoegern
-    \end{itemize}
-    
-    Bei 90\% Durchschnittslast koennen Spitzen $>$ 100\% erreichen $\Rightarrow$ Datenverlust.
-    
-    \textbf{Abhilfe:}
-    \begin{itemize}
-        \item Puffergroesse erhoehen
-        \item ISR-Zeit reduzieren und konstanter machen
-        \item Sicherheitsmarge bei Systemauslegung einplanen
-    \end{itemize}
-\end{example2}
-
-\begin{remark}
-    \textbf{Faustregeln fuer Interrupt-Systeme:}
-    \begin{itemize}
-        \item Impact sollte $<$ 50\% bleiben fuer stabile Performance
-        \item ISR-Zeit sollte konstant und vorhersagbar sein
-        \item Kritische Daten immer puffern (Hardware oder Software)
-        \item Bei mehreren Interrupt-Quellen: Prioritaeten sorgfaeltig waehlen
-    \end{itemize}
-\end{remark}

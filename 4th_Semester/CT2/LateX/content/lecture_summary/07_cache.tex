@@ -1,20 +1,8 @@
 \section{Cache}
 
-\begin{remark}
-    \textbf{Situation:}
-    \begin{itemize}
-        \item Processor: fast cycle time
-        \item Fast DRAM: Single accesses have large overhead (slow), efficiently reads only in bursts
-        \item $\rightarrow$ bridging the gap such that pipelining and the bursts are effective!
-    \end{itemize}
-\textbf{Goal:}
-\begin{itemize}
-    \item Access 'slower' main memory in bursts and maintain a fast cache memory for fast single accesses
-    \item But: Data consistency must be carefully managed, such that both, cache and main memory have the same data
-\end{itemize}
-\end{remark}
 
-\subsection{Principle of Locality}
+
+\subsubsection{Principle of Locality and Memory Hierarchy}
 
 \begin{concept}{Memory Hierarchy and Locality}\\
 Programs usually access small regions of memory in a given interval of time. \\
@@ -50,7 +38,7 @@ if (a[1234] == a[4321]) {       // temporal locality
 \end{lstlisting}  
 \end{code}
 
-\begin{definition}{Memory Hierarchy Levels}\\
+\begin{definition}{Memory Hierarchy Levels}
 Typical memory hierarchy in a modern system:
 \begin{itemize}
     \item \textbf{CPU Registers}: Fastest, smallest (bytes)
@@ -65,6 +53,20 @@ Typical memory hierarchy in a modern system:
 \end{itemize}
 \includegraphics[width=\linewidth]{memory_hierarchy_levels.png}
 \end{definition}
+
+\begin{remark}
+    \textbf{Situation:}
+    \begin{itemize}
+        \item Processor: fast cycle time
+        \item Fast DRAM: Single accesses have large overhead (slow), efficiently reads only in bursts
+        \item $\rightarrow$ bridging the gap such that pipelining and the bursts are effective!
+    \end{itemize}
+\textbf{Goal:}
+\begin{itemize}
+    \item Access 'slower' main memory in bursts and maintain a fast cache memory for fast single accesses
+    \item But: Data consistency must be carefully managed, such that both, cache and main memory have the same data
+\end{itemize}
+\end{remark}
 
 \subsection{Cache Mechanics}
 
@@ -98,9 +100,14 @@ Key terms in cache design:
 \end{itemize}
 \end{definition}
 
+\raggedcolumns
+\columnbreak
+
 \subsection{Cache Organization}
 
-\begin{concept}{Memory Addressing for Cache}\\
+\mult{2}
+
+\begin{definition}{Memory Addressing for Cache}\\
 A memory address is typically divided into:
 \begin{itemize}
     \item \textbf{Tag}: Identifies which memory block is stored
@@ -115,40 +122,12 @@ Tag & Index & Offset \\
 \end{tabular}
 \end{center}
 The size of each field depends on the cache organization.
-\end{concept}
-
-\begin{definition}{Cache Organization Types}\\
-Three main cache organization strategies:
-\begin{itemize}
-    \item \textbf{Fully Associative}:
-    \begin{itemize}
-        \item Any memory block can be placed in any cache line
-        \item Address format: [Tag | Offset]
-        \item Highest flexibility, best hit rate
-        \item Complex hardware: requires comparing tag with all cache lines
-    \end{itemize}
-    \item \textbf{Direct Mapped}:
-    \begin{itemize}
-        \item Each memory block maps to exactly one cache line
-        \item Address format: [Tag | Index | Offset]
-        \item Simple hardware: only one comparison needed
-        \item Lower hit rate due to conflicts
-    \end{itemize}
-    \item \textbf{N-Way Set Associative}:
-    \begin{itemize}
-        \item Cache divided into sets, each with N lines
-        \item Memory block maps to specific set, can be placed in any line within that set
-        \item Address format: [Tag | Set Index | Offset]
-        \item Compromise between flexibility and complexity
-    \end{itemize}
-\end{itemize}
 \end{definition}
 
 \begin{concept}{Fully Associative Cache}\\
-In a fully associative cache:
+    Any memory block can be stored in any cache line
 \begin{itemize}
-    \item Any memory block can be stored in any cache line
-    \item Address is divided into tag and offset only
+    \item Address format: [Tag | Offset]
     \item Each cache line stores:
     \begin{itemize}
         \item Valid bit (is data valid?)
@@ -156,20 +135,20 @@ In a fully associative cache:
         \item Data (contents of memory block)
     \end{itemize}
     \item On memory access, the tag is compared with all cache lines in parallel
+    \item Highest flexibility, best hit rate
     \item Requires many comparators (one per cache line)
-    \item Provides highest flexibility but most complex hardware
+    \item Complex hardware: requires comparing tag with all cache lines
 \end{itemize}
 \end{concept}
 
 \begin{concept}{Direct Mapped Cache}\\
-In a direct mapped cache:
+    Each memory block maps to exactly one cache line
 \begin{itemize}
-    \item Each memory block maps to exactly one cache line
     \item Mapping function: $\text{Line} = \text{Block} \bmod m$ (where $m$ is number of cache lines)
-    \item Address is divided into tag, index, and offset
+    \item Address format: [Tag | Index | Offset]
     \item The index directly selects which cache line to check
     \item Only one tag comparison needed
-    \item Simple hardware but can suffer from conflict misses
+    \item Simple hardware but can suffer from conflict misses (resulting in lower hit rate)
     \begin{itemize}
         \item Different memory blocks mapping to the same cache line
     \end{itemize}
@@ -177,21 +156,119 @@ In a direct mapped cache:
 \end{concept}
 
 \begin{concept}{N-Way Set Associative Cache}\\
-In an N-way set associative cache:
+    Cache is divided into sets, each containing N lines
 \begin{itemize}
-    \item Cache is divided into sets, each containing N lines
     \item Memory block maps to a specific set, can go in any line within that set
     \item Mapping function: $\text{Set} = \text{Block} \bmod s$ (where $s$ is number of sets)
-    \item Address is divided into tag, set index, and offset
+    \item Address format: [Tag | Set Index | Offset]
     \item Set index selects which set to check
-    \item N tag comparisons needed (one per line in the set)
-    \item Compromise between fully associative and direct mapped
+    \item N tag comparisons needed (one per line in set)
+    \item Compromise between fully associative and direct mapped 
     \begin{itemize}
         \item More flexible than direct mapped
         \item Less hardware than fully associative
     \end{itemize}
 \end{itemize}
 \end{concept}
+
+\multend 
+
+\subsubsection{Cache Organization and Addressing}
+
+\begin{KR}{Analyzing Cache Organization}
+\paragraph{Identify cache parameters}
+\begin{itemize}
+    \item Cache size: Total data storage capacity
+    \item Block/line size: Size of each cache line (typically 16-128 bytes)
+    \item Associativity: Number of ways (n=1 for direct mapped, n=cache size/block size for fully associative)
+    \item Number of sets: s = cache size / (block size × associativity)
+\end{itemize}
+
+\paragraph{Address decomposition}
+\begin{itemize}
+    \item Divide address into tag, index, and offset fields
+    \item Offset bits = log$_2$(block size)
+    \item Index bits = log$_2$(number of sets)
+    \item Tag bits = address bits - (offset bits + index bits)
+\end{itemize}
+
+\paragraph{Determine cache organization}
+\begin{itemize}
+    \item \textbf{Direct mapped cache:}
+    \begin{itemize}
+        \item One line per set (associativity = 1)
+        \item Number of sets = cache size / block size
+        \item Index field directly selects the cache line
+    \end{itemize}
+    \item \textbf{Fully associative cache:}
+    \begin{itemize}
+        \item One set with all lines (number of sets = 1)
+        \item No index field, only tag and offset
+        \item Requires comparison with all cache line tags
+    \end{itemize}
+    \item \textbf{N-way set associative cache:}
+    \begin{itemize}
+        \item N lines per set
+        \item Number of sets = cache size / (N × block size)
+        \item Index field selects the set, tag comparison within the set
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Map memory addresses to cache}
+\begin{itemize}
+    \item Calculate set number: (address / block size) mod (number of sets)
+    \item Calculate tag: address / (block size × number of sets)
+    \item Calculate offset: address mod block size
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Cache Organization Analysis}\\
+Consider a system with a 4 KiB direct-mapped cache with 16-byte cache lines. The system uses 32-bit byte addresses.
+
+\begin{enumerate}
+    \item How many cache lines are there?
+    \item How many bits are needed for the tag, index, and offset?
+    \item For memory address 0x1234ABCD, determine the tag, index, and offset.
+    \item Which other addresses would map to the same cache line?
+\end{enumerate}
+
+\tcblower
+
+1. \textbf{Number of cache lines:}
+   \begin{itemize}
+     \item Cache size = 4 KiB = 4096 bytes
+     \item Line size = 16 bytes
+     \item Number of lines = 4096 / 16 = 256 lines
+   \end{itemize}
+
+2. \textbf{Address bit fields:}
+   \begin{itemize}
+     \item Offset bits = log$_2$(16) = 4 bits (addresses byte within the line)
+     \item Index bits = log$_2$(256) = 8 bits (selects the cache line)
+     \item Tag bits = 32 - (4 + 8) = 20 bits (identifies which memory block is cached)
+   \end{itemize}
+
+3. \textbf{Address decomposition for 0x1234ABCD:}
+   \begin{itemize}
+     \item Convert to binary: 0001 0010 0011 0100 1010 1011 1100 1101
+     \item Offset: last 4 bits = 1101 = 0xD
+     \item Index: next 8 bits = 1011 1100 = 0xBC
+     \item Tag: remaining 20 bits = 0001 0010 0011 0100 1010 = 0x1234A
+   \end{itemize}
+
+4. \textbf{Other addresses mapping to the same cache line:}
+   \begin{itemize}
+     \item Addresses with the same index (0xBC) but different tags would map to the same line
+     \item General form: 0xXXXXXBCY where:
+     \begin{itemize}
+       \item XXXXX can be any value except 0x1234A (different tag)
+       \item BC is fixed (same index)
+       \item Y can be any value from 0 to F (different offset within the line)
+     \end{itemize}
+     \item Examples: 0x0034ABCD, 0x5678ABCF, 0x9ABCDBCE, etc.
+     \item These addresses would cause cache conflicts if accessed in sequence
+   \end{itemize}
+\end{example2}
 
 \begin{example2}{Cache Organization Calculation}\\
 For a 16KB cache with 64-byte lines, calculate address breakdown for:
@@ -227,7 +304,7 @@ Address format: [20-bit Tag | 6-bit Set Index | 6-bit Offset]
 
 \subsection{Cache Performance}
 
-\begin{definition}{Cache Miss Types}\\
+\begin{definition}{Cache Miss Types}
 Three fundamental types of cache misses:
 \begin{itemize}
     \item \textbf{Compulsory Misses} (Cold Misses):
@@ -252,9 +329,9 @@ Three fundamental types of cache misses:
 
 \begin{formula}{Cache Performance}\\
 Average memory access time (AMAT) can be calculated as:
-\begin{align}
+$$
 AMAT = \text{Hit Time} + \text{Miss Rate} \times \text{Miss Penalty}
-\end{align}
+$$
 
 Example:
 \begin{itemize}
@@ -262,14 +339,14 @@ Example:
     \item Miss Penalty = 100 cycles
     \item Miss Rate = 3\% (0.03)
 \end{itemize}
-\begin{align}
+$$
 AMAT = 1 + 0.03 \times 100 = 1 + 3 = 4 \text{ cycles}
-\end{align}
+$$
 
 Reducing miss rate from 3\% to 1\% changes AMAT to:
-\begin{align}
+$$
 AMAT = 1 + 0.01 \times 100 = 1 + 1 = 2 \text{ cycles}
-\end{align}
+$$
 This is a 50\% performance improvement!
 \end{formula}
 
@@ -295,7 +372,93 @@ Relationship between cache parameters and hit rate:
 \end{itemize}
 \end{concept}
 
+\subsection{Cache Performance Analysis}
+
+\begin{KR}{Analyzing Cache Hit Rates and Performance}
+\paragraph{Calculate basic cache metrics}
+\begin{itemize}
+    \item Hit rate = Number of hits / Total number of accesses
+    \item Miss rate = 1 - Hit rate
+    \item Average memory access time (AMAT) = Hit time + (Miss rate × Miss penalty)
+\end{itemize}
+
+\paragraph{Identify types of cache misses}
+\begin{itemize}
+    \item \textbf{Compulsory misses:} First access to a block (cold start)
+    \item \textbf{Capacity misses:} Cache is full, blocks need to be evicted
+    \item \textbf{Conflict misses:} In direct-mapped or set-associative caches when multiple blocks map to same set
+\end{itemize}
+
+\paragraph{Analyze memory access patterns}
+\begin{itemize}
+    \item Spatial locality: Sequential or nearby accesses
+    \item Temporal locality: Repeated accesses to same location
+    \item Stride patterns: Regular jumps between memory locations
+\end{itemize}
+
+\paragraph{Evaluate impact of cache parameters}
+\begin{itemize}
+    \item Effect of cache size: Larger cache reduces capacity misses
+    \item Effect of block size: Larger blocks improve spatial locality, but may increase miss penalty
+    \item Effect of associativity: Higher associativity reduces conflict misses
+    \item Effect of replacement policy: LRU, FIFO, Random - impact on hit rate
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Cache Performance Calculation}\\
+Consider a system with the following cache parameters:
+\begin{itemize}
+    \item Cache access time: 1 processor cycle
+    \item Main memory access time: 100 processor cycles
+    \item Miss rate for cache configuration A: 3\%
+    \item Miss rate for cache configuration B: 1\%
+\end{itemize}
+
+\begin{enumerate}
+    \item Calculate the average memory access time (AMAT) for both configurations
+    \item If configuration B has twice the associativity of A, explain why the miss rate improved
+    \item If the program executes 1 million memory accesses, how many cycles are saved by using configuration B instead of A?
+\end{enumerate}
+
+\tcblower
+
+1. \textbf{Calculate AMAT for both configurations:}
+   \begin{itemize}
+     \item AMAT = Hit time + (Miss rate × Miss penalty)
+     \item For configuration A:
+     \begin{itemize}
+       \item AMAT$_A$ = 1 cycle + (0.03 × 100 cycles) = 1 + 3 = 4 cycles
+     \end{itemize}
+     \item For configuration B:
+     \begin{itemize}
+       \item AMAT$_B$ = 1 cycle + (0.01 × 100 cycles) = 1 + 1 = 2 cycles
+     \end{itemize}
+   \end{itemize}
+
+2. \textbf{Effect of increased associativity:}
+   \begin{itemize}
+     \item Higher associativity reduces conflict misses
+     \item In configuration A (lower associativity), more memory blocks map to the same cache set
+     \item With configuration B (doubled associativity), each set can hold twice as many blocks
+     \item This reduces the chance of having to evict a useful block due to set conflicts
+     \item The improved miss rate (from 3\% to 1\%) is primarily due to the reduction in conflict misses
+     \item Note that capacity misses and compulsory misses would remain the same
+   \end{itemize}
+
+3. \textbf{Cycles saved:}
+   \begin{itemize}
+     \item Total accesses = 1,000,000
+     \item Cycles for configuration A = 1,000,000 × 4 = 4,000,000 cycles
+     \item Cycles for configuration B = 1,000,000 × 2 = 2,000,000 cycles
+     \item Cycles saved = 4,000,000 - 2,000,000 = 2,000,000 cycles
+   \end{itemize}
+
+Therefore, using configuration B saves 2 million processor cycles for the program, cutting the memory access time in half.
+\end{example2}
+
 \subsection{Replacement and Write Strategies}
+
+\mult{2}
 
 \begin{definition}{Replacement Strategies}\\
 When a new block must be loaded into a full cache set, a replacement strategy determines which existing block to evict:
@@ -359,34 +522,9 @@ For write misses, two approaches:
 \end{itemize}
 \end{definition}
 
+\multend
+
 \subsection{Programmer's Perspective}
-
-\begin{KR}{Cache-Friendly Programming}
-\paragraph{Maximize spatial locality}
-Access memory in sequential patterns whenever possible.
-\paragraph{Maximize temporal locality}
-Reuse recently accessed data before it gets evicted from cache.
-\paragraph{Be aware of cache line size}
-Structure data to minimize cache line crossings.
-\paragraph{Consider memory layout}
-Organize multidimensional arrays to match access patterns.
-
-\begin{lstlisting}[language=C, style=basesmol]
-// Cache-unfriendly code (column-major traversal of row-major array)
-for (j = 0; j < N; j++) {
-    for (i = 0; i < N; i++) {
-        sum += array[i][j];  // Poor spatial locality
-    }
-}
-
-// Cache-friendly code (row-major traversal of row-major array)
-for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++) {
-        sum += array[i][j];  // Good spatial locality
-    }
-}
-\end{lstlisting}
-\end{KR}
 
 \begin{concept}{Cache Performance Optimization}\\
 General guidelines for cache-friendly programming:
@@ -400,235 +538,8 @@ General guidelines for cache-friendly programming:
 \end{itemize}
 \end{concept}
 
-\begin{example2}{Optimizing Matrix Multiplication for Cache}\\
-Optimize a simple matrix multiplication algorithm to be cache-friendly.
-\tcblower
-Standard matrix multiplication:
-\begin{lstlisting}[language=C, style=basesmol]
-// Standard implementation - cache unfriendly
-for (i = 0; i < N; i++) {
-    for (j = 0; j < N; j++) {
-        sum = 0;
-        for (k = 0; k < N; k++) {
-            sum += A[i][k] * B[k][j];  // Poor locality for B
-        }
-        C[i][j] = sum;
-    }
-}
-\end{lstlisting}
 
-Cache-optimized version using blocking:
-\begin{lstlisting}[language=C, style=basesmol]
-// Blocked implementation - cache friendly
-for (i = 0; i < N; i += BLOCK_SIZE) {
-    for (j = 0; j < N; j += BLOCK_SIZE) {
-        for (k = 0; k < N; k += BLOCK_SIZE) {
-            // Block multiplication
-            for (ii = i; ii < min(i+BLOCK_SIZE, N); ii++) {
-                for (jj = j; jj < min(j+BLOCK_SIZE, N); jj++) {
-                    sum = C[ii][jj];
-                    for (kk = k; kk < min(k+BLOCK_SIZE, N); kk++) {
-                        sum += A[ii][kk] * B[kk][jj];
-                    }
-                    C[ii][jj] = sum;
-                }
-            }
-        }
-    }
-}
-\end{lstlisting}
-
-The blocked implementation works on small submatrices that fit in cache, improving temporal locality.
-\end{example2}
-
-\section{Cache Exercises}
-
-\subsection{Cache Organization and Addressing}
-
-\begin{KR}{Analyzing Cache Organization}
-\paragraph{Identify cache parameters}
-\begin{itemize}
-    \item Cache size: Total data storage capacity
-    \item Block/line size: Size of each cache line (typically 16-128 bytes)
-    \item Associativity: Number of ways (n=1 for direct mapped, n=cache size/block size for fully associative)
-    \item Number of sets: s = cache size / (block size × associativity)
-\end{itemize}
-
-\paragraph{Address decomposition}
-\begin{itemize}
-    \item Divide address into tag, index, and offset fields
-    \item Offset bits = log$_2$(block size)
-    \item Index bits = log$_2$(number of sets)
-    \item Tag bits = address bits - (offset bits + index bits)
-\end{itemize}
-
-\paragraph{Determine cache organization}
-\begin{itemize}
-    \item \textbf{Direct mapped cache:}
-    \begin{itemize}
-        \item One line per set (associativity = 1)
-        \item Number of sets = cache size / block size
-        \item Index field directly selects the cache line
-    \end{itemize}
-    \item \textbf{Fully associative cache:}
-    \begin{itemize}
-        \item One set with all lines (number of sets = 1)
-        \item No index field, only tag and offset
-        \item Requires comparison with all cache line tags
-    \end{itemize}
-    \item \textbf{N-way set associative cache:}
-    \begin{itemize}
-        \item N lines per set
-        \item Number of sets = cache size / (N × block size)
-        \item Index field selects the set, tag comparison within the set
-    \end{itemize}
-\end{itemize}
-
-\paragraph{Map memory addresses to cache}
-\begin{itemize}
-    \item Calculate set number: (address / block size) mod (number of sets)
-    \item Calculate tag: address / (block size × number of sets)
-    \item Calculate offset: address mod block size
-\end{itemize}
-\end{KR}
-
-\begin{example2}{Cache Organization Analysis}\\
-Consider a system with a 4 KiB direct-mapped cache with 16-byte cache lines. The system uses 32-bit byte addresses.
-
-\begin{enumerate}
-    \item How many cache lines are there?
-    \item How many bits are needed for the tag, index, and offset?
-    \item For memory address 0x1234ABCD, determine the tag, index, and offset.
-    \item Which other addresses would map to the same cache line?
-\end{enumerate}
-
-\tcblower
-\paragraph{Solution:}
-
-1. \textbf{Number of cache lines:}
-   \begin{itemize}
-     \item Cache size = 4 KiB = 4096 bytes
-     \item Line size = 16 bytes
-     \item Number of lines = 4096 / 16 = 256 lines
-   \end{itemize}
-
-2. \textbf{Address bit fields:}
-   \begin{itemize}
-     \item Offset bits = log$_2$(16) = 4 bits (addresses byte within the line)
-     \item Index bits = log$_2$(256) = 8 bits (selects the cache line)
-     \item Tag bits = 32 - (4 + 8) = 20 bits (identifies which memory block is cached)
-   \end{itemize}
-
-3. \textbf{Address decomposition for 0x1234ABCD:}
-   \begin{itemize}
-     \item Convert to binary: 0001 0010 0011 0100 1010 1011 1100 1101
-     \item Offset: last 4 bits = 1101 = 0xD
-     \item Index: next 8 bits = 1011 1100 = 0xBC
-     \item Tag: remaining 20 bits = 0001 0010 0011 0100 1010 = 0x1234A
-   \end{itemize}
-
-4. \textbf{Other addresses mapping to the same cache line:}
-   \begin{itemize}
-     \item Addresses with the same index (0xBC) but different tags would map to the same line
-     \item General form: 0xXXXXXBCY where:
-     \begin{itemize}
-       \item XXXXX can be any value except 0x1234A (different tag)
-       \item BC is fixed (same index)
-       \item Y can be any value from 0 to F (different offset within the line)
-     \end{itemize}
-     \item Examples: 0x0034ABCD, 0x5678ABCF, 0x9ABCDBCE, etc.
-     \item These addresses would cause cache conflicts if accessed in sequence
-   \end{itemize}
-\end{example2}
-
-\subsection{Cache Performance Analysis}
-
-\begin{KR}{Analyzing Cache Hit Rates and Performance}
-\paragraph{Calculate basic cache metrics}
-\begin{itemize}
-    \item Hit rate = Number of hits / Total number of accesses
-    \item Miss rate = 1 - Hit rate
-    \item Average memory access time (AMAT) = Hit time + (Miss rate × Miss penalty)
-\end{itemize}
-
-\paragraph{Identify types of cache misses}
-\begin{itemize}
-    \item \textbf{Compulsory misses:} First access to a block (cold start)
-    \item \textbf{Capacity misses:} Cache is full, blocks need to be evicted
-    \item \textbf{Conflict misses:} In direct-mapped or set-associative caches when multiple blocks map to same set
-\end{itemize}
-
-\paragraph{Analyze memory access patterns}
-\begin{itemize}
-    \item Spatial locality: Sequential or nearby accesses
-    \item Temporal locality: Repeated accesses to same location
-    \item Stride patterns: Regular jumps between memory locations
-\end{itemize}
-
-\paragraph{Evaluate impact of cache parameters}
-\begin{itemize}
-    \item Effect of cache size: Larger cache reduces capacity misses
-    \item Effect of block size: Larger blocks improve spatial locality, but may increase miss penalty
-    \item Effect of associativity: Higher associativity reduces conflict misses
-    \item Effect of replacement policy: LRU, FIFO, Random - impact on hit rate
-\end{itemize}
-\end{KR}
-
-\begin{example2}{Cache Performance Calculation}\\
-Consider a system with the following cache parameters:
-\begin{itemize}
-    \item Cache access time: 1 processor cycle
-    \item Main memory access time: 100 processor cycles
-    \item Miss rate for cache configuration A: 3\%
-    \item Miss rate for cache configuration B: 1\%
-\end{itemize}
-
-\begin{enumerate}
-    \item Calculate the average memory access time (AMAT) for both configurations
-    \item If configuration B has twice the associativity of A, explain why the miss rate improved
-    \item If the program executes 1 million memory accesses, how many cycles are saved by using configuration B instead of A?
-\end{enumerate}
-
-\tcblower
-\paragraph{Solution:}
-
-1. \textbf{Calculate AMAT for both configurations:}
-   \begin{itemize}
-     \item AMAT = Hit time + (Miss rate × Miss penalty)
-     \item For configuration A:
-     \begin{itemize}
-       \item AMAT$_A$ = 1 cycle + (0.03 × 100 cycles) = 1 + 3 = 4 cycles
-     \end{itemize}
-     \item For configuration B:
-     \begin{itemize}
-       \item AMAT$_B$ = 1 cycle + (0.01 × 100 cycles) = 1 + 1 = 2 cycles
-     \end{itemize}
-   \end{itemize}
-
-2. \textbf{Effect of increased associativity:}
-   \begin{itemize}
-     \item Higher associativity reduces conflict misses
-     \item In configuration A (lower associativity), more memory blocks map to the same cache set
-     \item With configuration B (doubled associativity), each set can hold twice as many blocks
-     \item This reduces the chance of having to evict a useful block due to set conflicts
-     \item The improved miss rate (from 3\% to 1\%) is primarily due to the reduction in conflict misses
-     \item Note that capacity misses and compulsory misses would remain the same
-   \end{itemize}
-
-3. \textbf{Cycles saved:}
-   \begin{itemize}
-     \item Total accesses = 1,000,000
-     \item Cycles for configuration A = 1,000,000 × 4 = 4,000,000 cycles
-     \item Cycles for configuration B = 1,000,000 × 2 = 2,000,000 cycles
-     \item Cycles saved = 4,000,000 - 2,000,000 = 2,000,000 cycles
-   \end{itemize}
-
-Therefore, using configuration B saves 2 million processor cycles for the program, cutting the memory access time in half.
-\end{example2}
-
-\subsection{Cache Programming Considerations}
-
-\begin{KR}{Optimizing Code for Cache Performance}
+\begin{theorem}{Optimizing Code for Cache Performance}
 \paragraph{Analyze array access patterns}
 \begin{itemize}
     \item Understand memory layout in your language (e.g., row-major in C, column-major in Fortran)
@@ -656,9 +567,40 @@ Therefore, using configuration B saves 2 million processor cycles for the progra
     \item Pad arrays to avoid conflict misses in direct-mapped or set-associative caches
     \item Consider memory alignment to reduce conflicts
 \end{itemize}
+\end{theorem}
+
+\begin{KR}{Cache-Friendly Programming}
+
+\textbf{Maximize spatial locality}:
+Access memory in sequential patterns whenever possible.
+
+\textbf{Maximize temporal locality}:
+Reuse recently accessed data before it gets evicted from cache.
+
+\textbf{Be aware of cache line size}:
+Structure data to minimize cache line crossings.
+
+\textbf{Consider memory layout}:
+Organize multidimensional arrays to match access patterns.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Cache-unfriendly code (column-major traversal of row-major array)
+for (j = 0; j < N; j++) {
+    for (i = 0; i < N; i++) {
+        sum += array[i][j];  // Poor spatial locality
+    }
+}
+// Cache-friendly code (row-major traversal of row-major array)
+for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++) {
+        sum += array[i][j];  // Good spatial locality
+    }
+}
+\end{lstlisting}
 \end{KR}
 
-\begin{example2}{Cache-Friendly Programming Example}\\
+
+\begin{example}
 Consider a matrix multiplication function for 1000×1000 matrices. Two implementations are shown:
 
 \begin{lstlisting}[language=C, style=basesmol]
@@ -670,7 +612,6 @@ for(i = 0; i < 1000; i++) {
         }
     }
 }
-
 // Version B - Blocked/Tiled
 for(i = 0; i < 1000; i += 64) {
     for(j = 0; j < 1000; j += 64) {
@@ -690,7 +631,6 @@ for(i = 0; i < 1000; i += 64) {
 Explain which version would perform better and why from a cache perspective.
 
 \tcblower
-\paragraph{Solution:}
 
 Version B (the blocked/tiled implementation) will perform significantly better for the following cache-related reasons:
 
@@ -723,4 +663,4 @@ Version B (the blocked/tiled implementation) will perform significantly better f
    \end{itemize}
 
 This tiling technique is a classic cache optimization that can improve performance by orders of magnitude for matrix operations on large matrices.
-\end{example2}
+\end{example}

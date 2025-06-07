@@ -101,7 +101,95 @@ V_{in} = \frac{D_{out} \times V_{REF}}{2^N}
 \end{align}
 \end{formula}
 
-\subsection{STM32F4 ADC Features}
+\begin{KR}{Analyzing ADC Errors}
+\paragraph{Understand error types}
+\begin{itemize}
+    \item \textbf{Quantization error:} Inherent error between -0.5 LSB and +0.5 LSB
+    \item \textbf{Offset error:} Deviation from ideal transfer function at zero input
+    \item \textbf{Gain error:} Deviation of the slope from ideal transfer function
+    \item \textbf{Full-scale error:} Combination of offset and gain error at maximum input
+\end{itemize}
+
+\paragraph{Determine ADC resolution}
+\begin{itemize}
+    \item Calculate LSB size: LSB = V$_{REF}$ / 2$^N$ where N is the number of bits
+    \item FSR (Full Scale Range) = V$\_{REF}$ - 1 LSB
+\end{itemize}
+
+\paragraph{Draw ideal transfer function}
+\begin{itemize}
+    \item Plot digital output vs. analog input
+    \item Idealer ADC: erste Transition bei 0.5 LSB
+    \item Each subsequent transition at (i + 0.5) × LSB
+    \item For N-bit ADC: 2$^N$ - 1 total steps
+\end{itemize}
+
+\paragraph{Offset-Fehler}
+    \begin{itemize}
+        \item Definition: Abweichung bei Eingangsspannung = 0V
+        \item Messung: Zero-Scale-Spannung bis erste Transition
+        \item Berechnung: Offset\_Error = gemessene\_Transition - 0.5 LSB
+    \end{itemize}
+
+\paragraph{Calculate error values}
+\begin{itemize}
+    \item \textbf{Offset error in LSB:} Measure deviation at zero input
+    \item \textbf{Offset error in volts:} Multiply LSB by offset error in LSB
+    \item \textbf{Gain error in LSB:} Difference between actual and ideal slope
+    \item \textbf{Error as percentage of FSR (\%FSR):} (Error in volts / FSR in volts) × 100\%
+\end{itemize}
+
+\paragraph{Transfer-Funktion zeichnen}
+    \begin{enumerate}
+        \item Verschiebe ideale Funktion um Offset-Fehler (positiv = rechts, negativ = links)
+        \item Erste Transition: 0.5 LSB + Offset\_Error
+    \end{enumerate}
+\end{KR}
+
+\begin{example2}{3-Bit ADC mit Offset-Fehler}
+    Idealer 3-Bit ADC mit V\_REF = 2V, Offset-Fehler = -1.5 LSB
+    
+    \tcblower
+
+    \includegraphics[width=0.5\linewidth]{adc_offset_ex.png}
+
+    1. \textbf{Ideal transfer function:}
+    \begin{itemize}
+        \item N = 3 bits → 8 possible output codes (000 to 111)
+        \item LSB = 2V / $2^3$ = 2V / 8 = 0.25V
+        \item First transition: 0.5 × LSB = 0.125V
+        \item Code transitions at: 0.125V, 0.375V, 0.625V, 0.875V, 1.125V, 1.375V, 1.625V
+    \end{itemize}
+
+    2. \textbf{Actual transfer function with offset error:}
+    \begin{itemize}
+        \item Offset error = -1.5 LSB (entire transfer function shifts left)
+        \item Offset Error in volts: all transitions shift by -1.5 × 0.25V = -0.375V (Offset error $\times$ LSB)
+        \item New transitions at: -0.25V, 0V, 0.25V, 0.5V, 0.75V, 1V, 1.25V
+        \item Full Scale Range (FSR) = 2V - 0.25V = 1.75V
+        \item Offset-Fehler (\%FSR) = 0.375V $\times$ 100 / 1.75V = 21.43\%
+    \end{itemize}
+
+    
+    \textbf{3. Zusammenfassung:}
+    \begin{itemize}
+        \item Ideale erste Transition: 0.5 LSB = 0.125V
+        \item Reale erste Transition: 0.125V - 0.375V = -0.25V
+        \item Gesamte Kurve um 1.5 LSB nach links verschoben
+    \end{itemize}
+    
+    \textbf{Digitale Werte:}
+    Real-ADC erreicht digitalen Wert 001 bereits bei negativer Eingangsspannung, während ideal-ADC erst bei 0.125V den Wert 001 erreichen würde.
+\end{example2}
+
+\begin{example2}{ADC Positive Offset Error} In case of a positive offset error of +1.5 LSB, the graph will look like this:\\
+\includegraphics[width=0.6\linewidth]{adc_positive_offset.png}
+\end{example2}
+
+
+\subsection{ADC on STM32F4}
+
+\mult{2}
 
 \begin{concept}{STM32F4 ADC Architecture}\\
 The STM32F4 includes ADC modules with the following features:
@@ -109,18 +197,86 @@ The STM32F4 includes ADC modules with the following features:
     \item Three ADCs (ADC1, ADC2, ADC3)
     \item 12-bit resolution (configurable to 10, 8, or 6 bits)
     \item Up to 24 external channels (16 on each ADC)
-    \item Internal channels (temperature sensor, V$_{REFINT}$, V$_{BAT}$)
-    \item Multiple operating modes:
+    \item Internal channels: \\ temperature sensor, V$_{REFINT}$, V$_{BAT}$
+\end{itemize}
+ Multiple operating modes:
     \begin{itemize}
         \item Single conversion vs. continuous conversion
         \item Single channel vs. scan mode (multiple channels)
     \end{itemize}
+Sampling and conversion features:
+\begin{itemize}
     \item Maximum sampling rate up to 2.4 MSPS (million samples per second)
-    \item DMA capability
-    \item Configurable sampling time
+    \item DMA capability and configurable sampling time
     \item Analog watchdog for threshold monitoring
 \end{itemize}
 \end{concept}
+
+
+
+\begin{definition}{ADC Registers}\\
+Key ADC registers on STM32F4:
+\begin{itemize}
+    \item \textbf{ADC\_SR}: Status register (flags for EOC, overrun, etc.)
+    \item \textbf{ADC\_CR1}: Control register 1 (scan mode, resolution, etc.)
+    \item \textbf{ADC\_CR2}: Control register 2 (conversion start, data alignment, etc.)
+    \item \textbf{ADC\_SMPRx}: Sample time registers
+    \item \textbf{ADC\_SQRx}: Regular sequence registers
+    \item \textbf{ADC\_DR}: Data register (conversion result)
+    \item \textbf{ADC\_CCR}: Common control register (for all ADCs)
+\end{itemize}
+\important{SEP Handout Beilage ADC: addresses and configurations for ADC registers, Data Alignment}
+\end{definition}
+
+\multend
+
+\begin{KR}{Basic ADC Configuration}
+\paragraph{Step 1: Enable GPIO and ADC clocks}
+Enable the clock to the GPIO port and ADC.
+\paragraph{Step 2: Configure GPIO pins}
+Configure the GPIO pins as analog inputs.
+\paragraph{Step 3: Configure ADC parameters}
+Set resolution, scan mode, conversion mode, and alignment.
+\paragraph{Step 4: Configure channel and sampling time}
+Set the channel sequence and sampling time.
+\paragraph{Step 5: Enable ADC}
+Turn on the ADC.
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure ADC1 Channel 0 (PA0) for single conversion
+
+// Step 1: Enable GPIO and ADC clocks
+RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;  // Enable GPIOA clock
+RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;   // Enable ADC1 clock
+// Step 2: Configure PA0 as analog input
+GPIOA->MODER |= GPIO_MODER_MODER0;  // Analog mode (0b11)
+// Step 3: Configure ADC parameters
+// ADC Common Control Register
+ADC->CCR &= ~ADC_CCR_ADCPRE;  // ADCPRE = 0 (APB2/2, typically 42MHz/2 = 21MHz)
+
+// ADC1 Control Register 1
+ADC1->CR1 &= ~ADC_CR1_RES;    // 12-bit resolution (default)
+ADC1->CR1 &= ~ADC_CR1_SCAN;   // Disable scan mode (single channel)
+// ADC1 Control Register 2
+ADC1->CR2 &= ~ADC_CR2_CONT;   // Single conversion mode
+ADC1->CR2 &= ~ADC_CR2_ALIGN;  // Right alignment
+ADC1->CR2 &= ~ADC_CR2_EXTEN;  // Software trigger
+
+// Step 4: Configure channel and sampling time
+// Configure for channel 0
+ADC1->SQR1 &= ~ADC_SQR1_L;     // 1 conversion in regular sequence
+ADC1->SQR3 &= ~ADC_SQR3_SQ1;   // Clear channel selection
+ADC1->SQR3 |= (0 << ADC_SQR3_SQ1_Pos);  // Channel 0 as first conversion
+// Set sampling time for channel 0 (e.g., 84 cycles)
+ADC1->SMPR2 &= ~ADC_SMPR2_SMP0;  // Clear bits
+ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP0_Pos);  // 84 cycles
+
+// Step 5: Enable ADC
+ADC1->CR2 |= ADC_CR2_ADON;  // Turn on ADC
+\end{lstlisting}
+\end{KR}
+
+\subsubsection{ADC Modes and Conversion}
 
 \begin{definition}{ADC Conversion Modes}\\
 \textbf{Single vs. Continuous Conversion}:
@@ -142,69 +298,19 @@ This results in four possible combinations:
 \end{itemize}
 \end{definition}
 
-\subsection{STM32F4 ADC Configuration}
 
-\begin{definition}{ADC Registers}\\
-Key ADC registers on STM32F4:
-\begin{itemize}
-    \item \textbf{ADC\_SR}: Status register (flags for EOC, overrun, etc.)
-    \item \textbf{ADC\_CR1}: Control register 1 (scan mode, resolution, etc.)
-    \item \textbf{ADC\_CR2}: Control register 2 (conversion start, data alignment, etc.)
-    \item \textbf{ADC\_SMPRx}: Sample time registers
-    \item \textbf{ADC\_SQRx}: Regular sequence registers
-    \item \textbf{ADC\_DR}: Data register (conversion result)
-    \item \textbf{ADC\_CCR}: Common control register (for all ADCs)
-\end{itemize}
-\end{definition}
 
-\begin{KR}{Basic ADC Configuration}
-\paragraph{Step 1: Enable GPIO and ADC clocks}
-Enable the clock to the GPIO port and ADC.
-\paragraph{Step 2: Configure GPIO pins}
-Configure the GPIO pins as analog inputs.
-\paragraph{Step 3: Configure ADC parameters}
-Set resolution, scan mode, conversion mode, and alignment.
-\paragraph{Step 4: Configure channel and sampling time}
-Set the channel sequence and sampling time.
-\paragraph{Step 5: Enable ADC}
-Turn on the ADC.
+\begin{theorem}{Fast Conversion Mode}
+    It is possible to perform faster conversion by reducing the ADC resolution. The RES bits are used to select the number of bits available in the data register. The minimum conversion time for each resolution is then as follows:
 
-\begin{lstlisting}[language=C, style=basesmol]
-// Configure ADC1 Channel 0 (PA0) for single conversion
+- 12 bits: $3+12=15$ ADCCLK cycles\\
+- 10 bits: $3+10=13$ ADCCLK cycles\\
+- 8 bits: $3+8=11$ ADCCLK cycles\\
+- 6 bits: $3+6=9$ ADCCLK cycles
+\end{theorem}
 
-// Step 1: Enable GPIO and ADC clocks
-RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;  // Enable GPIOA clock
-RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;   // Enable ADC1 clock
-
-// Step 2: Configure PA0 as analog input
-GPIOA->MODER |= GPIO_MODER_MODER0;  // Analog mode (0b11)
-
-// Step 3: Configure ADC parameters
-// ADC Common Control Register
-ADC->CCR &= ~ADC_CCR_ADCPRE;  // ADCPRE = 0 (APB2/2, typically 42MHz/2 = 21MHz)
-
-// ADC1 Control Register 1
-ADC1->CR1 &= ~ADC_CR1_RES;    // 12-bit resolution (default)
-ADC1->CR1 &= ~ADC_CR1_SCAN;   // Disable scan mode (single channel)
-
-// ADC1 Control Register 2
-ADC1->CR2 &= ~ADC_CR2_CONT;   // Single conversion mode
-ADC1->CR2 &= ~ADC_CR2_ALIGN;  // Right alignment
-ADC1->CR2 &= ~ADC_CR2_EXTEN;  // Software trigger
-
-// Step 4: Configure channel and sampling time
-// Configure for channel 0
-ADC1->SQR1 &= ~ADC_SQR1_L;     // 1 conversion in regular sequence
-ADC1->SQR3 &= ~ADC_SQR3_SQ1;   // Clear channel selection
-ADC1->SQR3 |= (0 << ADC_SQR3_SQ1_Pos);  // Channel 0 as first conversion
-
-// Set sampling time for channel 0 (e.g., 84 cycles)
-ADC1->SMPR2 &= ~ADC_SMPR2_SMP0;  // Clear bits
-ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP0_Pos);  // 84 cycles
-
-// Step 5: Enable ADC
-ADC1->CR2 |= ADC_CR2_ADON;  // Turn on ADC
-\end{lstlisting}
+\begin{KR}{ADC Timing Diagramm}\\
+    \includegraphics[width=\linewidth]{adc_timing_diagram.png}
 \end{KR}
 
 \begin{KR}{Performing ADC Conversion}
@@ -269,6 +375,64 @@ ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP4_Pos);  // 84 cycles for CH4
 \end{lstlisting}
 \end{KR}
 
+
+
+\begin{example2}{ADC Configuration Exercise}\\
+Configure ADC1 to measure an analog voltage on pin PA5, with 12-bit resolution. Convert the result to a voltage between 0-3.3V.
+\tcblower
+1. Configure PA5 as an analog input
+2. Configure ADC1 for 12-bit resolution, single conversion, single channel
+3. Set appropriate sampling time
+4. Perform conversion and convert result to voltage
+
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure PA5 as analog input
+RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;  // Enable GPIOA clock
+RCC->APB2ENR |= RCC_PB2ENR_ADC1EN;   // Enable ADC1 clock
+GPIOA->MODER |= GPIO_MODER_MODER5;    // Set PA5 to analog mode (0b11)
+
+// Configure ADC1
+ADC1->CR1 &= ~ADC_CR1_RES;     // 12-bit resolution (default)
+ADC1->CR2 &= ~ADC_CR2_CONT;    // Single conversion mode
+ADC1->CR2 &= ~ADC_CR2_ALIGN;   // Right alignment
+
+// Configure for channel 5 (PA5)
+ADC1->SQR1 &= ~ADC_SQR1_L;      // 1 conversion in sequence
+ADC1->SQR3 &= ~ADC_SQR3_SQ1;    // Clear channel selection
+ADC1->SQR3 |= (5 << ADC_SQR3_SQ1_Pos);  // Channel 5 as first conversion
+
+// Set sampling time (84 cycles)
+ADC1->SMPR2 &= ~ADC_SMPR2_SMP5;
+ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP5_Pos);
+
+// Enable ADC
+ADC1->CR2 |= ADC_CR2_ADON;
+
+// Function to read ADC and convert to voltage
+float ReadVoltage(void) {
+    // Start conversion
+    ADC1->CR2 |= ADC_CR2_SWSTART;
+    
+    // Wait for conversion to complete
+    while (!(ADC1->SR & ADC_SR_EOC)) { }
+    
+    // Read ADC value
+    uint16_t adcValue = ADC1->DR;
+    
+    // Convert to voltage (0-3.3V)
+    float voltage = (float)adcValue * 3.3f / 4095.0f;
+    
+    return voltage;
+}
+\end{lstlisting}
+\end{example2}
+
+
+
+
+
+\subsubsection{Analog Watchdogs}
+
 \begin{concept}{Analog Watchdog}\\
 The Analog Watchdog monitors ADC conversion results against programmable thresholds:
 \begin{itemize}
@@ -329,142 +493,59 @@ ADC1->CR2 |= ADC_CR2_SWSTART;
 \end{lstlisting}
 \end{KR}
 
-\begin{example2}{ADC Configuration Exercise}\\
-Configure ADC1 to measure an analog voltage on pin PA5, with 12-bit resolution. Convert the result to a voltage between 0-3.3V.
-\tcblower
-1. Configure PA5 as an analog input
-2. Configure ADC1 for 12-bit resolution, single conversion, single channel
-3. Set appropriate sampling time
-4. Perform conversion and convert result to voltage
+\begin{theorem}{ADC Interrupts}
+    An interrupt can be produced on the end of conversion for regular and injected groups, when the analog watchdog status bit is set and when the overrun status bit is set. Separate interrupt enable bits are available for flexibility.
+Two other flags are present in the ADC\_SR register, but there is no interrupt associated with them:\\
+- JSTRT (Start of conversion for channels of an injected group)\\
+- STRT (Start of conversion for channels of a regular group)
+\vspace{1mm}\\
+Table 70. ADC interrupts\\
+\begin{tabular}{|l|c|c|}
+\hline \multicolumn{1}{|c|}{ Interrupt event } & Event flag & Enable control bit \\
+\hline End of conversion of a regular group & EOC & EOCIE \\
+\hline End of conversion of an injected group & JEOC & JEOCIE \\
+\hline Analog watchdog status bit is set & AWD & AWDIE \\
+\hline Overrun & OVR & OVRIE \\
+\hline
+\end{tabular}
+\end{theorem}
 
-\begin{lstlisting}[language=C, style=basesmol]
-// Configure PA5 as analog input
-RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;  // Enable GPIOA clock
-RCC->APB2ENR |= RCC_PB2ENR_ADC1EN;   // Enable ADC1 clock
-GPIOA->MODER |= GPIO_MODER_MODER5;    // Set PA5 to analog mode (0b11)
+\subsection{ADC EVERYTHING TOGETHER}
 
-// Configure ADC1
-ADC1->CR1 &= ~ADC_CR1_RES;     // 12-bit resolution (default)
-ADC1->CR2 &= ~ADC_CR2_CONT;    // Single conversion mode
-ADC1->CR2 &= ~ADC_CR2_ALIGN;   // Right alignment
-
-// Configure for channel 5 (PA5)
-ADC1->SQR1 &= ~ADC_SQR1_L;      // 1 conversion in sequence
-ADC1->SQR3 &= ~ADC_SQR3_SQ1;    // Clear channel selection
-ADC1->SQR3 |= (5 << ADC_SQR3_SQ1_Pos);  // Channel 5 as first conversion
-
-// Set sampling time (84 cycles)
-ADC1->SMPR2 &= ~ADC_SMPR2_SMP5;
-ADC1->SMPR2 |= (4 << ADC_SMPR2_SMP5_Pos);
-
-// Enable ADC
-ADC1->CR2 |= ADC_CR2_ADON;
-
-// Function to read ADC and convert to voltage
-float ReadVoltage(void) {
-    // Start conversion
-    ADC1->CR2 |= ADC_CR2_SWSTART;
-    
-    // Wait for conversion to complete
-    while (!(ADC1->SR & ADC_SR_EOC)) { }
-    
-    // Read ADC value
-    uint16_t adcValue = ADC1->DR;
-    
-    // Convert to voltage (0-3.3V)
-    float voltage = (float)adcValue * 3.3f / 4095.0f;
-    
-    return voltage;
-}
-\end{lstlisting}
-\end{example2}
-
-\section{ADC/DAC Exercises}
-
-\important{SEP Handout Beilage ADC: addresses and configurations for ADC registers, Data Alignment}
-
-\subsection{ADC Error Analysis}
-
-\begin{KR}{Analyzing ADC Errors}
-\paragraph{Understand error types}
-\begin{itemize}
-    \item \textbf{Quantization error:} Inherent error between -0.5 LSB and +0.5 LSB
-    \item \textbf{Offset error:} Deviation from ideal transfer function at zero input
-    \item \textbf{Gain error:} Deviation of the slope from ideal transfer function
-    \item \textbf{Full-scale error:} Combination of offset and gain error at maximum input
-\end{itemize}
-
-\paragraph{Determine ADC resolution}
-\begin{itemize}
-    \item Calculate LSB size: LSB = V$_{REF}$ / 2$^N$ where N is the number of bits
-    \item Example: 3-bit ADC with V$_{REF}$ = 2V has LSB = 2V/8 = 0.25V
-\end{itemize}
-
-\paragraph{Draw ideal transfer function}
-\begin{itemize}
-    \item Plot digital output vs. analog input
-    \item First transition at 0.5 LSB
-    \item Each subsequent transition at (i + 0.5) × LSB
-    \item For N-bit ADC: 2$^N$ - 1 total steps
-\end{itemize}
-
-\paragraph{Calculate error values}
-\begin{itemize}
-    \item \textbf{Offset error in LSB:} Measure deviation at zero input
-    \item \textbf{Offset error in volts:} Multiply LSB by offset error in LSB
-    \item \textbf{Gain error in LSB:} Difference between actual and ideal slope
-    \item \textbf{Error as percentage of FSR (\%FSR):} (Error in volts / FSR) × 100\%
+\begin{KR}{ADC-Register programmieren}
+    \paragraph{Status-Register auswerten}
     \begin{itemize}
-        \item FSR (Full Scale Range) = V$_{REF}$ - 1 LSB
+        \item EOC (End of Conversion): Bit 1 in ADC\_SR
+        \item OVR (Overrun): Bit 5 in ADC\_SR
+        \item Warten auf Conversion: \texttt{while (!(ADC\_SR \& 0x02))}
+        \item Overrun prüfen: \texttt{if (ADC\_SR \& 0x20)}
     \end{itemize}
-\end{itemize}
+    
+    \paragraph{Auflösung konfigurieren}
+    \begin{itemize}
+        \item RES[1:0] in ADC\_CR1 Register (Bits 25:24)
+        \item 00: 12-bit, 01: 10-bit, 10: 8-bit, 11: 6-bit
+        \item Einzelne Bits setzen/löschen mit Bit-Masken
+    \end{itemize}
+    
+    \paragraph{Adressen berechnen}
+    \begin{itemize}
+        \item ADC1: 0x40012000 + Register\_Offset
+        \item ADC2: 0x40012100 + Register\_Offset  
+        \item ADC3: 0x40012200 + Register\_Offset
+        \item Siehe Reference Manual für genaue Offsets
+    \end{itemize}
+    
+    \paragraph{Bit-Manipulation}
+    \begin{itemize}
+        \item Bit setzen: \texttt{REG |= (1 << bit\_nr)}
+        \item Bit löschen: \texttt{REG \&= \~{}(1 << bit\_nr)}
+        \item Mehrere Bits: erst löschen, dann setzen
+    \end{itemize}
 \end{KR}
-
-\begin{example2}{ADC Error Analysis}\\
-For a 3-bit ADC with V$_{REF}$ = 2V and an offset error of -1.5 LSB:
-
-\begin{enumerate}
-    \item Draw the ideal transfer function
-    \item Draw the actual transfer function with the offset error
-    \item Calculate the LSB in volts
-    \item Calculate the offset error in volts
-    \item Calculate the offset error as a percentage of FSR
-\end{enumerate}
-
-\paragraph{Solution:}
-1. \textbf{Ideal transfer function:}
-\begin{itemize}
-    \item N = 3 bits → 8 possible output codes (000 to 111)
-    \item LSB = 2V/2$^3$ = 2V/8 = 0.25V
-    \item First transition: 0.5 × LSB = 0.125V
-    \item Code transitions at: 0.125V, 0.375V, 0.625V, 0.875V, 1.125V, 1.375V, 1.625V
-\end{itemize}
-
-2. \textbf{Actual transfer function with offset error:}
-\begin{itemize}
-    \item Offset error = -1.5 LSB
-    \item All transitions shift by -1.5 × 0.25V = -0.375V
-    \item New transitions at: -0.25V, 0V, 0.25V, 0.5V, 0.75V, 1V, 1.25V
-\end{itemize}
-
-3. \textbf{LSB in volts:}
-\begin{itemize}
-    \item LSB = V$_{REF}$/2$^N$ = 2V/8 = 0.25V
-\end{itemize}
-
-4. \textbf{Offset error in volts:}
-\begin{itemize}
-    \item Offset error = -1.5 LSB × 0.25V/LSB = -0.375V
-\end{itemize}
-
-5. \textbf{Offset error as percentage of FSR:}
-\begin{itemize}
-    \item FSR = V$_{REF}$ - 1 LSB = 2V - 0.25V = 1.75V
-    \item Offset error (\%FSR) = (-0.375V / 1.75V) × 100\% = -21.43\%
-\end{itemize}
-\end{example2}
-
-\subsection{ADC Programming}
+\begin{remark}
+    Bei ADC-Registern ist es wichtig, die korrekten Bit-Positionen zu verwenden. EOC ist Bit 1 (nicht Bit 0), OVR ist Bit 5. Die Auflösung wird durch zwei Bits (RES[1:0]) in Bits 25:24 des CR1-Registers gesteuert.
+\end{remark}
 
 \begin{KR}{Configuring and Using STM32 ADCs}
 \paragraph{Enable peripheral clocks}
@@ -516,7 +597,7 @@ For a 3-bit ADC with V$_{REF}$ = 2V and an offset error of -1.5 LSB:
 \end{itemize}
 \end{KR}
 
-\begin{example2}{ADC Configuration and Usage}\\
+\begin{example2}{ADC Configuration and Usage}
 Write C code to configure and use ADC1 to read from channel 5 with 12-bit resolution in single conversion mode. The code should:
 
 \begin{enumerate}
@@ -535,13 +616,10 @@ First, let's define the relevant register addresses:
 #define ADC1_CR1    (*((volatile uint32_t*)(0x40012004)))  // Control register 1
 #define ADC1_CR2    (*((volatile uint32_t*)(0x40012008)))  // Control register 2
 #define ADC1_DR     (*((volatile uint32_t*)(0x4001204C)))  // Data register
-
 // ADC2 registers
 #define ADC2_SR     (*((volatile uint32_t*)(0x40012100)))  // Status register
-
 // ADC3 registers
 #define ADC3_CR1    (*((volatile uint32_t*)(0x40012204)))  // Control register 1
-
 // Bit positions
 #define ADC_SR_EOC  (1 << 1)  // End of conversion flag
 #define ADC_SR_OVR  (1 << 5)  // Overrun flag
@@ -551,15 +629,15 @@ First, let's define the relevant register addresses:
 
 Now, let's solve each part of the problem:
 
-1. \textbf{Wait until ADC1 conversion has completed}
+1. \textbf{Wait until ADC1 conversion has completed} $\rightarrow$ wait for the EOC flag in ADC1\_SR (Bit 1)
 \begin{lstlisting}[language=C, style=basesmol]
 // Wait for end of conversion flag
 while (!(ADC1_SR & ADC_SR_EOC)) {
-    // Empty loop
+    // Empty loop, wait until EOC is set
 }
 \end{lstlisting}
 
-2. \textbf{Check for overrun on ADC2 and set var2 accordingly}
+2. \textbf{Check for overrun on ADC2 and set var2 accordingly} $\rightarrow$ check the OVR flag in ADC2\_SR (Bit 5)
 \begin{lstlisting}[language=C, style=basesmol]
 uint8_t var2;
 if (ADC2_SR & ADC_SR_OVR) {
@@ -569,214 +647,11 @@ if (ADC2_SR & ADC_SR_OVR) {
 }
 \end{lstlisting}
 
-3. \textbf{Set ADC3 resolution to 10-bit}
+3. \textbf{Set ADC3 resolution to 10-bit} $\rightarrow$ clear the RES bits in ADC3\_CR1 and set to 10-bit
 \begin{lstlisting}[language=C, style=basesmol]
-// Clear resolution bits and set to 10-bit
 ADC3_CR1 &= ~ADC_CR1_RES_MASK;  // Clear bits
 ADC3_CR1 |= ADC_CR1_RES_10BIT;  // Set 10-bit resolution
 \end{lstlisting}
 \end{example2}
 
-\begin{example2}{ADC Configuration and Usage (continued)}\\
-Complete function:
-\begin{lstlisting}[language=C, style=basesmol]
-void adc_operations(void) {
-    // 1. Wait until ADC1 conversion has completed
-    while (!(ADC1_SR & ADC_SR_EOC)) {
-        // Empty loop
-    }
-    
-    // 2. Check for overrun on ADC2
-    uint8_t var2;
-    if (ADC2_SR & ADC_SR_OVR) {
-        var2 = 0xFF;  // Overrun occurred
-    } else {
-        var2 = 0x00;  // No overrun
-    }
-    
-    // 3. Set ADC3 resolution to 10-bit
-    ADC3_CR1 &= ~ADC_CR1_RES_MASK;  // Clear bits
-    ADC3_CR1 |= ADC_CR1_RES_10BIT;  // Set 10-bit resolution
-}
-\end{lstlisting}
-\end{example2}
 
-\section{ADC (Analog-Digital Converter)}
-
-\subsection{ADC-Charakteristika und Fehler}
-
-\begin{KR}{ADC Timing Diagramm}\\
-    \includegraphics[width=\linewidth]{adc_timing_diagram.png}
-\end{KR}
-
-\begin{concept}{Fast Conversion Mode}\\
-    It is possible to perform faster conversion by reducing the ADC resolution. The RES bits are used to select the number of bits available in the data register. The minimum conversion time for each resolution is then as follows:
-- 12 bits: $3+12=15$ ADCCLK cycles
-- 10 bits: $3+10=13$ ADCCLK cycles
-- 8 bits: $3+8=11$ ADCCLK cycles
-- 6 bits: $3+6=9$ ADCCLK cycles
-\end{concept}
-
-\begin{KR}{ADC Interrupts}\\
-    An interrupt can be produced on the end of conversion for regular and injected groups, when the analog watchdog status bit is set and when the overrun status bit is set. Separate interrupt enable bits are available for flexibility.
-Two other flags are present in the ADC\_SR register, but there is no interrupt associated with them:
-- JSTRT (Start of conversion for channels of an injected group)
-- STRT (Start of conversion for channels of a regular group)
-
-Table 70. ADC interrupts
-\begin{tabular}{|l|c|c|}
-\hline \multicolumn{1}{|c|}{ Interrupt event } & Event flag & Enable control bit \\
-\hline End of conversion of a regular group & EOC & EOCIE \\
-\hline End of conversion of an injected group & JEOC & JEOCIE \\
-\hline Analog watchdog status bit is set & AWD & AWDIE \\
-\hline Overrun & OVR & OVRIE \\
-\hline
-\end{tabular}
-\end{KR}
-
-\important{SEP Handout Beilage ADC control register!!}
-
-\begin{KR}{ADC Transfer-Funktion und Offset-Fehler}\\
-    \paragraph{Grundlagen}
-    \begin{itemize}
-        \item LSB = V\_REF / $2^n$ (n = Anzahl Bits)
-        \item FSR (Full Scale Range) = V\_REF - 1 LSB
-        \item Idealer ADC: erste Transition bei 0.5 LSB
-    \end{itemize}
-    
-    \paragraph{Offset-Fehler}
-    \begin{itemize}
-        \item Definition: Abweichung bei Eingangsspannung = 0V
-        \item Messung: Zero-Scale-Spannung bis erste Transition
-        \item Berechnung: Offset\_Error = gemessene\_Transition - 0.5 LSB
-    \end{itemize}
-    
-    \paragraph{Fehler in Prozent FSR}
-    \begin{itemize}
-        \item Offset\_Error (\%FSR) = (Offset\_Error\_V $\times$ 100) / FSR\_V
-        \item FSR\_V = V\_REF - 1 LSB
-    \end{itemize}
-    
-    \paragraph{Transfer-Funktion zeichnen}
-    \begin{enumerate}
-        \item Zeichne ideale Treppenfunktion
-        \item Verschiebe um Offset-Fehler (positiv = rechts, negativ = links)
-        \item Erste Transition: 0.5 LSB + Offset\_Error
-    \end{enumerate}
-\end{KR}
-
-\begin{example2}{3-Bit ADC mit Offset-Fehler}\\
-    Idealer 3-Bit ADC mit V\_REF = 2V, Offset-Fehler = -1.5 LSB
-    
-    \tcblower
-
-    \includegraphics[width=\linewidth]{adc_offset_ex.png}
-    
-    \textbf{Berechnungen:}
-    \begin{itemize}
-        \item 1 LSB = 2V / $2^3$ = 2V / 8 = 0.25V
-        \item Offset-Fehler = -1.5 $\times$ 0.25V = -0.375V
-        \item FSR = 2V - 0.25V = 1.75V
-        \item Offset-Fehler (\%FSR) = 0.375V $\times$ 100 / 1.75V = 21.43\%
-    \end{itemize}
-    
-    \textbf{Transfer-Funktion:}
-    \begin{itemize}
-        \item Ideale erste Transition: 0.5 LSB = 0.125V
-        \item Reale erste Transition: 0.125V - 0.375V = -0.25V
-        \item Gesamte Kurve um 1.5 LSB nach links verschoben
-    \end{itemize}
-    
-    \textbf{Digitale Werte:}
-    Real-ADC erreicht digitalen Wert 001 bereits bei negativer Eingangsspannung, während ideal-ADC erst bei 0.125V den Wert 001 erreichen würde.
-\end{example2}
-
-\begin{example2}{ADC Positive Offset Error} In case of a positive offset error of +1.5 LSB, the graph will look like this:\\
-\includegraphics[width=\linewidth]{adc_positive_offset.png}
-\end{example2}
-
-\subsection{ADC-Programmierung STM32}
-
-\begin{KR}{ADC-Register programmieren}\\
-    \paragraph{Status-Register auswerten}
-    \begin{itemize}
-        \item EOC (End of Conversion): Bit 1 in ADC\_SR
-        \item OVR (Overrun): Bit 5 in ADC\_SR
-        \item Warten auf Conversion: \texttt{while (!(ADC\_SR \& 0x02))}
-        \item Overrun prüfen: \texttt{if (ADC\_SR \& 0x20)}
-    \end{itemize}
-    
-    \paragraph{Auflösung konfigurieren}
-    \begin{itemize}
-        \item RES[1:0] in ADC\_CR1 Register (Bits 25:24)
-        \item 00: 12-bit, 01: 10-bit, 10: 8-bit, 11: 6-bit
-        \item Einzelne Bits setzen/löschen mit Bit-Masken
-    \end{itemize}
-    
-    \paragraph{Adressen berechnen}
-    \begin{itemize}
-        \item ADC1: 0x40012000 + Register\_Offset
-        \item ADC2: 0x40012100 + Register\_Offset  
-        \item ADC3: 0x40012200 + Register\_Offset
-        \item Siehe Reference Manual für genaue Offsets
-    \end{itemize}
-    
-    \paragraph{Bit-Manipulation}
-    \begin{itemize}
-        \item Bit setzen: \texttt{REG |= (1 << bit\_nr)}
-        \item Bit löschen: \texttt{REG \&= \~{}(1 << bit\_nr)}
-        \item Mehrere Bits: erst löschen, dann setzen
-    \end{itemize}
-\end{KR}
-
-\begin{example2}{ADC-Programmierung Aufgaben}\\
-    ADCs sind korrekt initialisiert. Schreibe C-Code für:
-    \begin{enumerate}
-        \item Warten bis ADC1 Conversion fertig
-        \item Variable auf 0xFF setzen bei ADC2 Datenverlust
-        \item ADC3 Auflösung auf 10-bit setzen
-    \end{enumerate}
-    
-    \tcblower
-    
-    \textbf{Lösungen:}
-    
-    \textbf{a) Warten auf ADC1 EOC (Bit 1):}
-\begin{lstlisting}[style=basesmol]
-#define ADC1_SR (*((volatile uint32_t *)(0x40012000)))
-while (!(ADC1_SR & 0x02)) {
-    // Warten bis EOC gesetzt
-}
-\end{lstlisting}
-Addresse des ADC1 Status-Registers ist 0x40012000 + base offset of ADC1 + status reg offset = 0x40012000
-\vspace{2mm}\\
-
-    \textbf{b) ADC2 Overrun prüfen (Bit 5):}
-\begin{lstlisting}[style=basesmol]
-#define ADC2_SR (*((volatile uint32_t *)(0x40012100)))
-uint8_t var2;
-if (ADC2_SR & 0x20) {
-    var2 = 0xFF;  // Overrun aufgetreten
-} else {
-    var2 = 0x00;  // Kein Overrun
-}
-\end{lstlisting}
-Addresse des ADC2 Status-Registers ist 0x40012000 + base offset of ADC2 + status reg offset = 0x40012100
-\vspace{2mm}\\
-
-    \textbf{c) ADC3 auf 10-bit (RES[25:24] = 01):}
-\begin{lstlisting}[style=basesmol]
-#define ADC3_CR1 (*((volatile uint32_t *)(0x40012204)))
-ADC3_CR1 &= 0xFCFFFFFF;  // Bits 25:24 loeschen
-ADC3_CR1 |= 0x01000000;  // Bit 24 setzen (01)
-
-// kann auch so geschrieben werden:
-ADC3_CR1 |= 0x01000000;  // force bit24 to 1
-ADC3_CR1 &= 0xFDFFFFFF;  // force bit25 to 0
-\end{lstlisting}
-Addresse des ADC3 Status-Registers ist 0x40012000 + base offset of ADC3 + control reg1 offset = 0x40012204
-\end{example2}
-
-\begin{remark}
-    Bei ADC-Registern ist es wichtig, die korrekten Bit-Positionen zu verwenden. EOC ist Bit 1 (nicht Bit 0), OVR ist Bit 5. Die Auflösung wird durch zwei Bits (RES[1:0]) in Bits 25:24 des CR1-Registers gesteuert.
-\end{remark}

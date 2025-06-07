@@ -89,6 +89,29 @@ Memory devices are organized as arrays of bit cells:
 \end{itemize}
 \end{definition}
 
+\begin{example}
+    \textbf{NOR Flash - Anwendungen:}
+    \begin{itemize}
+        \item Mikrocontroller-Firmware (direkte Ausführung)
+        \item BIOS/UEFI Code
+        \item Embedded Systems mit wenig RAM
+    \end{itemize}
+    
+    \textbf{NAND Flash - Anwendungen:}
+    \begin{itemize}
+        \item Solid State Drives (SSDs)
+        \item SD-Karten, USB-Sticks
+        \item Smartphones (App-Speicher)
+    \end{itemize}
+    
+    \textbf{Wichtiger Unterschied:}
+    NOR ermöglicht wahlfreie Zugriffe wie RAM, während NAND blockweise gelesen werden muss und eine spezielle Controller-Logik benötigt.
+\end{example}
+
+\begin{remark}
+    Bei der Speicher-Auswahl ist das Anwendungsprofil entscheidend: NOR Flash für direkten Code-Zugriff, NAND Flash für große Datenmengen, SRAM für schnelle Zwischenspeicherung, DRAM für große Arbeitsspeicher mit hoher Dichte.
+\end{remark}
+
 \multend
 
 \subsection{SRAM (Static RAM)}
@@ -176,7 +199,7 @@ Key aspects of SDRAM operation:
 
 \multend
 
-\begin{concept}{SRAM vs. SDRAM Comparison}
+\begin{theorem}{SRAM vs. SDRAM Comparison}
 \begin{center}
 \begin{tabular}{|p{3cm}|p{4cm}|p{4cm}|}
 \hline
@@ -200,159 +223,12 @@ Applications & Cache, high-speed buffer & Main memory \\
 \hline
 \end{tabular}
 \end{center}
-\end{concept}
+\end{theorem}
 
-\subsection{STM32F4 On-Chip Memory}
-
-\begin{concept}{STM32F4 Memory Architecture}\\
-The STM32F429ZI microcontroller includes:
-\begin{itemize}
-    \item \textbf{Flash Memory}: 2 MB (program storage)
-    \begin{itemize}
-        \item NOR flash with execute-in-place capability
-        \item Divided into sectors of varying sizes (16KB to 128KB)
-        \item Organized in two banks for read-while-write operations
-    \end{itemize}
-    \item \textbf{SRAM}: 256 KB total
-    \begin{itemize}
-        \item SRAM1: 112 KB
-        \item SRAM2: 16 KB
-        \item SRAM3: 64 KB
-        \item CCM (Core Coupled Memory): 64 KB (accessible only by CPU)
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{definition}{STM32F4 Flash Characteristics}
-\begin{itemize}
-    \item \textbf{Write Operations}: Can only change bits from '1' to '0'
-    \item \textbf{Erase Operations}: Resets all bits in a sector to '1'
-    \item \textbf{Programming Time}: Around 16µs per double word
-    \item \textbf{Erase Time}: 1-2 seconds for a 128KB sector
-    \item \textbf{Endurance}: 10,000 erase cycles
-    \item \textbf{Access Time}: Higher latency than SRAM (requires wait states)
-\end{itemize}
-\end{definition}
-
-\subsection{External Memory Interface}
-
-\begin{concept}{Flexible Memory Controller (FMC)}\\
-The STM32F4 Flexible Memory Controller (FMC) provides:
-\begin{itemize}
-    \item Interface between on-chip system bus and external memory devices
-    \item Support for different memory types:
-    \begin{itemize}
-        \item SRAM, NOR Flash, PSRAM
-        \item NAND Flash
-        \item SDRAM
-    \end{itemize}
-    \item Configurable bus width (8, 16, or 32 bits)
-    \item Programmable timing parameters
-    \item Memory banking with up to 6 banks
-\end{itemize}
-\end{concept}
-
-\begin{definition}{FMC Signals}\\
-Key FMC signals for external SRAM/NOR flash:
-\begin{itemize}
-    \item \textbf{A[25:0]}: Address bus
-    \item \textbf{D[31:0]}: Data bus (bidirectional)
-    \item \textbf{NE[4:1]}: Chip enable signals (active low)
-    \item \textbf{NOE}: Output enable (active low)
-    \item \textbf{NWE}: Write enable (active low)
-    \item \textbf{NBL[3:0]}: Byte lane enables (active low)
-\end{itemize}
-\end{definition}
-
-\begin{concept}{External Memory Access}\\
-Accessing external memory with different bus widths:
-\begin{itemize}
-    \item \textbf{32-bit CPU Access to 32-bit Memory}: 1 external bus cycle
-    \item \textbf{32-bit CPU Access to 16-bit Memory}: 2 external bus cycles
-    \item \textbf{32-bit CPU Access to 8-bit Memory}: 4 external bus cycles
-\end{itemize}
-\textbf{Write Operations}:
-\begin{itemize}
-    \item CPU write stored in FMC FIFO buffer
-    \item System bus released for other access
-    \item FMC completes external write(s)
-\end{itemize}
-\textbf{Read Operations}:
-\begin{itemize}
-    \item System bus must wait until all external reads complete
-    \item Multiple external cycles for narrow memory widths
-\end{itemize}
-\end{concept}
-
-\begin{KR}{Connecting Asynchronous SRAM to STM32F4}
-\paragraph{Step 1: Configure GPIO pins}
-Set the GPIO pins for FMC signals to alternate function mode.
-\paragraph{Step 2: Configure FMC timing}
-Set appropriate timing parameters (ADDSET, DATAST) based on memory datasheet.
-\paragraph{Step 3: Configure FMC bank}
-Set the memory type, data width, and other parameters.
-\paragraph{Step 4: Enable FMC}
-Enable the FMC peripheral.
-
-\begin{lstlisting}[language=C, style=basesmol]
-// Configure external SRAM (16-bit) on FMC bank 1
-
-// Step 1: Configure GPIO pins for FMC
-// Enable GPIO clocks
-RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN |
-                RCC_AHB1ENR_GPIOFEN | RCC_AHB1ENR_GPIOGEN;
-
-// Configure GPIO pins (example for some pins)
-// Set alternate function mode (0x2)
-GPIOD->MODER |= 0x55555555;  // All pins to alternate function
-GPIOE->MODER |= 0x55555555;
-// Set to AF12 (FMC)
-GPIOD->AFR[0] = 0xCCCCCCCC;
-GPIOD->AFR[1] = 0xCCCCCCCC;
-GPIOE->AFR[0] = 0xCCCCCCCC;
-GPIOE->AFR[1] = 0xCCCCCCCC;
-
-// Step 2: Enable FMC clock
-RCC->AHB3ENR |= RCC_AHB3ENR_FMCEN;
-
-// Step 3: Configure FMC bank 1 for SRAM
-// Set timing for SRAM (example values)
-FMC_Bank1->BTCR[0] = 
-    FMC_BCR1_MBKEN |    // Memory bank enable
-    FMC_BCR1_MTYP_0 |   // Memory type SRAM
-    FMC_BCR1_MWID_0 |   // 16-bit data bus
-    FMC_BCR1_WREN;      // Write enable
-
-// Set timing (ADDSET=1, DATAST=2)
-FMC_Bank1->BTCR[1] = 
-    (1 << FMC_BTR1_ADDSET_Pos) |
-    (2 << FMC_BTR1_DATAST_Pos);
-\end{lstlisting}
-\end{KR}
-
-\begin{example2}{Address Space Calculation for External Memory}\\
-Calculate the address range for an external 32K x 8-bit SRAM connected to FMC bank 3.
-\tcblower
-For an external SRAM connected to FMC bank 3:
-
-1. Base address of FMC bank 3 = 0x68000000
-2. Memory size = 32K bytes = 32,768 bytes = 0x8000 bytes
-
-Therefore, the address range for this SRAM would be:
-- Start address: 0x68000000
-- End address: 0x68000000 + 0x8000 - 1 = 0x68007FFF
-
-Address range: 0x68000000 - 0x68007FFF
-
-Note: Due to partial address decoding, this SRAM might also be accessible at other addresses within bank 3. For example, it might also respond to addresses:
-0x68008000 - 0x6800FFFF, 0x68010000 - 0x68017FFF, etc.
-\end{example2}
-
-\section{Memory Exercises}
 
 \subsection{Memory Technology Comparison}
 
-\begin{KR}{Comparing Memory Technologies}\\
+\begin{KR}{Comparing Memory Technologies}
 \paragraph{Identify memory characteristics}
 \begin{itemize}
     \item \textbf{Volatility:} Whether memory loses contents when power is removed
@@ -406,53 +282,194 @@ Note: Due to partial address decoding, this SRAM might also be accessible at oth
 \end{itemize}
 \end{KR}
 
-\begin{example2}{Memory Technology Comparison}\\
-Compare SDRAM (Synchronous Dynamic RAM) and SRAM (Static RAM) in terms of:
-\begin{enumerate}
-    \item Storage mechanism and structure
-    \item Access patterns and timing characteristics
-    \item Density and cost
-    \item Refresh requirements
-    \item Typical applications
-\end{enumerate}
+\begin{concept}{NOR vs. NAND Flash Vergleich}
+    \paragraph{NOR Flash}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Direkter Code-Execution (XIP - Execute in Place)
+        \item \textcolor{frog}{$\checkmark$} Wahlfreie Byte-Zugriffe
+        \item \textcolor{frog}{$\checkmark$} SRAM-kompatible Schnittstelle
+        \item \textcolor{frog}{$\checkmark$} Bits einzeln auf '0' schreibbar
+        \item \textcolor{frog}{$\checkmark$} Für Programmcode und persistente Daten
+        \item \textcolor{red}{$\times$} Nicht für große Datenblöcke optimiert
+    \end{itemize}
+    
+    \paragraph{NAND Flash}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Effizient für große Datenblöcke
+        \item \textcolor{frog}{$\checkmark$} Hohe Schreibgeschwindigkeit für Blöcke
+        \item \textcolor{frog}{$\checkmark$} Spezielle Schnittstelle (nicht SRAM-kompatibel)
+        \item \textcolor{frog}{$\checkmark$} Hohe Latenz für ersten Zugriff
+        \item \textcolor{frog}{$\checkmark$} Für SSDs verwendet
+        \item \textcolor{red}{$\times$} Code muss ins RAM geladen werden
+        \item \textcolor{red}{$\times$} Keine wahlfreien Byte-Zugriffe
+    \end{itemize}
+    
+    \paragraph{Gemeinsame Eigenschaften}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Floating Gate Technologie
+        \item \textcolor{frog}{$\checkmark$} Nur sektorweises Löschen auf '1'
+        \item \textcolor{red}{$\times$} Bits können nicht einzeln auf '1' geschrieben werden
+    \end{itemize}
+\end{concept}
 
-\tcblower
-\paragraph{Solution:}
 
-1. \textbf{Storage mechanism and structure:}
+\begin{concept}{SRAM vs. SDRAM Unterschiede}
+    \paragraph{Speichertyp}
+    \begin{itemize}
+        \item SRAM: Statisch (Flip-Flop basiert)
+        \item SDRAM: Dynamisch (Kondensator basiert)
+    \end{itemize}
+    
+    \paragraph{Refresh-Verhalten}
+    \begin{itemize}
+        \item SRAM: Stores data as long as power is applied, without requiring refresh.
+        \item SDRAM: Stores data as charge in a capacitor that leaks over time. Requires periodic refresh to maintain data integrity.
+    \end{itemize}
+    
+    \paragraph{Schnittstelle}
+    \begin{itemize}
+        \item SRAM: Asynchron (NWE, NOE Signale)
+        \item SDRAM: Synchron (RAS, CAS Signale, getaktet)
+    \end{itemize}
+    
+    \paragraph{Zugriffszeit und Timing}
+    \begin{itemize}
+        \item SRAM: Provides fast random access with consistent timing for all accesses (~5ns). All operations take roughly the same time.
+        \item SDRAM: Synchronous interface with clock. Has higher latency for first access in a row (~60ns), but very fast subsequent access within same row. Optimized for burst transfers.
+    \end{itemize}
+    
+    \paragraph{Speicherdichte und Kosten}
+    \begin{itemize}
+        \item SRAM: Low density due to large cell size (6 transistors). Higher cost per bit. Typically limited to 64Mb per device.
+        \item SDRAM: High density due to small cell size (1 transistor + 1 capacitor). Lower cost per bit. Can reach 4Gb or more per device.
+    \end{itemize}
+
+\paragraph{Typical applications:}
    \begin{itemize}
-     \item \textbf{SRAM:} Uses flip-flop circuits with 6 transistors per bit. Stores data as long as power is applied, without requiring refresh.
-     \item \textbf{SDRAM:} Uses a single capacitor and transistor per bit. Stores data as charge in a capacitor that leaks over time.
+     \item SRAM: CPU cache memory, small buffer memory, applications requiring fast random access.
+     \item SDRAM: Main system memory, large buffers, applications requiring high capacity with reasonable access speed.
    \end{itemize}
 
-2. \textbf{Access patterns and timing:}
-   \begin{itemize}
-     \item \textbf{SRAM:} Provides fast random access with consistent timing for all accesses (~5ns). All operations take roughly the same time.
-     \item \textbf{SDRAM:} Synchronous interface with clock. Has higher latency for first access in a row (~60ns), but very fast subsequent access within same row. Optimized for burst transfers.
-   \end{itemize}
+    \textbf{OE-Pin Funktion bei SRAM:}
+    Kontrolliert, ob das Memory Daten auf den Bus treibt oder ob sich die Ausgangstreiber im Floating-Zustand befinden.
+\end{concept}
 
-3. \textbf{Density and cost:}
-   \begin{itemize}
-     \item \textbf{SRAM:} Low density due to large cell size (6 transistors). Higher cost per bit. Typically limited to 64Mb per device.
-     \item \textbf{SDRAM:} High density due to small cell size (1 transistor + 1 capacitor). Lower cost per bit. Can reach 4Gb or more per device.
-   \end{itemize}
-
-4. \textbf{Refresh requirements:}
-   \begin{itemize}
-     \item \textbf{SRAM:} No refresh required (static). Maintains data as long as power is applied.
-     \item \textbf{SDRAM:} Requires periodic refresh (dynamic). Capacitors discharge within milliseconds and must be refreshed regularly.
-   \end{itemize}
-
-5. \textbf{Typical applications:}
-   \begin{itemize}
-     \item \textbf{SRAM:} CPU cache memory, small buffer memory, applications requiring fast random access.
-     \item \textbf{SDRAM:} Main system memory, large buffers, applications requiring high capacity with reasonable access speed.
-   \end{itemize}
+\begin{example2}{DRAM-Eigenschaften bewerten}
+    \paragraph{Speicherzelle}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Kondensator + Transistor (nicht RS Flip-Flop)
+        \item \textcolor{frog}{$\checkmark$} Sehr kleine Zelle $\rightarrow$ hohe Dichte
+    \end{itemize}
+    
+    \paragraph{Zugriffsmuster}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Hohe Latenz für einzelne Zugriffe
+        \item \textcolor{frog}{$\checkmark$} Optimiert für Blockzugriffe (Burst)
+    \end{itemize}
+    
+    \paragraph{Refresh und Leistung}
+    \begin{itemize}
+        \item \textcolor{frog}{$\checkmark$} Periodischer Refresh wegen Leckströmen
+        \item \textcolor{frog}{$\checkmark$} Volatiler Speicher
+        \item \textcolor{red}{$\times$} Kein niedriger Leistungsverbrauch (Refresh erforderlich)
+    \end{itemize}
+    
+    \paragraph{Kosten}
+    \begin{itemize}
+        \item \textcolor{red}{$\times$} Niedriger Preis pro Speicherzelle (nicht hoch)
+    \end{itemize}
 \end{example2}
 
-\subsection{External Memory Configuration}
+\raggedcolumns
+\columnbreak
 
-\begin{KR}{Connecting External Memory to STM32}\\
+\subsection{STM32F4 On-Chip Memory}
+
+\begin{concept}{STM32F4 Memory Architecture}\\
+The STM32F429ZI microcontroller includes:
+\begin{itemize}
+    \item \textbf{Flash Memory}: 2 MB (program storage)
+    \begin{itemize}
+        \item NOR flash with execute-in-place capability
+        \item Divided into sectors of varying sizes (16KB to 128KB)
+        \item Organized in two banks for read-while-write operations
+    \end{itemize}
+    \item \textbf{SRAM}: 256 KB total
+    \begin{itemize}
+        \item SRAM1: 112 KB
+        \item SRAM2: 16 KB
+        \item SRAM3: 64 KB
+        \item CCM (Core Coupled Memory): 64 KB (accessible only by CPU)
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\begin{definition}{STM32F4 Flash Characteristics}
+\begin{itemize}
+    \item \textbf{Write Operations}: Can only change bits from '1' to '0'
+    \item \textbf{Erase Operations}: Resets all bits in a sector to '1'
+    \item \textbf{Programming Time}: Around 16µs per double word
+    \item \textbf{Erase Time}: 1-2 seconds for a 128KB sector
+    \item \textbf{Endurance}: 10,000 erase cycles
+    \item \textbf{Access Time}: Higher latency than SRAM (requires wait states)
+\end{itemize}
+\end{definition}
+
+
+
+\subsubsection{External Memory Interface}
+
+\begin{concept}{Flexible Memory Controller (FMC)}\\
+The STM32F4 Flexible Memory Controller (FMC) provides:
+\begin{itemize}
+    \item Interface between on-chip system bus and external memory devices
+    \item Support for different memory types:
+    \begin{itemize}
+        \item SRAM, NOR Flash, PSRAM
+        \item NAND Flash
+        \item SDRAM
+    \end{itemize}
+    \item Configurable bus width (8, 16, or 32 bits)
+    \item Programmable timing parameters
+    \item Memory banking with up to 6 banks
+\end{itemize}
+\end{concept}
+
+\begin{definition}{FMC Signals}\\
+Key FMC signals for external SRAM/NOR flash:
+\begin{itemize}
+    \item \textbf{A[25:0]}: Address bus
+    \item \textbf{D[31:0]}: Data bus (bidirectional)
+    \item \textbf{NE[4:1]}: Chip enable signals (active low)
+    \item \textbf{NOE}: Output enable (active low)
+    \item \textbf{NWE}: Write enable (active low)
+    \item \textbf{NBL[3:0]}: Byte lane enables (active low)
+\end{itemize}
+\end{definition}
+
+\begin{concept}{External Memory Access}\\
+Accessing external memory with different bus widths:
+\begin{itemize}
+    \item \textbf{32-bit CPU Access to 32-bit Memory}: 1 external bus cycle
+    \item \textbf{32-bit CPU Access to 16-bit Memory}: 2 external bus cycles
+    \item \textbf{32-bit CPU Access to 8-bit Memory}: 4 external bus cycles
+\end{itemize}
+\textbf{Write Operations}:
+\begin{itemize}
+    \item CPU write stored in FMC FIFO buffer
+    \item System bus released for other access
+    \item FMC completes external write(s)
+\end{itemize}
+\textbf{Read Operations}:
+\begin{itemize}
+    \item System bus must wait until all external reads complete
+    \item Multiple external cycles for narrow memory widths
+\end{itemize}
+\end{concept}
+
+\subsubsection{External Memory Configuration}
+
+\begin{KR}{Connecting External Memory to STM32}
 \paragraph{Identify external memory type and requirements}
 \begin{itemize}
     \item Determine memory interface type (asynchronous SRAM, NOR Flash, NAND Flash, SDRAM)
@@ -500,7 +517,7 @@ Compare SDRAM (Synchronous Dynamic RAM) and SRAM (Static RAM) in terms of:
 \end{itemize}
 \end{KR}
 
-\begin{example2}{External Memory Connection Analysis}\\
+\begin{example}
 A 64K × 8-bit asynchronous SRAM chip needs to be connected to the FMC of an STM32F429 microcontroller. The address 0x6800'0000 should be the lowest address used to access the memory.
 
 Answer:
@@ -512,7 +529,6 @@ Answer:
 \end{enumerate}
 
 \tcblower
-\paragraph{Solution:}
 
 1. \textbf{Number of address pins:}
    \begin{itemize}
@@ -545,11 +561,60 @@ Answer:
      \item Example: Addresses 0x6800'0000, 0x6900'0000, 0x6A00'0000, etc. all access the same byte in memory
      \item The number of 64KB address blocks that map to the same memory is 2$^{10}$ = 1024 (from the 10 undecoded bits A[25:16])
    \end{itemize}
-\end{example2}
+\end{example}
 
-\subsection{Memory Access Decomposition}
+\begin{concept}{Connecting Asynchronous SRAM to STM32F4}
+\paragraph{Step 1: Configure GPIO pins}
+Set the GPIO pins for FMC signals to alternate function mode.
+\paragraph{Step 2: Configure FMC timing}
+Set appropriate timing parameters (ADDSET, DATAST) based on memory datasheet.
+\paragraph{Step 3: Configure FMC bank}
+Set the memory type, data width, and other parameters.
+\paragraph{Step 4: Enable FMC}
+Enable the FMC peripheral.
 
-\begin{KR}{Analyzing Memory Access Patterns}\\
+\begin{lstlisting}[language=C, style=basesmol]
+// Configure external SRAM (16-bit) on FMC bank 1
+
+// Step 1: Configure GPIO pins for FMC
+// Enable GPIO clocks
+RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN |
+                RCC_AHB1ENR_GPIOFEN | RCC_AHB1ENR_GPIOGEN;
+
+// Configure GPIO pins (example for some pins)
+// Set alternate function mode (0x2)
+GPIOD->MODER |= 0x55555555;  // All pins to alternate function
+GPIOE->MODER |= 0x55555555;
+// Set to AF12 (FMC)
+GPIOD->AFR[0] = 0xCCCCCCCC;
+GPIOD->AFR[1] = 0xCCCCCCCC;
+GPIOE->AFR[0] = 0xCCCCCCCC;
+GPIOE->AFR[1] = 0xCCCCCCCC;
+
+// Step 2: Enable FMC clock
+RCC->AHB3ENR |= RCC_AHB3ENR_FMCEN;
+
+// Step 3: Configure FMC bank 1 for SRAM
+// Set timing for SRAM (example values)
+FMC_Bank1->BTCR[0] = 
+    FMC_BCR1_MBKEN |    // Memory bank enable
+    FMC_BCR1_MTYP_0 |   // Memory type SRAM
+    FMC_BCR1_MWID_0 |   // 16-bit data bus
+    FMC_BCR1_WREN;      // Write enable
+
+// Set timing (ADDSET=1, DATAST=2)
+FMC_Bank1->BTCR[1] = 
+    (1 << FMC_BTR1_ADDSET_Pos) |
+    (2 << FMC_BTR1_DATAST_Pos);
+\end{lstlisting}
+\end{concept}
+
+
+
+
+\subsection{Memory Access and Address Decomposition}
+
+\begin{KR}{Analyzing Memory Access Patterns}
 \paragraph{Determine memory access type}
 \begin{itemize}
     \item Identify memory type and organization (width × depth)
@@ -597,6 +662,46 @@ Answer:
 \end{itemize}
 \end{KR}
 
+\begin{concept}{SRAM-Anbindung berechnen}
+    \paragraph{Anzahl Adresspins}
+    Für x K $\times$ y Bit SRAM: Adresspins = $\log_2$(x K) = $\log_2$(x $\times$ 1024)
+
+    \paragraph{FMC-Signale zuordnen}
+
+    \begin{minipage}{0.65\linewidth}
+    \begin{itemize}
+        \item NE[x]: Chip Select (Bank-Auswahl)
+        \item NOE: Output Enable
+        \item NWE: Write Enable
+        \item A[n:0]: Adressleitungen
+        \item D[m:0]: Datenleitungen
+    \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.3\linewidth}
+    \includegraphics[width=\linewidth]{sram_pins_ex.png}
+    \end{minipage}
+    
+
+
+    \paragraph{Basisadresse + Anzahl Adressen}
+    \begin{itemize}
+        \item Basisadresse: niedrigste Adresse des Bausteins
+        \item Höchste Adresse: Basisadresse + Speichergröße - 1
+        \item Beispiel 64K: 64K = 64 $\times$ 1024 = 65536 = 0x10000
+    \end{itemize}
+    
+    \paragraph{Partial Address Decoding}
+    \begin{itemize}
+        \item Nicht alle Adressleitungen werden dekodiert
+        \item Führt zu mehreren gültigen Adressbereichen (Aliasing)
+        \item Anzahl Bereiche = $2^{nicht\_dekodierte\_Bits}$
+    \end{itemize}
+    
+    
+\end{concept}
+
+
+
 \begin{example2}{Memory Access Analysis}\\
 A 16-bit wide asynchronous SRAM is connected to the FMC of an STM32F429 microcontroller. Analyze what happens when the CPU writes a single byte to address 0x6402'8F21:
 
@@ -608,7 +713,6 @@ A 16-bit wide asynchronous SRAM is connected to the FMC of an STM32F429 microcon
 \end{enumerate}
 
 \tcblower
-\paragraph{Solution:}
 
 1. \textbf{Memory device and bank:}
    \begin{itemize}
@@ -651,105 +755,9 @@ A 16-bit wide asynchronous SRAM is connected to the FMC of an STM32F429 microcon
    \end{itemize}
 \end{example2}
 
-\section{Memory (Speicher)}
-
-\subsection{Speicher-Technologien}
-
-\begin{KR}{SRAM vs. SDRAM Unterschiede}\\
-    \paragraph{Speichertyp}
-    \begin{itemize}
-        \item SRAM: Statisch (Flip-Flop basiert)
-        \item SDRAM: Dynamisch (Kondensator basiert)
-    \end{itemize}
-    
-    \paragraph{Refresh-Verhalten}
-    \begin{itemize}
-        \item SRAM: Kein Refresh nötig (Inhalt bleibt solange Spannung anliegt)
-        \item SDRAM: Periodischer Refresh notwendig (Leckströme)
-    \end{itemize}
-    
-    \paragraph{Schnittstelle}
-    \begin{itemize}
-        \item SRAM: Asynchron (NWE, NOE Signale)
-        \item SDRAM: Synchron (RAS, CAS Signale, getaktet)
-    \end{itemize}
-    
-    \paragraph{Zugriffszeit}
-    \begin{itemize}
-        \item SRAM: Alle Zugriffe gleich schnell
-        \item SDRAM: Hohe Latenz für ersten Zugriff, kurze Zeit für Folgeadressen
-    \end{itemize}
-    
-    \paragraph{Speicherdichte}
-    \begin{itemize}
-        \item SRAM: Größere Zellen $\rightarrow$ geringere Dichte, teurer
-        \item SDRAM: Kleinere Zellen $\rightarrow$ höhere Dichte, günstiger
-    \end{itemize}
-\end{KR}
-
-\begin{example2}{Asynchronous SRAM vs. SDRAM}\\
-    Vergleiche die beiden Speichertypen anhand ihrer Eigenschaften.
-    
-    \tcblower
-    
-    \textbf{SRAM (Static RAM):}
-    \begin{itemize}
-        \item Speicherelement: Flip-Flop (6 Transistoren)
-        \item Kein Refresh erforderlich
-        \item Asynchrone Schnittstelle (einfache Anbindung)
-        \item Konstante Zugriffszeit
-        \item Hoher Preis pro Bit, niedrige Dichte
-    \end{itemize}
-    
-    \textbf{SDRAM (Synchronous Dynamic RAM):}
-    \begin{itemize}
-        \item Speicherelement: Kondensator + Transistor
-        \item Periodischer Refresh notwendig
-        \item Synchrone Schnittstelle (komplexe Anbindung)
-        \item Variable Zugriffszeit (Burst-optimiert)
-        \item Niedriger Preis pro Bit, hohe Dichte
-    \end{itemize}
-    
-    \textbf{OE-Pin Funktion bei SRAM:}
-    Kontrolliert, ob das Memory Daten auf den Bus treibt oder ob sich die Ausgangstreiber im Floating-Zustand befinden.
-\end{example2}
-
-\subsection{SRAM-Anbindung und Address Decoding}
-
-\begin{KR}{SRAM-Anbindung berechnen}
-    \paragraph{Anzahl Adresspins}
-    Für x K $\times$ y Bit SRAM: Adresspins = $\log_2$(x K) = $\log_2$(x $\times$ 1024)\\
-    \includegraphics[width=\linewidth]{sram_pins_ex.png}
-    
-    \paragraph{Basisadresse + Anzahl Adressen}
-    \begin{itemize}
-        \item Basisadresse: niedrigste Adresse des Bausteins
-        \item Höchste Adresse: Basisadresse + Speichergröße - 1
-        \item Beispiel 64K: 64K = 64 $\times$ 1024 = 65536 = 0x10000
-    \end{itemize}
-    
-    \paragraph{Partial Address Decoding}
-    \begin{itemize}
-        \item Nicht alle Adressleitungen werden dekodiert
-        \item Führt zu mehreren gültigen Adressbereichen (Aliasing)
-        \item Anzahl Bereiche = $2^{nicht\_dekodierte\_Bits}$
-    \end{itemize}
-    
-    \paragraph{FMC-Signale zuordnen}
-    \begin{itemize}
-        \item NE[x]: Chip Select (Bank-Auswahl)
-        \item NOE: Output Enable
-        \item NWE: Write Enable
-        \item A[n:0]: Adressleitungen
-        \item D[m:0]: Datenleitungen
-    \end{itemize}
-\end{KR}
-
-\begin{example2}{64K x 8 Bit SRAM Anbindung}\\
+\begin{example2}{64K x 8 Bit SRAM Anbindung}
     SRAM soll bei Basisadresse 0x6800'0000 angeschlossen werden.
-    
-    \tcblower
-    
+
     \textbf{a) Anzahl Adresspins:}
     64K = $2^{16}$ $\rightarrow$ 16 Adresspins $\rightarrow$ A[15:0]
     
@@ -772,87 +780,20 @@ A 16-bit wide asynchronous SRAM is connected to the FMC of an STM32F429 microcon
     0x68XX'0000, 0x69XX'0000, 0x6AXX'0000, 0x6BXX'0000
 \end{example2}
 
-\subsection{Flash-Speicher und DRAM}
-
-\begin{KR}{DRAM-Eigenschaften bewerten}\\
-    \paragraph{Speicherzelle}
-    \begin{itemize}
-        \item \textcolor{frog}{$\checkmark$} Kondensator + Transistor (nicht RS Flip-Flop)
-        \item \textcolor{frog}{$\checkmark$} Sehr kleine Zelle $\rightarrow$ hohe Dichte
-    \end{itemize}
-    
-    \paragraph{Zugriffsmuster}
-    \begin{itemize}
-        \item \textcolor{frog}{$\checkmark$} Hohe Latenz für einzelne Zugriffe
-        \item \textcolor{frog}{$\checkmark$} Optimiert für Blockzugriffe (Burst)
-    \end{itemize}
-    
-    \paragraph{Refresh und Leistung}
-    \begin{itemize}
-        \item \textcolor{frog}{$\checkmark$} Periodischer Refresh wegen Leckströmen
-        \item \textcolor{frog}{$\checkmark$} Volatiler Speicher
-        \item \textcolor{red}{$\times$} Kein niedriger Leistungsverbrauch (Refresh erforderlich)
-    \end{itemize}
-    
-    \paragraph{Kosten}
-    \begin{itemize}
-        \item \textcolor{red}{$\times$} Niedriger Preis pro Speicherzelle (nicht hoch)
-    \end{itemize}
-\end{KR}
-
-\begin{KR}{NOR vs. NAND Flash Vergleich}\\
-    \paragraph{NOR Flash}
-    \begin{itemize}
-        \item \textcolor{frog}{$\checkmark$} Direkter Code-Execution (XIP - Execute in Place)
-        \item \textcolor{frog}{$\checkmark$} Wahlfreie Byte-Zugriffe
-        \item \textcolor{frog}{$\checkmark$} SRAM-kompatible Schnittstelle
-        \item \textcolor{frog}{$\checkmark$} Bits einzeln auf '0' schreibbar
-        \item \textcolor{frog}{$\checkmark$} Für Programmcode und persistente Daten
-        \item \textcolor{red}{$\times$} Nicht für große Datenblöcke optimiert
-    \end{itemize}
-    
-    \paragraph{NAND Flash}
-    \begin{itemize}
-        \item \textcolor{frog}{$\checkmark$} Effizient für große Datenblöcke
-        \item \textcolor{frog}{$\checkmark$} Hohe Schreibgeschwindigkeit für Blöcke
-        \item \textcolor{frog}{$\checkmark$} Spezielle Schnittstelle (nicht SRAM-kompatibel)
-        \item \textcolor{frog}{$\checkmark$} Hohe Latenz für ersten Zugriff
-        \item \textcolor{frog}{$\checkmark$} Für SSDs verwendet
-        \item \textcolor{red}{$\times$} Code muss ins RAM geladen werden
-        \item \textcolor{red}{$\times$} Keine wahlfreien Byte-Zugriffe
-    \end{itemize}
-    
-    \paragraph{Gemeinsame Eigenschaften}
-    \begin{itemize}
-        \item \textcolor{frog}{$\checkmark$} Floating Gate Technologie
-        \item \textcolor{frog}{$\checkmark$} Nur sektorweises Löschen auf '1'
-        \item \textcolor{red}{$\times$} Bits können nicht einzeln auf '1' geschrieben werden
-    \end{itemize}
-\end{KR}
-
-\begin{example2}{Flash-Speicher Eigenschaften}\\
-    Bewerte Aussagen für NOR und NAND Flash.
-    
-    \tcblower
-    
-    \textbf{NOR Flash - Anwendungen:}
-    \begin{itemize}
-        \item Mikrocontroller-Firmware (direkte Ausführung)
-        \item BIOS/UEFI Code
-        \item Embedded Systems mit wenig RAM
-    \end{itemize}
-    
-    \textbf{NAND Flash - Anwendungen:}
-    \begin{itemize}
-        \item Solid State Drives (SSDs)
-        \item SD-Karten, USB-Sticks
-        \item Smartphones (App-Speicher)
-    \end{itemize}
-    
-    \textbf{Wichtiger Unterschied:}
-    NOR ermöglicht wahlfreie Zugriffe wie RAM, während NAND blockweise gelesen werden muss und eine spezielle Controller-Logik benötigt.
+\begin{example2}{Address Space Calculation for External Memory}\\
+Calculate the address range for an external 32K x 8-bit SRAM connected to FMC bank 3.
+\tcblower
+For an external SRAM connected to FMC bank 3:
+\vspace{1mm}\\
+1. Base address of FMC bank 3 = 0x68000000\\
+2. Memory size = 32K bytes = 32,768 bytes = 0x8000 bytes
+\vspace{3mm}\\
+Therefore, the address range for this SRAM would be:\\
+- Start address: 0x68000000\\
+- End address: 0x68000000 + 0x8000 - 1 = 0x68007FFF
+\vspace{3mm}\\
+Address range: 0x68000000 - 0x68007FFF
+\vspace{3mm}\\
+Note: Due to partial address decoding, this SRAM might also be accessible at other addresses within bank 3. For example, it might also respond to addresses:\\
+0x68008000 - 0x6800FFFF, 0x68010000 - 0x68017FFF, etc.
 \end{example2}
-
-\begin{remark}
-    Bei der Speicher-Auswahl ist das Anwendungsprofil entscheidend: NOR Flash für direkten Code-Zugriff, NAND Flash für große Datenmengen, SRAM für schnelle Zwischenspeicherung, DRAM für große Arbeitsspeicher mit hoher Dichte.
-\end{remark}
