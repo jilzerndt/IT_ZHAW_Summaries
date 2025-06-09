@@ -71,7 +71,7 @@ Typical memory hierarchy in a modern system:
 \subsection{Cache Mechanics}
 
 \begin{definition}{Cache Levels} Typical Cache Architecture\\
-    \includegraphics[width=\linewidth]{cache_architecture.png}    
+    \includegraphics[width=0.7\linewidth]{cache_architecture.png}    
 \end{definition}
 
 \begin{concept}{Cache Operation}\\
@@ -87,7 +87,7 @@ A cache is a small, fast memory that stores copies of data from frequently used 
 \end{itemize}
 \end{concept}
 
-\begin{definition}{Cache Terminology}\\
+\begin{theorem}{Cache Terminology}\\
 Key terms in cache design:
 \begin{itemize}
     \item \textbf{Cache Line}: Basic unit of data transfer (typically 32-128 bytes)
@@ -98,14 +98,26 @@ Key terms in cache design:
     \item \textbf{Hit Time}: Time to access data in cache
     \item \textbf{Miss Penalty}: Extra time required to fetch data from main memory
 \end{itemize}
-\end{definition}
+\end{theorem}
+
+\begin{corollary}{Memory Blocks}
+    Address range is partitioned into memory blocks
+
+    \begin{minipage}{0.5\linewidth}
+    \includegraphics[width=\linewidth]{memoryblocks.png}
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+    \includegraphics[width=\linewidth]{memoryblocks2.png}
+    \end{minipage}
+
+    \important{All examples in this lecture use hypothetical 16-bit addresses and 4-byte memory blocks}
+\end{corollary}
 
 \raggedcolumns
 \columnbreak
 
 \subsection{Cache Organization}
 
-\mult{2}
 
 \begin{definition}{Memory Addressing for Cache}\\
 A memory address is typically divided into:
@@ -122,7 +134,13 @@ Tag & Index & Offset \\
 \end{tabular}
 \end{center}
 The size of each field depends on the cache organization.
+
+\includegraphics[width=0.8\linewidth]{cacheaddressing.png}
 \end{definition}
+
+\begin{center}
+\includegraphics[width=0.8\linewidth]{cacheorgancomp.png}
+\end{center}
 
 \begin{concept}{Fully Associative Cache}\\
     Any memory block can be stored in any cache line
@@ -139,7 +157,21 @@ The size of each field depends on the cache organization.
     \item Requires many comparators (one per cache line)
     \item Complex hardware: requires comparing tag with all cache lines
 \end{itemize}
+\vspace{2mm}
+
+\begin{minipage}{0.5\linewidth}
+\includegraphics[width=\linewidth]{fullyassociativeorga.png}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\includegraphics[width=\linewidth]{fullyassociativeaddress.png}
+\end{minipage}
+
+\begin{center}
+\includegraphics[width=0.8\linewidth]{fullyassociativearchitecture.png}
+\end{center}
+
 \end{concept}
+
 
 \begin{concept}{Direct Mapped Cache}\\
     Each memory block maps to exactly one cache line
@@ -153,15 +185,29 @@ The size of each field depends on the cache organization.
         \item Different memory blocks mapping to the same cache line
     \end{itemize}
 \end{itemize}
+
+
+\begin{center}
+
+\includegraphics[width=0.7\linewidth]{directmappedorgan.png}
+
+\includegraphics[width=0.7\linewidth]{directmappedaddress.png}
+
+\includegraphics[width=0.7\linewidth]{directmappedarchitecture.png}
+\end{center}
 \end{concept}
+
+
 
 \begin{concept}{N-Way Set Associative Cache}\\
     Cache is divided into sets, each containing N lines
 \begin{itemize}
     \item Memory block maps to a specific set, can go in any line within that set
     \item Mapping function: $\text{Set} = \text{Block} \bmod s$ (where $s$ is number of sets)
+    \item s x n x b data Bytes
     \item Address format: [Tag | Set Index | Offset]
     \item Set index selects which set to check
+    \item Maximum index corresponds to number of sets
     \item N tag comparisons needed (one per line in set)
     \item Compromise between fully associative and direct mapped 
     \begin{itemize}
@@ -169,11 +215,28 @@ The size of each field depends on the cache organization.
         \item Less hardware than fully associative
     \end{itemize}
 \end{itemize}
+
+\begin{center}
+    \includegraphics[width=0.7\linewidth]{nwayorgan2.png}
+
+\includegraphics[width=0.7\linewidth]{nwayaddress.png}
+
+
+
+\includegraphics[width=0.8\linewidth]{nwayarchitect.png}
+\end{center}
 \end{concept}
 
-\multend 
+
+
+
+
 
 \subsubsection{Cache Organization and Addressing}
+
+
+
+
 
 \begin{KR}{Analyzing Cache Organization}
 \paragraph{Identify cache parameters}
@@ -222,6 +285,37 @@ The size of each field depends on the cache organization.
 \end{itemize}
 \end{KR}
 
+\begin{example2}{Cache Organization Calculation}
+For a 16KB cache with 64-byte lines, calculate address breakdown for:
+\begin{itemize}
+\item Direct mapped
+\item 4-way set associative
+\end{itemize}
+\tcblower
+Given:
+\begin{itemize}
+    \item Cache size = 16KB = 16,384 bytes
+    \item Line size = 64 bytes
+\end{itemize}
+
+\paragraph{Direct Mapped Cache}
+\begin{itemize}
+    \item Number of cache lines = Cache size / Line size = 16,384 / 64 = 256 lines
+    \item Index bits = $\log_2(256)$ = 8 bits
+    \item Offset bits = $\log_2(64)$ = 6 bits
+    \item For 32-bit address: Tag = 32 - 8 - 6 = 18 bits
+\end{itemize}
+Address format: [18-bit Tag | 8-bit Index | 6-bit Offset]
+\paragraph{4-Way Set Associative}
+\begin{itemize}
+    \item Number of sets = Cache size / (Line size × Associativity) = 16,384 / (64 × 4) = 64 sets
+    \item Set index bits = $\log_2(64)$ = 6 bits
+    \item Offset bits = $\log_2(64)$ = 6 bits
+    \item For 32-bit address: Tag = 32 - 6 - 6 = 20 bits
+\end{itemize}   
+Address format: [20-bit Tag | 6-bit Set Index | 6-bit Offset]
+\end{example2}
+
 \begin{example2}{Cache Organization Analysis}\\
 Consider a system with a 4 KiB direct-mapped cache with 16-byte cache lines. The system uses 32-bit byte addresses.
 
@@ -232,23 +326,21 @@ Consider a system with a 4 KiB direct-mapped cache with 16-byte cache lines. The
     \item Which other addresses would map to the same cache line?
 \end{enumerate}
 
-\tcblower
-
-1. \textbf{Number of cache lines:}
+\paragraph{Number of cache lines}
    \begin{itemize}
      \item Cache size = 4 KiB = 4096 bytes
      \item Line size = 16 bytes
      \item Number of lines = 4096 / 16 = 256 lines
    \end{itemize}
 
-2. \textbf{Address bit fields:}
+\paragraph{Address bit fields}
    \begin{itemize}
      \item Offset bits = log$_2$(16) = 4 bits (addresses byte within the line)
      \item Index bits = log$_2$(256) = 8 bits (selects the cache line)
      \item Tag bits = 32 - (4 + 8) = 20 bits (identifies which memory block is cached)
    \end{itemize}
 
-3. \textbf{Address decomposition for 0x1234ABCD:}
+\paragraph{Address decomposition for 0x1234ABCD}
    \begin{itemize}
      \item Convert to binary: 0001 0010 0011 0100 1010 1011 1100 1101
      \item Offset: last 4 bits = 1101 = 0xD
@@ -256,7 +348,7 @@ Consider a system with a 4 KiB direct-mapped cache with 16-byte cache lines. The
      \item Tag: remaining 20 bits = 0001 0010 0011 0100 1010 = 0x1234A
    \end{itemize}
 
-4. \textbf{Other addresses mapping to the same cache line:}
+\paragraph{Other addresses mapping to the same cache line}
    \begin{itemize}
      \item Addresses with the same index (0xBC) but different tags would map to the same line
      \item General form: 0xXXXXXBCY where:
@@ -270,37 +362,8 @@ Consider a system with a 4 KiB direct-mapped cache with 16-byte cache lines. The
    \end{itemize}
 \end{example2}
 
-\begin{example2}{Cache Organization Calculation}\\
-For a 16KB cache with 64-byte lines, calculate address breakdown for:
-\begin{itemize}
-\item Direct mapped
-\item 4-way set associative
-\end{itemize}
-\tcblower
-Given:
-\begin{itemize}
-    \item Cache size = 16KB = 16,384 bytes
-    \item Line size = 64 bytes
-\end{itemize}
-
-1. Direct Mapped Cache:
-\begin{itemize}
-    \item Number of cache lines = Cache size / Line size = 16,384 / 64 = 256 lines
-    \item Index bits = $\log_2(256)$ = 8 bits
-    \item Offset bits = $\log_2(64)$ = 6 bits
-    \item For 32-bit address: Tag = 32 - 8 - 6 = 18 bits
-\end{itemize}
-Address format: [18-bit Tag | 8-bit Index | 6-bit Offset]
-\vspace{2mm}\\
-2. 4-Way Set Associative:
-\begin{itemize}
-    \item Number of sets = Cache size / (Line size × Associativity) = 16,384 / (64 × 4) = 64 sets
-    \item Set index bits = $\log_2(64)$ = 6 bits
-    \item Offset bits = $\log_2(64)$ = 6 bits
-    \item For 32-bit address: Tag = 32 - 6 - 6 = 20 bits
-\end{itemize}   
-Address format: [20-bit Tag | 6-bit Set Index | 6-bit Offset]
-\end{example2}
+\raggedcolumns
+\columnbreak
 
 \subsection{Cache Performance}
 
@@ -327,13 +390,17 @@ Three fundamental types of cache misses:
 \end{itemize}
 \end{definition}
 
-\begin{formula}{Cache Performance}\\
+\mult{2}
+
+\begin{formula}{Cache Performance}
 Average memory access time (AMAT) can be calculated as:
 $$
 AMAT = \text{Hit Time} + \text{Miss Rate} \times \text{Miss Penalty}
 $$
 
-Example:
+\end{formula}
+
+\begin{example2}{Average Memory Access Time (AMAT)}
 \begin{itemize}
     \item Hit Time = 1 cycle
     \item Miss Penalty = 100 cycles
@@ -348,29 +415,28 @@ $$
 AMAT = 1 + 0.01 \times 100 = 1 + 1 = 2 \text{ cycles}
 $$
 This is a 50\% performance improvement!
-\end{formula}
+\end{example2}
 
 \begin{concept}{Cache Size vs. Hit Rate}\\
-Relationship between cache parameters and hit rate:
-\begin{itemize}
-    \item Increasing cache size improves hit rate
+\textbf{Increasing cache size improves hit rate}:
     \begin{itemize}
         \item But with diminishing returns
         \item Larger cache may have longer hit time
     \end{itemize}
-    \item Increasing associativity improves hit rate
+\textbf{Increasing associativity improves hit rate}:
     \begin{itemize}
         \item Greatest benefit from direct-mapped to 2-way
         \item Diminishing returns beyond 4-way or 8-way
         \item Higher associativity increases complexity and hit time
     \end{itemize}
-    \item Increasing block size improves spatial locality exploitation
+\textbf{Increasing block size improves spatial locality exploitation}:
     \begin{itemize}
         \item But increases miss penalty
         \item Very large blocks may cause pollution
     \end{itemize}
-\end{itemize}
 \end{concept}
+
+\multend
 
 \subsection{Cache Performance Analysis}
 
@@ -600,7 +666,7 @@ for (i = 0; i < N; i++) {
 \end{KR}
 
 
-\begin{example}
+\begin{example2}{Cache Optimization in Matrix Multiplication}
 Consider a matrix multiplication function for 1000×1000 matrices. Two implementations are shown:
 
 \begin{lstlisting}[language=C, style=basesmol]
@@ -663,4 +729,4 @@ Version B (the blocked/tiled implementation) will perform significantly better f
    \end{itemize}
 
 This tiling technique is a classic cache optimization that can improve performance by orders of magnitude for matrix operations on large matrices.
-\end{example}
+\end{example2}

@@ -48,19 +48,31 @@ SPI is a synchronous serial bus primarily for on-board connections:
     \item Inactive slaves (SS = '1') put their MISO line in tri-state (high impedance)
     \item Only one selected slave drives its MISO line at a time
 \end{itemize}
-\includegraphics[width=0.6\linewidth]{single_master_mult_slaves.png}
+\includegraphics[width=0.7\linewidth]{single_master_mult_slaves.png}
 \end{concept}
-
-
-
-
 
 \multend
 
+\begin{definition}{SPI Implementation Using Shift Registers}
+\begin{itemize}
+    \item Both master and slave contain 8-bit shift registers
+    \item Bits are shifted out on one clock edge (toggling edge)
+    \item Bits are sampled on the other clock edge (sampling edge)
+    \item 8 clock cycles exchange 8 bits in each direction simultaneously
+    \item After 8 clock cycles, data has been exchanged in both directions
+    \item Status flags (TXE, RXNE) indicate buffer status
+\end{itemize}
+\includegraphics[width=\linewidth]{spi_impleemtation.png}
+\end{definition}
 
 
 
-\subsubsection{SPI Modes and Timing}
+
+\subsection{SPI Modes and Timing}
+
+\begin{definition}{SPI Timing}\\
+    \includegraphics[width=\linewidth]{spi_timing_overview.png}
+\end{definition}
 
 \begin{concept}{Clock Polarity and Phase}
 SPI has four different modes based on two parameters:
@@ -216,20 +228,9 @@ SPI has four different modes based on two parameters:
 
 \subsection{SPI Implementation}
 
-\mult{2}
 
-\begin{concept}{SPI Implementation Using Shift Registers}
-\begin{itemize}
-    \item Both master and slave contain 8-bit shift registers
-    \item Bits are shifted out on one clock edge (toggling edge)
-    \item Bits are sampled on the other clock edge (sampling edge)
-    \item 8 clock cycles exchange 8 bits in each direction simultaneously
-    \item After 8 clock cycles, data has been exchanged in both directions
-    \item Status flags (TXE, RXNE) indicate buffer status
-\end{itemize}
-\end{concept}
 
-\subsubsection{STM32 SPI Implementation}
+
 
 \begin{concept}{STM32 SPI Architecture}\\
 The STM32F4 SPI peripheral includes:
@@ -241,9 +242,41 @@ The STM32F4 SPI peripheral includes:
     \item Support for different communication modes
     \item DMA capability for high-speed transfers
 \end{itemize}
+\includegraphics[width=\linewidth]{spi_implementation.png}
 \end{concept}
 
-\multend
+
+\begin{theorem}{Synchronizing Hardware and Software} 
+    When shall software access the shift register?\\
+    \includegraphics[width=\linewidth]{spi_synchonozing.png}
+\end{theorem}
+
+\begin{KR}{Simultaneously Handling Data Transmission and Reception}
+    Full Duplex: Check TXE (Transmit Buffer Empty) and RXNE (Receive Buffer Not Empty) flags to manage data flow.\\
+    \includegraphics[width=0.8\linewidth]{spi_simult_handling.png}
+\end{KR}
+
+\begin{corollary}{Synchronizing Hardware and Software}
+    \begin{itemize}
+        \item TXE (TX Buffer Empty) $\rightarrow$ Software can write next TX Byte to SPI\_DR
+        \item RXNE (RX Buffer Not Empty) $\rightarrow$ a byte has been received. Software can read it from SPI\_DR
+        \item BSY (Busy) $\rightarrow$ Transmission in progress
+    \end{itemize}
+    \includegraphics[width=\linewidth]{transmitting_spi.png}\\
+    \includegraphics[width=\linewidth]{receiving_spi.png}
+\end{corollary}
+
+
+
+\subsubsection{STM32 SPI Configuration and Usage}
+
+\begin{definition}{STM32 SPI Registers}\\
+    \includegraphics[width=\linewidth]{spi_registers.png}
+\end{definition}
+
+\begin{concept}{SPI Register Bits}\\
+    \includegraphics[width=\linewidth]{spi_register_bits.png}
+\end{concept}
 
 \begin{code}{STM32 SPI Register Configuration}
 \begin{lstlisting}[language=C, style=basesmol]
@@ -329,13 +362,23 @@ void spi_transfer(uint8_t *tx_data, uint8_t *rx_data, uint16_t length) {
 \end{lstlisting}
 \end{KR}
 
-\begin{concept}{Synchronizing Hardware and Software}
+\subsubsection{SPI Flash Devices} 
+
+\begin{definition}{Save Board Area}
+    Example: Micron M25PE40 Serial Flash Memory
     \begin{itemize}
-        \item TXE (TX Buffer Empty) $\rightarrow$ Software can write next TX Byte to SPI\_DR
-        \item RXNE (RX Buffer Not Empty) $\rightarrow$ a byte has been received. Software can read it from SPI\_DR
-        \item BSY (Busy) $\rightarrow$ Transmission in progress
+        \item 4 Mbit NOR Flash
+        \item 6 x 5 mm package size
+        \item SCLK: up to 75 MHz
     \end{itemize}
-    \includegraphics[width=0.85\linewidth]{transmitting_spi.png}\\
-    \includegraphics[width=0.85\linewidth]{receiving_spi.png}
-\end{concept}
+
+    \begin{minipage}{0.5\linewidth}
+        \includegraphics[width=\linewidth]{spi_flash1.png}
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+        \includegraphics[width=\linewidth]{spi_flash2.png}
+    \end{minipage}
+\end{definition}
+
+
     

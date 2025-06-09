@@ -1,23 +1,20 @@
 \section{GPIO (General Purpose I/O)}
 
-\subsection{GPIO Fundamentals}
-
 \begin{definition}{GPIO}\\
     \begin{minipage}{0.5\linewidth}
-    \textbf{Situation:}
     \begin{itemize}
         \item Microcontroller as a general purpose device
         \item Many functional blocks included
     \end{itemize}
-
+    \includegraphics[width=0.6\linewidth]{gpio_whatisit.png}
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+    \vspace{-5mm}
     \textbf{Problem:}
     \begin{itemize}
         \item Limited number of pins
         \item Many functions to be implemented \\ (many functional blocks included)
     \end{itemize}
-    \end{minipage}
-    \begin{minipage}{0.5\linewidth}
-
     \textbf{Solution:}
     \begin{itemize}
         \item Many (all) pins are configurable as GPIO
@@ -55,49 +52,12 @@ Not all functions can be used simultaneously; configuration registers define pin
 \end{theorem}
 \end{minipage}
 
-
-
-\subsection{GPIO Structure}
-
-
+\subsubsection{GPIO Structure and Registers}
 
 \begin{concept}{Structure}\\
-    \includegraphics[width=\linewidth]{structure_gpio.png}
+   \includegraphics[width=\linewidth]{gpio_structure.png}
 \end{concept}
 
-\begin{corollary}{Push-Pull vs Open-Drain Outputs}
-
-    \begin{minipage}{0.5\linewidth}
-    \textbf{Push-Pull:}
-    \begin{itemize}
-        \item Can actively drive output high (to VDD) \\ or low (to GND)
-        \item Faster switching times, can source and sink current
-        \item Default output mode for GPIO pins
-    \end{itemize}
-    \end{minipage}
-    \begin{minipage}{0.5\linewidth}
-    \textbf{Open-Drain:}
-    \begin{itemize}
-        \item Can only actively drive output low
-        \item Relies on external pull-up resistor to reach high state
-        \item Multiple devices can share a line without conflicts (e.g., I2C bus)
-        \item Used in "wired-AND" configurations
-    \end{itemize}
-    \end{minipage}
-\end{corollary}
-
-\columnbreak
-
-\subsection{Data Registers and Operations}
-
-\subsubsection{Register Access}
-
-\begin{formula}{Register Address} = Base address + Offset
-    \begin{itemize}
-        \item Offset is given for each register in reference Manual
-        \item Base address is defined in memory map (reference manual)
-    \end{itemize}
-\end{formula}
 
 \begin{definition}{GPIO Registers}
 Each GPIO port has several configuration registers:
@@ -109,10 +69,18 @@ Each GPIO port has several configuration registers:
     \item \textbf{GPIOx\_IDR}: Input data register (read-only) - reads the pin state
     \item \textbf{GPIOx\_ODR}: Output data register (read/write) - sets the output state
     \item \textbf{GPIOx\_BSRR}: Bit set/reset register (atomic operations)
-    \item \textbf{GPIOx\_LCKR}: Configuration lock register
     \item \textbf{GPIOx\_AFRL/H}: Alternate function registers (AF selection for pins 0-7 and 8-15)
 \end{itemize}
 \end{definition}
+
+\subsubsection{Register Access}
+
+\begin{theorem}{Register Address} = Base address + Offset
+    \begin{itemize}
+        \item Offset is given for each register in reference Manual
+        \item Base address is defined in memory map (reference manual)
+    \end{itemize}
+\end{theorem}
 
 \begin{corollary}{Data Operations}
     \begin{itemize}
@@ -121,7 +89,7 @@ Each GPIO port has several configuration registers:
     \end{itemize}
 \end{corollary}
 
-\subsubsection{Hardware Abstraction Layer (HAL)}
+\subsection{Hardware Abstraction Layer (HAL)}
 
 \begin{definition}{HAL for GPIO}\\
 The Hardware Abstraction Layer provides a structured way to access GPIO registers:
@@ -133,12 +101,17 @@ The Hardware Abstraction Layer provides a structured way to access GPIO register
     \item Helper macros for bit manipulation
 \end{itemize}
 This approach makes code more readable and maintainable than direct register address manipulation.
-\includegraphics[width=0.7\linewidth]{HAL1.png}\\
+
+\begin{minipage}{0.6\linewidth}
+\includegraphics[width=\linewidth]{HAL1.png}
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
     \textbf{Accessing a register:}
     \begin{itemize}
         \item each GPIO port has the same 10 registers 
         \item there are 11 GPIO ports $\rightarrow$ GPIOA to GPIOI
     \end{itemize}
+    \end{minipage}
 \end{definition}
 
 \begin{code}{Using HAL for GPIO}
@@ -161,79 +134,184 @@ GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
     \includegraphics[width=\linewidth]{HAL2.png}
 \end{concept}
 
+\raggedcolumns
+\columnbreak
 
-
-\subsection{GPIO Configuration}
+\subsection{GPIO Register Configuration}
 
 \important{SEP Handout: Datenblattauszug GPIO S.2-3 Addresses and Configurations}
 
+\begin{concept}{Mode Register GPIOx\_MODER} Configuring Direction\\
+    \includegraphics[width=\linewidth]{mode_register_gpoi.png}
+
+    \begin{minipage}{0.65\linewidth}
+        The GPIOx\_MODER register configures each pin's direction:
+        \begin{itemize}
+            \item \textbf{00}: Input mode
+            \item \textbf{01}: General purpose output mode
+            \item \textbf{10}: Alternate function mode
+            \item \textbf{11}: Analog mode
+        \end{itemize}
+        Each pin uses 2 bits in the register, allowing for 16 pins per port.
+    \end{minipage}
+    \begin{minipage}{0.35\linewidth}
+        \includegraphics[width=\linewidth]{gpiomoder2.png}
+    \end{minipage}
+\end{concept}
+
+\begin{concept}{Output Type (OTYPER)} Configuring Output Type\\
+    \includegraphics[width=\linewidth]{gpio_otyper1.png}
+
+    \begin{minipage}{0.6\linewidth}
+    The GPIOx\_OTYPER register configures the output driver type:
+    \begin{itemize}
+        \item \textbf{0}: Push-pull (can actively drive high or low)
+        \item \textbf{1}: Open-drain (can drive low, relies on external pull-up for high)
+    \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.4\linewidth}
+        \includegraphics[width=\linewidth]{gpio_otyper2.png}
+    \end{minipage}
+\end{concept}
+
+\begin{theorem}{Push-Pull vs Open-Drain Outputs}
+
+    \begin{minipage}{0.6\linewidth}
+    \textbf{Push-Pull:}
+    \begin{itemize}
+        \item Can actively drive output high (to VDD) \\ or low (to GND)
+        \item Faster switching times, can source and sink current
+        \item Default output mode for GPIO pins
+    \end{itemize}
+    \textbf{Open-Drain:}
+    \begin{itemize}
+        \item Can only actively drive output low
+        \item Relies on external pull-up resistor to reach high state
+        \item Multiple devices can share a line without conflicts (e.g., I2C bus)
+        \item Used in "wired-AND" configurations
+    \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.4\linewidth}
+    \includegraphics[width=\linewidth]{gpio_pushpullvsopendrain.png}
+    \end{minipage}
+\end{theorem}
+
+\begin{corollary}{Open-Drain Output} 
+    Pull down-transistor only $\rightarrow$ no pull up-transistor!\\
+    \includegraphics[width=\linewidth]{opendrain_gpio.png}
+\end{corollary}
+
 \mult{2}
 
-\begin{formula}{Input Data Register (IDR)}\\
-The GPIOx\_IDR is a read-only register containing the input value of the corresponding I/O port.
-\end{formula}
-
-\begin{formula}{Direction Configuration (MODER)}\\
-The GPIOx\_MODER register configures each pin's direction:
-\begin{itemize}
-    \item \textbf{00}: Input mode
-    \item \textbf{01}: General purpose output mode
-    \item \textbf{10}: Alternate function mode
-    \item \textbf{11}: Analog mode
-\end{itemize}
-Each pin uses 2 bits in the register, allowing for 16 pins per port.
-\end{formula}
-
-\begin{formula}{Output Type (OTYPER)}\\
-The GPIOx\_OTYPER register configures the output driver type:
-\begin{itemize}
-    \item \textbf{0}: Push-pull (can actively drive high or low)
-    \item \textbf{1}: Open-drain (can drive low, relies on external pull-up for high)
-\end{itemize}
-\end{formula}
-
-\begin{formula}{Pull-up/Pull-down (PUPDR)}\\
-The GPIOx\_PUPDR register configures internal resistors:
-\begin{itemize}
-    \item \textbf{00}: No pull-up, no pull-down
-    \item \textbf{01}: Pull-up
-    \item \textbf{10}: Pull-down
-    \item \textbf{11}: Reserved
-\end{itemize}
-\end{formula}
-
-\begin{formula}{Output Data Register (ODR)}\\
-The GPIOx\_ODR can be read and written to set the output state of GPIO pins.
-\end{formula}
-
-\begin{formula}{Speed Configuration (OSPEEDR)}\\
-The GPIOx\_OSPEEDR register configures the output slew rate:
-\begin{itemize}
-    \item \textbf{00}: Low speed
-    \item \textbf{01}: Medium speed
-    \item \textbf{10}: High speed
-    \item \textbf{11}: Very high speed
-\end{itemize}
-\end{formula}
-
-\begin{formula}{Bit Set/Reset Register (BSRR)}\\
-The GPIOx\_BSRR allows atomic bit operations:
-\begin{itemize}
-    \item Bits [15:0]: Set corresponding ODR bit by writing '1'
-    \item Bits [31:16]: Reset corresponding ODR bit by writing '1'
-\end{itemize}
-This ensures atomic access without read-modify-write operations.
-\end{formula}
-
-\begin{KR}{Setting and Clearing Bits} GPIOx\_BSRR
+\begin{corollary}{Open-Drain Output with Pull-Up Resistor}
     \begin{itemize}
-        \item 0-15: Set Bits $\rightarrow$ 1: Set, 0: No Change
-        \item 16-31: Reset/Clear Bits $\rightarrow$ 1: Reset, 0: No Change
-        \item Ensures atomic access in software (no interruption possible)
+        \item External pull-up resistor is required to pull the line high when no device is driving it low
+        \item Transistor blocking (=switch open) \\ $\rightarrow$ $V_{out}$ is pulled up to level of VDD
+        \item Transistor conducting (=switch closed) \\ $\rightarrow$ $V_{out}$ is pulled down to GND
     \end{itemize}
-\end{KR}
+    \includegraphics[width=\linewidth]{gpio_opendrainwitpullup.png}
+\end{corollary}
+
+\begin{corollary}{Multiple open-drain outputs on a bus line}
+    \begin{itemize}
+        \item No electircal conflicts possible
+        \item Any device can pull signal low at any time
+    \end{itemize}
+    \vspace{3mm}
+    \includegraphics[width=\linewidth]{opendrainmultiple.png}
+\end{corollary}
 
 \multend
+
+\begin{concept}{Pull-up/Pull-down (PUPDR)} Configuring Pull-Up/Pull-Down\\
+    \includegraphics[width=\linewidth]{gpio_pupdr1.png}
+
+    \begin{minipage}{0.6\linewidth}
+    The GPIOx\_PUPDR register configures internal resistors:
+    \begin{itemize}
+        \item \textbf{00}: No pull-up, no pull-down
+        \item \textbf{01}: Pull-up
+        \item \textbf{10}: Pull-down
+        \item \textbf{11}: Reserved
+    \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.4\linewidth}
+        \includegraphics[width=\linewidth]{gpio_pupdr2.png}
+    \end{minipage}
+\end{concept}
+
+\begin{concept}{Speed Configuration (OSPEEDR)} Configuring Speed\\
+    \includegraphics[width=\linewidth]{gpio_ospeedr1.png}
+   
+    The GPIOx\_OSPEEDR register configures the output slew rate:
+    \begin{itemize}
+        \item \textbf{00}: Low speed
+        \item \textbf{01}: Medium speed
+        \item \textbf{10}: High speed
+        \item \textbf{11}: Very high speed
+    \end{itemize}
+    \important{careful: OSPEEDR register not shown in structure graphic!}
+\end{concept}
+
+\subsubsection{I/O Port Configuration}
+
+\begin{definition}{Overview I/O Port Configuration}
+        \begin{itemize}
+            \item GP = General Purpose
+            \item PP = Push-Pull
+            \item PU = Pull-Up
+            \item PD = Pull-Down
+            \item OD = Open-Drain
+            \item AF = Alternate Function
+        \end{itemize}
+        \vspace{3mm}
+        \includegraphics[width=0.7\linewidth]{gpio_ioports.png}
+\end{definition}
+
+\begin{concept}{Input Data Register (IDR)}\\
+    \includegraphics[width=\linewidth]{gpio_idr1.png}
+
+    \begin{minipage}{0.5\linewidth}
+    The GPIOx\_IDR is a read-only register containing the input value of the corresponding I/O port.
+    \end{minipage}
+    \hspace{3mm}
+    \begin{minipage}{0.4\linewidth}
+        \includegraphics[width=\linewidth]{gpio_idr2.png}
+    \end{minipage}
+\end{concept}
+
+\begin{concept}{Output Data Register (ODR)}\\
+    \includegraphics[width=\linewidth]{gpio_odr1.png}
+
+    \begin{minipage}{0.5\linewidth}
+    The GPIOx\_ODR can be read and written to set the output state of GPIO pins.
+    \end{minipage}
+    \hspace{3mm}
+    \begin{minipage}{0.4\linewidth}
+    \includegraphics[width=\linewidth]{gpio_odr2.png}
+    \end{minipage}
+\end{concept}
+
+
+
+\begin{concept}{Bit Set/Reset Register (BSRR)}\\
+    \includegraphics[width=\linewidth]{gpio_bsrr.png}
+
+The GPIOx\_BSRR allows atomic bit operations:
+\begin{itemize}
+    \item Bits [15:0]: Set corresponding ODR bit by writing '1' ('0' no change)
+    \item Bits [31:16]: Reset corresponding ODR bit by writing '1' ('0' no change)
+\end{itemize}
+This ensures atomic access without read-modify-write operations $\rightarrow$ no interruption possible
+\end{concept}
+
+
+\columnbreak
+
+
+
+
+
 
 \subsubsection{GPIO Configuration KR and examples}
 
