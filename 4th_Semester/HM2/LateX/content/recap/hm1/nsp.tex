@@ -1,0 +1,435 @@
+\section{Numerische Lösung von Nullstellenproblemen}
+
+\begin{lemma}{Nullstellensatz von Bolzano}
+Sei $f:[a,b] \rightarrow \mathbb{R}$ stetig. Falls 
+\vspace{-1mm}\\
+$$f(a) \cdot f(b) < 0$$ 
+\vspace{-3mm}\\
+dann existiert mindestens eine Nullstelle $\xi \in (a,b)$.
+\end{lemma}
+
+
+
+\begin{KR}{Nullstellenproblem systematisch lösen}
+\begin{enumerate}
+    \item Existenz prüfen:
+    \begin{itemize}
+        \item Intervall $[a,b]$ identifizieren
+        \item Vorzeichenwechsel prüfen: $f(a) \cdot f(b) < 0$ 
+        \item Stetigkeit von $f$ sicherstellen
+    \end{itemize}
+    
+    \item Verfahren auswählen:
+    \begin{itemize}
+        \item Fixpunktiteration: einfache Umformung $x = F(x)$ möglich
+        \item Newton: $f'(x)$ leicht berechenbar
+        \item Sekantenverfahren: $f'(x)$ schwer berechenbar
+    \end{itemize}
+    
+    \item Konvergenz sicherstellen:
+    \begin{itemize}
+        \item Fixpunktiteration: $|F'(x)| < 1$ im relevanten Bereich
+        \item Newton: $|\frac{f(x)f''(x)}{[f'(x)]^2}| < 1$ im relevanten Bereich
+        \item Sekanten: Konvergenzgeschwindigkeit beachten
+    \end{itemize}
+
+    \item Geeigneten Startwert wählen:
+    \begin{itemize}
+        \item Fixpunkt: $x_0$ im Intervall und nahe Fixpunkt ($|f'(x)| < 1$)
+        \item Newton: $f'(x_0) \neq 0$
+        \begin{itemize}
+            \item Bei mehrfachen Nullstellen: Start zwischen Wendepunkt und Nullstelle
+            \item Für Polynome: Startwerte zwischen -1 und 1 oft geeignet
+        \end{itemize}
+        \item Sekanten: Zwei Startwerte $x_0$ und $x_1$: $f(x_0) \neq f(x_1)$
+        \begin{itemize}
+            \item Idealerweise auf verschiedenen Seiten der Nullstelle
+        \end{itemize}
+    \end{itemize}
+    
+    \item Abbruchkriterien festlegen:
+    \begin{itemize}
+        \item Funktionswert: $|f(x_n)| < \epsilon_1$
+        \item Iterationsschritte: $|x_{n+1}-x_n| < \epsilon_2$
+        \item Maximale Iterationszahl
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+
+
+\begin{example2}{Verfahrensauswahl}\\
+Finden Sie die positive Nullstelle von $f(x) = x^3 - 2x - 5$
+
+\paragraph{Vorgehen:}
+\begin{enumerate}
+    \item Existenz:
+    \begin{itemize}
+        \item $f(2) = -1 < 0$ und $f(3) = 16 > 0$
+        \item $\Rightarrow$ Nullstelle in $[2,3]$
+    \end{itemize}
+    
+    \item Verfahrenswahl:
+    \begin{itemize}
+        \item $f'(x) = 3x^2 - 2$ leicht berechenbar
+        \item $\Rightarrow$ Newton-Verfahren geeignet
+    \end{itemize}
+    
+    \item Konvergenzcheck:
+    \begin{itemize}
+        \item $f'(x) > 0$ für $x > 0.82$
+        \item $f''(x) = 6x$ monoton
+        \item $\Rightarrow$ Newton-Verfahren konvergiert
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+
+
+\raggedcolumns
+\columnbreak
+
+
+\subsubsection{Fixpunktiteration}
+
+\begin{definition}{Fixpunktgleichung}
+ist eine Gleichung der Form: $F(x)=x$\\
+Die Lösungen $\bar{x}$, für die $F(\bar{x})=\bar{x}$ erfüllt ist, heissen Fixpunkte.
+\end{definition}
+
+\begin{concept}{Grundprinzip der Fixpunktiteration}
+sei $F:[a,b] \rightarrow \mathbb{R}$ mit $x_0 \in [a,b]$ 
+$$\text{Die rekursive Folge }x_{n+1} \equiv F(x_n), \quad n=0,1,2,\ldots$$
+\vspace{-4mm}\\
+heisst Fixpunktiteration von $F$ zum Startwert $x_0$.
+\end{concept}
+
+
+
+\begin{theorem}{Konvergenzverhalten}\\
+Sei $F:[a,b] \rightarrow \mathbb{R}$ mit stetiger Ableitung $F'$ und $\bar{x} \in [a,b]$ ein Fixpunkt von $F$. Dann gilt für die Fixpunktiteration $x_{n+1}=F(x_n)$:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Anziehender Fixpunkt:}
+    \vspace{-3mm}\\
+    $$|F'(\bar{x})| < 1$$
+    \vspace{-4mm}\\
+    $x_n$ konvergiert gegen $\bar{x}$,\\
+    falls $x_0$ nahe genug bei $\bar{x}$
+\end{minipage}
+\hspace{3mm}
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Abstossender Fixpunkt:}
+    \vspace{-3mm}\\
+    $$|F'(\bar{x})| > 1$$
+    \vspace{-4mm}\\
+    $x_n$ konvergiert für keinen\\
+    Startwert $x_0 \neq \bar{x}$
+\end{minipage}
+\end{theorem}
+
+\begin{lemma}{Banachscher Fixpunktsatz}
+$F:[a,b] \rightarrow [a,b]$ und $\exists$ Konstante $\alpha$:
+\begin{itemize}
+    \item $0 < \alpha < 1$ (Lipschitz-Konstante)
+    \item $|F(x)-F(y)| \leq \alpha|x-y|$ für alle $x,y \in [a,b]$
+\end{itemize}
+\vspace{2mm}
+
+
+\begin{minipage}[t]{0.35\textwidth}
+    Dann gilt:
+\begin{itemize}
+    \item $F$ hat genau einen Fixpunkt $\bar{x}$ in $[a,b]$
+    \item Die Fixpunktiteration konvergiert gegen $\bar{x}$ für alle $x_0 \in [a,b]$
+\end{itemize}
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}[t]{0.55\textwidth}
+    \textbf{Fehlerabschätzungen}:
+    \vspace{-2mm}\\
+    $$\textbf{a-priori: } |x_n-\bar{x}| \leq \frac{\alpha^n}{1-\alpha} \cdot |x_1-x_0|$$
+    $$\textbf{a-posteriori: } |x_n-\bar{x}| \leq \frac{\alpha}{1-\alpha} \cdot |x_n-x_{n-1}|$$
+\end{minipage}
+\end{lemma}
+
+\begin{KR}{Konvergenznachweis für Fixpunktiteration}
+\begin{enumerate}
+    \item Bringe die Gleichung in Fixpunktform: $f(x)=0 \Rightarrow x = F(x)$
+    \begin{itemize}
+        \item Form mit kleinstem $|F'(x)|$ wählen
+    \end{itemize}
+    \item Prüfe, ob $F$ das Intervall $[a,b]$ in sich abbildet:
+    \begin{itemize}
+        \item Wähle geeignetes Intervall ($[a,b]$ $F(a) \geq a$ und $F(b) \leq b$)
+    \end{itemize}
+    \item Bestimme die Lipschitz-Konstante $\alpha$: $\rightarrow$ Berechne $F'(x)$
+    \begin{itemize}
+        \item Finde $\alpha = \max_{x \in [a,b]} |F'(x)|$ und prüfe $\alpha < 1$
+    \end{itemize}
+    \item Fehlerabschätzung:
+    \begin{itemize}
+        \item A-priori: $|x_n-\bar{x}| \leq \frac{\alpha^n}{1-\alpha}|x_1-x_0|$
+        \item A-posteriori: $|x_n-\bar{x}| \leq \frac{\alpha}{1-\alpha}|x_n-x_{n-1}|$
+    \end{itemize}
+\end{enumerate}
+
+\begin{minipage}[t]{0.5\textwidth}
+    4. Berechnen Sie die nötigen \\Iterationen für Genauigkeit tol:
+\end{minipage}
+\begin{minipage}[t]{0.4\textwidth}
+    \vspace{-3mm}
+$$n \geq \frac{\ln(\frac{tol \cdot (1-\alpha)}{|x_1-x_0|})}{\ln \alpha}$$
+\end{minipage}
+\end{KR}
+
+\begin{example2}{Fixpunktiteration} Nullstellen von $f(x)=e^x - x - 2$
+
+Umformung in Fixpunktform: $x = \ln(x+2)$, also $F(x)=\ln(x+2)$
+\begin{enumerate}
+    \item $F'(x) = \frac{1}{x+2}$ monoton fallend
+    \item Für $I=[1,2]$: $F(1)=1.099 > 1$, $F(2)=1.386 < 2$
+    \item $\alpha = \max_{x \in [1,2]} |\frac{1}{x+2}| = \frac{1}{3} < 1$
+    \item Konvergenz für Startwerte in $[1,2]$ gesichert
+    \item Für Genauigkeit $10^{-6}$ benötigt: $n \geq 12$ Iterationen
+\end{enumerate}
+\end{example2}
+
+
+\begin{example2}{Fixpunktiteration}
+Bestimmen Sie $\sqrt{3}$ mittels Fixpunktiteration.
+\begin{enumerate}
+    \item Umformung: $x^2 = 3 \Rightarrow x = \frac{x^2+3}{2x} =: F(x)$
+    
+    \item Konvergenznachweis für $[1,2]$: $F'(x) = \frac{x^2-3}{2x^2}$
+
+    \item $F([1,2]) \subseteq [1,2]$ und $|F'(x)| \leq \alpha = 0.25 < 1$ für $x \in [1,2]$
+    
+    \item Für Genauigkeit $10^{-6}$:
+    \begin{itemize}
+        \item $|x_1-x_0| = |1.5-2| = 0.5$
+        \item $n \geq \frac{\ln(10^{-6} \cdot 0.75/0.5)}{\ln 0.25} \approx 12$
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+
+
+\subsubsection{Newton-Verfahren}
+
+\begin{concept}{Grundprinzip Newton-Verfahren}
+    \vspace{-2mm}\\
+\begin{minipage}[t]{0.6\textwidth}
+    Approximation der NS durch \\ sukzessive Tangentenberechnung:
+\end{minipage}
+\begin{minipage}{0.3\textwidth}
+    \vspace{-3mm}
+    $$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
+\end{minipage}
+\vspace{-2mm}\\
+\begin{minipage}[t]{0.6\textwidth}
+    Konvergiert, wenn für alle $x$ im \\ relevanten Intervall gilt:
+\end{minipage}
+\begin{minipage}{0.3\textwidth}
+    \vspace{-3mm}
+    $$\left|\frac{f(x) \cdot f''(x)}{[f'(x)]^2}\right| < 1$$
+\end{minipage}
+\end{concept}
+
+\begin{KR}{Newton-Verfahren anwenden}
+\begin{enumerate}
+    \item Funktion $f(x)$ und Ableitung $f'(x)$ aufstellen
+    \item Geeigneten Startwert $x_0$ nahe der Nullstelle wählen
+    \begin{itemize}
+        \item Prüfen, ob $f'(x_0) \neq 0$
+    \end{itemize}
+    \item Iterieren bis zur gewünschten Genauigkeit:
+    $x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$
+    \item Abbruchkriterien prüfen:
+    \begin{itemize}
+        \item Funktionswert: $|f(x_n)| < \epsilon_1$
+        \item Änderung aufeinanderfolgenden Werte: $|x_{n+1}-x_n| < \epsilon_2$
+        \item Maximale Iterationszahl nicht überschritten
+    \end{itemize}
+    \item Fehlerabschätzung:
+    \begin{itemize}
+        \item $|x_n-\bar{x}| < \epsilon$ falls
+        \item $f(x_n-\epsilon) \cdot f(x_n+\epsilon) < 0$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Newton-Verfahren} Nullstellen von $f(x)=x^2-2$\\
+Ableitung: $f'(x) = 2x$, Startwert $x_0 = 1$
+\vspace{1mm}\\
+\begin{minipage}[t]{0.65\textwidth}
+    \vspace{-3mm}
+    \begin{enumerate}
+        \item $x_1 = 1 - \frac{1^2-2}{2 \cdot 1} = 1.5$
+        \item $x_2 = 1.5 - \frac{1.5^2-2}{2 \cdot 1.5} = 1.4167$
+        \item $x_3 = 1.4167 - \frac{1.4167^2-2}{2 \cdot 1.4167} = 1.4142$
+    \end{enumerate}
+\end{minipage}
+\begin{minipage}[t]{0.3\textwidth}
+    $\rightarrow$ Konvergenz \\ gegen $\sqrt{2}$ nach \\ wenigen Schritten
+\end{minipage}
+\end{example2}
+
+
+
+
+
+\begin{theorem}{Vereinfachtes Newton-Verfahren}\\
+    \begin{minipage}{0.5\textwidth}
+        Alternative Variante mit \\ konstanter Ableitung:
+    \end{minipage}
+    \begin{minipage}{0.25\textwidth}
+        \vspace{-5mm}
+        $$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_0)}$$
+    \end{minipage}
+    \vspace{1mm}\\
+    Konvergiert langsamer, aber benötigt weniger Rechenaufwand.
+\end{theorem}
+
+\begin{concept}{Sekantenverfahren}\\
+    Alternative zum Newton-Verfahren ohne Ableitungsberechnung. Verwendet zwei Punkte $(x_{n-1}, f(x_{n-1}))$ und $(x_n, f(x_n))$:
+    \vspace{-2mm}\\
+    $$x_{n+1} = x_n - \frac{x_n-x_{n-1}}{f(x_n)-f(x_{n-1})} \cdot f(x_n)$$
+    \vspace{-3mm}\\
+    Benötigt zwei Startwerte $x_0$ und $x_1$.
+\end{concept}
+
+
+\begin{example2}{Sekantenverfahren} Nullstellen von $f(x)=x^2-2$\\
+    %TODO: check if this is correct and/or relevant - either correct or replace with better example
+Startwerte $x_0 = 1$ und $x_1 = 2$
+\vspace{1mm}\\
+\begin{minipage}[t]{0.65\textwidth}
+    \vspace{-3mm}
+    \begin{enumerate}
+        \item $x_2 = 1 - \frac{1-2}{1^2-2} \cdot 1 = 1.5$
+        \item $x_3 = 1.5 - \frac{1.5-1}{1.5^2-2} \cdot 1.5 = 1.4545$
+        \item $x_4 = 1.4545 - \frac{1.4545-1.5}{1.4545^2-2} \cdot 1.4545 = 1.4143$
+    \end{enumerate}
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}[t]{0.28\textwidth}
+    $\rightarrow$ Konvergenz\\ gegen $\sqrt{2}$ nach \\wenigen Schritten
+\end{minipage}
+\end{example2}
+
+\begin{example2}{Newton für Nichtlineare Systeme}
+Bestimmen Sie die Nullstelle des Systems:
+$f_1(x,y) = x^2 + y^2 - 1 = 0$
+$f_2(x,y) = y - x^2 = 0$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Jacobi-Matrix aufstellen:
+    $J = \begin{psmallmatrix} 
+    2x & 2y \\
+    -2x & 1
+    \end{psmallmatrix}$
+    
+    \item Newton-Iteration:\\
+    $\begin{pmatrix} x_{k+1} \\ y_{k+1} \end{pmatrix} = 
+    \begin{pmatrix} x_k \\ y_k \end{pmatrix} - 
+    J^{-1}(x_k,y_k) \begin{pmatrix} f_1(x_k,y_k) \\ f_2(x_k,y_k) \end{pmatrix}$
+    
+    \item Mit Startwert $(0.5, 0.25)$ erste Iteration durchführen
+\end{enumerate}
+\end{example2}
+
+
+
+
+
+
+\subsubsection{Fehlerabschätzung}
+
+\begin{KR}{Fehlerabschätzung für Nullstellen}\\
+So schätzen Sie den Fehler einer Näherungslösung ab:
+\begin{enumerate}
+    \item Sei $x_n$ der aktuelle Näherungswert
+    \item Wähle Toleranz $\epsilon > 0$
+    \item Prüfe Vorzeichenwechsel: $f(x_n-\epsilon) \cdot f(x_n+\epsilon) < 0$
+    \item Falls ja: Nullstelle liegt in $(x_n-\epsilon, x_n+\epsilon)$
+    \item Damit gilt: $|x_n-\xi| < \epsilon$
+\end{enumerate}
+\end{KR}
+
+
+\begin{example2}{Praktische Fehlerabschätzung} Fehlerbestimmung bei $f(x)=x^2-2$
+
+    \begin{minipage}[t]{0.6\textwidth}
+        
+        \begin{enumerate}
+            \item Näherungswert: $x_3 = 1.4142157$
+            \item Mit $\epsilon = 10^{-5}$:
+            \item $f(x_3-\epsilon) = 1.4142057^2 - 2 < 0$
+            \item $f(x_3+\epsilon) = 1.4142257^2 - 2 > 0$
+        \end{enumerate}
+    \end{minipage}
+    \begin{minipage}[t]{0.35\textwidth}
+        \textbf{Also}: $|x_3-\sqrt{2}| < 10^{-5}$
+        
+        $\rightarrow$ Nullstelle liegt in $(1.4142057, 1.4142257)$
+    \end{minipage}
+\end{example2}
+
+\subsubsection{Konvergenzverhalten}
+
+\begin{definition}{Konvergenzordnung}
+    Sei $(x_n)$ eine gegen $\bar{x}$ konvergierende Folge. \\
+    Die Konvergenzordnung $q \geq 1$ ist definiert durch:
+    \vspace{-2mm}\\
+    $$|x_{n+1}-\bar{x}| \leq c \cdot |x_n-\bar{x}|^q$$
+    wo $c > 0$ eine Konstante. Für $q = 1$ muss zusätzl. $c < 1$ gelten.
+\end{definition}
+
+\begin{theorem}{Konvergenzordnungen der Verfahren} Konvergenzgeschwindigkeiten
+    \vspace{1mm}\\
+    \textbf{Newton-Verfahren:} Quadratische Konvergenz: $q = 2$
+    \vspace{1mm}\\
+    \textbf{Vereinfachtes Newton:} Lineare Konvergenz: $q = 1$
+    \vspace{1mm}\\
+    \textbf{Sekantenverfahren:} Superlineare Konvergenz: $q = \frac{1+\sqrt{5}}{2} \approx 1.618$
+\end{theorem}
+
+\begin{example2}{Konvergenzgeschwindigkeit} Vergleich der Verfahren:
+    \vspace{1mm}\\
+    Startwert $x_0 = 1$, Funktion $f(x) = x^2 - 2$, Ziel: $\sqrt{2}$
+    \begin{center}
+    \begin{tabular}{l|c|c|c}
+    n & Newton & Vereinfacht & Sekanten \\\hline
+    1 & 1.5000000 & 1.5000000 & 1.5000000\\
+    2 & 1.4166667 & 1.4500000 & 1.4545455\\
+    3 & 1.4142157 & 1.4250000 & 1.4142857\\
+    4 & 1.4142136 & 1.4125000 & 1.4142136
+    \end{tabular}
+    \end{center}
+\end{example2}
+
+
+
+\begin{example2}{Fehleranalyse der Verfahren}
+Vergleich der Fehlerkonvergenz für $f(x) = e^x - x - 2$:
+
+\paragraph{Theoretisch:}
+\begin{itemize}
+    \item Newton: $|e_{n+1}| \leq C|e_n|^2$ mit $e_n = x_n - \xi$
+    \item Sekanten: $|e_{n+1}| \leq C|e_n|^{1.618}$
+    \item Fixpunkt: $|e_{n+1}| \leq \alpha|e_n|$ mit $\alpha < 1$
+\end{itemize}
+
+\paragraph{Praktisch:} Mit $x_0 = 1$:
+\begin{center}
+\begin{tabular}{l|c|c|c}
+n & $|x_n-\xi|_{Newton}$ & $|x_n-\xi|_{Sekanten}$ & $|x_n-\xi|_{Fixpunkt}$ \\\hline
+1 & 1.0e-1 & 2.3e-1 & 3.1e-1 \\
+2 & 5.2e-3 & 4.5e-2 & 9.6e-2 \\
+3 & 1.4e-5 & 3.8e-3 & 3.0e-2
+\end{tabular}
+\end{center}
+\end{example2}
+

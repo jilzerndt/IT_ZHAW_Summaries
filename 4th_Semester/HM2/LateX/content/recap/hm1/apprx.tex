@@ -1,0 +1,113 @@
+\section{Näherungsverfahren}
+
+\subsubsection{Approximations- und Rundungsfehler}
+
+\begin{definition}{Fehlerarten}
+Sei $\tilde{x}$ eine Näherung des exakten Wertes $x$:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{Absoluter Fehler:} 
+    \begin{center} $\left|\tilde{x}-x\right|$ \end{center}
+\end{minipage}
+\hspace{3mm}
+\begin{minipage}[t]{0.5\textwidth}
+    \textbf{Relativer Fehler:} 
+    \begin{center} $\left|\frac{\tilde{x}-x}{x}\right| \text{ bzw. } \frac{|\tilde{x}-x|}{|x|} \text{ für } x \neq 0$ \end{center}
+\end{minipage}
+\end{definition}
+
+\begin{concept}{Konditionierung}
+    Die Konditionszahl $K$ beschreibt die relative Fehlervergrösserung bei Funktionsauswertungen:
+    \vspace{1mm}\\
+\begin{minipage}{0.3\textwidth}
+    \vspace{-2mm}
+    $$K := \frac{|f'(x)| \cdot |x|}{|f(x)|}$$
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}{0.6\textwidth}
+\begin{itemize}
+    \item $K \leq 1$: gut konditioniert
+    \item $K > 1$: schlecht konditioniert
+    \item $K \gg 1$: sehr schlecht konditioniert
+\end{itemize}
+\end{minipage}
+\end{concept}
+
+
+\begin{theorem}{Fehlerfortpflanzung}
+Für $f$ (differenzierbar) gilt näherungsweise:
+\vspace{1mm}\\
+\begin{minipage}[t]{0.47\textwidth}
+    \textbf{Absoluter Fehler:}  
+    \vspace{-2mm}\\
+    $$|f(\tilde{x})-f(x)| \approx |f'(x)| \cdot |\tilde{x}-x|$$
+\end{minipage}
+\hspace{3mm}
+\begin{minipage}[t]{0.43\textwidth}
+    \textbf{Relativer Fehler:}  
+    \vspace{-2mm}\\
+    $$\frac{|f(\tilde{x})-f(x)|}{|f(x)|} \approx K \cdot \frac{|\tilde{x}-x|}{|x|}$$
+\end{minipage}
+\end{theorem}
+
+\begin{KR}{Analyse der Fehlerfortpflanzung einer Funktion}
+\begin{enumerate}
+    \item Berechnen Sie $f'(x)$ und die Konditionszahl $K$
+    \item Schätzen Sie den absoluten und den relativen Fehler ab
+    \item Beurteilen Sie die Konditionierung anhand von $K$
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Konditionierung berechnen}
+Für $f(x) = \sqrt{1+x^2}$ und $x_0 = 10^{-8}$:
+\begin{enumerate}
+    \item $f'(x) = \frac{x}{\sqrt{1+x^2}}$, $K = \frac{|x \cdot x|}{|\sqrt{1+x^2} \cdot (1+x^2)|} = \frac{x^2}{(1+x^2)^{3/2}}$
+    \item Für $x_0 = 10^{-8}$:
+    \begin{itemize}
+        \item $K(10^{-8}) \approx 10^{-16}$ (gut konditioniert)
+        \item Relativer Fehler wird um Faktor $10^{-16}$ verkleinert
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+\raggedcolumns
+
+\begin{example2}{Fehleranalyse}Beispiel: Fehleranalyse von $f(x)=\sin(x)$
+\begin{enumerate}
+    \item $f'(x) = \cos(x)$, $K = \frac{|x\cos(x)|}{|\sin(x)|}$
+    \item Konditionierung:
+    \begin{itemize}
+    \item Für $x \to 0$: $K \to 1$ (gut konditioniert)
+    \item Für $x \to \pi$: $K \to \infty$ (schlecht konditioniert)
+    \item Für $x = 0$: $\lim_{x \to 0} K = 1$ (gut konditioniert)
+    \end{itemize}
+    \item Der absolute Fehler wird nicht vergrössert, da $|\cos(x)| \leq 1$
+\end{enumerate}
+\end{example2}
+
+\subsubsection{Praktische Fehlerquellen der Numerik}
+
+\begin{concept}{Kritische Operationen} häufigste Fehlerquellen:
+\begin{itemize}
+    \item Auslöschung bei Subtraktion ähnlich großer Zahlen
+    \item Überlauf (overflow) bei zu großen Zahlen
+    \item Unterlauf (underflow) bei zu kleinen Zahlen
+    \item Verlust signifikanter Stellen durch Rundung
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Vermeidung von Auslöschung}
+\begin{enumerate}
+    \item Identifizieren Sie Subtraktionen ähnlich großer Zahlen
+    \item Suchen Sie nach algebraischen Umformungen
+    \item Prüfen Sie alternative Berechnungswege
+    \item Verwenden Sie Taylorentwicklungen für kleine Werte
+\end{enumerate}
+
+Beispiele für bessere Formeln:
+    \begin{itemize}
+        \item $\sqrt{1+x^2}-1 \rightarrow \frac{x^2}{\sqrt{1+x^2}+1}$
+        \item $1-\cos(x) \rightarrow 2\sin^2(x/2)$
+        \item $\ln(1+x) \rightarrow x-\frac{x^2}{2}$ für kleine $x$
+    \end{itemize}
+\end{KR}
