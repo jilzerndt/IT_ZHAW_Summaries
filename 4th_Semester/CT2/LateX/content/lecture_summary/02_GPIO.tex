@@ -73,73 +73,36 @@ Each GPIO port has several configuration registers:
 \end{itemize}
 \end{definition}
 
-\subsubsection{Register Access}
 
-\begin{theorem}{Register Address} = Base address + Offset
-    \begin{itemize}
-        \item Offset is given for each register in reference Manual
-        \item Base address is defined in memory map (reference manual)
-    \end{itemize}
-\end{theorem}
-
-\begin{corollary}{Data Operations}
-    \begin{itemize}
-        \item Input: Read register \textbf{GPIOx\_IDR} (Input Data Register)
-        \item Output: Write register \textbf{GPIOx\_ODR} (Output Data Register) or \textbf{GPIOx\_BSRR} (Bit Set Reset Register)
-    \end{itemize}
-\end{corollary}
-
-\subsection{Hardware Abstraction Layer (HAL)}
-
-\begin{definition}{HAL for GPIO}\\
-The Hardware Abstraction Layer provides a structured way to access GPIO registers:
-\begin{itemize}
-    \item Based on structs that map to hardware registers
-    \item Typedef for register structure (e.g., \texttt{reg\_gpio\_t})
-    \item Pointers to each GPIO port (e.g., \texttt{GPIOA}, \texttt{GPIOB})
-    \item Base addresses defined in header file
-    \item Helper macros for bit manipulation
-\end{itemize}
-This approach makes code more readable and maintainable than direct register address manipulation.
-
-\begin{minipage}{0.6\linewidth}
-\includegraphics[width=\linewidth]{HAL1.png}
-\end{minipage}
-\begin{minipage}{0.4\linewidth}
-    \textbf{Accessing a register:}
-    \begin{itemize}
-        \item each GPIO port has the same 10 registers 
-        \item there are 11 GPIO ports $\rightarrow$ GPIOA to GPIOI
-    \end{itemize}
-    \end{minipage}
-\end{definition}
-
-\begin{code}{Using HAL for GPIO}
-\begin{lstlisting}[language=C, style=basesmol] 
-// Using HAL style access
-#include "reg_stm32f4xx.h"  // Contains structure definitions
-
-// Configure PA3 as output
-GPIOA->MODER &= ~(3 << 6);  // Clear bits 6-7
-GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
-
-// Instead of direct register access:
-// volatile uint32_t *reg = (volatile uint32_t *)(0x40020000);
-// *reg &= ~(3 << 6);
-// *reg |= (1 << 6);
-\end{lstlisting}
-\end{code}
-
-\begin{concept}{Hardware Abstraction Layer (HAL)}\\
-    \includegraphics[width=\linewidth]{HAL2.png}
-\end{concept}
 
 \raggedcolumns
 \columnbreak
 
 \subsection{GPIO Register Configuration}
 
-\important{SEP Handout: Datenblattauszug GPIO S.2-3 Addresses and Configurations}
+\important{SEP Handouts: 02\_GPIO\_Datenblattauszug}
+
+\subsubsection{I/O Port Configuration}
+
+\begin{definition}{Overview I/O Port Configuration}
+
+    \begin{minipage}{0.5\linewidth}
+        \begin{itemize}
+            \item GP = General Purpose
+            \item PP = Push-Pull
+            \item PU = Pull-Up
+        \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+        \begin{itemize}
+            \item PD = Pull-Down
+            \item OD = Open-Drain
+            \item AF = Alternate Function
+        \end{itemize}
+    \end{minipage}
+        
+        \includegraphics[width=0.7\linewidth]{gpio_ioports.png}
+\end{definition}
 
 \begin{concept}{Mode Register GPIOx\_MODER} Configuring Direction\\
     \includegraphics[width=\linewidth]{mode_register_gpoi.png}
@@ -159,6 +122,8 @@ GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
     \end{minipage}
 \end{concept}
 
+\paragraph{GP Output Mode (MODER = 01)}
+
 \begin{concept}{Output Type (OTYPER)} Configuring Output Type\\
     \includegraphics[width=\linewidth]{gpio_otyper1.png}
 
@@ -172,6 +137,19 @@ GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
     \begin{minipage}{0.4\linewidth}
         \includegraphics[width=\linewidth]{gpio_otyper2.png}
     \end{minipage}
+\end{concept}
+
+\begin{concept}{Speed Configuration (OSPEEDR)} Configuring Speed\\
+    \includegraphics[width=\linewidth]{gpio_ospeedr1.png}
+   
+    The GPIOx\_OSPEEDR register configures the output slew rate:
+    \begin{itemize}
+        \item \textbf{00}: Low speed
+        \item \textbf{01}: Medium speed
+        \item \textbf{10}: High speed
+        \item \textbf{11}: Very high speed
+    \end{itemize}
+    \important{careful: OSPEEDR register not shown in structure graphic!}
 \end{concept}
 
 \begin{theorem}{Push-Pull vs Open-Drain Outputs}
@@ -223,6 +201,12 @@ GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
 
 \multend
 
+\begin{KR}{Output Configuration Schemes}\\
+    \includegraphics[width=\linewidth]{gpio_outputconfig.png}
+\end{KR}
+
+\paragraph{GP Input Mode (MODER = 00)}
+
 \begin{concept}{Pull-up/Pull-down (PUPDR)} Configuring Pull-Up/Pull-Down\\
     \includegraphics[width=\linewidth]{gpio_pupdr1.png}
 
@@ -240,33 +224,15 @@ GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
     \end{minipage}
 \end{concept}
 
-\begin{concept}{Speed Configuration (OSPEEDR)} Configuring Speed\\
-    \includegraphics[width=\linewidth]{gpio_ospeedr1.png}
-   
-    The GPIOx\_OSPEEDR register configures the output slew rate:
-    \begin{itemize}
-        \item \textbf{00}: Low speed
-        \item \textbf{01}: Medium speed
-        \item \textbf{10}: High speed
-        \item \textbf{11}: Very high speed
-    \end{itemize}
-    \important{careful: OSPEEDR register not shown in structure graphic!}
-\end{concept}
 
-\subsubsection{I/O Port Configuration}
 
-\begin{definition}{Overview I/O Port Configuration}
-        \begin{itemize}
-            \item GP = General Purpose
-            \item PP = Push-Pull
-            \item PU = Pull-Up
-            \item PD = Pull-Down
-            \item OD = Open-Drain
-            \item AF = Alternate Function
-        \end{itemize}
-        \vspace{3mm}
-        \includegraphics[width=0.7\linewidth]{gpio_ioports.png}
-\end{definition}
+\begin{KR}{Input Configuration Schemes}\\
+  \includegraphics[width=0.6\linewidth]{gpio_inputconfig.png}
+\end{KR}
+
+\subsubsection{GPIO Data Registers}
+
+
 
 \begin{concept}{Input Data Register (IDR)}\\
     \includegraphics[width=\linewidth]{gpio_idr1.png}
@@ -305,7 +271,7 @@ The GPIOx\_BSRR allows atomic bit operations:
 This ensures atomic access without read-modify-write operations $\rightarrow$ no interruption possible
 \end{concept}
 
-
+\raggedcolumns
 \columnbreak
 
 
@@ -313,7 +279,70 @@ This ensures atomic access without read-modify-write operations $\rightarrow$ no
 
 
 
-\subsubsection{GPIO Configuration KR and examples}
+\subsection{GPIO Configuration STM32F4}
+
+\subsubsection{Register Access}
+
+\begin{theorem}{Register Address} = Base address + Offset
+    \begin{itemize}
+        \item Offset is given for each register in reference Manual
+        \item Base address is defined in memory map (reference manual)
+    \end{itemize}
+\end{theorem}
+
+\begin{corollary}{Data Operations}
+    \begin{itemize}
+        \item Input: Read register \textbf{GPIOx\_IDR} (Input Data Register)
+        \item Output: Write register \textbf{GPIOx\_ODR} (Output Data Register) or \textbf{GPIOx\_BSRR} (Bit Set Reset Register)
+    \end{itemize}
+\end{corollary}
+
+
+
+\subsubsection{Hardware Abstraction Layer (HAL)}
+
+\begin{definition}{HAL for GPIO}\\
+The Hardware Abstraction Layer provides a structured way to access GPIO registers:
+\begin{itemize}
+    \item Based on structs that map to hardware registers
+    \item Typedef for register structure (e.g., \texttt{reg\_gpio\_t})
+    \item Pointers to each GPIO port (e.g., \texttt{GPIOA}, \texttt{GPIOB})
+    \item Base addresses defined in header file
+    \item Helper macros for bit manipulation
+\end{itemize}
+This approach makes code more readable and maintainable than direct register address manipulation.
+
+\begin{minipage}{0.6\linewidth}
+\includegraphics[width=\linewidth]{HAL1.png}
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+    \textbf{Accessing a register:}
+    \begin{itemize}
+        \item each GPIO port has the same 10 registers 
+        \item there are 11 GPIO ports $\rightarrow$ GPIOA to GPIOI
+    \end{itemize}
+    \end{minipage}
+\end{definition}
+
+\begin{code}{Using HAL for GPIO}
+\begin{lstlisting}[language=C, style=basesmol] 
+// Using HAL style access
+#include "reg_stm32f4xx.h"  // Contains structure definitions
+
+// Configure PA3 as output
+GPIOA->MODER &= ~(3 << 6);  // Clear bits 6-7
+GPIOA->MODER |= (1 << 6);   // Set bit 6 (output mode)
+
+// Instead of direct register access:
+// volatile uint32_t *reg = (volatile uint32_t *)(0x40020000);
+// *reg &= ~(3 << 6);
+// *reg |= (1 << 6);
+\end{lstlisting}
+\end{code}
+
+\begin{concept}{Hardware Abstraction Layer (HAL)}\\
+    \includegraphics[width=\linewidth]{HAL2.png}
+\end{concept}
 
 \begin{KR}{Configuring GPIO Pins}
 \paragraph{Identify GPIO port and pin}
