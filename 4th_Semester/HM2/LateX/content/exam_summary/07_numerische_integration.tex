@@ -236,11 +236,11 @@ Die Gauss-Formeln für $\int_a^b f(x) dx \approx \frac{b-a}{2} \sum_{i=1}^{n} a_
 wobei $x_1 = -\sqrt{0.6} \cdot \frac{b-a}{2} + \frac{b+a}{2}$ und $x_3 = \sqrt{0.6} \cdot \frac{b-a}{2} + \frac{b+a}{2}$.
 \end{theorem}
 
-\begin{example2}{Erdmasse berechnen}\\
-\textbf{Aufgabe:} Berechnen Sie die Masse der Erde mit der nicht-äquidistanten Dichteverteilung:
+\begin{example2}{Erdmasse berechnen} 
+mit der nicht-äquidistanten Dichteverteilung:
+\vspace{-3mm}\\
 $$m = \int_0^{6370} \rho(r) \cdot 4\pi r^2 dr$$
 
-\begin{center}
 \begin{tabular}{|c|c|c|c|c|c|c|}
 \hline
 $r$ [km] & 0 & 800 & 1200 & 1400 & 2000 & ... \\
@@ -248,11 +248,8 @@ $r$ [km] & 0 & 800 & 1200 & 1400 & 2000 & ... \\
 $\rho$ [kg/m³] & 13000 & 12900 & 12700 & 12000 & 11650 & ... \\
 \hline
 \end{tabular}
-\end{center}
-\tcblower
-\textbf{Lösung:}
-
-Da die Stützstellen nicht äquidistant sind, verwenden wir die summierte Trapezregel für nicht-äquidistante Daten:
+\vspace{1mm}\\
+Stützstellen nicht äquidistant \\ $\rightarrow$ speziell summierte Trapezregel für nicht-äquidistante Daten:
 $$\int_0^{6370} \rho(r) \cdot 4\pi r^2 dr \approx \sum_{i=0}^{n-1} \frac{[\rho(r_i) \cdot 4\pi r_i^2] + [\rho(r_{i+1}) \cdot 4\pi r_{i+1}^2]}{2} \cdot (r_{i+1} - r_i)$$
 
 \textbf{Wichtig:} Umrechnung der Einheiten: $r$ in km $\rightarrow$ m, $\rho$ in kg/m³
@@ -266,10 +263,32 @@ Relativer Fehler: $\approx 0.5\%$
 \begin{KR}{Wahl des Integrationsverfahrens:}
 \begin{itemize}
     \item \textbf{Trapezregel:} Einfach, für glatte Funktionen ausreichend
-    \item \textbf{Simpson-Regel:} Höhere Genauigkeit, besonders für polynomähnliche Funktionen
-    \item \textbf{Romberg-Extrapolation:} Sehr hohe Genauigkeit mit systematischer Verbesserung
-    \item \textbf{Gauss-Formeln:} Optimal für begrenzte Anzahl von Funktionsauswertungen
-    \item \textbf{Nicht-äquidistante Daten:} Spezielle Trapezregel für tabellarische Daten
+    \item \textbf{Simpson-Regel:} Höhere Genauigkeit (polynomähnliche Funktionen!)
+    \item \textbf{Romberg-Extrapolation:} Sehr hohe Genauigkeit\\ (systematische Verbesserung)
+    \item \textbf{Gauss-Formeln:} Für begrenzte Anzahl von Funktionsauswertungen
+    \item \textbf{Nicht-äquidistante Daten:} Spezielle Trapezregel
 \end{itemize}
 \end{KR}
 
+\begin{example2}{Kombinierte Anwendung mit DGL}
+\vspace{-3mm}\\
+$$\text{Bewegungsgleichung einer Rakete: } a(t) = h''(t) = v_{rel} \cdot \frac{\mu}{m_A - \mu \cdot t} - g$$
+mit $v_{rel} = 2600$ m/s, $m_A = 300000$ kg, $m_E = 80000$ kg, $t_E = 190$ s.
+
+Berechne Geschwindigkeit und Höhe als Funktion der Zeit.
+\vspace{1mm}\\
+\textbf{Parameter:} $\mu = \frac{m_A - m_E}{t_E} = \frac{220000}{190} = 1158$ kg/s
+
+\textbf{System 1. Ordnung:}
+\vspace{-5mm}\\
+$$z_1' = z_2 \quad \text{(Höhe)}$$
+$$z_2' = 2600 \cdot \frac{1158}{300000 - 1158t} - 9.81 \quad \text{(Geschwindigkeit)}$$
+
+\textbf{Anfangsbedingungen:} $z_1(0) = 0$, $z_2(0) = 0$
+
+\textbf{Numerische Lösung mit Trapezregel:}
+$$v(t) = \int_0^t a(\tau) d\tau \text{ und } h(t) = \int_0^t v(\tau) d\tau$$
+
+\textbf{Ergebnisse nach 190s:} 
+Geschwindigkeit: $\approx 2500$ m/s, Höhe: $\approx 180$ km, Beschleunigung: $\approx 2.5g$
+\end{example2}
