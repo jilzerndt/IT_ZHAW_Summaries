@@ -79,6 +79,10 @@
     \end{KR}
 
   
+
+
+\subsubsection{Quadratische Matrizen}
+
 \begin{concept}{Permutationsmatrix} $P$ ist eine Matrix, die aus der Einheitsmatrix durch Zeilenvertauschungen entsteht. 
     \vspace{1mm}\\
     \begin{minipage}[t]{0.5\textwidth}
@@ -99,8 +103,6 @@
         \end{itemize}
     \end{minipage}
 \end{concept}
-
-\subsubsection{Quadratische Matrizen}
   
     \begin{theorem}{Eigenschaften invertierbarer Matrizen}
         \begin{itemize}
@@ -119,6 +121,88 @@
 \begin{KR}{Inverse berechnen} einer quadratischen Matrix $A^{n \times n}$
     $$A \cdot A^{-1} = E \rightarrow ( A | E ) \leadsto \text{Zeilenoperationen} \leadsto ( E | A^{-1})$$
 \end{KR}
+
+
+\subsubsection{Determinante}
+
+    \begin{definition}{Determinante} $det(A) \neq 0 \rightarrow A$ ist invertierbar
+    \end{definition}
+
+    
+
+    \begin{definition}{Geometrische Interpretation} der Determinante:\\
+        Fläche im $\mathbb{R}^2$ und Volumen im $\mathbb{R}^3$
+        durch eine Matrix A aufgespannt:
+        $A = |\vec{a} \times \vec{b}| = |\det(A)|$
+    \end{definition}
+
+   
+    
+    \begin{theorem}{Eigenschaften von Determinanten}{\footnotesize mit $A, B \in \mathbb{R}^{n \times n}$, $\lambda \in \mathbb{R}$}\\
+        \begin{minipage}{0.5\linewidth}
+            \begin{itemize}
+                \item $\det(A \cdot B) = \det(A) \cdot \det(B)$
+                \item $\det(\lambda \cdot A) = \lambda^n \cdot \det(A)$
+                \item $\det(A) = 0 \Leftrightarrow A$ ist singulär
+                
+            \end{itemize}
+        \end{minipage}
+        \begin{minipage}{0.5\linewidth}
+            \begin{itemize}
+                \item $\det(E) = 1$
+                \item $\det(A^T) = \det(A)$
+                \vspace{1mm}
+                \item $\det(A^{-1}) = \frac{1}{\det(A)}$
+            \end{itemize}
+        \end{minipage}
+
+        \vspace{1mm}
+
+        {\footnotesize $E$ = Einheitsmatrix}
+    \end{theorem}
+
+    \begin{formula}{Determinante $1\times 1$-Matrix} $\det(A)=A_{11}$
+    \end{formula}
+    
+    \begin{formula}{Determinante $2 \times 2$-Matrix}
+        $A = \begin{psmallmatrix} a & b \\ c & d \end{psmallmatrix}$
+        $\det(A) = |A| = a \cdot d - b \cdot c$
+    \end{formula}
+
+    \begin{minipage}{0.7\linewidth}
+    \begin{formula}{Determinante $3 \times 3$-Matrix}
+        $A = \begin{psmallmatrix} a & b & c \\ d & e & f \\ g & h & i \end{psmallmatrix}$
+
+        $|A| = a \cdot e \cdot i + b \cdot f \cdot g + c \cdot d \cdot h - c \cdot e \cdot g - b \cdot d \cdot i - a \cdot f \cdot h$
+    \end{formula}
+    \end{minipage}
+    \begin{minipage}{0.3\linewidth}
+        \includegraphics[width=1\linewidth]{determinante_3x3.png}
+    \end{minipage}
+    
+    \begin{concept}{Determinante $n \times n$-Matrix}\\
+        $\det(A) = |A| = \sum_{i=1 \text{ oder } j=1}^{n} (-1)^{i+j} \cdot a_{ij} \cdot |A_{ij}|$
+
+        \textcolor{pink}{Tipp:} Entwickeln nach Spalte oder Zeile mit den meisten Nullen!
+    \end{concept}
+
+    \begin{KR}{Tricks und Tipps}
+        \begin{itemize}
+            \item hat $A$ eine Nullzeile oder -spalte, so ist $\det(A) = 0$
+            \item hat $A$ zwei gleiche Zeilen oder Spalten, so ist $\det(A) = 0$
+            \item $\det(A) \neq 0$ $\Rightarrow$ Spalten/Zeilen sind linear unabhängig
+        \end{itemize}
+    \end{KR}
+
+    \begin{formula}{Determinante mit Gauss} Spezialfall \textcolor{pink}{Dreiecks- /Diagonalmatrix}
+
+        Wende Gauss-Algorithmus an, um $A$ in Dreiecksform zu bringen.\\ Es gilt für jede Dreiecksmatrix oder Diagonalmatrix $D$:\\
+        $\det(D) = (-1)^k \prod_{i=1}^n d_{ii}$
+
+        {\small $k$ = Anzahl der Zeilen-Vertauschungen}\\
+        {\small Bei Skalarmultiplikationen ändert sich $\det(A)$ um den Skalierungsfaktor}
+    \end{formula}
+
 
 \raggedcolumns
 \columnbreak
@@ -270,8 +354,7 @@ Sei $\|\cdot\|$ eine Norm, $A \in \mathbb{R}^{n\times n}$ regulär und $Ax = b$,
 Mit der Konditionszahl $\text{cond}(A) = \|A\| \cdot \|A^{-1}\|$
 \end{theorem}
 
-\begin{concept}{Konditionierung}\\
-Die Konditionszahl beschreibt die numerische Stabilität eines LGS:
+\begin{concept}{Konditionszahl} beschreibt die numerische Stabilität eines LGS:
 \begin{itemize}
     \item $\text{cond}(A) \approx 1$: gut konditioniert
     \item $\text{cond}(A) \gg 1$: schlecht konditioniert
@@ -279,108 +362,96 @@ Die Konditionszahl beschreibt die numerische Stabilität eines LGS:
 \end{itemize}
 \end{concept}
 
+\begin{KR}{Interpretation Fehlerabschätzung}
+    \begin{itemize}
+        \item Absoluter Fehler: Wie weit weicht die Näherungslösung $\tilde{x}$ von der exakten Lösung $x$ ab?
+        \item Relativer Fehler: Wie groß ist der Fehler im Verhältnis zur Größe der exakten Lösung?
+        \item Konditionszahl: Gibt an, wie empfindlich die Lösung auf Änderungen in den Daten reagiert.
+    \end{itemize}
+\end{KR}
 
 
 \raggedcolumns
 \columnbreak
 
-\subsubsection{Determinante}
+\subsubsection{QR-Zerlegung}
 
-    \begin{definition}{Determinante} $det(A) \neq 0 \rightarrow A$ ist invertierbar
-    \end{definition}
 
-    
+\begin{definition}{QR-Zerlegung}\\
+Jede Matrix $A \in \mathbb{R}^{m \times n}$ mit $m \geq n$ kann zerlegt werden in:
+$A = QR$
+\begin{itemize}
+    \item $Q \in \mathbb{R}^{m \times m}$ orthogonale Matrix ($Q^T Q = I_m$)
+    \item $R \in \mathbb{R}^{m \times n}$ rechtsobere Dreiecksmatrix
+\end{itemize}
+\end{definition}
 
-    \begin{definition}{Geometrische Interpretation} der Determinante:\\
-        Fläche im $\mathbb{R}^2$ und Volumen im $\mathbb{R}^3$
-        durch eine Matrix A aufgespannt:
-        $A = |\vec{a} \times \vec{b}| = |\det(A)|$
-    \end{definition}
+\begin{KR}{QR-Zerlegung mit Householder-Transformation}
 
-   
-    
-    \begin{theorem}{Eigenschaften von Determinanten}{\footnotesize mit $A, B \in \mathbb{R}^{n \times n}$, $\lambda \in \mathbb{R}$}\\
-        \begin{minipage}{0.5\linewidth}
-            \begin{itemize}
-                \item $\det(A \cdot B) = \det(A) \cdot \det(B)$
-                \item $\det(\lambda \cdot A) = \lambda^n \cdot \det(A)$
-                \item $\det(A) = 0 \Leftrightarrow A$ ist singulär
-                
-            \end{itemize}
-        \end{minipage}
-        \begin{minipage}{0.5\linewidth}
-            \begin{itemize}
-                \item $\det(E) = 1$
-                \item $\det(A^T) = \det(A)$
-                \vspace{1mm}
-                \item $\det(A^{-1}) = \frac{1}{\det(A)}$
-            \end{itemize}
-        \end{minipage}
+\textbf{Schritt 1: Erste Spalte von $A$}
+\begin{itemize}
+    \item Berechne $\|a_1\|_2 = \sqrt{a_{11}^2 + a_{21}^2 + \cdots + a_{m1}^2}$
+    \item Setze $v_1 = a_1 + \text{sign}(a_{11}) \cdot \|a_1\|_2 \cdot e_1$
+    \item Normiere: $u_1 = \frac{v_1}{\|v_1\|_2}$
+    \item Householder-Matrix: $H_1 = I - 2u_1 u_1^T$
+    \item Berechne $A^{(1)} = H_1 A$
+\end{itemize}
 
-        \vspace{1mm}
+\textbf{Schritt 2: Zweite Spalte (reduzierte Matrix)}
+\begin{itemize}
+    \item Betrachte Teilmatrix ab $(2,2)$-Element
+    \item Wiederhole Prozess für zweite Spalte
+    \item Erstelle $H_2$ entsprechend erweitert
+    \item Berechne $A^{(2)} = H_2 A^{(1)}$
+\end{itemize}
 
-        {\footnotesize $E$ = Einheitsmatrix}
-    \end{theorem}
+\textbf{Fortsetzung bis Spalte $n$}
+\begin{itemize}
+    \item Wiederhole für alle Spalten bis $n$
+    \item $Q = H_1 H_2 \cdots H_{n-1}$ (Produkt aller Householder-Matrizen)
+    \item $R = A^{(n)}$ (finale Matrix in Dreiecksform)
+\end{itemize}
 
-    \begin{formula}{Determinante $1\times 1$-Matrix} $\det(A)=A_{11}$
-    \end{formula}
-    
-    \begin{formula}{Determinante $2 \times 2$-Matrix}
-        $A = \begin{psmallmatrix} a & b \\ c & d \end{psmallmatrix}$
-        $\det(A) = |A| = a \cdot d - b \cdot c$
-    \end{formula}
-
-    \begin{minipage}{0.7\linewidth}
-    \begin{formula}{Determinante $3 \times 3$-Matrix}
-        $A = \begin{psmallmatrix} a & b & c \\ d & e & f \\ g & h & i \end{psmallmatrix}$
-
-        $|A| = a \cdot e \cdot i + b \cdot f \cdot g + c \cdot d \cdot h - c \cdot e \cdot g - b \cdot d \cdot i - a \cdot f \cdot h$
-    \end{formula}
-    \end{minipage}
-    \begin{minipage}{0.3\linewidth}
-        \includegraphics[width=1\linewidth]{determinante_3x3.png}
-    \end{minipage}
-    
-    \begin{concept}{Determinante $n \times n$-Matrix}\\
-        $\det(A) = |A| = \sum_{i=1 \text{ oder } j=1}^{n} (-1)^{i+j} \cdot a_{ij} \cdot |A_{ij}|$
-
-        \textcolor{pink}{Tipp:} Entwickeln nach Spalte oder Zeile mit den meisten Nullen!
-    \end{concept}
-
-    \begin{KR}{Tricks und Tipps}
-        \begin{itemize}
-            \item hat $A$ eine Nullzeile oder -spalte, so ist $\det(A) = 0$
-            \item hat $A$ zwei gleiche Zeilen oder Spalten, so ist $\det(A) = 0$
-            \item $\det(A) \neq 0$ $\Rightarrow$ Spalten/Zeilen sind linear unabhängig
-        \end{itemize}
-    \end{KR}
-
-    \begin{formula}{Determinante mit Gauss} Spezialfall \textcolor{pink}{Dreiecks- /Diagonalmatrix}
-
-        Wende Gauss-Algorithmus an, um $A$ in Dreiecksform zu bringen.\\ Es gilt für jede Dreiecksmatrix oder Diagonalmatrix $D$:\\
-        $\det(D) = (-1)^k \prod_{i=1}^n d_{ii}$
-
-        {\small $k$ = Anzahl der Zeilen-Vertauschungen}\\
-        {\small Bei Skalarmultiplikationen ändert sich $\det(A)$ um den Skalierungsfaktor}
-    \end{formula}
-
-\subsubsection{Matrix-Zerlegungen}
-
-\begin{KR}{LR-Zerlegung}
-    $(E | A | E) \underbrace{\leadsto}_{Gauss} (P | R | L)$
-    
-    Vorwärtseinsetzen: $Ly = b$
-    
-    Rückwärtseinsetzen: $Rx = y$
+\textbf{Verifikation}
+Prüfe: $QR = A$ und $Q^T Q = I$
 \end{KR}
 
-\begin{KR}{QR-Zerlegung} (noch genauer erklären)
-    \begin{itemize}
-        \item $A = Q \cdot R$ mit $Q$ orthogonal und $R$ obere Dreiecksmatrix
-        \item $Q^T = Q^{-1}$
-        \item $R$ ist eindeutig, $Q$ nicht
-    \end{itemize}
-\end{KR}
+\begin{example2}{QR-Zerlegung mit Householder}
+Zerlege Matrix $A = \begin{bsmallmatrix} 1 & 1 \\ 2 & 1 \\ 3 & 1 \\ 4 & 1 \end{bsmallmatrix}$
+
+\textbf{Schritt 1: Erste Spalte}\\
+$a_1 = \begin{psmallmatrix} 1 \\ 2 \\ 3 \\ 4 \end{psmallmatrix}$, $\|a_1\|_2 = \sqrt{1^2+2^2+3^2+4^2} = \sqrt{30} = 5.477$
+
+$v_1 = a_1 + \text{sign}(1) \cdot 5.477 \cdot e_1 = \begin{psmallmatrix} 1 \\ 2 \\ 3 \\ 4 \end{psmallmatrix} + \begin{psmallmatrix} 5.477 \\ 0 \\ 0 \\ 0 \end{psmallmatrix} = \begin{psmallmatrix} 6.477 \\ 2 \\ 3 \\ 4 \end{psmallmatrix}$
+
+$\|v_1\|_2 = \sqrt{6.477^2+2^2+3^2+4^2} = 8.246$
+
+$u_1 = \frac{1}{8.246}\begin{psmallmatrix} 6.477 \\ 2 \\ 3 \\ 4 \end{psmallmatrix} = \begin{psmallmatrix} 0.785 \\ 0.243 \\ 0.364 \\ 0.485 \end{psmallmatrix}$
+
+$H_1 = I - 2u_1 u_1^T = \begin{bsmallmatrix} -0.236 & -0.381 & -0.571 & -0.762 \\ -0.381 & 0.882 & -0.177 & -0.236 \\ -0.571 & -0.177 & 0.735 & -0.354 \\ -0.762 & -0.236 & -0.354 & 0.529 \end{bsmallmatrix}$
+
+$A^{(1)} = H_1 A = \begin{bsmallmatrix} -5.477 & -2.236 \\ 0 & 0.618 \\ 0 & 0.927 \\ 0 & 1.236 \end{bsmallmatrix}$
+
+\textbf{Schritt 2: Zweite Spalte (reduzierte Matrix)}\\
+Betrachte Subvektor $\begin{psmallmatrix} 0.618 \\ 0.927 \\ 1.236 \end{psmallmatrix}$, $\|\cdot\|_2 = 1.633$
+
+$v_2 = \begin{psmallmatrix} 0.618 \\ 0.927 \\ 1.236 \end{psmallmatrix} + 1.633 \begin{psmallmatrix} 1 \\ 0 \\ 0 \end{psmallmatrix} = \begin{psmallmatrix} 2.251 \\ 0.927 \\ 1.236 \end{psmallmatrix}$
+$\rightarrow$
+$u_2 = \begin{psmallmatrix} 0.775 \\ 0.319 \\ 0.426 \end{psmallmatrix}$ (normiert)
+
+$H_2 = \begin{bsmallmatrix} 1 & 0 & 0 & 0 \\ 0 & -0.202 & -0.495 & -0.660 \\ 0 & -0.495 & 0.796 & -0.342 \\ 0 & -0.660 & -0.342 & 0.406 \end{bsmallmatrix}$
+$\quad R = H_2 A^{(1)} = \begin{bsmallmatrix} -5.477 & -2.236 \\ 0 & -1.633 \\ 0 & 0 \\ 0 & 0 \end{bsmallmatrix}$
+
+\textbf{Resultat:}\\
+$Q = H_1 H_2 = \begin{bsmallmatrix} -0.183 & -0.905 & -0.234 & -0.316 \\ -0.365 & -0.302 & 0.877 & 0.000 \\ -0.548 & 0.302 & -0.234 & 0.745 \\ -0.730 & 0.905 & -0.409 & -0.559 \end{bsmallmatrix}$
+$\quad$
+$R = \begin{bsmallmatrix} -5.477 & -2.236 \\ 0 & -1.633 \\ 0 & 0 \\ 0 & 0 \end{bsmallmatrix}$
+
+\textbf{Verifikation:} $QR = A$ $\checkmark$
+\end{example2}
+
+\raggedcolumns
+\columnbreak
 
 
 

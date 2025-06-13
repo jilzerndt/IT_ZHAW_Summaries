@@ -1,0 +1,229 @@
+\section{Extra Examples}
+
+
+\begin{example2}{Lineare Ausgleichsrechnung}
+Die Leistungsaufnahme $P$ [W] eines Motors soll in Abhängigkeit der Drehzahl $n$ [rpm] durch eine Funktion der Form $P(n) = an^2 + bn + c$ beschrieben werden.
+
+Messdaten:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+$n$ [rpm] & 1000 & 1500 & 2000 & 2500 & 3000 \\
+\hline
+$P$ [W] & 150 & 280 & 450 & 680 & 950 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Normalgleichungssystem aufstellen:}
+Ansatz: $P(n) = an^2 + bn + c$
+
+Basisfunktionen: $f_1(n) = n^2$, $f_2(n) = n$, $f_3(n) = 1$
+
+Matrix $A$:
+$$A = \begin{bsmallmatrix}
+10^6 & 1000 & 1 \\
+2.25 \times 10^6 & 1500 & 1 \\
+4 \times 10^6 & 2000 & 1 \\
+6.25 \times 10^6 & 2500 & 1 \\
+9 \times 10^6 & 3000 & 1
+\end{bsmallmatrix}, \quad y = \begin{psmallmatrix} 150 \\ 280 \\ 450 \\ 680 \\ 950 \end{psmallmatrix},
+A^T A = \begin{bsmallmatrix}
+\sum n_i^4 & \sum n_i^3 & \sum n_i^2 \\
+\sum n_i^3 & \sum n_i^2 & \sum n_i \\
+\sum n_i^2 & \sum n_i & 5
+\end{bsmallmatrix}$$
+
+\begin{minipage}{0.38\linewidth}
+Berechnungen:
+\begin{itemize}
+    \item $\sum n_i = 10000$
+    \item $\sum n_i^2 = 22.5 \times 10^6$
+    \item $\sum n_i^3 = 52.5 \times 10^9$
+    \item $\sum n_i^4 = 126.25 \times 10^{12}$
+    \item $\sum P_i = 2510$
+    \item $\sum n_i P_i = 5.9 \times 10^6$
+    \item $\sum n_i^2 P_i = 14.425 \times 10^9$
+\end{itemize}
+\end{minipage}
+\begin{minipage}{0.7\linewidth}
+$$A^T A = \begin{bsmallmatrix}
+126.25 \times 10^{12} & 52.5 \times 10^9 & 22.5 \times 10^6 \\
+52.5 \times 10^9 & 22.5 \times 10^6 & 10^4 \\
+22.5 \times 10^6 & 10^4 & 5
+\end{bsmallmatrix}$$
+
+$$A^T y = \begin{psmallmatrix} 14.425 \times 10^9 \\ 5.9 \times 10^6 \\ 2510 \end{psmallmatrix}$$
+\end{minipage}
+\vspace{2mm}\\
+\textbf{System lösen:}
+Nach Lösung des linearen Gleichungssystems:
+$$a = 0.00012, \quad b = 0.128, \quad c = 22$$
+
+Also: $P(n) = 0.00012n^2 + 0.128n + 22$
+
+$$\text{\textbf{Fehlerfunktional:} } E = \sum_{i=1}^{5} (P_i - P(n_i))^2$$
+
+
+\begin{minipage}{0.5\linewidth}
+Residuen berechnen:
+\begin{itemize}
+    \item $P(1000) = 150$, Residuum: $0$
+    \item $P(1500) = 280$, Residuum: $0$
+    \item $P(2000) = 450$, Residuum: $0$
+    \item $P(2500) = 680$, Residuum: $0$
+    \item $P(3000) = 950$, Residuum: $0$
+\end{itemize}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+$E = 0$ (perfekte Anpassung durch Polynom 2. Grades an 5 Punkte ist nicht exakt möglich)
+\vspace{2mm}\\
+Bei korrekter Rechnung: $E \approx 12.5$
+\end{minipage}
+\vspace{2mm}\\
+\textbf{Prognose bei 3500 rpm:}\\
+$P(3500) = 0.00012 \cdot 3500^2 + 0.128 \cdot 3500 + 22 = 1470 + 448 + 22 = 1940 \text{ W}$
+\end{example2}
+
+
+\begin{example2}{Kombinierte Anwendung Numerische Integration und DGL}
+\vspace{-3mm}\\
+$$\text{Bewegungsgleichung einer Rakete: } a(t) = h''(t) = v_{rel} \cdot \frac{\mu}{m_A - \mu \cdot t} - g$$
+mit $v_{rel} = 2600$ m/s, $m_A = 300000$ kg, $m_E = 80000$ kg, $t_E = 190$ s.
+
+Berechne Geschwindigkeit und Höhe als Funktion der Zeit.
+\vspace{1mm}\\
+\textbf{Parameter:} $\mu = \frac{m_A - m_E}{t_E} = \frac{220000}{190} = 1158$ kg/s
+
+\textbf{System 1. Ordnung:}
+\vspace{-5mm}\\
+$$z_1' = z_2 \quad \text{(Höhe)}$$
+$$z_2' = 2600 \cdot \frac{1158}{300000 - 1158t} - 9.81 \quad \text{(Geschwindigkeit)}$$
+
+\textbf{Anfangsbedingungen:} $z_1(0) = 0$, $z_2(0) = 0$
+
+\textbf{Numerische Lösung mit Trapezregel:}
+$$v(t) = \int_0^t a(\tau) d\tau \text{ und } h(t) = \int_0^t v(\tau) d\tau$$
+
+\textbf{Ergebnisse nach 190s:} 
+Geschwindigkeit: $\approx 2500$ m/s, Höhe: $\approx 180$ km, Beschleunigung: $\approx 2.5g$
+\end{example2}
+
+
+\begin{example2}{DGL Anwendung: Populationsdynamik}
+Das Räuber-Beute-System wird beschrieben durch:
+
+$\frac{dx}{dt} = ax - bxy$ und
+$\frac{dy}{dt} = -cy + dxy$
+
+wobei $x(t)$ die Beutepopulation und $y(t)$ die Räuberpopulation darstellt.
+
+Parameter: $a = 1.0$, $b = 0.5$, $c = 0.75$, $d = 0.25$
+
+Anfangsbedingungen: $x(0) = 4$, $y(0) = 4$
+\vspace{1mm}\\
+\textbf{Biologische Interpretation:}
+
+Beutegleichung: $\frac{dx}{dt} = ax - bxy$
+\begin{itemize}
+    \item $ax$: Exponentielles Wachstum der Beute bei Abwesenheit von Räubern
+    \item $-bxy$: Verluste durch Räuber (proportional zu beiden Populationen)
+    \item $a = 1.0$: Wachstumsrate der Beute
+    \item $b = 0.5$: Effizienz der Räuber beim Beutefang
+\end{itemize}
+
+Räubergleichung: $\frac{dy}{dt} = -cy + dxy$
+\begin{itemize}
+    \item $-cy$: Exponentieller Rückgang bei Abwesenheit von Beute
+    \item $dxy$: Wachstum durch erfolgreiche Jagd
+    \item $c = 0.75$: Sterberate der Räuber
+    \item $d = 0.25$: Effizienz der Nahrungsumwandlung
+\end{itemize}
+\vspace{1mm}
+\textbf{Numerische Lösung:}
+
+System in Vektorform:
+$\mathbf{z}' = \mathbf{f}(t, \mathbf{z}) = \begin{psmallmatrix}
+1.0 z_1 - 0.5 z_1 z_2 \\
+-0.75 z_2 + 0.25 z_1 z_2
+\end{psmallmatrix}$
+mit $\mathbf{z}(0) = \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix}$
+\vspace{1mm}\\
+\textbf{Runge-Kutta Implementation (Auszug):}
+
+\textbf{Schritt 0 $\rightarrow$ 1:} $t_0 = 0$, $\mathbf{z}_0 = \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix}$
+
+$\mathbf{k}_1 = \mathbf{f}(0, \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix}) = \begin{psmallmatrix} 4 - 8 \\ -3 + 4 \end{psmallmatrix} = \begin{psmallmatrix} -4 \\ 1 \end{psmallmatrix}$
+
+$\mathbf{k}_2 = \mathbf{f}(0.05, \begin{psmallmatrix} 4 - 0.2 \\ 4 + 0.05 \end{psmallmatrix}) = \mathbf{f}(0.05, \begin{psmallmatrix} 3.8 \\ 4.05 \end{psmallmatrix})$
+
+$= \begin{psmallmatrix} 3.8 - 3.8 \cdot 4.05 \\ -3.0375 + 0.25 \cdot 3.8 \cdot 4.05 \end{psmallmatrix} = \begin{psmallmatrix} -11.59 \\ 0.81 \end{psmallmatrix}$
+
+$\mathbf{k}_3 = \mathbf{f}(0.05, \begin{psmallmatrix} 4 - 0.58 \\ 4 + 0.041 \end{psmallmatrix}) = \begin{psmallmatrix} -11.73 \\ 0.69 \end{psmallmatrix}$
+
+$\mathbf{k}_4 = \mathbf{f}(0.1, \begin{psmallmatrix} 4 - 1.17 \\ 4 + 0.069 \end{psmallmatrix}) = \begin{psmallmatrix} -15.77 \\ -0.23 \end{psmallmatrix}$
+
+$\mathbf{z}_1 = \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix} + \frac{0.1}{6}\begin{psmallmatrix} -4 - 23.18 - 23.46 - 15.77 \\ 1 + 1.62 + 1.38 - 0.23 \end{psmallmatrix}$
+$= \begin{psmallmatrix} 4 \\ 4 \end{psmallmatrix} + \begin{psmallmatrix} -1.11 \\ 0.063 \end{psmallmatrix} = \begin{psmallmatrix} 2.89 \\ 4.063 \end{psmallmatrix}$
+\vspace{2mm}\\
+\begin{minipage}{0.5\linewidth}
+\textbf{Typische Ergebnisse nach vollständiger Integration:}
+\vspace{1mm}\\
+\textbf{Zeitpunkte:} $t = 0, 3, 6, 9, 12, 15$ Zeiteinheiten
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+$t$ & $x(t)$ & $y(t)$ \\
+\hline
+0 & 4.00 & 4.00 \\
+3 & 1.32 & 2.85 \\
+6 & 2.67 & 1.13 \\
+9 & 6.21 & 2.34 \\
+12 & 3.89 & 5.67 \\
+15 & 1.45 & 3.12 \\
+\hline
+\end{tabular}
+\end{center}
+\end{minipage}
+
+\textbf{Langzeitverhalten:}
+\begin{itemize}
+    \item Das System zeigt periodische Oszillationen (Grenzzyklus)
+    \item Periode: $T \approx 6.3$ Zeiteinheiten
+    \item Phasenverschiebung: Räuberpopulation folgt der Beutepopulation mit Verzögerung
+    \item Typischer Zyklus:
+    \begin{enumerate}
+        \item Viel Beute $\rightarrow$ Räuber vermehren sich
+        \item Viele Räuber $\rightarrow$ Beute wird dezimiert  
+        \item Wenig Beute $\rightarrow$ Räuber sterben aus
+        \item Wenige Räuber $\rightarrow$ Beute erholt sich
+    \end{enumerate}
+\end{itemize}
+\vspace{1mm}
+\textbf{Erhaltungsgrössen:}
+
+Das Lotka-Volterra System hat eine Erhaltungsgröße (Hamiltonfunktion):
+
+$H(x,y) = d \cdot x + b \cdot y - c \cdot \ln(x) - a \cdot \ln(y)$
+
+$= 0.25x + 0.5y - 0.75\ln(x) - \ln(y)$
+\vspace{1mm}\\
+\textbf{Numerische Verifikation:}
+\begin{itemize}
+    \item $H(4,4) = 1 + 2 - 0.75 \cdot 1.386 - 1.386 = 0.575$
+    \item Nach einer Periode sollte $H \approx 0.575$ sein
+    \item Abweichungen zeigen numerische Fehler an
+    \item Das System ist konservativ (keine Dämpfung)
+\end{itemize}
+
+\textbf{Praktische Bedeutung:}\\
+Diese Gleichungen beschreiben reale Ökosysteme nur näherungsweise, da sie:
+\begin{itemize}
+    \item Kapazitätsgrenzen ignorieren
+    \item Andere Nahrungsquellen vernachlässigen
+    \item Umwelteinflüsse nicht berücksichtigen
+    \item Trotzdem wichtig für das Verständnis von Populationsdynamik
+\end{itemize}
+\end{example2}
