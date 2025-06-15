@@ -148,3 +148,134 @@ Certificate Transparency (CT) is a framework designed to detect and prevent the 
 \begin{example}
 Let's Encrypt, a free and automated Certificate Authority, has become the largest CA with over 234 million active certificates. It uses the ACME (Automatic Certificate Management Environment) protocol to automate the validation, issuance, and renewal of certificates. Let's Encrypt provides only Domain Validation (DV) certificates with a validity period of 90 days, encouraging frequent renewal and automation.
 \end{example}
+
+\section{Digital Certificates}
+
+\subsection{Certificate Definition}
+
+\begin{definition}{Digital Certificate}\\
+    A certificate is a signed statement by a trusted third party that a certain public key belongs to a certain name. It is a means to authenticate a public key. It is not a means to authenticate a communication partner.
+\end{definition}
+
+\subsection{Digital Certificates}
+
+\begin{concept}{Certificate Properties}\\
+    \begin{itemize}
+        \item Bind together certain things
+        \item Issued and signed by trusted third party called Certificate Authorities (CA)
+        \item Valid for a certain period
+    \end{itemize}
+\end{concept}
+
+\subsection{Public Key Infrastructure (PKI)}
+
+\begin{concept}{PKI}\\
+    Verify public key in the certificate by verifying the signature
+\end{concept}
+
+\subsection{The X.509 standard}
+
+\begin{definition}{X.509}\\
+    Dominating standard for certificates these days
+\end{definition}
+
+% TODO: Add X.509 certificate structure diagram showing fields like Version Number, Serial Number, etc.
+
+\subsection{Concept of trust hierarchies}
+
+\begin{formula}{Certificate Chain Validation}\\
+    For $i = [1, n - 1]$
+    \begin{itemize}
+        \item $C[i].issuer = C[i + 1].subject$
+        \item $C[i].signature$ can be verified with $C[i + 1].publicKey$
+    \end{itemize}
+\end{formula}
+
+% TODO: Add certificate chain diagram showing Root certificate (self-signed) -> Intermediate certificate -> End certificate
+
+\subsection{Root Certificates}
+
+\begin{concept}{Root Certificates}\\
+    Any certificate chain ends with a root certificate.
+    \begin{itemize}
+        \item Can be verified with its own public key
+        \item Root certificates are always self-signed
+        \item Usually stored in your browser (from trusted parties)
+    \end{itemize}
+\end{concept}
+
+\subsection{Validation}
+
+\begin{KR}{Certificate Validation Process}\\
+    \paragraph{Step 1} Obtain and verify (validity) root certificate
+    \paragraph{Step 2} Verify server certificate signature with root public key
+    \paragraph{Step 3} Compare root certificate subject with server issuer
+\end{KR}
+
+\subsection{Certificate revocation: CRLs and OCSP}
+
+\begin{concept}{Certificate Revocation}\\
+    If the private key gets stolen the certificate should be revoked
+    \begin{itemize}
+        \item Wait until the certificate expires
+        \item Contact issuer to invalidate the certificate
+    \end{itemize}
+\end{concept}
+
+\subsection{Certification Revocation List - CRL}
+
+\begin{definition}{CRL}\\
+    CA provides a list of all revoked certificates that can be downloaded to verify if a certificate has been revoked.
+    
+    Issues $\rightarrow$ Limited support
+    \begin{itemize}
+        \item Only updated every couple of days
+        \item Can't remove a certificate from CRL
+        \item Many certificates may go onto CRL
+        \item CRLs only get larger (delay)
+    \end{itemize}
+\end{definition}
+
+\subsection{Online Certificate Status Protocol - OCSP}
+
+\begin{definition}{OCSP}\\
+    Issuing CA can be asked (Client) for the status of a specific certificate.
+    \begin{itemize}
+        \item Status information is updated more often
+        \item Only little information is exchanged
+        \item OCSP must always be available
+        \item OCSP is the single point of failure
+        \item Vulnerable to DoS attack against OCSP
+    \end{itemize}
+    
+    Most clients implement soft fail (good), if the response is not received (in time).
+\end{definition}
+
+% TODO: Add OCSP diagram showing client-server communication
+
+\subsection{OCSP stapling}
+
+\begin{concept}{OCSP Stapling}\\
+    The server queries the OCSP-Responder listed in the certificate itself and caches the responses.
+    \begin{itemize}
+        \item Client gets OCSP response from server during TLS handshake
+        \item Less dependent on the availability of OCSP-Responder
+    \end{itemize}
+    
+    \textbf{Limitations}
+    \begin{itemize}
+        \item Vulnerable time window like in CRL
+        \item Fallback to OCSP if no valid response is cached
+    \end{itemize}
+\end{concept}
+
+% TODO: Add OCSP Stapling diagram
+
+\subsection{Root Certificate Revocation}
+
+\begin{concept}{Root CA Revocation}\\
+    \begin{itemize}
+        \item Remove root CA from applications and systems
+        \item All certificate issue by the root CA will also be invalid
+    \end{itemize}
+\end{concept}

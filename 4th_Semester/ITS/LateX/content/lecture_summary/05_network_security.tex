@@ -362,3 +362,134 @@ A security administrator needs to verify that a newly implemented firewall is co
 
 The scan reveals that only ports 80 (HTTP) and 443 (HTTPS) are accessible, while all other ports show as "filtered," indicating that the firewall is properly blocking the traffic. Additional scans from authorized internal segments confirm that administrative ports like 22 (SSH) are only accessible from the management network.
 \end{example}
+
+\section{Firewalls}
+
+\subsection{Firewall basics}
+
+\begin{definition}{Firewall}\\
+    A firewall is a device that sits between two or more networks to control the packet flow between them. Based on the security policy one or more firewalls are installed and configured.
+\end{definition}
+
+\begin{concept}{Firewall Capabilities}\\
+    A firewall can
+    \begin{itemize}
+        \item Control access from internal network to the Internet and vice versa
+        \item Block malicious incoming web traffic
+    \end{itemize}
+\end{concept}
+
+\subsection{Packet-filtering firewall (Network Layer)}
+
+\begin{definition}{Packet-filtering Firewall}\\
+    \begin{itemize}
+        \item Using rules, that decide whether to forward packets
+        \item Inspect headers of network and transport layer protocols
+        \item \textbf{Pro:} Very fast as they only check layer 3 and 4 protocol headers
+        \item \textbf{Limitation:} Only control who is allowed to talk to whom
+    \end{itemize}
+\end{definition}
+
+% TODO: Add packet filtering diagram showing FTP Client, Firewall with ports, FTP Server
+
+\subsection{Stateless firewall}
+
+\begin{concept}{Stateless Firewall}\\
+    \begin{itemize}
+        \item Both directions need to be configured
+        \begin{itemize}
+            \item Every IP packet is handled completely isolated from all others
+            \item Firewall does not keep track of ongoing communications
+        \end{itemize}
+        \item More open than needed: Replies from a server are allowed without a previous request from a client
+        \item Limited support for complex protocols
+    \end{itemize}
+\end{concept}
+
+\subsection{Stateful firewall}
+
+\begin{definition}{Stateful Firewall}\\
+    Checks individual packets, tracks communication relationships, and maintains state information.
+    \begin{itemize}
+        \item Today standard
+        \item Easier to configure (fewer rules)
+        \item Return traffic is only allowed on demand
+        \item Allows support for complex protocols
+        \item A packet can be in one of four states: New, Established, Related, Invalid
+    \end{itemize}
+\end{definition}
+
+% TODO: Add stateful firewall diagram showing internal network, DMZ, external network
+
+\subsection{Application layer firewall (Application Layer)}
+
+\begin{definition}{Application Layer Firewall}\\
+    \begin{itemize}
+        \item Split end-to-end communications
+        \item Inspect application layer data
+        \item \textbf{Pro:} Allows deep inspection of all data exchanged
+        \item \textbf{Limitation:} Relatively slow, limitations with encrypted data
+    \end{itemize}
+\end{definition}
+
+% TODO: Add application layer firewall diagram with WAF
+
+\subsection{Benefits and Limitations}
+
+\begin{remark}
+    Firewalls are only useful against attackers outside the internal network.
+\end{remark}
+
+\subsection{Linux netfilter/nftables}
+
+\begin{definition}{netfilter/nftables}\\
+    netfilter is a mechanism that allows to access the packets in the network stack to analyze, modify, extract, and delete them.
+    \begin{itemize}
+        \item Hooks that are called at different points during packet processing
+    \end{itemize}
+    
+    nftables is a packet classification and mangling framework that runs on rulesets that are applied to the packets
+    \begin{itemize}
+        \item \textbf{Table} Container for specific type of package
+        \item \textbf{Chain} Container with rules for a specific hook
+        \item \textbf{Hook} Called at different points of processing
+        \item \textbf{Priority} Lowest priority first until rule is accepted
+        \item \textbf{Policy} Default behaviour
+        \item \textbf{Rule} Classification + Action
+        \item \textbf{Classification} What packets does a rule apply to
+        \item \textbf{Action} What to do with the packet
+    \end{itemize}
+\end{definition}
+
+% TODO: Add netfilter hooks diagram showing PREROUTING, INPUT, FORWARD, OUTPUT, POSTROUTING
+
+\subsection{Nftables Examples}
+
+\begin{examplecode}{nftables Rules}\\
+\begin{lstlisting}[language=bash, style=basesmol]
+# Drop all packets going to IPv4 address 8.8.8.8
+ip daddr 8.8.8.8 drop
+
+# Accept all packets coming on interface eth2
+iifname eth2 accept
+
+# Accept all IPv6 packets carrying TCP
+ip6 nexthdr tcp accept
+\end{lstlisting}
+\end{examplecode}
+
+\subsection{Port scanning}
+
+\begin{definition}{Port Scanning}\\
+    Technique to determine the services that run on a host.
+    \begin{itemize}
+        \item Useful for attackers and system admins
+        \item Port scanners...
+        \begin{itemize}
+            \item Check if the host is available by pinging it
+            \item Establish TCP connections to the ports
+        \end{itemize}
+        \item Nmap: Most popular port scanner
+        \item TCP scan of port 80 of www.zhaw.ch: \texttt{nmap -p80 www.zhaw.ch}
+    \end{itemize}
+\end{definition}

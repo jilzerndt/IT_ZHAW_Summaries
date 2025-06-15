@@ -227,3 +227,142 @@ Disaster recovery and business continuity planning are essential for maintaining
 \begin{example}
 A medium-sized company implements a disaster recovery plan for their customer database. They define an RTO of 4 hours and an RPO of 15 minutes, meaning they need to restore service within 4 hours with no more than 15 minutes of data loss. To achieve this, they implement a combination of hourly differential backups with continuous transaction log shipping to a standby site. Regular recovery tests are scheduled quarterly to ensure the plan remains effective.
 \end{example}
+
+\section{Introduction to Security and Cryptology}
+
+\subsection{Ziele der Kryptographie}
+
+\begin{definition}{Ziele der Kryptographie}\\
+    Die Kryptographie verfolgt vier Hauptziele:
+    \begin{itemize}
+        \item \textbf{Confidentiality} Only readable by desired receiver.
+        \item \textbf{Integrity} The receiver can determine if the message has been altered.
+        \item \textbf{Authenticity} The receiver can validate its origin.
+        \item \textbf{Freshness} The message is new and cannot be resent.
+    \end{itemize}
+\end{definition}
+
+\subsection{Encryption and Properties}
+
+\begin{concept}{Encryption}\\
+    Encryption is a transformation from P (plaintexts) to C (ciphertexts) under control of some key, chosen from K (key space).
+    
+    The idea is to have a whole family of transformations, where each key gives a different transformation.
+    \begin{itemize}
+        \item $c = E(k, p) = E_k(p)$
+        \item $p = D(k, c) = D_k(c)$
+    \end{itemize}
+    
+    Each transformation must be reversible. It follows that $|C|$ can not be smaller than $|P|$. In fact most often we have $P = C$.
+\end{concept}
+
+% TODO: Add encryption/decryption diagram with key, plaintext, cipher components
+
+\subsection{Passive Attacks (Eve) - Type of Attacks}
+
+\begin{definition}{Attack Types}\\
+    \begin{itemize}
+        \item \textbf{Cypher-Text-Only Attack} Bad Encryption $\rightarrow$ Find out plaintext or even the key
+        
+        Maybe the encryption isn't good and Eve can find out the plaintext just by looking at ciphertexts.
+        
+        \item \textbf{Chosen-Plain-Text attack} Encrypt machine stolen $\rightarrow$ Find out plaintexts
+        
+        Maybe someone stole Alice's encryption machine for a few hours. Then Eve can encrypt some plaintexts of her choice and maybe find the plaintexts to ciphertexts she has intercepted.
+        
+        \item \textbf{Chosen-Ciphertext attack 1} Decrypt machine stolen $\rightarrow$ Learn about the key
+        
+        Someone has stolen Alice's decryption machine for a few hours. How much can Eve learn about the key by being allowed to feed ciphertexts to the machine?
+        
+        \item \textbf{Chosen-Ciphertext attack 2} Decrypt machine stolen $\rightarrow$ Learn about the key
+        
+        Someone has stolen Alice's decryption machine. How much can Eve learn about the key by being allowed limited information about decryption.
+    \end{itemize}
+\end{definition}
+
+\subsection{Cryptographic Work Factor}
+
+\begin{definition}{Work Factor}\\
+    The number of times it takes to come upon the correct key is called (cryptographic) work factor.
+    \begin{itemize}
+        \item Work factor (WF) = average number of keys to try
+        \item Work factor is usually given in bits: $\log_2(n)$, $n = key\ space\ size$
+    \end{itemize}
+\end{definition}
+
+\begin{formula}{Entropy}\\
+    Entropy is maximal if all outcomes are equally likely
+    $$H = \sum_{i=1}^{n} p(i) \cdot \log_2 \left(\frac{1}{p(i)}\right)$$
+    
+    $$H_{binary} = \sum_{i=1}^{n} \frac{1}{n} \log_2(n) = \log_2(n)$$
+\end{formula}
+
+\begin{concept}{Entropy of Cryptographic Keys}\\
+    Cryptographic keys are typically created with random generators, so they can be considered as elements of a random variable.
+    
+    What's the entropy of a key with 128-bit?
+    \begin{itemize}
+        \item Independent with equal probability: $128 \cdot 1 = 128$ bits
+        \item Dependent with inequal probability: $p(0) = 0.25, p(1) = 0.75 \rightarrow 128 \cdot 0.81 \approx 104$ bits
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{Relation between entropy and work factor}\\
+    \begin{itemize}
+        \item Work Factor $\approx$ entropy, key size = max. entropy $\approx$ max. work factor
+    \end{itemize}
+\end{theorem}
+
+\subsection{Security Models}
+
+\begin{definition}{Information-theoretically secure}\\
+    Intercepting a ciphertext tells you nothing about the plain
+\end{definition}
+
+\begin{definition}{Computationally secure}\\
+    Work factor $\approx$ key entropy
+\end{definition}
+
+\subsection{Vernam Cipher (a.k.a. One-Time-Pad)}
+
+\begin{concept}{One-Time-Pad}\\
+    \begin{itemize}
+        \item Key $K$: Independent bits with equal probability
+        \item $C_X = K_X \oplus P_X$
+        \item Each key may be used once
+        \item Same Key used multiple times: $P_1 \oplus P_2 = C_1 \oplus C_2$
+    \end{itemize}
+\end{concept}
+
+% TODO: Add One-Time-Pad diagram showing XOR operations
+
+\subsection{Random Oracle Model}
+
+\begin{concept}{Random Oracle Model}\\
+    \begin{itemize}
+        \item Different inputs give random unrelated outputs
+        \item If $A$ leads to $B$ then $A$ always leads to $B$
+    \end{itemize}
+\end{concept}
+
+\subsection{Modern Ciphers with One key}
+
+\begin{concept}{Modern Ciphers}\\
+    \begin{itemize}
+        \item Same key is used to encrypt and decrypt
+        \item Wrong key gives high-entropy output: can tell when correct key used
+        \item Good modern ciphers: key entropy $\approx$ work factor
+        \item Cryptographic workhorse today: AES
+    \end{itemize}
+\end{concept}
+
+\subsection{Properties of Modern Ciphers}
+
+\begin{remark}
+    \begin{itemize}
+        \item Information-theoretical security is out of question
+        \item Next best thing: computational security
+        \item No cipher is known that can be proved to be computationally secure
+        \item Cipher created $\rightarrow$ public review $\rightarrow$ gains acceptance
+    \end{itemize}
+\end{remark}

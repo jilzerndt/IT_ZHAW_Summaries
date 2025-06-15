@@ -595,3 +595,170 @@ A university develops a security concept for its course management system. The c
 
 The concept considers regulatory requirements for data protection and includes specific measures to protect grade information as sensitive personal data.
 \end{example}
+
+\section{Authorization}
+
+\subsection{Basics}
+
+\begin{definition}{Authorization}\\
+    Authorization determines if a user is allowed to access a particular resource to perform a specific operation. It's a core component of every operating system.
+\end{definition}
+
+\begin{concept}{Reference Monitor Concept}\\
+    \begin{itemize}
+        \item A reference monitor is responsible to enforce access rights
+        \item The reference monitor must be invoked prior to execution of every security-sensitive operation
+        \item To decide whether access should be granted, the reference monitor needs a rule set (security policy)
+    \end{itemize}
+    
+    % TODO: Add reference monitor diagram showing access request, security policy, reference monitor, and access granted/denied
+\end{concept}
+
+\begin{definition}{Security Policy}\\
+    \begin{itemize}
+        \item Defines who is allowed to do what on a system
+        \item Should be flexible in terms of configuration
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Security Mechanism}\\
+    \begin{itemize}
+        \item Method / Structure used to implement the security policy
+    \end{itemize}
+\end{definition}
+
+\subsection{Multi-tier Applications}
+
+\begin{concept}{Multi-tier Applications}\\
+    \begin{itemize}
+        \item Based on Multi-Tier architecture
+        \item Three-tier architecture:
+        \begin{itemize}
+            \item Presentation
+            \item Logic  
+            \item Data
+        \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\subsubsection{Impersonation / Delegation}
+
+\begin{definition}{Impersonation / Delegation}\\
+    \begin{itemize}
+        \item The subject "survives" beyond the middle tier
+        \item Generate impersonation token that reflects the subject's access control data
+    \end{itemize}
+    
+    % TODO: Add impersonation diagram showing Alice, Bob accessing Logic and Resources/Services
+\end{definition}
+
+\subsubsection{Trusted Application Model}
+
+\begin{definition}{Trusted Application Model}\\
+    \begin{itemize}
+        \item Access to backend via service account
+        \item Requests are granted/denied to subjects based on a set of access policies
+    \end{itemize}
+    
+    % TODO: Add trusted application model diagram showing Web Server or Web App connecting to Resources/Services
+\end{definition}
+
+\subsection{Access Control Models}
+
+\begin{concept}{Access Control Models}\\
+    Access control models are framework dictating how subjects access objects.
+\end{concept}
+
+\subsubsection{Discretionary Access Control (DAC)}
+
+\begin{definition}{Discretionary Access Control (DAC)}\\
+    \begin{itemize}
+        \item Based on discretion of the owner of an object
+        \item Example: Modern OS (Windows, Linux, Mac)
+        \item Usually includes a user that can bypass restrictions (root / admin)
+        \item Uses Access Control List ACL or Capabilities
+    \end{itemize}
+    
+    % TODO: Add DAC diagram showing owner, data, other subject with access arrow
+\end{definition}
+
+\subsubsection{Mandatory Access Control (MAC)}
+
+\begin{definition}{Mandatory Access Control (MAC)}\\
+    \begin{itemize}
+        \item A system wide policy determines who is allowed to access
+        \item Individual user cannot alter
+        \item Policy is configured by a policy administrator
+    \end{itemize}
+    
+    % TODO: Add MAC diagram showing owner, data, other subject with no access
+\end{definition}
+
+\begin{concept}{Bell-LaPadula Model}\\
+    \begin{itemize}
+        \item Multi-level security model
+        \item Directed towards confidentiality
+        \item No read up
+        \item No write down
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Biba Model}\\
+    \begin{itemize}
+        \item Directed towards integrity
+        \item No write up
+        \item No read down
+    \end{itemize}
+\end{concept}
+
+\subsubsection{Role-Based Access Control (RBAC)}
+
+\begin{definition}{Role-Based Access Control (RBAC)}\\
+    \begin{itemize}
+        \item Decision based on the users' role within an organization
+        \item Example: Oracle DBMS
+        \item A role defines a set of transactions allowed for its members
+        \item Not provided by OS
+        \item Principle of least privilege
+    \end{itemize}
+    
+    % TODO: Add RBAC diagram showing User1 (Alice), User2 (Bob) connecting to Role, which connects to Obj1 (savings db), Obj2 (audit log)
+\end{definition}
+
+\begin{concept}{RBAC Components}\\
+    % TODO: Add RBAC component diagram showing Users, Roles, Objects with member_of, trans_update, and perm_contain relationships
+\end{concept}
+
+\subsection{Access Control Model Comparison}
+
+\begin{theorem}{Access Control Models Summary}\\
+    % TODO: Add table showing comparison of DAC, MAC, RBAC with columns:
+    % Based on | Models | Rules made by | Configured by | Enforced by
+    
+    \textbf{DAC (Discretionary Access Control):}
+    \begin{itemize}
+        \item Based on: Identity (e.g., computer, user, group)
+        \item Models: No standard model (OS specific impl.), ACLs and capabilities
+        \item Rules made by: Owner, typically restricted by policies/guidelines
+        \item Configured by: Owner, administrator has power to override
+        \item Enforced by: OS
+    \end{itemize}
+    
+    \textbf{MAC (Mandatory Access Control):}
+    \begin{itemize}
+        \item Based on: Security level (e.g., unclassified, restricted, secret, top secret)
+        \item Models: Windows MIC (label-based), SE Linux (label-based), AppArmor (name-based)
+        \item Rules made by: Security officer
+        \item Configured by: Admin(s), labels and rules
+        \item Enforced by: OS
+    \end{itemize}
+    
+    \textbf{RBAC (Role-Based Access Control):}
+    \begin{itemize}
+        \item Based on: Role (e.g., job function)
+        \item Models: INCITS 359:2004 (Core RBAC, Hierarchical RBAC, Constraint RBAC), Non-standard (SELinux, Java EE)
+        \item Rules made by: Business/security officer
+        \item Configured by: Application or OS admin(s)
+        \item Enforced by: RBAC System (transparent such as in SELinux or application-aware)
+    \end{itemize}
+\end{theorem}
