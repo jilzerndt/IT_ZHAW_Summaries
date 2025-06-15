@@ -393,3 +393,260 @@ Hierarchical Clustering:
     \item Set up a system to assign new data points to clusters
 \end{itemize}
 \end{KR}
+
+\section{Partitioning Clustering}
+
+\begin{definition}{Clustering Task}\\
+Clustering is the task of grouping a set of objects in such a way that objects in the same group (cluster) are more similar to each other than to those in other groups.
+\end{definition}
+
+\subsection{Clustering Models}
+
+\begin{concept}{Types of Clustering Models}
+\begin{itemize}
+    \item \textbf{Connectivity models}: For example, hierarchical clustering builds models based on distance connectivity
+    \item \textbf{Centroid models}: For example, the k-means algorithm represents each cluster by a single mean vector
+    \item \textbf{Distribution models}: Clusters are modelled using statistical distributions, such as multivariate normal distributions
+    \item \textbf{Density models}: For example, DBSCAN and OPTICS defines clusters as connected dense regions in the data space
+\end{itemize}
+\end{concept}
+
+\subsection{Cluster Properties}
+
+\begin{concept}{Cluster Characteristics}
+\begin{itemize}
+    \item Clusters may have different sizes, shapes, and densities
+    \item Clusters may form a hierarchy
+    \item Clusters may be overlapping or disjoint
+\end{itemize}
+\end{concept}
+
+\subsection{K-Means Clustering}
+
+\begin{definition}{K-Means Goal}\\
+Aim to partition $n$ observations into $k$ clusters in which each observation belongs to the cluster with the nearest mean.
+\end{definition}
+
+\begin{concept}{K-Means Input/Output}
+\textbf{Input}:
+\begin{itemize}
+    \item $D = p_1, \ldots, p_n$ Points
+    \item $k$ Number of clusters
+\end{itemize}
+
+\textbf{Output}:
+\begin{itemize}
+    \item $C = c_1, \ldots, c_k$ Cluster centroids
+    \item $D \rightarrow 1, \ldots, k$ Cluster membership
+\end{itemize}
+\end{concept}
+
+\begin{formula}{Distance Functions}\\
+$$euclidean = \sqrt{\sum_{i=1}^{d}(x_i - y_i)^2}$$
+$$manhattan = \sqrt{\sum_{i=1}^{d}|x_i - y_i|}$$
+\end{formula}
+
+\begin{KR}{K-Means Algorithm}\\
+\paragraph{Step 1}
+Choose $k$ objects as initial cluster centers
+
+\paragraph{Step 2}
+Assign each data point to the cluster which has the closest mean point (centroid) under chosen distance metric
+
+\paragraph{Step 3}
+When all data points have been assigned, recalculate the positions of $k$ centroids (mean points)
+
+\paragraph{Step 4}
+Repeat steps 2 and 3 until the centroids do not change anymore
+\end{KR}
+
+% NOTE: Add K-means clustering visualization showing iterations 1-6 of the algorithm
+
+\subsection{Clustering Evaluation}
+
+\subsubsection{Evaluation without Labels}
+
+\begin{concept}{Evaluation Methods without Labels}
+\begin{itemize}
+    \item \textbf{Elbow method}: A heuristic used in determining the number of clusters in a data set
+    \item \textbf{Silhouette coefficient}: Measure for cluster validity/consistency
+    \item \textbf{Dendrogram}: Visual inspection of distances and balancing in hierarchical clustering
+\end{itemize}
+\end{concept}
+
+\subsubsection{Evaluation with Labels}
+
+\begin{concept}{Evaluation Methods with Labels}
+\begin{itemize}
+    \item \textbf{Purity}: A simple and transparent measure of correctness of clustering
+    \item \textbf{Rand index}: Compares two clusterings
+    \item \textbf{Precision and Recall}: Can also be applied
+    \item \textbf{Misclassification rate} $MR$:
+    \begin{itemize}
+        \item $N =$ number of samples
+        \item $C =$ number of true clusters
+        \item $e_j =$ number of wrongly assigned samples of true cluster $j$
+    \end{itemize}
+\end{itemize}
+
+$$MR = \frac{1}{N}\sum_{j=1}^{c}e_j$$
+\end{concept}
+
+\subsection{Silhouette Coefficient}
+
+\begin{formula}{Silhouette Score Interpretation}\\
+The silhouette score falls within the range $[-1,1]$:
+\begin{enumerate}
+    \item $s \geq 1$: clusters are very dense and nicely separated
+    \item $s \approx 0$: clusters are overlapping
+    \item $s < 0$: cluster data may be wrong/incorrect
+\end{enumerate}
+
+The silhouette plots can be used to select the most optimal value of $K$ in k-means clustering.
+\end{formula}
+
+\subsection{ISODATA (K-Means Refinement)}
+
+\begin{concept}{ISODATA Algorithm}\\
+It doesn't need to know the number of clusters. Clusters are merged if either the number of members in a cluster is less than a certain threshold or if the centers of two clusters are closer than a certain threshold. The clusters are split into two different clusters if the clusters standard deviation exceeds a predefined value and the number of members is twice the threshold for the minimum number of members. The user must provide several additional parameters.
+\end{concept}
+
+\begin{KR}{ISODATA Process}\\
+\paragraph{Step 1}
+Choose $k$ objects as initial cluster centers
+
+\paragraph{Step 2}
+(Re)assign each object to the cluster to which the object is the most similar based on the mean value of the objects in the cluster
+
+\paragraph{Step 3}
+Recalculate the centroid by taking the average of all points in the cluster
+
+\paragraph{Step 4}
+Reassignment of data points do not change clusters. Clusters are splitted, merged or eliminated, if requirements are not met
+
+\paragraph{Step 5}
+Repeat steps 2 and 3 until the centroids do not change anymore
+\end{KR}
+
+\section{Hierarchical Density Clustering}
+
+\begin{definition}{Hierarchical Clustering}\\
+Hierarchical clustering builds models based on distance connectivity and merging of clusters with minimum distance.
+
+Bottom-up strategy: initially each data object is in its own atomic cluster. Then merge these atomic clusters into larger and larger clusters.
+\end{definition}
+
+\subsection{Hierarchical Clustering Method}
+
+\begin{KR}{Hierarchical Clustering Algorithm}\\
+\paragraph{Step 1}
+Form initial clusters consisting of a single object and compute the distance between each pair of clusters
+
+\paragraph{Step 2}
+Merge the two clusters having minimum distance
+
+\paragraph{Step 3}
+Calculate the distance between the new cluster and all other clusters
+
+\paragraph{Step 4}
+Repeat step 2 and 3 until there is only one cluster remaining
+\end{KR}
+
+\subsection{Dendrogram}
+
+\begin{definition}{Dendrogram Properties}\\
+A Dendrogram is a tree of nodes representing clusters, satisfying the following properties:
+\begin{itemize}
+    \item Root represents the whole data set
+    \item Leaf nodes represent clusters containing a single object
+    \item Inner nodes represent the union of all objects contained in its corresponding subtrees
+\end{itemize}
+\end{definition}
+
+% NOTE: Add dendrogram visualization showing hierarchical cluster tree structure
+
+\subsection{Linkage Methods}
+
+\begin{definition}{Single Linkage}\\
+Shortest distance single link (min) between an element in one cluster and an element in the other, i.e., $d(C_i, C_j) = \min\{d(x_{ip}, x_{jq})\}$.
+\end{definition}
+
+\begin{definition}{Complete Linkage}\\
+Largest distance between an element in one cluster complete link (max) and an element in the other, i.e., $d(C_i, C_j) = \max\{d(x_{ip}, x_{jp})\}$.
+\end{definition}
+
+\begin{definition}{Average Linkage}\\
+Average distance between average elements in one cluster and elements in the other, i.e., $d(C_i, C_j) = avg\{d(x_{ip}, x_{jp})\}$.
+\end{definition}
+
+\subsection{Clustering Example}
+
+\begin{example2}{1D Clustering Example}\\
+Clustering of the 1-dimensional data set $\{2, \mathbf{12}, \mathbf{16}, \mathbf{25}, \mathbf{29}, 45\}$
+
+\textbf{Step 1}: Find lowest distance $\rightarrow$ (10, \textbf{4}, 9, \textbf{4}, 45) and build clusters
+$\{2, (12,16), (25,29), 45\}$
+
+\textbf{Step 2}: Find lowest distance based on metrics and build clusters:
+\begin{itemize}
+    \item \textbf{Centroid} $\{2, (12,16), (25,29), 45\} \rightarrow$ (\textbf{12}, 13,18)
+    $\{(\mathbf{2}, \mathbf{12}, \mathbf{16}), (25,29), 45\}$
+    
+    \item \textbf{Single} $\{2, (12,16), (25,29), 45\} \rightarrow$ (10, \textbf{9}, 16)
+    $\{2, (\mathbf{12}, \mathbf{16}, \mathbf{25}, \mathbf{29}), 45\}$
+    
+    \item \textbf{Complete} $\{2, (12,16), (25,29), 45\} \rightarrow$ (\textbf{14}, 17,16)
+    $\{(\mathbf{2}, \mathbf{12}, \mathbf{16}), (25,29), 45\}$
+\end{itemize}
+\end{example2}
+
+% NOTE: Add three dendrograms showing Centroid, Single linkage, and Complete linkage results
+
+\subsection{DBSCAN}
+
+\begin{definition}{Density-Based Clustering}\\
+Density based clustering defines clusters as connected dense regions in the data space. There is no need to specify the number of clusters.
+\end{definition}
+
+\begin{definition}{DBSCAN Parameters}\\
+DBSCAN (Density-Based Spatial Clustering of Applications with Noise):
+\begin{itemize}
+    \item $minpoints$: minimum number of points clustered together for a region to be considered dense
+    \item $\varepsilon$: a distance measure that will be used to locate the points in the neighbourhood of any point
+    \item $core$: a point that has at least $m$ points within distance $n$ from itself
+    \item $border$: a point that has at least one core point at a distance $n$
+    \item $noise$: a point that is neither core nor a border with less than $m$ points within distance $n$ from itself
+\end{itemize}
+\end{definition}
+
+\begin{KR}{DBSCAN Algorithm}\\
+\paragraph{Step 1}
+It starts with a random unvisited point. All points within a distance $\varepsilon$ classify as neighborhood points
+
+\paragraph{Step 2}
+It needs a minimum number of points $minpoints$ within the neighbourhood to start the clustering process. Otherwise, the point gets labeled as Noise
+
+\paragraph{Step 3}
+All points within the distance $\varepsilon$ become part of the same cluster. Repeat the procedure for all the new points added to the cluster group. Continue till it visits and labels each point within the $\varepsilon$ neighborhood of the cluster
+
+\paragraph{Step 4}
+On Completion of the process, it starts again with a new unvisited point thereby leading to the discovery of more cluster or noise. At the end of the process each point is marked
+\end{KR}
+
+\subsection{DBSCAN Advantages and Disadvantages}
+
+\begin{concept}{DBSCAN Advantages}
+\begin{itemize}
+    \item No need to specify the number of clusters
+    \item Able to find arbitrarily shaped clusters
+    \item Able to detect noise
+\end{itemize}
+\end{concept}
+
+\begin{concept}{DBSCAN Disadvantages}
+\begin{itemize}
+    \item Cannot cluster data sets well with large differences in densities
+\end{itemize}
+\end{concept}
+
+% NOTE: Add DBSCAN visualization showing core points, border points, and noise points
