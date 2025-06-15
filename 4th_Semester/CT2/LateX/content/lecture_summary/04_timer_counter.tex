@@ -39,46 +39,6 @@ Digital circuit that counts events:
 \includegraphics[width=\linewidth]{counterfunction.png}
 \end{concept}
 
-\begin{theorem}{Up/Down Counting Modes}\\
-    \includegraphics[width=\linewidth]{updownmodecounter.png}
-\end{theorem}
-
-\begin{corollary}{Prescaler and Auto-Reload Register (ARR) Calculation}\\
-    \includegraphics[width=\linewidth]{countertimer_prescaler.png}
-\end{corollary}
-
-\mult{2}
-
-\begin{example2}{Down-Counter Example}
-    Timer configured as down-counter with a prescaler of 4 and an auto-reload value of 1000.
-    
-    \textbf{Counter Behavior:}
-    \begin{itemize}
-        \item Count down from 1000 down to 0
-        \item Set interrupt request (UIF) and restarts from value in ARR
-        \item Each decrement corresponds to a clock tick divided by the prescaler
-    \end{itemize}
-    
-    \textbf{Timing Diagram:}\\
-    \includegraphics[width=\linewidth]{downcounterexample.png}
-\end{example2}
-
-\begin{example2}{Up-Counter Example}
-    Timer configured as up-counter with a prescaler of 4 and an auto-reload value of 1000.
-    
-    \textbf{Counter Behavior:}
-    \begin{itemize}
-        \item Count up from 0 to 1000
-        \item Set interrupt request (UIF) when reaching ARR value, restarts from 0
-        \item Each increment corresponds to a clock tick divided by the prescaler
-    \end{itemize}
-    
-    \textbf{Timing Diagram:}\\
-    \includegraphics[width=\linewidth]{upcounterexample.png}
-\end{example2}
-
-\multend
-
 
 
 \begin{formula}{Timer Period Calculation}
@@ -132,6 +92,48 @@ PSC = 8,399,
 ARR = 499
 \end{minipage}
 \end{example}
+
+\begin{theorem}{Up/Down Counting Modes}\\
+    \includegraphics[width=\linewidth]{updownmodecounter.png}
+\end{theorem}
+
+\begin{corollary}{Prescaler and Auto-Reload Register (ARR) Calculation}\\
+    \includegraphics[width=\linewidth]{countertimer_prescaler.png}
+\end{corollary}
+
+\mult{2}
+
+\begin{example2}{Down-Counter Example}
+    Timer configured as down-counter with a prescaler of 4 and an auto-reload value of 1000.
+    
+    \textbf{Counter Behavior:}
+    \begin{itemize}
+        \item Count down from 1000 down to 0
+        \item Set interrupt request (UIF) and restarts from value in ARR
+        \item Each decrement corresponds to a clock tick divided by the prescaler
+    \end{itemize}
+    
+    \textbf{Timing Diagram:}\\
+    \includegraphics[width=\linewidth]{downcounterexample.png}
+\end{example2}
+
+\begin{example2}{Up-Counter Example}
+    Timer configured as up-counter with a prescaler of 4 and an auto-reload value of 1000.
+    
+    \textbf{Counter Behavior:}
+    \begin{itemize}
+        \item Count up from 0 to 1000
+        \item Set interrupt request (UIF) when reaching ARR value, restarts from 0
+        \item Each increment corresponds to a clock tick divided by the prescaler
+    \end{itemize}
+    
+    \textbf{Timing Diagram:}\\
+    \includegraphics[width=\linewidth]{upcounterexample.png}
+\end{example2}
+
+\multend
+
+
 
 \begin{KR}{Timer-Komponenten verstehen}
     \paragraph{Prescaler}
@@ -193,7 +195,7 @@ ARR = 499
 
 \subsection{STM32F4 Timers}
 
-\important{Reference Manual Pages 576-635}
+\important{In Moodle: STM32F4 Reference Manual, Chapter 18: General-purpose timers (p.592-651)}
 
 \mult{2}
 
@@ -209,13 +211,13 @@ ARR = 499
 Dividing counter clock frequency by a factor between 1 and 65536\\
 \textbf{Up to 4 independent channels for:}
 
-\begin{minipage}{0.45\linewidth}
+\begin{minipage}{0.4\linewidth}
 \begin{itemize}
     \item Input capture
     \item Output compare
 \end{itemize}
 \end{minipage}
-\begin{minipage}{0.5\linewidth}
+\begin{minipage}{0.6\linewidth}
 \begin{itemize}
     \item PWM generation
     \item One-pulse mode output
@@ -240,10 +242,7 @@ Dividing counter clock frequency by a factor between 1 and 65536\\
 
 \multend
 
-\begin{corollary}{Enable timer block in RCC} RCC = Reset and Clock Control\\
-    RCC APB1 peripheral clock enable register (RCC\_APB1ENR)\\
-    \includegraphics[width=\linewidth]{timerblockenable.png}
-\end{corollary}
+
 
 \begin{concept}{Understanding Timer Configuration}
 \begin{itemize}
@@ -266,72 +265,6 @@ Dividing counter clock frequency by a factor between 1 and 65536\\
 \end{itemize}
 \end{concept}
 
-\begin{corollary}{Key Timer Registers}
-Important registers for timer configuration:
-
-\begin{minipage}{0.5\linewidth}
-\begin{itemize}
-    \item \textbf{TIMx\_CR1} Control Register 1:
-    \begin{itemize}
-        \item CEN: Counter Enable
-        \item DIR: Direction (0=up, 1=down)
-        \item CMS: Center-aligned Mode Selection
-    \end{itemize}
-    \item \textbf{TIMx\_SMCR} Slave Mode Control Register:
-    \begin{itemize}
-        \item SMS: Slave Mode Selection
-        \item Usually set to 000 for internal clock (CK\_INT)
-    \end{itemize}
-    \item \textbf{TIMx\_DIER} DMA/Interrupt Enable Register:
-    \begin{itemize}
-        \item UIE: Update Interrupt Enable
-        \item CCxIE: Capture/Compare Interrupt Enable
-    \end{itemize}
-    \item \textbf{TIMx\_SR} Status Register:
-    \begin{itemize}
-        \item UIF: Update Interrupt Flag
-        \item CCxIF: Capture/Compare Interrupt Flags
-    \end{itemize}
-\end{itemize}
-\end{minipage}
-\begin{minipage}{0.5\linewidth}
-\begin{itemize}
-    \item \textbf{TIMx\_EGR} Event Generation Register:
-    \begin{itemize}
-        \item UG: Update Generation
-        \item SW can reinitialize counter and update registers
-    \end{itemize}
-    \item \textbf{TIMx\_CNT} Counter:
-    \begin{itemize}
-        \item Current counter value
-    \end{itemize}
-    \item \textbf{TIMx\_PSC} Prescaler:
-    \begin{itemize}
-        \item Divides clock frequency by a factor between 1 and 65536
-        \item Actual division factor is PSC+1
-    \end{itemize}
-    \item \textbf{TIMx\_ARR} Auto-reload Register:
-    \begin{itemize}
-        \item Sets period in up-counting mode
-        \item Sets initial value in down-counting mode
-    \end{itemize}
-\end{itemize}
-\end{minipage}
-\end{corollary}
-
-\begin{concept}{Timer Configuration Registers}\\
-\includegraphics[width=\linewidth]{timerregisters.png}
-\end{concept}
-
-
-\begin{theorem}{Timer Clock Sources}
-\begin{itemize}
-    \item \textbf{Internal Clock (CK\_INT)}: Default source, derived from system clock
-    \item \textbf{External Clock Mode 1}: Timer clock from external pins (TIMx\_CH1, TIMx\_CH2)
-    \item \textbf{External Clock Mode 2}: Timer clock from external trigger input (TIMx\_ETR)
-    \item \textbf{Internal Trigger Inputs (ITRx)}: Using one timer as prescaler for another
-\end{itemize}
-\end{theorem}
 
 \begin{KR}{Timer konfigurieren}
     \paragraph{Clock-Source auswählen}
@@ -388,7 +321,79 @@ TIM3_ARR = 0x4E1F;       // (20000-1) -> 200 ms
 \end{example2}
 
 
-\begin{example2}{Basic Timer Configuration} to generate an interrupt every 1 second (timer clock frequency is 84 MHz)
+
+\begin{concept}{Timer Configuration Registers}\\
+\includegraphics[width=\linewidth]{timerregisters.png}
+\end{concept}
+
+\begin{theorem}{Key Timer Registers}
+Important registers for timer configuration:
+
+\begin{minipage}{0.5\linewidth}
+\begin{itemize}
+    \item \textbf{TIMx\_CR1} Control Register 1:
+    \begin{itemize}
+        \item CEN: Counter Enable
+        \item DIR: Direction (0=up, 1=down)
+        \item CMS: Center-aligned Mode Selection
+    \end{itemize}
+    \item \textbf{TIMx\_SMCR} Slave Mode Control Register:
+    \begin{itemize}
+        \item SMS: Slave Mode Selection
+        \item Usually set to 000 for internal clock (CK\_INT)
+    \end{itemize}
+    \item \textbf{TIMx\_DIER} DMA/Interrupt Enable Register:
+    \begin{itemize}
+        \item UIE: Update Interrupt Enable
+        \item CCxIE: Capture/Compare Interrupt Enable
+    \end{itemize}
+    \item \textbf{TIMx\_SR} Status Register:
+    \begin{itemize}
+        \item UIF: Update Interrupt Flag
+        \item CCxIF: Capture/Compare Interrupt Flags
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\begin{itemize}
+    \item \textbf{TIMx\_EGR} Event Generation Register:
+    \begin{itemize}
+        \item UG: Update Generation
+        \item SW can reinitialize counter and update registers
+    \end{itemize}
+    \item \textbf{TIMx\_CNT} Counter:
+    \begin{itemize}
+        \item Current counter value
+    \end{itemize}
+    \item \textbf{TIMx\_PSC} Prescaler:
+    \begin{itemize}
+        \item Divides clock frequency by a factor between 1 and 65536
+        \item Actual division factor is PSC+1
+    \end{itemize}
+    \item \textbf{TIMx\_ARR} Auto-reload Register:
+    \begin{itemize}
+        \item Sets period in up-counting mode
+        \item Sets initial value in down-counting mode
+    \end{itemize}
+\end{itemize}
+\end{minipage}
+\end{theorem}
+
+
+\begin{corollary}{Timer Clock Sources}
+\begin{itemize}
+    \item \textbf{Internal Clock (CK\_INT)}: Default source, derived from system clock
+    \item \textbf{External Clock Mode 1}: Timer clock from external pins (TIMx\_CH1, TIMx\_CH2)
+    \item \textbf{External Clock Mode 2}: Timer clock from external trigger input (TIMx\_ETR)
+    \item \textbf{Internal Trigger Inputs (ITRx)}: Using one timer as prescaler for another
+\end{itemize}
+\end{corollary}
+
+
+\subsection{Timer Configuration}
+
+
+\begin{KR}{Basic Timer Configuration} to generate an interrupt every 1 second (timer clock frequency is 84 MHz)
 \paragraph{Calculations and Setup}
 First, calculate the required counts: counts = 1s × 84MHz = 84,000,000
 \vspace{1mm}\\
@@ -447,7 +452,16 @@ NVIC_SetPriority(TIM2_IRQn, 1);
     \item Auto-reload: 10,000 (gives 1Hz)
     \item Timer period: 1 second
 \end{itemize}
-\end{example2}
+\end{KR}
+
+\raggedcolumns
+\columnbreak
+
+\begin{concept}{Enable timer block in RCC} RCC = Reset and Clock Control\\
+    RCC APB1 peripheral clock enable register (RCC\_APB1ENR)\\
+    \includegraphics[width=\linewidth]{timerblockenable.png}
+\end{concept}
+
 
 
 \begin{theorem}{Register Configuration}\\
@@ -513,6 +527,7 @@ NVIC_SetPriority(TIM2_IRQn, 1);
 \begin{concept}{Clock Sources and Synchronization}\\
     \includegraphics[width=\linewidth]{clocksources.png}
 \end{concept}
+
 
 \raggedcolumns
 \pagebreak
