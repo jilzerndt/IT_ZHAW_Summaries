@@ -192,11 +192,88 @@
     Block ciphers encrypt fixed-size blocks of data:
     \begin{itemize}
         \item Require padding for messages not multiple of block size
-        \item Use modes of operation for longer messages (ECB, CBC, CTR, GCM)
+        \item Use modes of operation for longer messages
         \item Examples: DES (insecure), Triple-DES (legacy), AES (current standard)
     \end{itemize}
     \includegraphics[width=\linewidth]{block_cipher.png}
 \end{concept}
+
+\subsubsection{AES Modes of Operation}
+
+\begin{concept}{Overview of AES Modes}
+AES can operate in different modes to handle messages longer than a single block (16 bytes):
+\begin{itemize}
+    \item \textbf{Confidentiality-only modes}: ECB, CBC, CFB, OFB, CTR
+    \item \textbf{Authenticated encryption modes}: GCM, CCM, OCB
+    \item Each mode has different security properties and use cases
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Electronic Code Book (ECB) Mode}
+The simplest block cipher mode - each block encrypted independently:
+\begin{itemize}
+    \item $C_i = E_K(P_i)$ for each plaintext block $P_i$
+    \item \textcolor{red}{\textbf{Major weakness}}: Identical plaintext blocks produce identical ciphertext blocks
+    \item Patterns in plaintext remain visible in ciphertext
+    \item \textbf{Use case}: Almost never - only for single blocks or random data
+\end{itemize}
+\includegraphics[width=\linewidth]{ECB.png}
+\end{definition}
+
+\begin{definition}{Cipher Block Chaining (CBC) Mode}
+Each plaintext block is XORed with the previous ciphertext block before encryption:
+\begin{itemize}
+    \item $C_i = E_K(P_i \oplus C_{i-1})$, with initialization vector $IV = C_0$
+    \item \textbf{Advantages}: Identical plaintext blocks produce different ciphertext
+    \item \textbf{Disadvantages}: Sequential encryption, padding oracle attacks possible
+    \item \textbf{Use case}: File encryption, legacy TLS (deprecated)
+\end{itemize}
+\includegraphics[width=\linewidth]{CBC.png}
+\end{definition}
+
+\begin{definition}{Counter (CTR) Mode}
+Converts block cipher into stream cipher by encrypting a counter:
+\begin{itemize}
+    \item $C_i = P_i \oplus E_K(\text{IV} + i)$
+    \item \textbf{Advantages}: Parallel encryption/decryption, no padding needed
+    \item \textbf{Disadvantages}: Counter must never repeat with same key
+    \item \textbf{Use case}: High-performance applications, disk encryption
+\end{itemize}
+\includegraphics[width=\linewidth]{CTR.png}
+\end{definition}
+
+\begin{definition}{Output Feedback (OFB) Mode}
+Creates keystream by repeatedly encrypting the previous output:
+\begin{itemize}
+    \item $O_i = E_K(O_{i-1})$, $C_i = P_i \oplus O_i$, with $O_0 = IV$
+    \item \textbf{Advantages}: No padding needed, self-synchronizing
+    \item \textbf{Disadvantages}: Sequential operation, no integrity protection
+    \item \textbf{Use case}: Stream-oriented transmission (rarely used today)
+\end{itemize}
+\includegraphics[width=\linewidth]{OFB.png}
+\end{definition}
+
+\begin{definition}{Galois/Counter Mode (GCM)}
+Authenticated encryption mode combining CTR mode with Galois field multiplication:
+\begin{itemize}
+    \item Provides both confidentiality and authenticity
+    \item $C_i = P_i \oplus E_K(\text{IV} + i)$, plus authentication tag
+    \item \textbf{Advantages}: Parallel operation, built-in authentication, high performance
+    \item \textbf{Use case}: Modern TLS, IPsec, wireless protocols
+\end{itemize}
+\includegraphics[width=\linewidth]{GCM.png}
+\end{definition}
+
+\begin{theorem}{Mode Selection Guidelines}
+Choose AES modes based on requirements:
+\begin{itemize}
+    \item \textbf{Never use ECB} - except for single blocks
+    \item \textbf{Use GCM} - when you need both encryption and authentication
+    \item \textbf{Use CBC} - for compatibility with legacy systems (with HMAC for authentication)
+    \item \textbf{Use CTR} - when you need parallel processing and will add authentication separately
+    \item \textbf{Avoid OFB/CFB} - unless specifically required by legacy protocols
+\end{itemize}
+\end{theorem}
 
 \begin{concept}{Stream Ciphers}
     Stream ciphers encrypt data bit-by-bit or byte-by-byte:
