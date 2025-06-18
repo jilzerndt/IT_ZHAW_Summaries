@@ -29,8 +29,14 @@ Different certificate types serve different purposes:
 \end{itemize}
 \end{definition}
 
-\begin{concept}{PKI} Public Key Infrastructure:
-    Verify public key in the certificate by verifying the signature
+\begin{concept}{Public Key Infrastructure (PKI)}
+PKI is the framework that manages digital certificates:
+\begin{itemize}
+    \item \textbf{Certificate Authorities (CAs)} - Issue and manage certificates
+    \item \textbf{Registration Authorities (RAs)} - Verify identities before certificate issuance
+    \item \textbf{Certificate stores} - Store trusted root certificates
+    \item \textbf{Revocation systems} - Handle certificate invalidation
+\end{itemize}
 \end{concept}
 
 
@@ -68,28 +74,15 @@ Certificates form chains of trust:
 To verify a certificate, each certificate in the chain must be validated up to a trusted root.
 \end{concept}
 
-\begin{formula}{Certificate Chain Validation}
-    For $i = [1, n - 1]$
-    \begin{itemize}
-        \item $C[i].issuer = C[i + 1].subject$
-        \item $C[i].signature$ can be verified with $C[i + 1].publicKey$
-    \end{itemize}
-\end{formula}
-
-\begin{lemma}{Certificate Validation Process}\\
-To validate a certificate chain of length n with certificates C[1], ..., C[n], where C[1] is the end entity certificate:
-\begin{enumerate}
-    \item Check that C[1].name matches the expected entity name
-    \item For i = 1 to n - 1:
-    \begin{itemize}
-        \item Check that C[i].issuer = C[i+1].subject
-        \item Verify C[i].signature using C[i+1].publicKey
-    \end{itemize}
-    \item Locate root cert R with C[n].issuer = R.subject
-    \item Verify C[n].signature using R.publicKey
-    \item Verify R.signature using R.publicKey (self-verification)
-\end{enumerate}
-\end{lemma}
+\begin{concept}{Certificate Validation Process}
+Certificate validation follows a simple chain of trust:
+\begin{itemize}
+    \item Each certificate's issuer must match the next certificate's subject
+    \item Each certificate's signature must be verifiable by the next certificate's public key
+    \item The chain must end with a trusted root certificate
+    \item Certificate must be within its validity period and not revoked
+\end{itemize}
+\end{concept}
 
 \begin{theorem}{Root Certificate Trust}\\
 Root certificates are the foundation of trust in PKI:
@@ -107,34 +100,6 @@ Root certificates are the foundation of trust in PKI:
 
 
 
-\subsection{Root Certificates}
-
-\begin{concept}{Root Certificates}
-    Any certificate chain ends with a root certificate.
-    \begin{itemize}
-        \item Can be verified with its own public key
-        \item Root certificates are always self-signed
-        \item Usually stored in your browser (from trusted parties)
-    \end{itemize}
-\end{concept}
-
-\begin{concept}{Root CA Revocation}
-    \begin{itemize}
-        \item Remove root CA from applications and systems
-        \item All certificate issue by the root CA will also be invalid
-    \end{itemize}
-\end{concept}
-
-\subsection{Validation}
-
-\begin{KR}{Certificate Validation Process}
-
-    \textbf{Step 1} Obtain and verify (validity) root certificate
-
-    \textbf{Step 2} Verify server certificate signature with root public key
-
-    \textbf{Step 3} Compare root certificate subject with server issuer
-\end{KR}
 
 
 
@@ -162,30 +127,14 @@ Several mechanisms exist for checking certificate revocation status:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Checking Certificate Revocation}
-\paragraph{Using CRLs}
+\begin{concept}{Revocation Checking Methods}
 \begin{itemize}
-    \item Retrieve CRL from the URL specified in the certificate
-    \item Verify CRL signature using the issuing CA's public key
-    \item Check if the certificate's serial number appears in the CRL
+    \item \textbf{CRLs}: Download revocation list from CA and check certificate serial number
+    \item \textbf{OCSP}: Real-time query to CA for specific certificate status
+    \item \textbf{OCSP Stapling}: Server pre-fetches OCSP response and includes it in TLS handshake
 \end{itemize}
-
-\paragraph{Using OCSP}
-\begin{itemize}
-    \item Send HTTP request to the OCSP responder URL in the certificate
-    \item Include certificate serial number in the request
-    \item Receive signed response indicating certificate status (good, revoked, unknown)
-    \item Verify signature on the response using the issuing CA's public key
-\end{itemize}
-
-\paragraph{Using OCSP Stapling}
-\begin{itemize}
-    \item Server periodically requests OCSP status from the CA
-    \item Server caches the signed OCSP response
-    \item Server includes the response in the TLS handshake
-    \item Client verifies the OCSP response signature using the CA's public key
-\end{itemize}
-\end{KR}
+Each method has trade-offs between performance, privacy, and reliability.
+\end{concept}
 
 \subsection{Certificate Transparency}
 
@@ -204,41 +153,3 @@ Let's Encrypt, a free and automated Certificate Authority, has become the larges
 \end{example}
 
 
-\subsection{Online Certificate Status Protocol - OCSP}
-
-\mult{2}
-
-\begin{definition}{OCSP}\\
-    Issuing CA can be asked (Client) for the status of a specific certificate.
-    \begin{itemize}
-        \item Status information is updated more often
-        \item Only little information is exchanged
-        \item OCSP must always be available
-        \item OCSP is the single point of failure
-        \item Vulnerable to DoS attack against OCSP
-    \end{itemize}
-    
-    Most clients implement soft fail (good), if the response is not received (in time).
-
-    \includegraphics[width=\linewidth]{OCSP.png}
-\end{definition}
-
-
-
-\begin{concept}{OCSP Stapling}\\
-    The server queries the OCSP-Responder listed in the certificate itself and caches the responses.
-    \begin{itemize}
-        \item Client gets OCSP response from server during TLS handshake
-        \item Less dependent on the availability of OCSP-Responder
-    \end{itemize}
-    
-    \textbf{Limitations}
-    \begin{itemize}
-        \item Vulnerable time window like in CRL
-        \item Fallback to OCSP if no valid response is cached
-    \end{itemize}
-
-    \includegraphics[width=\linewidth]{OCSP_stapling.png}
-\end{concept}
-
-\multend
