@@ -1,6 +1,8 @@
 \section{Layer 2 Security}
 
 
+\begin{minipage}{0.4\linewidth}
+
 \begin{concept}{Security at Different OSI Layers}
 \begin{itemize}
     \item \textbf{Physical Layer (Layer 1)} - Quantum cryptography, physical isolation
@@ -10,29 +12,31 @@
     \item \textbf{Application Layer (Layer 7)} - PGP, S/MIME, Signal, WhatsApp
 \end{itemize}
 \end{concept}
+\end{minipage}
+\begin{minipage}{0.6\linewidth}
 
 \begin{theorem}{Layer Selection Tradeoffs}
-The choice of which layer to implement security has various tradeoffs:
-\begin{itemize}
-    \item \textbf{Higher Layer Security}:
+
+    \textbf{Higher Layer Security}:
     \begin{itemize}
         \item Easier to deploy (often included in applications)
         \item Typically provides end-to-end protection
         \item Less generally applicable (often optimized for specific applications)
     \end{itemize}
-    \item \textbf{Lower Layer Security}:
+
+    \textbf{Lower Layer Security}:
     \begin{itemize}
         \item More difficult to deploy (may require kernel, router, or switch modifications)
         \item Often provides only hop-to-hop protection at layer 2
         \item More generally applicable (protects all protocols above it)
     \end{itemize}
-\end{itemize}
-\end{theorem}
 
-\subsection{Extensible Authentication Protocol (EAP)}
+\end{theorem}
+\end{minipage}
+\subsubsection{Extensible Authentication Protocol (EAP)}
 
 \begin{definition}{Extensible Authentication Protocol (EAP)}
-EAP is a framework for authentication that supports multiple authentication methods:
+framework for authentication that supports multiple authentication methods:
 \begin{itemize}
     \item Provides a flexible authentication mechanism
     \item Designed to be transport-independent (can run over various protocols)
@@ -52,14 +56,6 @@ struct eap_packet {
     uint8_t data[];     // Type-specific data
 };
 \end{lstlisting}
-
-Common EAP types include:
-\begin{itemize}
-    \item Type 4: MD5-Challenge (insecure!)
-    \item Type 13: EAP-TLS (recommended)
-    \item Type 21: EAP-TTLS
-    \item Type 25: PEAP (Protected EAP)
-\end{itemize}
 \end{code}
 
 \begin{concept}{EAP Authentication Methods}
@@ -74,10 +70,12 @@ EAP supports numerous authentication methods with varying security properties:
 Current recommendation is to use EAP-TLS when possible.
 \end{concept}
 
-\subsection{IEEE 802.1X Port-Based Access Control}
+\subsubsection{IEEE 802.1X Port-Based Access Control}
+
+\mult{2}
 
 \begin{definition}{IEEE 802.1X}
-IEEE 802.1X is a standard for port-based network access control:
+port-based network access control:
 \begin{itemize}
     \item Controls access to a network by authenticating devices before allowing network access
     \item Prevents unauthorized access through publicly accessible network ports
@@ -87,13 +85,22 @@ IEEE 802.1X is a standard for port-based network access control:
 \end{definition}
 
 \begin{concept}{802.1X Components}
-IEEE 802.1X involves three key components:
 \begin{itemize}
     \item \textbf{Supplicant} - The client device requesting network access
     \item \textbf{Authenticator} - The network device (switch, access point) controlling port access
     \item \textbf{Authentication Server} - Typically a RADIUS server that validates user credentials
 \end{itemize}
 \end{concept}
+
+\begin{theorem}{Security Limitations of 802.1X}
+While 802.1X provides significant security benefits, it has limitations:
+\begin{itemize}
+    \item Man-in-the-middle attacks are possible when an attacker inserts themselves between a legitimate device and the switch
+    \item An attacker could monitor traffic by creating a bridge between the legitimate device and the switch
+    \item Once initial authentication is complete, the ongoing session is not continuously verified
+    \item These limitations are addressed in 802.1X-2010 with the use of MACsec
+\end{itemize}
+\end{theorem}
 
 \begin{KR}{IEEE 802.1X Authentication Process}
 \paragraph{Initial Connection}
@@ -120,20 +127,14 @@ IEEE 802.1X involves three key components:
 \end{itemize}
 \end{KR}
 
-\begin{theorem}{Security Limitations of 802.1X}
-While 802.1X provides significant security benefits, it has limitations:
-\begin{itemize}
-    \item Man-in-the-middle attacks are possible when an attacker inserts themselves between a legitimate device and the switch
-    \item An attacker could monitor traffic by creating a bridge between the legitimate device and the switch
-    \item Once initial authentication is complete, the ongoing session is not continuously verified
-    \item These limitations are addressed in 802.1X-2010 with the use of MACsec
-\end{itemize}
-\end{theorem}
+\multend
 
-\subsection{MACsec (IEEE 802.1AE)}
+\mult{2}
+
+
 
 \begin{definition}{MACsec}
-IEEE 802.1AE (Media Access Control Security) provides:
+IEEE 802.1AE (Media Access Control Security)
 \begin{itemize}
     \item Data confidentiality, integrity, and authenticity on layer 2 (Ethernet)
     \item Protection for all data including DHCP, ARP, and higher layer protocols
@@ -147,15 +148,18 @@ MACsec operates by:
 \begin{itemize}
     \item Encrypting the payload of Ethernet frames between adjacent devices
     \item Adding a SecTAG to identify the keys and provide packet numbering
-    \item Adding an Integrity Check Value (ICV) based on GCM-AES
+    \item Integrity Check Value (ICV) based on GCM-AES
     \item Providing hop-by-hop protection where each device on the path decrypts and re-encrypts the data
 \end{itemize}
 \end{concept}
 
-\subsection{WLAN Security}
+\multend
+
+\subsubsection{WLAN Security}
+
+\mult{2}
 
 \begin{definition}{WLAN Security Challenges}
-Wireless networks face unique security challenges:
 \begin{itemize}
     \item No physical cable requirement for packet sniffing
     \item Signals extend beyond physical boundaries
@@ -164,20 +168,8 @@ Wireless networks face unique security challenges:
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Evolution of WLAN Security}
-WLAN security has evolved through several generations:
-\begin{itemize}
-    \item \textbf{WEP (Wired Equivalent Privacy)} - Original security standard with major design flaws
-    \item \textbf{WPA (Wi-Fi Protected Access)} - Intermediate solution while developing 802.11i
-    \item \textbf{WPA2 (IEEE 802.11i)} - Current standard with strong security
-    \item \textbf{WPA3} - Newest standard with improved security measures
-\end{itemize}
-\end{concept}
-
-\subsection{WEP Security}
-
 \begin{definition}{Wired Equivalent Privacy (WEP)}
-WEP was the original security standard for 802.11 networks:
+OG security standard for 802.11 networks:
 \begin{itemize}
     \item Shared key between all clients and the access point
     \item Uses RC4 stream cipher with 40 or 104-bit keys
@@ -187,7 +179,6 @@ WEP was the original security standard for 802.11 networks:
 \end{definition}
 
 \begin{theorem}{WEP Security Flaws}
-WEP has several critical design flaws:
 \begin{itemize}
     \item Small IV space (24 bits) leads to inevitable IV reuse
     \item Weak key scheduling algorithm in RC4
@@ -198,10 +189,9 @@ WEP has several critical design flaws:
 \end{itemize}
 \end{theorem}
 
-\subsection{WPA and WPA2}
 
 \begin{definition}{Wi-Fi Protected Access (WPA)}
-WPA was developed as an interim solution while waiting for 802.11i (WPA2):
+interim solution while waiting for 802.11i (WPA2):
 \begin{itemize}
     \item Introduced the Temporal Key Integrity Protocol (TKIP)
     \item Provided per-packet key mixing
@@ -212,7 +202,7 @@ WPA was developed as an interim solution while waiting for 802.11i (WPA2):
 \end{definition}
 
 \begin{definition}{WPA2 (IEEE 802.11i)}
-WPA2 is the complete implementation of the IEEE 802.11i standard:
+complete implementation of the IEEE 802.11i standard:
 \begin{itemize}
     \item Introduced Counter Mode with CBC-MAC Protocol (CCMP)
     \item Based on AES encryption (replacing RC4)
@@ -223,7 +213,6 @@ WPA2 is the complete implementation of the IEEE 802.11i standard:
 \end{definition}
 
 \begin{concept}{WPA/WPA2 Operation}
-WPA and WPA2 operate in two distinct phases:
 \begin{itemize}
     \item \textbf{Authentication Phase}:
     \begin{itemize}
@@ -239,10 +228,9 @@ WPA and WPA2 operate in two distinct phases:
 \end{itemize}
 \end{concept}
 
-\subsection{WPA3}
 
 \begin{definition}{WPA3}
-WPA3 is the latest Wi-Fi security standard (released in 2018):
+latest Wi-Fi security standard:
 \begin{itemize}
     \item Introduces Simultaneous Authentication of Equals (SAE) to replace WPA2-Personal PSK
     \item Provides forward secrecy
@@ -251,3 +239,5 @@ WPA3 is the latest Wi-Fi security standard (released in 2018):
     \item Improves encryption for public networks with Opportunistic Wireless Encryption (OWE)
 \end{itemize}
 \end{definition}
+
+\multend
