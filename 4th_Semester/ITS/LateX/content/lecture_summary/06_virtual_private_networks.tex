@@ -48,16 +48,6 @@ Several protocols are commonly used to implement VPNs:
 
 \subsection{IPsec VPNs}
 
-\begin{definition}{Internet Protocol Security (IPsec)}\\
-IPsec is an IETF standard protocol suite for secure IP communications:
-\begin{itemize}
-    \item Operates at the network layer (Layer 3)
-    \item Provides authentication, integrity, and confidentiality
-    \item Includes key exchange mechanism (Internet Key Exchange, IKE)
-    \item Supported by most operating systems and network devices
-\end{itemize}
-\end{definition}
-
 \begin{concept}{IPsec Components}\\
 IPsec consists of several components:
 \begin{itemize}
@@ -105,79 +95,8 @@ IPsec operates in two primary modes:
 \end{itemize}
 \end{concept}
 
-\begin{code}{IPsec ESP Packet Structure in Tunnel Mode}\\
-\begin{lstlisting}[language=C, style=basesmol]
-/* Original IP Packet */
-struct original_ip_packet {
-    struct ip_header original_ip_header;
-    struct tcp_header tcp_header;        // Or other protocol
-    uint8_t data[VARIABLE_LENGTH];
-};
-
-/* IPsec ESP Packet in Tunnel Mode */
-struct ipsec_esp_tunnel_packet {
-    struct ip_header new_ip_header;      // New header for routing between gateways
-    struct esp_header {                  // ESP Header
-        uint32_t spi;                    // Security Parameters Index
-        uint32_t sequence_number;        // Sequence number for replay protection
-    } esp_header;
-    
-    /* Encrypted portion begins */
-    struct original_ip_packet original_packet;  // The entire original packet
-    
-    uint8_t padding[0-255];              // Padding to block size
-    uint8_t pad_length;                  // Number of padding bytes
-    uint8_t next_header;                 // Type of the encapsulated header
-    /* Encrypted portion ends */
-    
-    uint8_t integrity_check_value[VARIABLE_LENGTH];  // Authentication data
-};
-\end{lstlisting}
-\end{code}
-
-\begin{KR}{IPsec VPN Setup Process}\\
-\paragraph{Phase 1: IKE Security Association}
-\begin{itemize}
-    \item Exchange cryptographic algorithms and parameters
-    \item Authenticate peers (pre-shared keys or certificates)
-    \item Establish a secure channel for Phase 2
-    \item Generate keying material
-\end{itemize}
-
-\paragraph{Phase 2: IPsec Security Association}
-\begin{itemize}
-    \item Negotiate IPsec security parameters
-    \item Establish IPsec SAs for data protection
-    \item Define traffic selectors (which traffic to protect)
-\end{itemize}
-
-\paragraph{Data Exchange}
-\begin{itemize}
-    \item Encrypt and authenticate data according to SA parameters
-    \item Encapsulate traffic based on tunnel or transport mode
-    \item Process incoming encrypted traffic
-\end{itemize}
-
-\paragraph{SA Maintenance}
-\begin{itemize}
-    \item Renew SAs before expiration
-    \item Handle dead peer detection
-    \item Manage rekeying
-\end{itemize}
-\end{KR}
 
 \subsection{OpenVPN}
-
-\begin{definition}{OpenVPN}\\
-OpenVPN is an open-source VPN solution:
-\begin{itemize}
-    \item Started as an open-source project in 2002
-    \item Uses SSL/TLS for security and key exchange
-    \item Operates at the application layer
-    \item Creates a virtual network interface in user space
-    \item Available for all major operating systems
-\end{itemize}
-\end{definition}
 
 \begin{concept}{OpenVPN Architecture}\\
 OpenVPN's architecture includes several key components:
@@ -207,59 +126,9 @@ OpenVPN offers several protocol features:
 \end{itemize}
 \end{theorem}
 
-\begin{code}{OpenVPN Packet Format}\\
-\begin{lstlisting}[language=C, style=basesmol]
-/* OpenVPN Packet Structure */
-struct openvpn_packet {
-    uint16_t packet_length;       // Length of the entire packet
-    uint8_t opcode;               // Operation code (message type + key ID)
-    /* 
-     * Opcode bits:
-     * - First 5 bits: Message type (control, ACK, data)
-     * - Last 3 bits: Key ID to identify encryption key set
-     */
-    
-    /* Payload (varies by message type) */
-    union {
-        /* For control messages (handshake) */
-        struct {
-            uint8_t session_id[8];      // Session identifier
-            uint32_t packet_id;         // Packet identifier for replay protection
-            uint8_t hmac[20];           // HMAC for message authentication
-            uint8_t tls_payload[];      // TLS handshake data
-        } control_message;
-        
-        /* For data messages */
-        struct {
-            uint32_t sequence_number;   // Anti-replay sequence number
-            uint8_t encrypted_payload[]; // Encrypted IP packet
-            uint8_t hmac[];             // HMAC for message authentication
-        } data_message;
-        
-        /* For ACK messages */
-        struct {
-            uint8_t session_id[8];      // Session identifier
-            uint32_t packet_id_array[]; // Array of acknowledged packet IDs
-        } ack_message;
-    } payload;
-};
-\end{lstlisting}
-\end{code}
-
 \subsection{WireGuard}
 
-\begin{definition}{WireGuard}\\
-WireGuard is a modern VPN protocol designed for simplicity and performance:
-\begin{itemize}
-    \item Developed in 2015 and integrated into Linux kernel in 2020
-    \item Uses state-of-the-art cryptography (ChaCha20, Poly1305, Curve25519)
-    \item Minimalist design with a small codebase (approximately 4,000 lines)
-    \item Provides high performance with lower overhead
-    \item Offers better roaming capabilities
-\end{itemize}
-\end{definition}
-
-\begin{concept}{WireGuard Architecture}\\
+\begin{concept}{WireGuard Architecture}
 WireGuard's architecture focuses on simplicity:
 \begin{itemize}
     \item Operates at the network layer (Layer 3)
@@ -270,7 +139,7 @@ WireGuard's architecture focuses on simplicity:
 \end{itemize}
 \end{concept}
 
-\begin{theorem}{WireGuard Features}\\
+\begin{theorem}{WireGuard Features}
 Key features of WireGuard include:
 \begin{itemize}
     \item \textbf{Simplified cryptography} - No cipher negotiation, uses fixed set of modern algorithms
@@ -283,72 +152,10 @@ Key features of WireGuard include:
 \end{itemize}
 \end{theorem}
 
-\begin{KR}{Basic WireGuard Configuration}\\
-\paragraph{Interface Setup}
-\begin{itemize}
-    \item Generate public/private key pair
-    \item Create WireGuard network interface
-    \item Assign IP address to interface
-    \item Configure listening port
-\end{itemize}
-
-\paragraph{Peer Configuration}
-\begin{itemize}
-    \item Add peer's public key
-    \item Configure allowed IP ranges for cryptokey routing
-    \item Set endpoint address if known
-    \item Configure optional parameters (keepalive, preshared key)
-\end{itemize}
-
-\paragraph{Routing Configuration}
-\begin{itemize}
-    \item Add routes for traffic to use the WireGuard interface
-    \item Configure firewall rules if necessary
-    \item Enable packet forwarding if needed
-\end{itemize}
-
-\paragraph{Activation}
-\begin{itemize}
-    \item Bring up the WireGuard interface
-    \item Test connectivity
-    \item Configure for automatic startup
-\end{itemize}
-\end{KR}
-
-\begin{examplecode}{Basic WireGuard Configuration}\\
-\begin{lstlisting}[language=bash, style=basesmol]
-# Generate private and public keys
-wg genkey | tee privatekey | wg pubkey > publickey
-
-# Create WireGuard interface
-ip link add dev wg0 type wireguard
-
-# Configure interface
-ip address add 10.0.0.1/24 dev wg0
-wg set wg0 \
-    private-key ./privatekey \
-    listen-port 51820
-
-# Add peer
-wg set wg0 peer PEER_PUBLIC_KEY \
-    allowed-ips 10.0.0.2/32 \
-    endpoint example.com:51820 \
-    persistent-keepalive 25
-
-# Activate interface
-ip link set up dev wg0
-
-# Add route (if needed)
-ip route add 192.168.0.0/24 via 10.0.0.2
-
-# Save configuration to file
-wg showconf wg0 > wg0.conf
-\end{lstlisting}
-\end{examplecode}
 
 \subsection{Comparing VPN Protocols}
 
-\begin{concept}{Protocol Comparison}\\
+\begin{concept}{Protocol Comparison}
 IPsec, OpenVPN, and WireGuard have different characteristics:
 \begin{itemize}
     \item \textbf{IPsec}:
@@ -378,7 +185,7 @@ IPsec, OpenVPN, and WireGuard have different characteristics:
 
 \subsection{VPN Deployment Scenarios}
 
-\begin{concept}{Site-to-Site VPN}\\
+\begin{concept}{Site-to-Site VPN}
 Site-to-site VPNs connect entire networks:
 \begin{itemize}
     \item Connect branch offices to headquarters
@@ -389,7 +196,7 @@ Site-to-site VPNs connect entire networks:
 \end{itemize}
 \end{concept}
 
-\begin{concept}{Remote Access VPN}\\
+\begin{concept}{Remote Access VPN}
 Remote access VPNs connect individual users to a network:
 \begin{itemize}
     \item Enable employees to work remotely
@@ -399,11 +206,3 @@ Remote access VPNs connect individual users to a network:
     \item Typically on-demand connections
 \end{itemize}
 \end{concept}
-
-\begin{example}
-A multinational company uses a hybrid VPN setup to secure its communications. For connecting its headquarters to branch offices in different countries, it deploys site-to-site IPsec VPNs with AES-256 encryption and certificate-based authentication. These connections are always active and transparent to users.
-
-For its remote employees, the company provides OpenVPN access using two-factor authentication. When traveling employees connect from hotel Wi-Fi networks, the OpenVPN client encrypts all their traffic and tunnels it to the corporate network. The system assigns each connected user a virtual IP address (10.3.0.x) from a dedicated pool, enabling internal systems to apply appropriate access controls based on these addresses.
-\end{example}
-
-% Duplicate content removed - comprehensive VPN coverage is provided above

@@ -2,7 +2,7 @@
 
 \subsection{Introduction to Authorization}
 
-\begin{definition}{Authorization}\\
+\begin{definition}{Authorization}
 Authorization is the process of determining whether an authenticated entity is permitted to perform a requested action:
 \begin{itemize}
     \item Follows successful authentication
@@ -12,7 +12,7 @@ Authorization is the process of determining whether an authenticated entity is p
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Fundamental Building Blocks}\\
+\begin{concept}{Fundamental Building Blocks}
 Authorization systems consist of three core components:
 \begin{itemize}
     \item \textbf{Access Control Model} - Conceptual framework defining how access decisions are made
@@ -21,7 +21,7 @@ Authorization systems consist of three core components:
 \end{itemize}
 \end{concept}
 
-\begin{theorem}{Security Policy Drivers}\\
+\begin{theorem}{Security Policy Drivers}
 Security policies are influenced by multiple factors:
 \begin{itemize}
     \item \textbf{Business Drivers} - Efficiency, usability, operational requirements
@@ -32,7 +32,7 @@ Security policies are influenced by multiple factors:
 
 \subsection{Access Control Models}
 
-\begin{concept}{Major Access Control Models}\\
+\begin{concept}{Major Access Control Models}
 Three primary access control models dominate modern systems:
 \begin{itemize}
     \item \textbf{Discretionary Access Control (DAC)} - Access decisions made by resource owners
@@ -131,33 +131,6 @@ Permission bits have different meanings for files and directories:
 \end{itemize}
 \end{concept}
 
-\begin{code}{Managing UNIX Permissions}\\
-\begin{lstlisting}[language=bash, style=basesmol]
-# Display file permissions
-ls -l myfile.txt
-# -rw-r--r-- 1 alice users 2048 Apr 15 14:22 myfile.txt
-#  ^ ^ ^  ^
-#  | | |  |
-#  | | |  +-- Others: read only
-#  | | +---- Group: read only
-#  | +------ Owner: read and write
-#  +-------- File type (regular file)
-
-# Change permissions using symbolic notation
-chmod u+x myfile.txt     # Add execute permission for owner
-chmod g+w myfile.txt     # Add write permission for group
-chmod o-r myfile.txt     # Remove read permission for others
-chmod a+x myfile.txt     # Add execute permission for all categories
-
-# Change permissions using octal notation
-chmod 755 myfile.txt     # rwxr-xr-x (Owner: rwx, Group: r-x, Others: r-x)
-chmod 644 myfile.txt     # rw-r--r-- (Owner: rw-, Group: r--, Others: r--)
-chmod 700 myfile.txt     # rwx------ (Owner: rwx, Group: ---, Others: ---)
-
-# Change owner and group
-chown alice:users myfile.txt
-\end{lstlisting}
-\end{code}
 
 \begin{concept}{Special Permission Bits}\\
 UNIX systems have additional permission bits for special purposes:
@@ -172,39 +145,6 @@ UNIX systems have additional permission bits for special purposes:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Effective UNIX Permission Management}\\
-\paragraph{File Ownership}
-\begin{itemize}
-    \item Assign appropriate owner and group to files
-    \item Create groups based on access requirements
-    \item Use chown and chgrp to modify ownership
-\end{itemize}
-
-\paragraph{Permission Assignment}
-\begin{itemize}
-    \item Follow principle of least privilege
-    \item For directories, consider child file implications
-    \item Remember execute permission is needed to traverse directories
-    \item Use special bits cautiously
-\end{itemize}
-
-\paragraph{Default Permissions}
-\begin{itemize}
-    \item Configure umask to set default permissions
-    \item Common umask values:
-    \begin{itemize}
-        \item 022 - Files: 644, Directories: 755
-        \item 027 - Files: 640, Directories: 750
-    \end{itemize}
-\end{itemize}
-
-\paragraph{Permission Verification}
-\begin{itemize}
-    \item Regularly audit permissions
-    \item Test access with different user accounts
-    \item Check effective permissions with access control lists
-\end{itemize}
-\end{KR}
 
 \subsection{Access Control Lists (ACLs)}
 
@@ -233,73 +173,6 @@ POSIX ACLs consist of several entry types:
 \end{itemize}
 \end{concept}
 
-\begin{code}{Managing POSIX ACLs}\\
-\begin{lstlisting}[language=bash, style=basesmol]
-# Display ACLs
-getfacl myfile.txt
-# file: myfile.txt
-# owner: alice
-# group: users
-# user::rw-
-# group::r--
-# other::r--
-
-# Add an ACL entry for user bob with read and write permissions
-setfacl -m user:bob:rw- myfile.txt
-
-# Add an ACL entry for group developers with read permissions
-setfacl -m group:developers:r-- myfile.txt
-
-# View the updated ACLs
-getfacl myfile.txt
-# file: myfile.txt
-# owner: alice
-# group: users
-# user::rw-
-# user:bob:rw-
-# group::r--
-# group:developers:r--
-# mask::rw-
-# other::r--
-
-# Remove an ACL entry
-setfacl -x user:bob myfile.txt
-
-# Remove all ACLs and revert to standard permissions
-setfacl -b myfile.txt
-\end{lstlisting}
-\end{code}
-
-\begin{example}
-A university department sets up a shared project directory for collaboration between faculty and students. They need different permission levels for different groups. They create the directory with standard permissions for the owner (rwx), but then use ACLs to provide tailored access:
-
-\begin{lstlisting}[style=basesmol]
-# Create project directory
-mkdir /projects/physics101
-chmod 700 /projects/physics101
-
-# Set ACLs
-# Faculty get full access
-setfacl -m group:faculty:rwx /projects/physics101
-# Teaching assistants get read and execute
-setfacl -m group:tas:r-x /projects/physics101
-# Students get read-only
-setfacl -m group:students:r-- /projects/physics101
-# Department staff gets full access
-setfacl -m group:staff:rwx /projects/physics101
-
-# Create subdirectory for submissions with different permissions
-mkdir /projects/physics101/submissions
-# Students can write to submissions directory
-setfacl -m group:students:r-x /projects/physics101/submissions
-# Default ACL for new files in submissions directory
-setfacl -d -m group:faculty:rwx /projects/physics101/submissions
-setfacl -d -m group:tas:r-x /projects/physics101/submissions
-setfacl -d -m group:students:r-- /projects/physics101/submissions
-\end{lstlisting}
-
-This setup allows faculty to manage all content, TAs to access but not modify most content, and students to read course materials while being able to navigate to the submissions directory where they can add their assignments.
-\end{example}
 
 \subsection{Mandatory Access Control (MAC)}
 
@@ -395,40 +268,6 @@ RBAC supports several important security principles:
 \end{itemize}
 \end{theorem}
 
-\begin{KR}{Implementing RBAC}\\
-\paragraph{Role Design}
-\begin{itemize}
-    \item Analyze job functions within the organization
-    \item Identify required permissions for each function
-    \item Create roles based on job functions
-    \item Define role hierarchies if needed
-\end{itemize}
-
-\paragraph{Permission Assignment}
-\begin{itemize}
-    \item Identify protected resources
-    \item Define operations on these resources
-    \item Assign permissions to appropriate roles
-    \item Review and refine permission assignments
-\end{itemize}
-
-\paragraph{User Management}
-\begin{itemize}
-    \item Assign users to appropriate roles
-    \item Consider time and location constraints
-    \item Implement role activation/deactivation
-    \item Review user-role assignments regularly
-\end{itemize}
-
-\paragraph{Administration}
-\begin{itemize}
-    \item Define role administration model
-    \item Establish processes for role changes
-    \item Audit role and permission usage
-    \item Regularly review the RBAC structure
-\end{itemize}
-\end{KR}
-
 \subsection{Attribute-Based Access Control (ABAC)}
 
 \begin{definition}{Attribute-Based Access Control}\\
@@ -473,20 +312,7 @@ ABAC extends beyond traditional RBAC:
 \end{itemize}
 \end{concept}
 
-\begin{example}
-A healthcare system implements ABAC to control access to patient records. Access decisions consider:
 
-\begin{itemize}
-    \item \textbf{Subject attributes}: Role (doctor, nurse, administrator), department, specialty, care relationship
-    \item \textbf{Resource attributes}: Patient ID, record type, sensitivity level, department
-    \item \textbf{Action attributes}: Read, update, create, delete
-    \item \textbf{Environmental attributes}: Time of day, access location, emergency status
-\end{itemize}
-
-A sample policy might be: "Doctors can view patient records if they are the patient's primary physician OR they are on-call AND it's outside regular hours OR an emergency has been declared."
-
-This policy would be impossible to implement with simple RBAC but is straightforward with ABAC. The system can dynamically evaluate multiple attributes at access time to make appropriate decisions based on the current context.
-\end{example}
 
 \subsection{Zero Trust Security Model}
 
@@ -512,88 +338,5 @@ Key principles of the Zero Trust model include:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Implementing Zero Trust}\\
-\paragraph{Identity and Access Management}
-\begin{itemize}
-    \item Implement strong authentication (MFA)
-    \item Use identity as the primary security control
-    \item Apply risk-based authentication
-    \item Establish continuous validation
-\end{itemize}
-
-\paragraph{Micro-segmentation}
-\begin{itemize}
-    \item Create fine-grained security perimeters
-    \item Implement least-privilege access controls
-    \item Protect individual workloads and applications
-    \item Enforce controls at the application layer
-\end{itemize}
-
-\paragraph{Continuous Monitoring}
-\begin{itemize}
-    \item Collect and analyze telemetry data
-    \item Detect anomalous behavior
-    \item Maintain comprehensive logging
-    \item Implement behavior analytics
-\end{itemize}
-
-\paragraph{Automation and Orchestration}
-\begin{itemize}
-    \item Automate security policy enforcement
-    \item Implement dynamic access controls
-    \item Use security orchestration and response
-    \item Regularly test security controls
-\end{itemize}
-\end{KR}
-
-\begin{concept}{Basic Security Concept Development}\\
-Creating a comprehensive security concept involves:
-\begin{itemize}
-    \item \textbf{Architecture Diagram}:
-    \begin{itemize}
-        \item Identify application components
-        \item Document interfaces and data flows
-        \item Specify security controls
-    \end{itemize}
-    \item \textbf{Network Architecture}:
-    \begin{itemize}
-        \item Define network segmentation
-        \item Specify encryption requirements
-        \item Document network controls
-    \end{itemize}
-    \item \textbf{Role Model}:
-    \begin{itemize}
-        \item Define user roles and permissions
-        \item Categorize protected data
-        \item Create access control matrix
-    \end{itemize}
-    \item \textbf{Authentication}:
-    \begin{itemize}
-        \item Specify authentication mechanisms
-        \item Document identity providers
-        \item Define authentication workflow
-    \end{itemize}
-    \item \textbf{Backup and Recovery}:
-    \begin{itemize}
-        \item Define backup strategy
-        \item Document recovery procedures
-        \item Specify testing approach
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{example}
-A university develops a security concept for its course management system. The concept addresses:
-
-\begin{itemize}
-    \item \textbf{Architecture}: Web application with database backend, integration with student information system, grade export functionality
-    \item \textbf{Network}: System components distributed across server and DMZ zones, all external connections use TLS
-    \item \textbf{Roles}: Administrators, lecturers, teaching assistants, students, each with specific permissions for course content, enrollment, and grades
-    \item \textbf{Authentication}: Federated authentication using Shibboleth with university identity provider
-    \item \textbf{Backup}: Daily differential backups with weekly full backups, stored in separate physical location, tested monthly
-\end{itemize}
-
-The concept considers regulatory requirements for data protection and includes specific measures to protect grade information as sensitive personal data.
-\end{example}
 
 % Duplicate content removed - comprehensive authorization coverage is provided above

@@ -51,34 +51,6 @@ Password-based authentication faces several significant challenges:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Password Best Practices}\\
-\paragraph{For Users}
-\begin{itemize}
-    \item Use unique passwords for different accounts
-    \item Create strong passwords (length over complexity)
-    \item Use a password manager
-    \item Enable multi-factor authentication when available
-    \item Change passwords if compromise is suspected
-\end{itemize}
-
-\paragraph{For System Administrators}
-\begin{itemize}
-    \item Never store passwords in plaintext
-    \item Use strong, salted hash functions with key stretching
-    \item Implement rate limiting for login attempts
-    \item Maintain a blocklist of commonly used passwords
-    \item Require multi-factor authentication for sensitive systems
-\end{itemize}
-
-\paragraph{For Developers}
-\begin{itemize}
-    \item Use established password hashing libraries
-    \item Implement secure password reset mechanisms
-    \item Enforce minimum password strength requirements
-    \item Design for multi-factor authentication from the start
-    \item Follow current best practices (NIST, BSI guidelines)
-\end{itemize}
-\end{KR}
 
 \subsection{Secure Password Storage}
 
@@ -123,62 +95,6 @@ Modern password hashing functions are designed specifically for password storage
 These functions are preferable to general-purpose cryptographic hash functions for password storage.
 \end{theorem}
 
-\begin{examplecode}{Secure Password Storage with Argon2}\\
-\begin{lstlisting}[language=Python, style=basesmol]
-import argon2
-import os
-from argon2 import PasswordHasher
-
-# Configure Argon2 parameters
-# - time_cost: number of iterations
-# - memory_cost: memory usage in kibibytes
-# - parallelism: number of parallel threads
-# - hash_len: length of the hash in bytes
-# - salt_len: length of the salt in bytes
-ph = PasswordHasher(
-    time_cost=3,           # Iterations
-    memory_cost=65536,     # 64 MB
-    parallelism=4,         # 4 threads
-    hash_len=32,           # 32 bytes output
-    salt_len=16            # 16 bytes salt
-)
-
-def register_user(username, password):
-    # Hash the password
-    hash = ph.hash(password)
-    
-    # In a real application, store username and hash in database
-    # db.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", 
-    #            (username, hash))
-    
-    return hash
-
-def verify_password(stored_hash, provided_password):
-    try:
-        # Verify password against stored hash
-        ph.verify(stored_hash, provided_password)
-        
-        # Check if the hash needs to be rehashed (e.g., parameters changed)
-        if ph.check_needs_rehash(stored_hash):
-            new_hash = ph.hash(provided_password)
-            # Update the stored hash
-            # db.execute("UPDATE users SET password_hash = ? WHERE password_hash = ?", 
-            #            (new_hash, stored_hash))
-        
-        return True
-    except argon2.exceptions.VerifyMismatchError:
-        # Password doesn't match
-        return False
-
-# Example usage
-hash = register_user("alice", "correct-horse-battery-staple")
-print(f"Stored hash: {hash}")
-
-# Verification
-print(f"Correct password: {verify_password(hash, 'correct-horse-battery-staple')}")
-print(f"Wrong password: {verify_password(hash, 'incorrect-password')}")
-\end{lstlisting}
-\end{examplecode}
 
 \subsection{Multi-Factor Authentication}
 
@@ -256,26 +172,6 @@ FIDO2 is a set of standards for passwordless authentication:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{FIDO2 Authentication Flow}\\
-\paragraph{Registration}
-\begin{itemize}
-    \item User initiates registration on website/application
-    \item Relying party (website) requests credential creation
-    \item Authenticator generates key pair and prompts user for consent
-    \item Private key stays in authenticator, public key sent to relying party
-    \item Relying party associates public key with user account
-\end{itemize}
-
-\paragraph{Authentication}
-\begin{itemize}
-    \item User initiates login on website/application
-    \item Relying party sends challenge and requests assertion
-    \item Authenticator prompts user for presence/verification
-    \item Authenticator signs challenge with private key
-    \item Relying party verifies signature using stored public key
-    \item Authentication succeeds if signature is valid
-\end{itemize}
-\end{KR}
 
 \subsection{Authentication Protocols}
 
@@ -375,25 +271,6 @@ OpenID Connect introduces specific terminology:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{OpenID Connect Flow}\\
-\paragraph{Authorization Code Flow}
-\begin{itemize}
-    \item User initiates login to relying party
-    \item Relying party redirects to OpenID provider with client ID and requested scopes
-    \item User authenticates with OpenID provider
-    \item OpenID provider redirects back with authorization code
-    \item Relying party exchanges code for tokens (ID token, access token)
-    \item Relying party validates ID token and creates session
-\end{itemize}
-
-\paragraph{Optional UserInfo Request}
-\begin{itemize}
-    \item Relying party may request additional user information
-    \item Uses access token to query UserInfo endpoint
-    \item Receives additional claims about the user
-\end{itemize}
-\end{KR}
-
 \subsection{SAML}
 
 \begin{definition}{Security Assertion Markup Language (SAML)}\\
@@ -429,17 +306,6 @@ SAML and OpenID Connect differ in several ways:
 
 \subsection{Kerberos}
 
-\begin{definition}{Kerberos}\\
-Kerberos is an authentication protocol for secure authentication in non-secure networks:
-\begin{itemize}
-    \item Developed at MIT in 1983
-    \item Uses tickets to authenticate users without sending passwords
-    \item Built on symmetric key cryptography
-    \item Forms the foundation of Windows domain authentication
-    \item Current version is Kerberos V5 (RFC 4120)
-\end{itemize}
-\end{definition}
-
 \begin{concept}{Kerberos Components}\\
 Kerberos involves several key components:
 \begin{itemize}
@@ -458,7 +324,7 @@ Kerberos involves several key components:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Kerberos Authentication Process}\\
+\begin{KR}{Kerberos Authentication Process}
 \paragraph{Initial Authentication}
 \begin{itemize}
     \item User logs in and sends username to Authentication Service
@@ -536,7 +402,7 @@ Shibboleth is a system for federated identity management:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Shibboleth Authentication Flow}\\
+\begin{KR}{Shibboleth Authentication Flow}
 \paragraph{Resource Access Request}
 \begin{itemize}
     \item User attempts to access a protected resource
@@ -567,10 +433,6 @@ Shibboleth is a system for federated identity management:
     \item SP grants access to the resource if authorized
 \end{itemize}
 \end{KR}
-
-\begin{example}
-SWITCHaai is a federation of Swiss universities and research institutions that implements Shibboleth for federated authentication. When a student from ZHAW accesses a learning resource at ETH Zurich, they are redirected to the SWITCH discovery service to select ZHAW as their home institution. After authenticating with ZHAW credentials, the student receives access to the ETH resource without needing a separate ETH account. The ETH service provider learns only the minimal information needed to authorize access, such as the student's affiliation and role, without storing or managing their credentials.
-\end{example}
 
 
 % Duplicate content removed - comprehensive authentication coverage is provided above
