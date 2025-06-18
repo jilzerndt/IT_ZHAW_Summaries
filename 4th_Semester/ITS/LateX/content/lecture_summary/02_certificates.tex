@@ -2,11 +2,11 @@
 
 \subsection{Introduction to Digital Certificates}
 
-\begin{definition}{Digital Certificates}\\
+\begin{definition}{Digital Certificates}
 A digital certificate is a signed statement by a trusted third party (Certificate Authority) that a certain public key belongs to a certain entity (person, organization, or system). Certificates are used to authenticate public keys, not the entities themselves.
 \end{definition}
 
-\begin{concept}{Authentication of Public Keys}\\
+\begin{concept}{Authentication of Public Keys}
 The fundamental problem certificates solve is how to reliably distribute public keys in an insecure network:
 \begin{itemize}
     \item Without certificates, it's difficult to know if a public key truly belongs to the claimed entity
@@ -15,7 +15,7 @@ The fundamental problem certificates solve is how to reliably distribute public 
 \end{itemize}
 \end{concept}
 
-\begin{definition}{Certificate Types}\\
+\begin{definition}{Certificate Types}
 Different certificate types serve different purposes:
 \begin{itemize}
     \item \textbf{TLS Certificates}:
@@ -29,13 +29,18 @@ Different certificate types serve different purposes:
 \end{itemize}
 \end{definition}
 
+\begin{concept}{PKI} Public Key Infrastructure:
+    Verify public key in the certificate by verifying the signature
+\end{concept}
+
+
 \subsection{X.509 Certificate Structure}
 
-\begin{definition}{X.509 Standard}\\
+\begin{definition}{X.509 Standard}
 X.509 is the dominant certificate standard, developed by the International Telecommunication Union (ITU). X.509 certificates are described in ASN.1 notation and typically encoded using DER (Distinguished Encoding Rules).
 \end{definition}
 
-\begin{concept}{X.509 Certificate Fields}\\
+\begin{concept}{X.509 Certificate Fields}
 Key components of an X.509 certificate include:
 \begin{itemize}
     \item \textbf{Version} - Certificate format version (v1, v2, or v3)
@@ -48,11 +53,12 @@ Key components of an X.509 certificate include:
     \item \textbf{Extensions} - Additional fields (e.g., key usage, alternative names)
     \item \textbf{Certificate Signature} - The digital signature created by the CA
 \end{itemize}
+\includegraphics[width=0.7\linewidth]{x509.png}
 \end{concept}
 
 \subsection{Certificate Chains and Trust}
 
-\begin{concept}{Certificate Chains}\\
+\begin{concept}{Certificate Chains}
 Certificates form chains of trust:
 \begin{itemize}
     \item \textbf{End entity certificates} - Used by servers, clients, or devices
@@ -61,6 +67,14 @@ Certificates form chains of trust:
 \end{itemize}
 To verify a certificate, each certificate in the chain must be validated up to a trusted root.
 \end{concept}
+
+\begin{formula}{Certificate Chain Validation}
+    For $i = [1, n - 1]$
+    \begin{itemize}
+        \item $C[i].issuer = C[i + 1].subject$
+        \item $C[i].signature$ can be verified with $C[i + 1].publicKey$
+    \end{itemize}
+\end{formula}
 
 \begin{lemma}{Certificate Validation Process}\\
 To validate a certificate chain of length n with certificates C[1], ..., C[n], where C[1] is the end entity certificate:
@@ -86,6 +100,46 @@ Root certificates are the foundation of trust in PKI:
 \end{itemize}
 \end{theorem}
 
+
+
+\includegraphics[width=0.7\linewidth]{certificate_chain.png}
+
+
+
+
+\subsection{Root Certificates}
+
+\begin{concept}{Root Certificates}
+    Any certificate chain ends with a root certificate.
+    \begin{itemize}
+        \item Can be verified with its own public key
+        \item Root certificates are always self-signed
+        \item Usually stored in your browser (from trusted parties)
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Root CA Revocation}
+    \begin{itemize}
+        \item Remove root CA from applications and systems
+        \item All certificate issue by the root CA will also be invalid
+    \end{itemize}
+\end{concept}
+
+\subsection{Validation}
+
+\begin{KR}{Certificate Validation Process}
+
+    \textbf{Step 1} Obtain and verify (validity) root certificate
+
+    \textbf{Step 2} Verify server certificate signature with root public key
+
+    \textbf{Step 3} Compare root certificate subject with server issuer
+\end{KR}
+
+
+
+
+
 \subsection{Certificate Revocation}
 
 \begin{definition}{Certificate Revocation}\\
@@ -108,7 +162,7 @@ Several mechanisms exist for checking certificate revocation status:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Checking Certificate Revocation}\\
+\begin{KR}{Checking Certificate Revocation}
 \paragraph{Using CRLs}
 \begin{itemize}
     \item Retrieve CRL from the URL specified in the certificate
@@ -135,7 +189,7 @@ Several mechanisms exist for checking certificate revocation status:
 
 \subsection{Certificate Transparency}
 
-\begin{concept}{Certificate Transparency}\\
+\begin{concept}{Certificate Transparency}
 Certificate Transparency (CT) is a framework designed to detect and prevent the fraudulent issuance of certificates:
 \begin{itemize}
     \item Publicly auditable logs of all issued certificates
@@ -149,94 +203,10 @@ Certificate Transparency (CT) is a framework designed to detect and prevent the 
 Let's Encrypt, a free and automated Certificate Authority, has become the largest CA with over 234 million active certificates. It uses the ACME (Automatic Certificate Management Environment) protocol to automate the validation, issuance, and renewal of certificates. Let's Encrypt provides only Domain Validation (DV) certificates with a validity period of 90 days, encouraging frequent renewal and automation.
 \end{example}
 
-\section{Digital Certificates}
-
-\subsection{Certificate Definition}
-
-\begin{definition}{Digital Certificate}\\
-    A certificate is a signed statement by a trusted third party that a certain public key belongs to a certain name. It is a means to authenticate a public key. It is not a means to authenticate a communication partner.
-\end{definition}
-
-\subsection{Digital Certificates}
-
-\begin{concept}{Certificate Properties}\\
-    \begin{itemize}
-        \item Bind together certain things
-        \item Issued and signed by trusted third party called Certificate Authorities (CA)
-        \item Valid for a certain period
-    \end{itemize}
-\end{concept}
-
-\subsection{Public Key Infrastructure (PKI)}
-
-\begin{concept}{PKI}\\
-    Verify public key in the certificate by verifying the signature
-\end{concept}
-
-\subsection{The X.509 standard}
-
-\begin{definition}{X.509}\\
-    Dominating standard for certificates these days
-\end{definition}
-
-% TODO: Add X.509 certificate structure diagram showing fields like Version Number, Serial Number, etc.
-
-\subsection{Concept of trust hierarchies}
-
-\begin{formula}{Certificate Chain Validation}\\
-    For $i = [1, n - 1]$
-    \begin{itemize}
-        \item $C[i].issuer = C[i + 1].subject$
-        \item $C[i].signature$ can be verified with $C[i + 1].publicKey$
-    \end{itemize}
-\end{formula}
-
-% TODO: Add certificate chain diagram showing Root certificate (self-signed) -> Intermediate certificate -> End certificate
-
-\subsection{Root Certificates}
-
-\begin{concept}{Root Certificates}\\
-    Any certificate chain ends with a root certificate.
-    \begin{itemize}
-        \item Can be verified with its own public key
-        \item Root certificates are always self-signed
-        \item Usually stored in your browser (from trusted parties)
-    \end{itemize}
-\end{concept}
-
-\subsection{Validation}
-
-\begin{KR}{Certificate Validation Process}\\
-    \paragraph{Step 1} Obtain and verify (validity) root certificate
-    \paragraph{Step 2} Verify server certificate signature with root public key
-    \paragraph{Step 3} Compare root certificate subject with server issuer
-\end{KR}
-
-\subsection{Certificate revocation: CRLs and OCSP}
-
-\begin{concept}{Certificate Revocation}\\
-    If the private key gets stolen the certificate should be revoked
-    \begin{itemize}
-        \item Wait until the certificate expires
-        \item Contact issuer to invalidate the certificate
-    \end{itemize}
-\end{concept}
-
-\subsection{Certification Revocation List - CRL}
-
-\begin{definition}{CRL}\\
-    CA provides a list of all revoked certificates that can be downloaded to verify if a certificate has been revoked.
-    
-    Issues $\rightarrow$ Limited support
-    \begin{itemize}
-        \item Only updated every couple of days
-        \item Can't remove a certificate from CRL
-        \item Many certificates may go onto CRL
-        \item CRLs only get larger (delay)
-    \end{itemize}
-\end{definition}
 
 \subsection{Online Certificate Status Protocol - OCSP}
+
+\mult{2}
 
 \begin{definition}{OCSP}\\
     Issuing CA can be asked (Client) for the status of a specific certificate.
@@ -249,11 +219,11 @@ Let's Encrypt, a free and automated Certificate Authority, has become the larges
     \end{itemize}
     
     Most clients implement soft fail (good), if the response is not received (in time).
+
+    \includegraphics[width=\linewidth]{OCSP.png}
 \end{definition}
 
-% TODO: Add OCSP diagram showing client-server communication
 
-\subsection{OCSP stapling}
 
 \begin{concept}{OCSP Stapling}\\
     The server queries the OCSP-Responder listed in the certificate itself and caches the responses.
@@ -267,15 +237,8 @@ Let's Encrypt, a free and automated Certificate Authority, has become the larges
         \item Vulnerable time window like in CRL
         \item Fallback to OCSP if no valid response is cached
     \end{itemize}
+
+    \includegraphics[width=\linewidth]{OCSP_stapling.png}
 \end{concept}
 
-% TODO: Add OCSP Stapling diagram
-
-\subsection{Root Certificate Revocation}
-
-\begin{concept}{Root CA Revocation}\\
-    \begin{itemize}
-        \item Remove root CA from applications and systems
-        \item All certificate issue by the root CA will also be invalid
-    \end{itemize}
-\end{concept}
+\multend
