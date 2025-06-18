@@ -97,6 +97,17 @@ control traffic flow between network segments:
 Without proper management processes, firewall rule sets tend to grow uncontrolled and become difficult to understand.
 \end{concept}
 
+\begin{theorem}{Firewall Benefits and Limitations}
+
+    \textbf{Benefits}:
+    Block unwanted traffic before it enters protected networks, Centralize access control, Hide internal network structure
+
+\textbf{Limitations}:
+Primarily perimeter protection (assumes threats are external), Cannot prevent internal threats, Basic packet filtering cannot detect application-layer attacks,
+Cannot protect against allowed protocols misuse
+
+\end{theorem}
+
 
 
 
@@ -145,6 +156,8 @@ combine several capabilities to secure endpoints:
 \end{concept}
 
 
+
+
 \begin{definition}{Web Application Firewalls (WAF)}
 protect web applications from attacks:
 \begin{itemize}
@@ -156,16 +169,7 @@ protect web applications from attacks:
 \end{itemize}
 \end{definition}
 
-\begin{theorem}{Firewall Benefits and Limitations}
 
-    \textbf{Benefits}:
-    Block unwanted traffic before it enters protected networks, Centralize access control, Hide internal network structure
-
-\textbf{Limitations}:
-Primarily perimeter protection (assumes threats are external), Cannot prevent internal threats, Basic packet filtering cannot detect application-layer attacks,
-Cannot protect against allowed protocols misuse
-
-\end{theorem}
 
 
 \begin{definition}{Secure Web Gateway (SWG)}
@@ -177,6 +181,20 @@ protect users from web-based threats:
     \item User and application control
 \end{itemize}
 \end{definition}
+
+\begin{definition}{Network Detection and Response (NDR)}
+monitor network traffic to detect and respond to threats:
+\begin{itemize}
+    \item Establish baseline network behavior
+    \item Detect anomalies that may indicate attacks
+    \item Analyze potential incidents to identify true positives
+    \item Automatically respond to confirmed threats
+\end{itemize}
+\end{definition}
+
+\multend
+
+\mult{2}
 
 \begin{concept}{Cloud Access Security Broker (CASB)}
 provide security controls for cloud services:
@@ -200,15 +218,7 @@ provide security controls for cloud services:
 
 
 
-\begin{definition}{Network Detection and Response (NDR)}
-monitor network traffic to detect and respond to threats:
-\begin{itemize}
-    \item Establish baseline network behavior
-    \item Detect anomalies that may indicate attacks
-    \item Analyze potential incidents to identify true positives
-    \item Automatically respond to confirmed threats
-\end{itemize}
-\end{definition}
+
 
 \begin{concept}{Security Information and Event Management (SIEM)}
  collect and analyze security events:
@@ -272,16 +282,39 @@ nft flush table inet filter
 \end{code}
 
 
+
+
+
+
 \mult{2}
 
 \begin{definition}{Port Scanning}
 discover available services on a network:
-\begin{itemize}
-    \item Identifies open ports on target systems
-    \item Helps determine running services and potential vulnerabilities
-    \item Used by both attackers for reconnaissance and administrators for security testing
-    \item Most commonly performed using tools like nmap
-\end{itemize}
+
+Identifies open ports on target systems,
+Helps determine running services and potential vulnerabilities,
+Used by both attackers for reconnaissance and administrators for security testing,
+Most commonly performed using tools like nmap
+
+\end{definition}
+
+\begin{definition}{netfilter/nftables}
+    netfilter is a mechanism that allows to access the packets in the network stack to analyze, modify, extract, and delete them.
+    \begin{itemize}
+        \item Hooks that are called at different points during packet processing
+    \end{itemize}
+    
+    nftables rulesets (applied to packets):
+    \begin{itemize}
+        \item \textbf{Table} Container for specific type of package
+        \item \textbf{Chain} Container with rules for a specific hook
+        \item \textbf{Hook} Called at different points of processing
+        \item \textbf{Priority} Lowest priority first until rule is accepted
+        \item \textbf{Policy} Default behaviour
+        \item \textbf{Rule} Classification + Action
+        \item \textbf{Classification} What packets does a rule apply to
+        \item \textbf{Action} What to do with the packet
+    \end{itemize}
 \end{definition}
 
 \begin{examplecode}{Basic Port Scanning with nmap}
@@ -295,34 +328,6 @@ nmap 192.168.1.0/24
 \end{lstlisting}
 \end{examplecode}
 
-
-% Basic firewall concepts integrated into comprehensive network security section above
-
-
-
-\begin{definition}{netfilter/nftables}
-    netfilter is a mechanism that allows to access the packets in the network stack to analyze, modify, extract, and delete them.
-    \begin{itemize}
-        \item Hooks that are called at different points during packet processing
-    \end{itemize}
-    
-    nftables is a packet classification and mangling framework that runs on rulesets that are applied to the packets
-    \begin{itemize}
-        \item \textbf{Table} Container for specific type of package
-        \item \textbf{Chain} Container with rules for a specific hook
-        \item \textbf{Hook} Called at different points of processing
-        \item \textbf{Priority} Lowest priority first until rule is accepted
-        \item \textbf{Policy} Default behaviour
-        \item \textbf{Rule} Classification + Action
-        \item \textbf{Classification} What packets does a rule apply to
-        \item \textbf{Action} What to do with the packet
-    \end{itemize}
-\end{definition}
-
-
-
-
-
 \begin{examplecode}{nftables Rules}
 \begin{lstlisting}[language=bash, style=basesmolll]
 # Drop all packets going to IPv4 address 8.8.8.8
@@ -333,5 +338,8 @@ iifname eth2 accept
 ip6 nexthdr tcp accept
 \end{lstlisting}
 \end{examplecode}
+
+
+% Basic firewall concepts integrated into comprehensive network security section ab
 
 \multend

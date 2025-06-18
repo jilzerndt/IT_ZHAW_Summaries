@@ -1,9 +1,9 @@
 \section{Authorization}
 
-\subsection{Introduction to Authorization}
+\mult{2}
 
 \begin{definition}{Authorization}
-Authorization is the process of determining whether an authenticated entity is permitted to perform a requested action:
+determining whether an authenticated entity is permitted to perform a requested action:
 \begin{itemize}
     \item Follows successful authentication
     \item Controls access to resources and operations
@@ -13,7 +13,6 @@ Authorization is the process of determining whether an authenticated entity is p
 \end{definition}
 
 \begin{concept}{Fundamental Building Blocks}
-Authorization systems consist of three core components:
 \begin{itemize}
     \item \textbf{Access Control Model} - Conceptual framework defining how access decisions are made
     \item \textbf{Security Policy} - Rules defining who can access what resources
@@ -22,7 +21,6 @@ Authorization systems consist of three core components:
 \end{concept}
 
 \begin{theorem}{Security Policy Drivers}
-Security policies are influenced by multiple factors:
 \begin{itemize}
     \item \textbf{Business Drivers} - Efficiency, usability, operational requirements
     \item \textbf{Security Drivers} - Risk management, threat mitigation, data protection
@@ -30,10 +28,61 @@ Security policies are influenced by multiple factors:
 \end{itemize}
 \end{theorem}
 
-\subsection{Access Control Models}
+
+
+\subsubsection{Discretionary Access Control (DAC)}
+
+
+\begin{definition}{Discretionary Access Control}
+    resource owner controls access rights:
+\begin{itemize}
+    \item Resource owners determine who can access their resources
+    \item Owners can delegate access control to others
+    \item Access rights can be transferred between users
+    \item Most common model in general-purpose operating systems
+\end{itemize}
+\end{definition}
+
+\begin{concept}{DAC Implementation Methods}
+
+    \textbf{Access Control Lists (ACLs)}:
+    \begin{itemize}
+        \item Lists of permissions attached to objects
+        \item Each entry specifies subject and allowed operations
+        \item Efficiently answers "who can access this object?"
+    \end{itemize}
+
+    \textbf{Capabilities}:
+    \begin{itemize}
+        \item Unforgeable tokens owned by subjects
+        \item Each token grants specific access rights
+        \item Efficiently answers "what can this subject access?"
+    \end{itemize}
+
+\end{concept}
+
+\begin{theorem}{DAC Advantages and Disadvantages}
+
+    \textbf{Advantages}:
+    Flexible and intuitive for users, 
+    Simple to understand and administer,
+    Enables fine-grained access control
+
+    \textbf{Disadvantages}:
+    Vulnerable to Trojan horse attacks,
+    Cannot enforce system-wide security policies,
+    May lead to uncontrolled information flow,
+    Prone to privilege creep over time
+
+\end{theorem}
+
+\multend
+
+\mult{2}
+
 
 \begin{concept}{Major Access Control Models}
-Three primary access control models dominate modern systems:
+
 \begin{itemize}
     \item \textbf{Discretionary Access Control (DAC)} - Access decisions made by resource owners
     \item \textbf{Mandatory Access Control (MAC)} - Access decisions enforced by system policy
@@ -47,58 +96,7 @@ Additional models include:
 \end{itemize}
 \end{concept}
 
-\subsection{Discretionary Access Control (DAC)}
-
-\begin{definition}{Discretionary Access Control}\\
-DAC is an access control model where the resource owner controls access rights:
-\begin{itemize}
-    \item Resource owners determine who can access their resources
-    \item Owners can delegate access control to others
-    \item Access rights can be transferred between users
-    \item Most common model in general-purpose operating systems
-\end{itemize}
-\end{definition}
-
-\begin{concept}{DAC Implementation Methods}\\
-DAC is commonly implemented through two main mechanisms:
-\begin{itemize}
-    \item \textbf{Access Control Lists (ACLs)}:
-    \begin{itemize}
-        \item Lists of permissions attached to objects
-        \item Each entry specifies subject and allowed operations
-        \item Efficiently answers "who can access this object?"
-    \end{itemize}
-    \item \textbf{Capabilities}:
-    \begin{itemize}
-        \item Unforgeable tokens owned by subjects
-        \item Each token grants specific access rights
-        \item Efficiently answers "what can this subject access?"
-    \end{itemize}
-\end{itemize}
-\end{concept}
-
-\begin{theorem}{DAC Advantages and Disadvantages}\\
-DAC offers certain benefits and limitations:
-\begin{itemize}
-    \item \textbf{Advantages}:
-    \begin{itemize}
-        \item Flexible and intuitive for users
-        \item Simple to understand and administer
-        \item Enables fine-grained access control
-    \end{itemize}
-    \item \textbf{Disadvantages}:
-    \begin{itemize}
-        \item Vulnerable to Trojan horse attacks
-        \item Cannot enforce system-wide security policies
-        \item May lead to uncontrolled information flow
-        \item Prone to privilege creep over time
-    \end{itemize}
-\end{itemize}
-\end{theorem}
-
-\subsection{UNIX/Linux File Permissions}
-
-\begin{definition}{Standard UNIX Permissions}\\
+\begin{definition}{Standard UNIX Permissions}
 UNIX-style file permissions implement a simple form of DAC:
 \begin{itemize}
     \item Each file/directory has an owner and group
@@ -113,23 +111,25 @@ UNIX-style file permissions implement a simple form of DAC:
 \end{itemize}
 \end{definition}
 
-\begin{concept}{UNIX Permission Interpretation}\\
+
+
+\begin{KR}{UNIX Permission Interpretation}
+
 Permission bits have different meanings for files and directories:
-\begin{itemize}
-    \item \textbf{For Files}:
+
+\textbf{For Files}:
     \begin{itemize}
         \item Read (r) - View file contents
         \item Write (w) - Modify file contents
         \item Execute (x) - Run file as a program
     \end{itemize}
-    \item \textbf{For Directories}:
+\textbf{For Directories}:
     \begin{itemize}
         \item Read (r) - List directory contents
         \item Write (w) - Create, delete, or rename files within directory
         \item Execute (x) - Access files and subdirectories (traverse)
     \end{itemize}
-\end{itemize}
-\end{concept}
+\end{KR}
 
 
 \begin{concept}{Special Permission Bits}\\
@@ -146,9 +146,8 @@ UNIX systems have additional permission bits for special purposes:
 \end{concept}
 
 
-\subsection{Access Control Lists (ACLs)}
 
-\begin{definition}{POSIX ACLs}\\
+\begin{definition}{POSIX ACLs}
 POSIX Access Control Lists extend standard UNIX permissions:
 \begin{itemize}
     \item Allow specifying permissions for multiple users and groups
@@ -161,8 +160,7 @@ POSIX Access Control Lists extend standard UNIX permissions:
 \end{itemize}
 \end{definition}
 
-\begin{concept}{ACL Components}\\
-POSIX ACLs consist of several entry types:
+\begin{concept}{ACL Components}
 \begin{itemize}
     \item \textbf{Owner entry} - Permissions for the file owner (user::rwx)
     \item \textbf{Named user entries} - Permissions for specific users (user:alice:rwx)
@@ -174,10 +172,10 @@ POSIX ACLs consist of several entry types:
 \end{concept}
 
 
-\subsection{Mandatory Access Control (MAC)}
+\subsubsection{Mandatory Access Control (MAC)}
 
-\begin{definition}{Mandatory Access Control}\\
-MAC is an access control model where a system-wide policy determines access rights:
+\begin{definition}{Mandatory Access Control}
+  system-wide policy determines access rights:
 \begin{itemize}
     \item Access decisions enforced by the system, not resource owners
     \item Based on security labels assigned to subjects and objects
@@ -186,8 +184,7 @@ MAC is an access control model where a system-wide policy determines access righ
 \end{itemize}
 \end{definition}
 
-\begin{concept}{MAC Implementations}\\
-Modern operating systems implement various forms of MAC:
+\begin{concept}{MAC Implementations}
 \begin{itemize}
     \item \textbf{SELinux (Security-Enhanced Linux)}:
     \begin{itemize}
@@ -211,36 +208,48 @@ Modern operating systems implement various forms of MAC:
 \end{itemize}
 \end{concept}
 
-\begin{theorem}{MAC vs. DAC Comparison}\\
-MAC and DAC differ in several key aspects:
-\begin{itemize}
-    \item \textbf{Control}:
+\multend
+
+\begin{theorem}{MAC vs. DAC Comparison}
+
+    \begin{minipage}{0.45\linewidth}
+\textbf{Control}:
     \begin{itemize}
         \item DAC - Resource owners control access
         \item MAC - System policy controls access
     \end{itemize}
-    \item \textbf{Policy Management}:
+\textbf{Policy Management}:
     \begin{itemize}
         \item DAC - Distributed management
         \item MAC - Centralized management
     \end{itemize}
-    \item \textbf{Security Assurance}:
+\end{minipage}
+    \begin{minipage}{0.55\linewidth}
+\textbf{Security Assurance}:
     \begin{itemize}
         \item DAC - Lower, vulnerable to user errors
         \item MAC - Higher, enforces system-wide policy
     \end{itemize}
-    \item \textbf{Complexity}:
+\textbf{Complexity}:
     \begin{itemize}
         \item DAC - Simpler to implement and understand
         \item MAC - More complex, requires specialized knowledge
     \end{itemize}
-\end{itemize}
+    \end{minipage}
+
 \end{theorem}
 
-\subsection{Role-Based Access Control (RBAC)}
+\raggedcolumns
+\columnbreak
 
-\begin{definition}{Role-Based Access Control}\\
-RBAC is an access control model based on user roles within an organization:
+
+
+\mult{2}
+
+\subsubsection{Role-Based Access Control (RBAC)}
+
+\begin{definition}{Role-Based Access Control}
+based on user roles within an organization:
 \begin{itemize}
     \item Users are assigned to roles based on job responsibilities
     \item Permissions are assigned to roles, not directly to users
@@ -249,8 +258,7 @@ RBAC is an access control model based on user roles within an organization:
 \end{itemize}
 \end{definition}
 
-\begin{concept}{RBAC Components}\\
-RBAC consists of four main components:
+\begin{concept}{RBAC Components}
 \begin{itemize}
     \item \textbf{Users} - Entities that need access to resources
     \item \textbf{Roles} - Collections of permissions representing job functions
@@ -259,8 +267,7 @@ RBAC consists of four main components:
 \end{itemize}
 \end{concept}
 
-\begin{theorem}{RBAC Security Principles}\\
-RBAC supports several important security principles:
+\begin{theorem}{RBAC Security Principles}
 \begin{itemize}
     \item \textbf{Principle of Least Privilege} - Users have only the permissions needed for their job
     \item \textbf{Separation of Duties} - Critical operations require multiple users
@@ -268,7 +275,7 @@ RBAC supports several important security principles:
 \end{itemize}
 \end{theorem}
 
-\subsection{Attribute-Based Access Control (ABAC)}
+\subsubsection{Attribute-Based Access Control (ABAC)}
 
 \begin{definition}{Attribute-Based Access Control}\\
 ABAC is a flexible access control model based on attributes:
@@ -288,36 +295,39 @@ ABAC is a flexible access control model based on attributes:
 
 \begin{concept}{ABAC vs. RBAC}\\
 ABAC extends beyond traditional RBAC:
-\begin{itemize}
-    \item \textbf{Flexibility}:
+
+\textbf{Flexibility}:
     \begin{itemize}
         \item RBAC - Predetermined access based on roles
         \item ABAC - Dynamic access based on multiple attributes
     \end{itemize}
-    \item \textbf{Granularity}:
+
+    \textbf{Granularity}:
     \begin{itemize}
         \item RBAC - Role-level permissions
         \item ABAC - Fine-grained, attribute-based decisions
     \end{itemize}
-    \item \textbf{Context Awareness}:
+
+     \textbf{Context Awareness}:
     \begin{itemize}
         \item RBAC - Limited environmental context
         \item ABAC - Rich environmental attributes (time, location, etc.)
     \end{itemize}
-    \item \textbf{Policy Expression}:
+\textbf{Policy Expression}:
     \begin{itemize}
         \item RBAC - Role-permission assignments
         \item ABAC - Complex boolean logic combining attributes
     \end{itemize}
-\end{itemize}
+
 \end{concept}
 
 
+\multend
 
-\subsection{Zero Trust Security Model}
 
-\begin{definition}{Zero Trust}\\
-Zero Trust is a security model that assumes no implicit trust for any entity:
+\subsubsection{Zero Trust Security Model}
+
+\begin{definition}{Zero Trust} security model that assumes no implicit trust for any entity:
 \begin{itemize}
     \item Eliminates the concept of trusted internal networks
     \item Requires continuous verification for all access requests
@@ -327,8 +337,7 @@ Zero Trust is a security model that assumes no implicit trust for any entity:
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Zero Trust Principles}\\
-Key principles of the Zero Trust model include:
+\begin{concept}{Zero Trust Principles}
 \begin{itemize}
     \item \textbf{Verify explicitly} - Always authenticate and authorize based on all available data points
     \item \textbf{Use least privilege access} - Limit user access with Just-In-Time and Just-Enough-Access

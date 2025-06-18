@@ -1,18 +1,15 @@
 \section{Introduction to Security and Cryptology}
 
-\begin{definition}{Cryptography Goals}
+\begin{concept}{Cryptography Goals}
     Cryptography aims to achieve four fundamental security properties:
     \begin{itemize}
-        \item \textbf{Confidentiality} - Information is only accessible to authorized parties
-        \item \textbf{Integrity} - Information has not been altered in an unauthorized way
+        \item \textbf{Confidentiality and Integrity}
         \item \textbf{Authenticity} - Origin of information can be verified
         \item \textbf{Freshness/Non-repudiation} - Information is current and sender cannot deny transmission
     \end{itemize}
     These goals align with the broader CIA triad of information security but add authentication and non-repudiation.
-\end{definition}
+\end{concept}
 
-
-\subsubsection{Model der Kommunikation und Verschlüsselung}
 
 \begin{definition}{Kommunikationsmodel}
 
@@ -29,6 +26,27 @@
     \end{itemize}
     \end{minipage}
 \end{definition}
+
+
+
+
+\begin{KR}{Attacktypen auf Kryptosysteme} Auf was hat Attacker Zugriff?
+    \begin{itemize}
+        \item \textbf{Ciphertext-only attack} - Zugriff auf Ciphertext, aber nicht auf Plaintext oder Schlüssel.
+        \item \textbf{Chosen-ciphertext attack} - kann Ciphertexte generieren und diese entschlüsseln lassen.
+        bekommt entweder den zum gewählten Ciphertext gehörenden Plaintext (daraus evtl. Rückschlüsse auf den verwendeten Schlüssel) 
+        oder Teilinformationen wie 'Verschlüsselung konnte durchgeführt werden / nicht durchgeführt werden'
+        \item \textbf{Known-plaintext attack} - kennt sowohl Teile des Plaintext als auch dazugehörenden Ciphertext.
+        \item \textbf{Chosen-plaintext attack} - kann Plaintexte wählen, welche er verschlüsseln lassen will. 
+        Erhält dazugehörenden Ciphertext: daraus Rückschlüsse auf andere Plaintexte oder gar Schlüssel 
+        \item \textbf{Brute-force attack} - Der Attacker probiert alle möglichen Schlüssel aus, bis er den richtigen gefunden hat (Plaintext erscheint sinnvoll)
+    \end{itemize}
+\end{KR}
+
+\begin{remark}
+    Grundsätzlich können alle Verschlüsselungsalgorithmen mittels brute-force Attacken geknackt werden. 
+    Ein wichtiges Evaluationskriterium eines Verschlüsselungsalgorithmus ist also, wie lange eine solche brute-force Attacke im Durchschnitt benötigt. Dieser Anzahl sagt man auch kryptographischer Work Factor.
+\end{remark}
 
 \begin{concept}{Model der Verschlüsselung}
     Um eine vertrauliche Kommunikation zu erreichen, werden Nachrichten vor dem Senden verschlüsselt und nach dem Empfangen wieder entschlüsselt.
@@ -63,32 +81,13 @@
 \end{theorem}
 \end{minipage}
 \begin{minipage}{0.35\linewidth}
-\includegraphics[width=\linewidth]{encryption_decryption.png}
+\includegraphics[width=0.9\linewidth]{encryption_decryption.png}
 \end{minipage}
 
-
-\begin{KR}{Attacktypen auf Kryptosysteme} Auf was hat Attacker Zugriff?
-    \begin{itemize}
-        \item \textbf{Ciphertext-only attack} - Zugriff auf Ciphertext, aber nicht auf Plaintext oder Schlüssel.
-        \item \textbf{Chosen-ciphertext attack} - kann Ciphertexte generieren und diese entschlüsseln lassen.
-        bekommt entweder den zum gewählten Ciphertext gehörenden Plaintext (daraus evtl. Rückschlüsse auf den verwendeten Schlüssel) 
-        oder Teilinformationen wie 'Verschlüsselung konnte durchgeführt werden / nicht durchgeführt werden'
-        \item \textbf{Known-plaintext attack} - kennt sowohl Teile des Plaintext als auch dazugehörenden Ciphertext.
-        \item \textbf{Chosen-plaintext attack} - kann Plaintexte wählen, welche er verschlüsseln lassen will. 
-        Erhält dazugehörenden Ciphertext: daraus Rückschlüsse auf andere Plaintexte oder gar Schlüssel 
-        \item \textbf{Brute-force attack} - Der Attacker probiert alle möglichen Schlüssel aus, bis er den richtigen gefunden hat (Plaintext erscheint sinnvoll)
-    \end{itemize}
-\end{KR}
-
-\begin{remark}
-    Grundsätzlich können alle Verschlüsselungsalgorithmen mittels brute-force Attacken geknackt werden. 
-    Ein wichtiges Evaluationskriterium eines Verschlüsselungsalgorithmus ist also, wie lange eine solche brute-force Attacke im Durchschnitt benötigt. Dieser Anzahl sagt man auch kryptographischer Work Factor.
-\end{remark}
-
 \raggedcolumns
-\columnbreak
 
-\subsection{Cryptographic Work Factor}
+
+\subsubsection{Cryptographic Work Factor}
 
 \mult{2}
 
@@ -137,8 +136,6 @@
 
 \subsubsection{Secret Key Cryptography}
 
-\paragraph{Perfect Secrecy and One-Time Pad}
-
 \mult{2}
 
 \begin{theorem}{Perfect Secrecy}
@@ -186,7 +183,7 @@
 \end{concept}
 
 \begin{theorem}{Overview of AES Modes}
-AES can operate in different modes to handle messages longer than a single block (16 bytes):
+AES can operate in different modes to handle messages longer than single block (16 bytes):
 \begin{itemize}
     \item \textbf{Confidentiality-only modes}: ECB, CBC, CFB, OFB, CTR
     \item \textbf{Authenticated encryption modes}: GCM, CCM, OCB
@@ -194,8 +191,11 @@ AES can operate in different modes to handle messages longer than a single block
 \end{itemize}
 \end{theorem}
 
+
+
+
 \begin{concept}{Block Ciphers}
-    Block ciphers encrypt fixed-size blocks of data:
+    encrypt fixed-size blocks of data:
     \begin{itemize}
         \item Require padding for messages not multiple of block size
         \item Use modes of operation for longer messages
@@ -204,11 +204,9 @@ AES can operate in different modes to handle messages longer than a single block
     \includegraphics[width=\linewidth]{block_cipher.png}
 \end{concept}
 
-\multend
 
-\mult{2}
 
-\small
+
 
 \begin{definition}{Electronic Code Book (ECB) Mode} simplest mode
 
@@ -223,15 +221,53 @@ AES can operate in different modes to handle messages longer than a single block
 \end{definition}
 
 \begin{definition}{Cipher Block Chaining (CBC) Mode}
-Each plaintext block is XORed with the previous ciphertext block before encryption:
-\begin{itemize}
-    \item \normalsize $C_i = E_K(P_i \oplus C_{i-1})$, $IV = C_0$ \small
-    \item \textbf{Advantages}: Identical plaintext blocks produce different ciphertext
-    \item \textbf{Disadvantages}: Sequential encryption, padding oracle attacks possible
-    \item \textbf{Use case}: File encryption, legacy TLS 
-\end{itemize}
-\includegraphics[width=\linewidth]{CBC.png}
+Each plaintext block XORed with previous ciphertext block before encryption:
+
+\normalsize $C_i = E_K(P_i \oplus C_{i-1})$, $IV = C_0$ \small
+
+\textbf{Advantages}: Identical plaintext blocks produce different ciphertext
+
+\textbf{Disadvantages}: Sequential encryption, padding oracle attacks possible
+
+\textbf{Use case}: File encryption, legacy TLS 
+
+\includegraphics[width=0.9\linewidth]{CBC.png}
 \end{definition}
+
+
+
+\begin{definition}{Output Feedback (OFB) Mode}
+Creates keystream by repeatedly encrypting the previous output:
+
+\normalsize $O_i = E_K(O_{i-1})$, $C_i = P_i \oplus O_i$, with $O_0 = IV$ \small
+
+\textbf{Advantages}: No padding needed, self-synchronizing
+
+\textbf{Disadvantages}: Sequential operation, no integrity protection
+
+\textbf{Use case}: Stream-oriented transmission (rarely used today)
+
+\includegraphics[width=\linewidth]{OFB.png}
+\end{definition}
+
+\begin{KR}{Mode Selection Guidelines}
+
+    \textbf{Never use ECB} - except for single blocks
+
+    \textbf{Use GCM} - when you need both encryption and authentication
+
+    \textbf{Use CBC} - for compatibility with legacy systems (with HMAC for authentication)
+
+    \textbf{Use CTR} - when you need parallel processing and will add authentication separately
+
+    \textbf{Avoid OFB/CFB} - unless specifically required by legacy protocols
+
+\end{KR}
+
+
+\multend
+
+\mult{2}
 
 \begin{definition}{Counter (CTR) Mode}
 Converts block cipher into stream cipher by encrypting a counter:
@@ -244,16 +280,7 @@ Converts block cipher into stream cipher by encrypting a counter:
 \includegraphics[width=\linewidth]{CTR.png}
 \end{definition}
 
-\begin{definition}{Output Feedback (OFB) Mode}
-Creates keystream by repeatedly encrypting the previous output:
-\begin{itemize}
-    \item \normalsize $O_i = E_K(O_{i-1})$, $C_i = P_i \oplus O_i$, with $O_0 = IV$ \small
-    \item \textbf{Advantages}: No padding needed, self-synchronizing
-    \item \textbf{Disadvantages}: Sequential operation, no integrity protection
-    \item \textbf{Use case}: Stream-oriented transmission (rarely used today)
-\end{itemize}
-\includegraphics[width=\linewidth]{OFB.png}
-\end{definition}
+
 
 \begin{definition}{Galois/Counter Mode (GCM)}
 Authenticated encryption mode combining CTR mode with Galois field multiplication:
@@ -266,6 +293,9 @@ Authenticated encryption mode combining CTR mode with Galois field multiplicatio
 \includegraphics[width=\linewidth]{GCM.png}
 \end{definition}
 
+\multend
+
+\mult{2}
 \begin{concept}{Stream Ciphers}
     Stream ciphers encrypt data bit-by-bit or byte-by-byte:
     \begin{itemize}
@@ -274,90 +304,21 @@ Authenticated encryption mode combining CTR mode with Galois field multiplicatio
         \item Most historical stream ciphers are broken (RC4, A5/1, A5/2)
         \item ChaCha20 is the current standard for stream ciphers
     \end{itemize}
-    \includegraphics[width=\linewidth]{stream_ciphers.png}
+    
 \end{concept}
+
+\includegraphics[width=0.65\linewidth]{stream_ciphers.png}
 
 \multend
 
-\normalsize
-
-\begin{KR}{Mode Selection Guidelines}
-Choose AES modes based on requirements:
-\begin{itemize}
-    \item \textbf{Never use ECB} - except for single blocks
-    \item \textbf{Use GCM} - when you need both encryption and authentication
-    \item \textbf{Use CBC} - for compatibility with legacy systems (with HMAC for authentication)
-    \item \textbf{Use CTR} - when you need parallel processing and will add authentication separately
-    \item \textbf{Avoid OFB/CFB} - unless specifically required by legacy protocols
-\end{itemize}
-\end{KR}
 
 
 
-\subsection{Public Key Cryptography}
 
-\begin{minipage}{0.5\linewidth}
-\begin{concept}{Key Distribution Challenge}
-    Secret key cryptography faces significant scalability issues:
-    \begin{itemize}
-        \item Keys must be exchanged securely before communication
-        \item Difficult to establish keys with unknown parties
-        \item $n$ users require $\frac{n(n-1)}{2}$ key pairs for complete connectivity
-        \item Key management complexity grows quadratically
-    \end{itemize}
-    
-\end{concept}
-\end{minipage}
-\begin{minipage}{0.5\linewidth}
-    \includegraphics[width=\linewidth]{key_distribution.png}
-\end{minipage}
 
-\subsubsection{Public Key Principles}
 
-\mult{2}
 
-\begin{definition}{Public Key Cryptography}
-    Uses mathematically related key pairs for encryption and decryption:
-    \begin{itemize}
-        \item \textbf{Public Key} - Known to everyone, \\used for encryption
-        \item \textbf{Private Key} - Known only to owner, \\used for decryption
-        \item Keys mathematically related: $D(E(M)) = M$
-        \item Private key cannot be feasibly computed from public key
-    \end{itemize}
-    \includegraphics[angle=90,width=\linewidth]{public_key.png}
-\end{definition}
-
-\begin{KR}{Diffie-Hellman Protocol}
-    \paragraph{Setup}
-    Alice and Bob agree on public parameters:
-    \begin{itemize}
-        \item Large prime $p$
-        \item Generator $g$ of the multiplicative group $\mathbb{Z}_p^*$
-    \end{itemize}
-    
-    \paragraph{Key Generation}
-    \begin{itemize}
-        \item Alice chooses private $a$, computes $A = g^a \bmod p$
-        \item Bob chooses private $b$, computes $B = g^b \bmod p$
-        \item They exchange $A$ and $B$ publicly
-        \item Shared secret: $S = B^a = A^b = g^{ab} \bmod p$
-    \end{itemize}
-    \includegraphics[width=\linewidth]{diffie_hellman_diagram.png}
-\end{KR}
-
-\begin{definition}{RSA Cryptosystem}
-    Based on the computational difficulty of factoring large numbers:
-    \begin{itemize}
-        \item Public Key: $(n, e)$ where $n = p \cdot q$ (product of large primes)
-        \item Private Key: $(n, d)$ where $ed \equiv 1 \pmod{\varphi(n)}$
-        \item Encryption: $c = m^e \bmod n$
-        \item Decryption: $m = c^d \bmod n$
-    \end{itemize}
-\end{definition}
-
-\multend
-
-\subsection{Hash Functions and Message Authentication}
+\subsubsection{Hash Functions and Message Authentication}
 
 
 
@@ -420,18 +381,69 @@ Choose AES modes based on requirements:
 
 
 
+\subsubsection{Public Key Cryptography}
 
-\subsubsection{Authenticated Encryption}
-
-\begin{concept}{Galois Counter Mode (GCM)}
-    Combines encryption and authentication in a single operation:
+\begin{minipage}{0.6\linewidth}
+\begin{concept}{Key Distribution Challenge}
+    Secret key cryptography faces significant scalability issues:
     \begin{itemize}
-        \item Provides both confidentiality and integrity protection
-        \item Uses counter mode encryption with Galois field authentication
-        \item Widely supported in TLS and other protocols
-        \item Efficient implementation in hardware and software
+        \item Keys must be exchanged securely before communication
+        \item Difficult to establish keys with unknown parties
+        \item $n$ users require $\frac{n(n-1)}{2}$ key pairs for complete connectivity
+        \item Key management complexity grows quadratically
     \end{itemize}
-    \includegraphics[width=0.7\linewidth]{GCM.png}
+    
 \end{concept}
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+    \includegraphics[width=\linewidth]{key_distribution.png}
+\end{minipage}
+
+\subsubsection{Public Key Principles}
+
+\mult{2}
+
+\begin{definition}{Public Key Cryptography}
+    Uses mathematically related key pairs for encryption and decryption:
+    \begin{itemize}
+        \item \textbf{Public Key} - Known to everyone, \\used for encryption
+        \item \textbf{Private Key} - Known only to owner, \\used for decryption
+        \item Keys mathematically related: $D(E(M)) = M$
+        \item Private key cannot be feasibly computed from public key
+    \end{itemize}
+    \includegraphics[width=\linewidth]{public_key.png}
+\end{definition}
+
+\begin{KR}{Diffie-Hellman Protocol}
+    \paragraph{Setup}
+    Alice and Bob agree on public parameters:
+    \begin{itemize}
+        \item Large prime $p$
+        \item Generator $g$ of the multiplicative group $\mathbb{Z}_p^*$
+    \end{itemize}
+    
+    \paragraph{Key Generation}
+    \begin{itemize}
+        \item Alice chooses private $a$, computes $A = g^a \bmod p$
+        \item Bob chooses private $b$, computes $B = g^b \bmod p$
+        \item They exchange $A$ and $B$ publicly
+        \item Shared secret: $S = B^a = A^b = g^{ab} \bmod p$
+    \end{itemize}
+    \includegraphics[width=0.7\linewidth]{diffie_hellman_diagram.png}
+\end{KR}
+
+\begin{definition}{RSA Cryptosystem}
+    Based on the computational difficulty of factoring large numbers:
+    \begin{itemize}
+        \item Public Key: $(n, e)$ where $n = p \cdot q$ (product of large primes)
+        \item Private Key: $(n, d)$ where $ed \equiv 1 \pmod{\varphi(n)}$
+        \item Encryption: $c = m^e \bmod n$
+        \item Decryption: $m = c^d \bmod n$
+    \end{itemize}
+\end{definition}
+
+\multend
+
+
 
 

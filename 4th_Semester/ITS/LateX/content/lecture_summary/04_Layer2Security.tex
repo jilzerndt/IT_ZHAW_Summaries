@@ -33,7 +33,6 @@
 
 \end{theorem}
 \end{minipage}
-\subsubsection{Extensible Authentication Protocol (EAP)}
 
 \begin{definition}{Extensible Authentication Protocol (EAP)}
 framework for authentication that supports multiple authentication methods:
@@ -45,9 +44,20 @@ framework for authentication that supports multiple authentication methods:
 \end{itemize}
 \end{definition}
 
+\begin{concept}{EAP Authentication Methods}
+EAP supports numerous authentication methods with varying security properties:
+\begin{itemize}
+    \item \textbf{EAP-MD5} - Simple challenge-response mechanism (insecure, no mutual authentication)
+    \item \important{EAP-TLS} - Uses TLS protocol with client certificates (strong security)
+    \item \textbf{EAP-TTLS} - Tunneled TLS without requiring client certificates
+    \item \textbf{PEAP} - Microsoft's Protected EAP, similar to EAP-TTLS
+    \item \textbf{EAP-FAST} - Cisco's Flexible Authentication via Secure Tunneling
+\end{itemize}
+\end{concept}
+
 \begin{code}{EAP Packet Format}
 EAP packets have a simple structure:
-\begin{lstlisting}[language=C, style=basesmol]
+\begin{lstlisting}[language=C, style=basesmolll]
 struct eap_packet {
     uint8_t code;       // Request (1), Response (2), Success (3), Failure (4)
     uint8_t id;         // Used to match requests and responses
@@ -58,21 +68,11 @@ struct eap_packet {
 \end{lstlisting}
 \end{code}
 
-\begin{concept}{EAP Authentication Methods}
-EAP supports numerous authentication methods with varying security properties:
-\begin{itemize}
-    \item \textbf{EAP-MD5} - Simple challenge-response mechanism (insecure, no mutual authentication)
-    \item \textbf{EAP-TLS} - Uses TLS protocol with client certificates (strong security)
-    \item \textbf{EAP-TTLS} - Tunneled TLS without requiring client certificates
-    \item \textbf{PEAP} - Microsoft's Protected EAP, similar to EAP-TTLS
-    \item \textbf{EAP-FAST} - Cisco's Flexible Authentication via Secure Tunneling
-\end{itemize}
-Current recommendation is to use EAP-TLS when possible.
-\end{concept}
-
-\subsubsection{IEEE 802.1X Port-Based Access Control}
 
 \mult{2}
+\subsubsection{IEEE 802.1X Port-Based Access Control}
+
+
 
 \begin{definition}{IEEE 802.1X}
 port-based network access control:
@@ -102,36 +102,6 @@ While 802.1X provides significant security benefits, it has limitations:
 \end{itemize}
 \end{theorem}
 
-\begin{KR}{IEEE 802.1X Authentication Process}
-\paragraph{Initial Connection}
-\begin{itemize}
-    \item Client connects to a port on the switch/access point
-    \item Port is initially blocked for all traffic except EAP
-    \item Communication begins with EAPOL (EAP over LAN) protocol
-\end{itemize}
-
-\paragraph{Authentication Exchange}
-\begin{itemize}
-    \item Supplicant sends EAPOL-Start message or authenticator sends EAP-Request Identity
-    \item Supplicant responds with identity
-    \item Authenticator forwards identity to authentication server using RADIUS
-    \item Authentication server and supplicant perform EAP authentication exchange
-    \item Authenticator relays EAP messages between supplicant and authentication server
-\end{itemize}
-
-\paragraph{Authorization}
-\begin{itemize}
-    \item Authentication server sends Access-Accept or Access-Reject message
-    \item On success, authenticator can include VLAN assignment and other parameters
-    \item Authenticator opens port for network access based on authorization parameters
-\end{itemize}
-\end{KR}
-
-\multend
-
-\mult{2}
-
-
 
 \begin{definition}{MACsec}
 IEEE 802.1AE (Media Access Control Security)
@@ -153,11 +123,24 @@ MACsec operates by:
 \end{itemize}
 \end{concept}
 
-\multend
+\begin{concept}{WPA/WPA2 Operation}
+\begin{itemize}
+    \item \textbf{Authentication Phase}:
+    \begin{itemize}
+        \item WPA-Personal: Uses pre-shared key (PSK)
+        \item WPA-Enterprise: Uses 802.1X and EAP with a RADIUS server
+    \end{itemize}
+    \item \textbf{Key Exchange Phase}:
+    \begin{itemize}
+        \item Establishes pairwise transient keys for unicast traffic
+        \item Establishes group keys for broadcast/multicast traffic
+        \item Implements key rotation to prevent attacks
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
 
 \subsubsection{WLAN Security}
-
-\mult{2}
 
 \begin{definition}{WLAN Security Challenges}
 \begin{itemize}
@@ -212,21 +195,6 @@ complete implementation of the IEEE 802.11i standard:
 \end{itemize}
 \end{definition}
 
-\begin{concept}{WPA/WPA2 Operation}
-\begin{itemize}
-    \item \textbf{Authentication Phase}:
-    \begin{itemize}
-        \item WPA-Personal: Uses pre-shared key (PSK)
-        \item WPA-Enterprise: Uses 802.1X and EAP with a RADIUS server
-    \end{itemize}
-    \item \textbf{Key Exchange Phase}:
-    \begin{itemize}
-        \item Establishes pairwise transient keys for unicast traffic
-        \item Establishes group keys for broadcast/multicast traffic
-        \item Implements key rotation to prevent attacks
-    \end{itemize}
-\end{itemize}
-\end{concept}
 
 
 \begin{definition}{WPA3}

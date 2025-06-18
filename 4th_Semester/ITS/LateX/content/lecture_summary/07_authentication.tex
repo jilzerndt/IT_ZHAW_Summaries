@@ -1,19 +1,21 @@
 \section{User Authentication}
 
-\subsection{Access Control Components}
+\mult{2}
 
-\begin{definition}{Access Control Framework}\\
-Access control systems typically involve four key components:
-\begin{itemize}
-    \item \textbf{Identification} - Claiming an identity (e.g., username)
-    \item \textbf{Authentication} - Proving the claimed identity (e.g., password)
-    \item \textbf{Authorization} - Determining what the authenticated identity may do
-    \item \textbf{Accounting/Auditing} - Recording what actions were performed
-\end{itemize}
+\begin{definition}{Access Control Framework}
+
+    \textbf{Identification} Claiming an identity (username)
+
+    \textbf{Authentication} Proving the claimed identity (password)
+
+    \textbf{Authorization} Determining what the authenticated identity may do
+
+     \textbf{Accounting/Auditing} - Recording what actions were performed
+
 \end{definition}
 
-\begin{concept}{Authentication Fundamentals}\\
-Authentication is the process of verifying that a claimed identity is genuine:
+\begin{concept}{Authentication Fundamentals}
+    verifying that a claimed identity is genuine:
 \begin{itemize}
     \item Establishes trust in the identity claim
     \item Serves as the foundation for access control
@@ -21,61 +23,73 @@ Authentication is the process of verifying that a claimed identity is genuine:
     \item Should be resistant to impersonation attacks
 \end{itemize}
 \end{concept}
+\multend
 
-\subsection{Authentication Factors}
 
-\begin{definition}{Authentication Factors}\\
-Authentication is based on three fundamental factors:
-\begin{itemize}
-    \item \textbf{Something you know} - Knowledge factors (passwords, PINs, security questions)
-    \item \textbf{Something you have} - Possession factors (physical tokens, smart cards, mobile devices)
-    \item \textbf{Something you are} - Inherence factors (biometrics - fingerprints, face, voice)
-\end{itemize}
-Additional factors sometimes considered include:
-\begin{itemize}
-    \item \textbf{Somewhere you are} - Location factors (GPS, network location)
-    \item \textbf{Something you do} - Behavior factors (typing patterns, gestures)
-\end{itemize}
+\mult{2}
+
+\begin{definition}{Authentication Factors}
+
+    \textbf{Something you know} Knowledge factors (passwords, PINs)
+
+    \textbf{Something you have} Possession factors (physical tokens)
+
+    \textbf{Something you are} Inherence factors (biometrics)
+
+    \textbf{Somewhere you are} - Location factors (GPS)
+
+     \textbf{Something you do} - Behavior factors 
+
 \end{definition}
 
-\subsection{Password-Based Authentication}
 
-\begin{concept}{Password Security Challenges}\\
-Password-based authentication faces several significant challenges:
-\begin{itemize}
-    \item \textbf{Human memory limitations} - Difficult to remember strong, unique passwords
-    \item \textbf{Password reuse} - Users often use the same password across multiple sites
-    \item \textbf{Password sharing} - Accounts accessed by multiple people
-    \item \textbf{Password theft} - Phishing, keylogging, and data breaches
-    \item \textbf{Brute force attacks} - Systematic guessing of passwords
-\end{itemize}
+\begin{concept}{Password Security Challenges}
+
+     \textbf{Human memory limitations} - Difficult to remember strong, unique passwords
+
+     \textbf{Password reuse} - Users often use the same password across multiple sites
+
+     \textbf{Password sharing} - Accounts accessed by multiple people
+
+     \textbf{Password theft} - Phishing, keylogging, and data breaches
+
+     \textbf{Brute force attacks} - Systematic guessing of passwords
+
 \end{concept}
 
 
-\subsection{Secure Password Storage}
+\subsubsection{Secure Password Storage}
 
-\begin{definition}{Password Hashing}\\
-Password hashing is a one-way transformation to securely store passwords:
-\begin{itemize}
-    \item Converts passwords into fixed-length strings that cannot be reversed
-    \item Allows verification without storing the actual password
-    \item Must use cryptographic hash functions designed for security
-    \item Should be combined with salting and key stretching
-\end{itemize}
+\begin{definition}{Password Hashing}
+
+    one-way transformation to securely store passwords:
+
+    Converts passwords into fixed-length strings that cannot be reversed
+
+    Allows verification without storing the actual password
+
+     Must use cryptographic hash functions designed for security
+
+     Should be combined with salting and key stretching
+
 \end{definition}
 
-\begin{concept}{Salting Passwords}\\
-Salting is adding random data to passwords before hashing:
-\begin{itemize}
-    \item Prevents use of precomputed tables (rainbow tables) for cracking
-    \item Forces attackers to crack each password individually
-    \item Salt should be unique per user and sufficiently long (64-128 bits)
-    \item Salt is stored alongside the hash in the password database
-\end{itemize}
+\begin{concept}{Salting Passwords}
+
+    adding random data to passwords before hashing:
+
+    Prevents use of precomputed tables (rainbow tables) for cracking
+
+    Forces attackers to crack each password individually
+
+    Salt should be unique per user and sufficiently long (64-128 bits)
+
+    Salt is stored alongside the hash in the password database
+
 \end{concept}
 
-\begin{concept}{Key Stretching}\\
-Key stretching increases the computational work needed to compute password hashes:
+\begin{concept}{Key Stretching}
+    increases the computational work needed to compute password hashes:
 \begin{itemize}
     \item Applies the hash function repeatedly (thousands or millions of times)
     \item Increases the time needed for brute force attacks
@@ -84,46 +98,71 @@ Key stretching increases the computational work needed to compute password hashe
 \end{itemize}
 \end{concept}
 
-\begin{theorem}{Password Hashing Functions}\\
-Modern password hashing functions are designed specifically for password storage:
-\begin{itemize}
-    \item \textbf{bcrypt} - Based on Blowfish cipher, includes salt and cost factor
-    \item \textbf{PBKDF2} - Password-Based Key Derivation Function, configurable iterations
-    \item \textbf{Argon2} - Winner of the Password Hashing Competition, memory-hard function
-    \item \textbf{scrypt} - Memory-hard function designed to be resistant to hardware acceleration
-\end{itemize}
+\begin{theorem}{Password Hashing Functions}
+     password storage:
+
+     \textbf{bcrypt} - Based on Blowfish cipher, salt and cost factor
+
+     \textbf{PBKDF2} - Password-Based Key Derivation Function, configurable iterations
+
+     \textbf{Argon2} - Winner of the Password Hashing Competition, memory-hard function
+
+     \textbf{scrypt} - Memory-hard function designed to be resistant to hardware acceleration
+
 These functions are preferable to general-purpose cryptographic hash functions for password storage.
 \end{theorem}
 
+\paragraph{Authentication Protocols}
 
-\subsection{Multi-Factor Authentication}
+\begin{concept}{Direct vs. Indirect Authentication}
+    
+    \textbf{Direct Authentication}:
+    \begin{itemize}
+        \item User authenticates directly to the service
+        \item Service has all information needed to authenticate users
+        \item Credentials are configured on each service
+        \item Example: Local login on a server
+    \end{itemize}
 
-\begin{definition}{Multi-Factor Authentication (MFA)}\\
-Multi-factor authentication combines at least two different authentication factors:
-\begin{itemize}
-    \item Requires factors from different categories (know, have, are)
-    \item Significantly increases security compared to single-factor authentication
-    \item Mitigates risks of compromised passwords
-    \item Widely recommended for sensitive systems and accounts
-\end{itemize}
+    \textbf{Indirect Authentication}:
+    \begin{itemize}
+        \item Authentication delegated to a central authority
+        \item Service trusts authentication decisions of authority
+        \item Credentials are managed centrally
+        \item Examples: RADIUS, Kerberos, SAML, OpenID Connect
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Multi-Factor Authentication (MFA)}
+
+    Requires factors from different categories (know, have, are)
+
+    Significantly increases security compared to single-factor authentication
+
+    Mitigates risks of compromised passwords
+
+    Widely recommended for sensitive systems and accounts
+
 \end{definition}
 
-\begin{concept}{Common MFA Methods}\\
-Popular implementations of multi-factor authentication include:
-\begin{itemize}
-    \item \textbf{One-Time Passwords (OTP)}:
+\begin{concept}{Common MFA Methods}
+
+     \textbf{One-Time Passwords (OTP)}:
     \begin{itemize}
         \item Time-based (TOTP) - Generated from a shared secret and current time
         \item HMAC-based (HOTP) - Generated from a shared secret and counter
         \item SMS-based - Codes sent via text message (less secure)
     \end{itemize}
-    \item \textbf{Push Notifications} - Authentication requests sent to mobile applications
-    \item \textbf{Hardware Security Keys} - Physical devices using FIDO/U2F standards
-    \item \textbf{Biometric Verification} - Fingerprint, face, or voice recognition
-\end{itemize}
+
+    \textbf{Push Notifications} - Authent. req. sent to mobile apps
+
+     \textbf{Hardware Security Keys} devices FIDO/U2F standards
+
+     \textbf{Biometric Verification} Fingerprint, face, voice recognition
+
 \end{concept}
 
-\begin{theorem}{MFA Attack Vectors}\\
+\begin{theorem}{MFA Attack Vectors}
 Despite its strength, MFA can still be vulnerable to certain attacks:
 \begin{itemize}
     \item \textbf{Real-time phishing} - Intercepting and forwarding authentication in real-time
@@ -134,195 +173,81 @@ Despite its strength, MFA can still be vulnerable to certain attacks:
 \end{itemize}
 \end{theorem}
 
-\begin{concept}{MFA Fatigue Countermeasures}\\
-To counter MFA fatigue attacks, several approaches can be used:
-\begin{itemize}
-    \item \textbf{Number matching} - Displaying a number on login screen that must be entered in authenticator
-    \item \textbf{Geographic context} - Showing location information of the login attempt
-    \item \textbf{Device context} - Showing device information of the login attempt
-    \item \textbf{Request limiting} - Restricting the number of authentication requests
-    \item \textbf{Suspicious activity detection} - Identifying unusual patterns
-\end{itemize}
+\begin{concept}{MFA Fatigue Countermeasures}
+
+     \textbf{Number matching} - Displaying a number on login screen that must be entered in authenticator
+
+     \textbf{Geographic context} - location info of login attempt
+
+     \textbf{Device context} - device info of  login attempt
+
+     \textbf{Request limiting} - Restricting nr of auth. requests
+
+     \textbf{Suspicious activity detection} - Identifying unusual patterns
+
 \end{concept}
 
-\subsection{Passwordless Authentication}
-
-\begin{definition}{Passwordless Authentication}\\
-Passwordless authentication eliminates passwords in favor of stronger alternatives:
-\begin{itemize}
-    \item Based on public key cryptography and digital certificates
-    \item Typically combines possession and inherence factors
-    \item Eliminates password-related vulnerabilities
-    \item Improves user experience by removing password entry
-\end{itemize}
-\end{definition}
-
-\begin{concept}{FIDO2/WebAuthn}\\
-FIDO2 is a set of standards for passwordless authentication:
-\begin{itemize}
-    \item Combines WebAuthn (web authentication standard) and CTAP (client-to-authenticator protocol)
-    \item Uses public key cryptography for authentication
-    \item Supports various authenticator types:
-    \begin{itemize}
-        \item Platform authenticators (built into devices)
-        \item Roaming authenticators (external security keys)
-    \end{itemize}
-    \item Protects against phishing through origin binding
-    \item Private keys never leave the authenticator
-\end{itemize}
-\end{concept}
+\multend
 
 
-\subsection{Authentication Protocols}
 
-\begin{definition}{Authentication Protocols}\\
-Authentication protocols define the messages and procedures for user authentication:
-\begin{itemize}
-    \item Standardize authentication across different systems
-    \item Can be direct (authenticating directly to service) or indirect (using a third party)
-    \item Often establish session keys for secure communication
-    \item May support various authentication methods
-\end{itemize}
-\end{definition}
 
-\begin{concept}{Direct vs. Indirect Authentication}\\
-There are two fundamental approaches to authentication:
-\begin{itemize}
-    \item \textbf{Direct Authentication}:
-    \begin{itemize}
-        \item User authenticates directly to the service
-        \item Service has all information needed to authenticate users
-        \item Credentials are configured on each service
-        \item Example: Local login on a server
-    \end{itemize}
-    \item \textbf{Indirect Authentication}:
-    \begin{itemize}
-        \item Authentication delegated to a central authority
-        \item Service trusts the authentication decisions of this authority
-        \item Credentials are managed centrally
-        \item Examples: RADIUS, Kerberos, SAML, OpenID Connect
-    \end{itemize}
-\end{itemize}
-\end{concept}
 
-\subsection{Single Sign-On (SSO)}
 
-\begin{definition}{Single Sign-On (SSO)}\\
-Single sign-on enables users to authenticate once and access multiple services:
-\begin{itemize}
-    \item Reduces the number of authentication events
-    \item Centralizes credential management
-    \item Improves user experience
-    \item Enhances security by reducing password fatigue
-    \item Can implement consistent security policies across services
-\end{itemize}
-\end{definition}
 
-\begin{concept}{SSO Implementation Approaches}\\
-SSO can be implemented using various protocols:
-\begin{itemize}
-    \item \textbf{Kerberos} - Primarily for on-premises environments (e.g., Active Directory)
-    \item \textbf{SAML} - Web-based SSO between different organizations
-    \item \textbf{OpenID Connect} - Modern protocol for web and mobile applications
-    \item \textbf{OAuth 2.0} - Authorization framework often used with OpenID Connect
-\end{itemize}
-\end{concept}
 
-\subsection{OAuth 2.0 and OpenID Connect}
+\subsubsection{Kerberos}
 
-\begin{definition}{OAuth 2.0}\\
-OAuth 2.0 is an authorization framework (not authentication):
-\begin{itemize}
-    \item Enables third-party applications to access resources without sharing credentials
-    \item Uses tokens to grant limited access to resources
-    \item Defines various authorization flows for different scenarios
-    \item Standardized in RFC 6749
-\end{itemize}
-\end{definition}
+\mult{2}
 
-\begin{concept}{OAuth 2.0 Roles}\\
-OAuth 2.0 defines four key roles:
-\begin{itemize}
-    \item \textbf{Resource Owner} - Entity that grants access (typically the user)
-    \item \textbf{Client} - Application requesting access to resources
-    \item \textbf{Resource Server} - Server hosting the protected resources
-    \item \textbf{Authorization Server} - Server issuing access tokens
-\end{itemize}
-\end{concept}
+\begin{concept}{Kerberos Components}
 
-\begin{definition}{OpenID Connect (OIDC)}\\
-OpenID Connect is an identity layer built on top of OAuth 2.0:
-\begin{itemize}
-    \item Adds authentication functionality to OAuth 2.0
-    \item Provides user profile information
-    \item Uses JSON Web Tokens (JWT) for identity tokens
-    \item Enables "social login" and federated identity
-\end{itemize}
-\end{definition}
+    \textbf{Principals} - Users, services, or systems that participate 
 
-\begin{concept}{OpenID Connect Terminology}\\
-OpenID Connect introduces specific terminology:
-\begin{itemize}
-    \item \textbf{Relying Party (RP)} - Application that wants to verify user identity
-    \item \textbf{OpenID Provider (OP)} - Service that authenticates users
-    \item \textbf{ID Token} - JWT containing user identity information
-    \item \textbf{UserInfo Endpoint} - API for retrieving additional user information
-    \item \textbf{Claims} - Pieces of information about the user
-\end{itemize}
-\end{concept}
-
-\subsection{SAML}
-
-\begin{definition}{Security Assertion Markup Language (SAML)}\\
-SAML is an XML-based framework for exchanging authentication and authorization data:
-\begin{itemize}
-    \item Primarily used for web-based SSO
-    \item Enables cross-domain identity and access management
-    \item Separates identity provider from service provider
-    \item Current version is SAML 2.0
-\end{itemize}
-\end{definition}
-
-\begin{concept}{SAML Components}\\
-SAML defines several core components:
-\begin{itemize}
-    \item \textbf{Assertions} - XML documents containing authentication statements
-    \item \textbf{Protocols} - Rules for requesting and receiving assertions
-    \item \textbf{Bindings} - Methods for transporting assertions over different protocols
-    \item \textbf{Profiles} - Combinations of assertions, protocols, and bindings for specific use cases
-\end{itemize}
-\end{concept}
-
-\begin{concept}{SAML vs. OpenID Connect}\\
-SAML and OpenID Connect differ in several ways:
-\begin{itemize}
-    \item \textbf{Format} - SAML uses XML, OIDC uses JSON
-    \item \textbf{Platform support} - SAML for web only, OIDC for web, mobile, and APIs
-    \item \textbf{Complexity} - SAML more complex, OIDC simpler to implement
-    \item \textbf{Age} - SAML older and more established, OIDC newer
-    \item \textbf{Token size} - SAML assertions larger than OIDC ID tokens
-\end{itemize}
-\end{concept}
-
-\subsection{Kerberos}
-
-\begin{concept}{Kerberos Components}\\
-Kerberos involves several key components:
-\begin{itemize}
-    \item \textbf{Principals} - Users, services, or systems that participate in authentication
-    \item \textbf{Key Distribution Center (KDC)} - Central authentication server consisting of:
+    \textbf{Key Distribution Center (KDC)} - Central authentication server consisting of:
     \begin{itemize}
         \item Authentication Service (AS) - Verifies user identities
         \item Ticket-Granting Service (TGS) - Issues service tickets
     \end{itemize}
-    \item \textbf{Realm} - Administrative domain of a KDC
-    \item \textbf{Tickets} - Cryptographically protected credentials:
+
+    \textbf{Realm} - Administrative domain of a KDC
+
+    \textbf{Tickets} - Cryptographically protected credentials:
     \begin{itemize}
-        \item Ticket-Granting Ticket (TGT) - Used to request service tickets
+        \item Ticket-Granting Ticket (TGT) - Used to request service 
         \item Service Ticket - Used to access specific services
     \end{itemize}
+
+\end{concept}
+
+
+
+
+
+\begin{theorem}{Kerberos Security Properties}
+
+    \textbf{No password transmission} - Passwords never sent over the network
+
+    \textbf{Limited ticket lifetime} - Tickets expire after a defined period
+
+    \textbf{Mutual authentication} - Both client and server can verify each other
+
+    \textbf{Replay protection} - Timestamps prevent reuse of authentication messages
+
+    \textbf{Key distribution} - Session keys established for secure communication
+
+\end{theorem}
+
+\begin{concept}{Cross-Realm Authentication}
+Kerberos supports authentication across different administrative domains:
+\begin{itemize}
+    \item Enables federated identity across organizations
+    \item Requires trust relationship between realms
+    \item Uses a hierarchical trust model or direct cross-realm keys
+    \item Allows users from one realm to access services in another
 \end{itemize}
 \end{concept}
+
 
 \begin{KR}{Kerberos Authentication Process}
 \paragraph{Initial Authentication}
@@ -352,31 +277,14 @@ Kerberos involves several key components:
 \end{itemize}
 \end{KR}
 
-\begin{theorem}{Kerberos Security Properties}\\
-Kerberos provides several security properties:
-\begin{itemize}
-    \item \textbf{No password transmission} - Passwords never sent over the network
-    \item \textbf{Limited ticket lifetime} - Tickets expire after a defined period
-    \item \textbf{Mutual authentication} - Both client and server can verify each other
-    \item \textbf{Replay protection} - Timestamps prevent reuse of authentication messages
-    \item \textbf{Key distribution} - Session keys established for secure communication
-\end{itemize}
-\end{theorem}
+\multend
 
-\begin{concept}{Cross-Realm Authentication}\\
-Kerberos supports authentication across different administrative domains:
-\begin{itemize}
-    \item Enables federated identity across organizations
-    \item Requires trust relationship between realms
-    \item Uses a hierarchical trust model or direct cross-realm keys
-    \item Allows users from one realm to access services in another
-\end{itemize}
-\end{concept}
+\subsubsection{Federated Authentication}
 
-\subsection{Federated Authentication}
+\mult{2}
 
-\begin{definition}{Federated Authentication}\\
-Federated authentication enables identity verification across organization boundaries:
+\begin{definition}{Federated Authentication}
+    enables identity verification across organization boundaries:
 \begin{itemize}
     \item Allows users to authenticate with their home organization
     \item Enables access to resources in partner organizations
@@ -386,8 +294,8 @@ Federated authentication enables identity verification across organization bound
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Shibboleth}\\
-Shibboleth is a system for federated identity management:
+\begin{concept}{Shibboleth}
+    system for federated identity management:
 \begin{itemize}
     \item Based on SAML
     \item Separates authentication from authorization
@@ -403,36 +311,192 @@ Shibboleth is a system for federated identity management:
 \end{concept}
 
 \begin{KR}{Shibboleth Authentication Flow}
-\paragraph{Resource Access Request}
-\begin{itemize}
-    \item User attempts to access a protected resource
-    \item Service Provider determines resource requires authentication
-    \item SP redirects user to Discovery Service
-\end{itemize}
+\textbf{Resource Access Request}
+User attempts to access a protected resource, Service Provider determines resource requires authentication,
+SP redirects user to Discovery Service 
 
-\paragraph{Identity Provider Selection and Authentication}
-\begin{itemize}
-    \item User selects their home organization from the Discovery Service
-    \item User is redirected to their Identity Provider
-    \item User authenticates with their home organization credentials
-\end{itemize}
+\textbf{Identity Provider Selection and Authentication}
+User selects their home organization from the Discovery Service, 
+User is redirected to their Identity Provider,
+User authenticates with their home organization credentials
 
-\paragraph{Assertion Generation and Validation}
-\begin{itemize}
-    \item IdP generates a SAML assertion containing authentication statement
-    \item IdP may include additional user attributes (depending on configuration)
-    \item Assertion is cryptographically signed and optionally encrypted
-    \item User's browser posts the assertion to the Service Provider
-\end{itemize}
+\textbf{Assertion Generation and Validation}
+IdP generates a SAML assertion containing authentication statement,
+IdP may include additional user attributes (depending on configuration),
+Assertion is cryptographically signed and optionally encrypted,
+User's browser posts the assertion to the Service Provider
 
-\paragraph{Resource Access}
-\begin{itemize}
-    \item SP validates the assertion's signature
-    \item SP extracts user identity and attributes
-    \item SP makes authorization decision based on attributes
-    \item SP grants access to the resource if authorized
-\end{itemize}
+\textbf{Resource Access}
+SP validates the assertion's signature,
+SP extracts user identity and attributes from the assertion,
+SP makes an authorization decision based on the attributes,
+SP grants access to the requested resource if authorized
 \end{KR}
+\multend
 
+
+\subsubsection{Passwordless Authentication}
+
+\mult{2}
+
+\begin{definition}{Passwordless Authentication}
+\begin{itemize}
+    \item Based on public key cryptography and digital certificates
+    \item Typically combines possession and inherence factors
+    \item Eliminates password-related vulnerabilities
+    \item Improves user experience by removing password entry
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Authentication Protocols} messages and procedures for user authentication:
+\begin{itemize}
+    \item Standardize authentication across different systems
+    \item Can be direct (authenticating directly to service) or indirect (using a third party)
+    \item Often establish session keys for secure communication
+    \item May support various authentication methods
+\end{itemize}
+\end{definition}
+
+
+\begin{concept}{FIDO2/WebAuthn}
+\begin{itemize}
+    \item Combines WebAuthn (web authentication standard) and CTAP (client-to-authenticator protocol)
+    \item Uses public key cryptography for authentication
+    \item Supports various authenticator types:
+    \begin{itemize}
+        \item Platform authenticators (built into devices)
+        \item Roaming authenticators (external security keys)
+    \end{itemize}
+    \item Protects against phishing through origin binding
+    \item Private keys never leave the authenticator
+\end{itemize}
+\end{concept}
+
+
+\multend
+
+
+
+
+\subsubsection{Single Sign-On (SSO)}
+
+\mult{2}
+
+
+\begin{definition}{Single Sign-On (SSO)}
+ enables users to authenticate once and access multiple services:
+\begin{itemize}
+    \item Reduces the number of authentication events
+    \item Centralizes credential management
+    \item Improves user experience
+    \item Enhances security by reducing password fatigue
+    \item Can implement consistent security policies across services
+\end{itemize}
+\end{definition}
+
+
+
+
+
+
+
+
+
+\begin{definition}{OAuth 2.0}
+     authorization framework (not authentication):
+
+     Enables third-party applications to access resources without sharing credentials
+
+      Uses tokens to grant limited access to resources
+
+      Defines various authorization flows for different scenarios
+
+      Standardized in RFC 6749
+
+\end{definition}
+
+\begin{concept}{OAuth 2.0 Roles}
+
+    \textbf{Resource Owner} Entity that grants access (user)
+
+    \textbf{Client} Application requesting access to resources
+
+    \textbf{Resource Server} Server hosting the protected resources
+
+    \textbf{Authorization Server} Server issuing access tokens
+
+\end{concept}
+
+\begin{definition}{OpenID Connect (OIDC)}
+    built on top of OAuth 2.0:
+\begin{itemize}
+    \item Adds authentication functionality to OAuth 2.0
+    \item Provides user profile information
+    \item Uses JSON Web Tokens (JWT) for identity tokens
+    \item Enables "social login" and federated identity
+\end{itemize}
+\end{definition}
+
+\begin{concept}{OpenID Connect Terminology}
+
+    \textbf{Relying Party (RP)} Application that wants to verify user identity
+
+    \textbf{OpenID Provider (OP)} Service that authenticates users
+
+    \textbf{ID Token} JWT containing user identity information
+
+    \textbf{UserInfo Endpoint} API for retrieving additional user information
+
+    \textbf{Claims} Pieces of information about the user
+
+\end{concept}
+
+
+\begin{concept}{SSO Implementation Approaches}
+
+    \textbf{Kerberos} - Primarily for on-premises environments (e.g., Active Directory)
+
+    \textbf{SAML} - Web-based SSO between different organizations
+
+    \textbf{OpenID Connect} - Modern protocol for web and mobile applications
+
+    \textbf{OAuth 2.0} - Authorization framework often used with OpenID Connect
+
+\end{concept}
+
+
+\begin{definition}{Security Assertion Markup Language (SAML)}
+ XML-based framework for exchanging authentication and authorization data:
+\begin{itemize}
+    \item Primarily used for web-based SSO
+    \item Enables cross-domain identity and access management
+    \item Separates identity provider from service provider
+    \item Current version is SAML 2.0
+\end{itemize}
+\end{definition}
+
+\begin{concept}{SAML Components}
+\begin{itemize}
+    \item \textbf{Assertions} - XML documents containing authentication statements
+    \item \textbf{Protocols} - Rules for requesting and receiving assertions
+    \item \textbf{Bindings} - Methods for transporting assertions over different protocols
+    \item \textbf{Profiles} - Combinations of assertions, protocols, and bindings for specific use cases
+\end{itemize}
+\end{concept}
+
+\begin{concept}{SAML vs. OpenID Connect}
+
+    \textbf{Format} - SAML uses XML, OIDC uses JSON
+
+    \textbf{Platform support} - SAML for web only, OIDC for web, mobile, and APIs
+
+    \textbf{Complexity} - SAML more complex, OIDC simpler to implement
+
+    \textbf{Age} - SAML older and more established, OIDC newer
+
+    \textbf{Token size} - SAML assertions larger than OIDC ID tokens
+
+\end{concept}
+\multend
 
 % Duplicate content removed - comprehensive authentication coverage is provided above
