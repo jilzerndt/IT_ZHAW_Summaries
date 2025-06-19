@@ -1,14 +1,12 @@
-\section{Kinematik der Translation}
+\section{Kinematik}
 
-\subsection{Grundlagen der Kinematik}
 \begin{definition}{Kinematik}\\
-    Die Kinematik beschreibt die Bewegung eines Körpers, ohne auf deren Ursachen einzugehen. Die Bewegung eines Körpers ist vollständig beschrieben durch:
+    Die Kinematik beschreibt die Bewegung ohne Betrachtung der Ursachen. Eine Bewegung wird vollständig charakterisiert durch:
     \begin{itemize}
-        \item seinen Ort (Vektor $\vec{r}$)
-        \item seine Geschwindigkeit ($\vec{v}$)
-        \item seine Beschleunigung ($\vec{a}$)
+        \item Ort: $\vec{r}(t)$
+        \item Geschwindigkeit: $\vec{v}(t) = \frac{d\vec{r}}{dt}$
+        \item Beschleunigung: $\vec{a}(t) = \frac{d\vec{v}}{dt} = \frac{d^2\vec{r}}{dt^2}$
     \end{itemize}
-    Diese drei Größen hängen durch Ableiten bzw. Integrieren zusammen.
 \end{definition}
 
 \begin{formula}{Zusammenhänge zwischen Ort\, Geschwindigkeit und Beschleunigung}\\
@@ -24,19 +22,36 @@
     \end{itemize}
 \end{formula}
 
-\subsection{Mittlere Geschwindigkeit und Beschleunigung}
-\begin{definition}{Mittlere Geschwindigkeit}\\
-    Die mittlere Geschwindigkeit ist die Änderung des Ortes dividiert durch die dafür benötigte Zeit:
+\subsection{Geschwindigkeit und Beschleunigung}
+
+\begin{definition}{Mittlere vs. Momentangeschwindigkeit}\\
+    \textbf{Mittlere Geschwindigkeit:}
     \begin{equation}
-        \bar{v}_x = \frac{\Delta r_x}{\Delta t}
+        \bar{v}_x = \frac{\Delta r_x}{\Delta t} = \frac{r_x(t_2) - r_x(t_1)}{t_2 - t_1}
     \end{equation}
-    Sie stellt den Durchschnittswert über das betrachtete Zeitintervall dar.
+    
+    \textbf{Momentangeschwindigkeit:}
+    \begin{equation}
+        v_x(t) = \lim_{\Delta t \to 0} \frac{\Delta r_x}{\Delta t} = \frac{dr_x}{dt}
+    \end{equation}
+    
+    \textbf{Unterschied zu Schnelligkeit:}
+    \begin{itemize}
+        \item Geschwindigkeit: Vektorielle Größe mit Richtung
+        \item Schnelligkeit: Betrag der Geschwindigkeit (Skalar)
+        \item $|\vec{v}| = \sqrt{v_x^2 + v_y^2 + v_z^2}$
+    \end{itemize}
 \end{definition}
 
-\begin{definition}{Mittlere Beschleunigung}\\
-    Die mittlere Beschleunigung ist die Änderung der Geschwindigkeit dividiert durch die dafür benötigte Zeit:
+\begin{definition}{Mittlere vs. Momentanbeschleunigung}\\
+    \textbf{Mittlere Beschleunigung:}
     \begin{equation}
-        \bar{a}_x = \frac{\Delta v_x}{\Delta t}
+        \bar{a}_x = \frac{\Delta v_x}{\Delta t} = \frac{v_x(t_2) - v_x(t_1)}{t_2 - t_1}
+    \end{equation}
+    
+    \textbf{Momentanbeschleunigung:}
+    \begin{equation}
+        a_x(t) = \lim_{\Delta t \to 0} \frac{\Delta v_x}{\Delta t} = \frac{dv_x}{dt} = \frac{d^2r_x}{dt^2}
     \end{equation}
 \end{definition}
 
@@ -157,92 +172,22 @@ void FixedUpdate() {
     \end{itemize}
 \end{example2}
 
-\section{Kinematics}
+\subsection{Unity-Implementation}
 
-\subsection{Basic Concepts}
-
-\begin{definition}{Kinematics}\\
-    The branch of mechanics that describes motion without considering the forces that cause it. Focuses on position, velocity, and acceleration as functions of time.
-\end{definition}
-
-\begin{concept}{Reference Frames}\\
-    All motion is relative to a chosen coordinate system. Unity uses a left-handed coordinate system where:
-    \begin{itemize}
-        \item X-axis: right (positive) / left (negative)
-        \item Y-axis: up (positive) / down (negative) 
-        \item Z-axis: forward (positive) / backward (negative)
-    \end{itemize}
-\end{concept}
-
-\subsection{Position and Displacement}
-
-\begin{definition}{Position Vector}\\
-    Vector $\vec{r}(t)$ that describes the location of an object at time $t$ relative to the origin of the coordinate system.
-    $$\vec{r}(t) = x(t)\hat{i} + y(t)\hat{j} + z(t)\hat{k}$$
-\end{definition}
-
-\begin{definition}{Displacement}\\
-    Change in position vector over a time interval:
-    $$\Delta\vec{r} = \vec{r}(t_2) - \vec{r}(t_1)$$
-\end{definition}
-
-\begin{code}{Unity Position Implementation}\\
+\begin{code}{Position und Geschwindigkeit in Unity}\\
 \begin{lstlisting}[language=C, style=basesmol]
-// Get current position of a GameObject
+// Aktuelle Position eines GameObjects abrufen
 Vector3 currentPosition = transform.position;
 
-// Calculate displacement between two positions
+// Verschiebung zwischen zwei Positionen berechnen
 Vector3 displacement = finalPosition - initialPosition;
 
-// Update position over time
+// Position über Zeit aktualisieren
 transform.position += velocity * Time.deltaTime;
 \end{lstlisting}
 \end{code}
 
-\subsection{Velocity}
-
-\begin{definition}{Average Velocity}\\
-    $$\vec{v}_{avg} = \frac{\Delta\vec{r}}{\Delta t} = \frac{\vec{r}(t_2) - \vec{r}(t_1)}{t_2 - t_1}$$
-\end{definition}
-
-\begin{definition}{Instantaneous Velocity}\\
-    $$\vec{v}(t) = \lim_{\Delta t \to 0} \frac{\Delta\vec{r}}{\Delta t} = \frac{d\vec{r}}{dt}$$
-\end{definition}
-
-\begin{concept}{Speed vs. Velocity}\\
-    \begin{itemize}
-        \item Speed: magnitude of velocity vector (scalar)
-        \item Velocity: vector quantity with both magnitude and direction
-        \item $|\vec{v}| = \sqrt{v_x^2 + v_y^2 + v_z^2}$
-    \end{itemize}
-\end{concept}
-
-\subsection{Acceleration}
-
-\begin{definition}{Average Acceleration}\\
-    $$\vec{a}_{avg} = \frac{\Delta\vec{v}}{\Delta t} = \frac{\vec{v}(t_2) - \vec{v}(t_1)}{t_2 - t_1}$$
-\end{definition}
-
-\begin{definition}{Instantaneous Acceleration}\\
-    $$\vec{a}(t) = \lim_{\Delta t \to 0} \frac{\Delta\vec{v}}{\Delta t} = \frac{d\vec{v}}{dt} = \frac{d^2\vec{r}}{dt^2}$$
-\end{definition}
-
-\subsection{Motion Equations}
-
-\begin{formula}{Kinematic Equations for Constant Acceleration}\\
-    For motion with constant acceleration $\vec{a}$:
-    
-    \paragraph{Position as function of time:}
-    $$\vec{r}(t) = \vec{r}_0 + \vec{v}_0 t + \frac{1}{2}\vec{a}t^2$$
-    
-    \paragraph{Velocity as function of time:}
-    $$\vec{v}(t) = \vec{v}_0 + \vec{a}t$$
-    
-    \paragraph{Velocity-position relation:}
-    $$\vec{v}^2 = \vec{v}_0^2 + 2\vec{a} \cdot (\vec{r} - \vec{r}_0)$$
-\end{formula}
-
-\begin{code}{Unity Kinematic Implementation}\\
+\begin{code}{Kinematische Bewegung implementieren}\\
 \begin{lstlisting}[language=C, style=basesmol]
 public class KinematicMotion : MonoBehaviour 
 {
@@ -262,7 +207,7 @@ public class KinematicMotion : MonoBehaviour
     {
         float t = Time.time - startTime;
         
-        // Calculate new position using kinematic equation
+        // Neue Position mit kinematischer Gleichung berechnen
         Vector3 newPosition = initialPosition + 
                              initialVelocity * t + 
                              0.5f * acceleration * t * t;
@@ -271,59 +216,56 @@ public class KinematicMotion : MonoBehaviour
     }
 }
 \end{lstlisting}
-\end{code}
+\end{code>
 
-\subsection{Special Cases}
-
-\begin{definition}{Uniform Motion}\\
-    Motion with constant velocity ($\vec{a} = 0$):
+\begin{concept}{Spezialfälle der Bewegung}\\
+    \textbf{Gleichförmige Bewegung} ($\vec{a} = 0$):
     $$\vec{r}(t) = \vec{r}_0 + \vec{v}t$$
-\end{definition}
-
-\begin{definition}{Free Fall}\\
-    Motion under gravity alone ($\vec{a} = -g\hat{j}$ in Unity coordinates):
+    
+    \textbf{Freier Fall in Unity} ($\vec{a} = -g\hat{j}$):
     \begin{itemize}
-        \item $g = 9.81 \, m/s^2$ (Earth's gravitational acceleration)
-        \item Unity default gravity: $-9.81 \, m/s^2$ in Y-direction
+        \item $g = 9.81 \, m/s^2$ (Erdbeschleunigung)
+        \item Unity Standard-Gravitation: $-9.81 \, m/s^2$ in Y-Richtung
     \end{itemize}
-\end{definition}
+\end{concept}
 
-\begin{KR}{Solving Kinematic Problems}\\
-    \paragraph{Step 1: Identify known variables}
+\begin{KR}{Kinematische Probleme lösen}\\
+    \paragraph{Schritt 1: Bekannte Variablen identifizieren}
     \begin{itemize}
-        \item Initial position $\vec{r}_0$
-        \item Initial velocity $\vec{v}_0$
-        \item Acceleration $\vec{a}$
-        \item Time $t$ or final position/velocity
+        \item Anfangsposition $\vec{r}_0$
+        \item Anfangsgeschwindigkeit $\vec{v}_0$
+        \item Beschleunigung $\vec{a}$
+        \item Zeit $t$ oder End-Position/Geschwindigkeit
     \end{itemize}
     
-    \paragraph{Step 2: Choose appropriate equation}
+    \paragraph{Schritt 2: Passende Gleichung wählen}
     \begin{itemize}
-        \item Use $\vec{v}(t) = \vec{v}_0 + \vec{a}t$ when time is known
-        \item Use $\vec{r}(t) = \vec{r}_0 + \vec{v}_0 t + \frac{1}{2}\vec{a}t^2$ for position
-        \item Use $\vec{v}^2 = \vec{v}_0^2 + 2\vec{a} \cdot \Delta\vec{r}$ when time is unknown
+        \item $\vec{v}(t) = \vec{v}_0 + \vec{a}t$ wenn Zeit bekannt ist
+        \item $\vec{r}(t) = \vec{r}_0 + \vec{v}_0 t + \frac{1}{2}\vec{a}t^2$ für Position
+        \item $\vec{v}^2 = \vec{v}_0^2 + 2\vec{a} \cdot \Delta\vec{r}$ wenn Zeit unbekannt ist
     \end{itemize}
     
-    \paragraph{Step 3: Solve component-wise}
+    \paragraph{Schritt 3: Komponentenweise lösen}
     \begin{itemize}
-        \item Break vectors into x, y, z components
-        \item Solve each component independently
-        \item Combine results into final vector
+        \item Vektoren in x-, y-, z-Komponenten aufteilen
+        \item Jede Komponente unabhängig lösen
+        \item Ergebnisse zum finalen Vektor kombinieren
     \end{itemize}
 \end{KR}
 
-\begin{example2}{Projectile Motion Problem}\\
-    A ball is thrown from height $h = 10m$ with initial velocity $\vec{v}_0 = (5, 8, 0) \, m/s$. Calculate time to hit ground and horizontal distance traveled.
+\begin{example2}{Wurfbewegung}\\
+    Ein Ball wird aus Höhe $h = 10m$ mit Anfangsgeschwindigkeit $\vec{v}_0 = (5, 8, 0) \, m/s$ geworfen. Berechne Zeit bis zum Aufprall und horizontale Distanz.
     \tcblower
-    \textbf{Given:} $\vec{r}_0 = (0, 10, 0)$, $\vec{v}_0 = (5, 8, 0)$, $\vec{a} = (0, -9.81, 0)$
+    \textbf{Gegeben:} $\vec{r}_0 = (0, 10, 0)$, $\vec{v}_0 = (5, 8, 0)$, $\vec{a} = (0, -9.81, 0)$
     
-    \textbf{Y-component (vertical):}
+    \textbf{Y-Komponente (vertikal):}
     $y(t) = 10 + 8t - 4.905t^2$
     
-    When ball hits ground: $y(t) = 0$
+    Ball trifft Boden bei $y(t) = 0$:
     $10 + 8t - 4.905t^2 = 0$
-    $t = 2.24s$ (using quadratic formula)
+    $t = 2.24s$ (mit quadratischer Formel)
     
-    \textbf{X-component (horizontal):}
+    \textbf{X-Komponente (horizontal):}
     $x(t) = 5t = 5 \times 2.24 = 11.2m$
 \end{example2}
+
