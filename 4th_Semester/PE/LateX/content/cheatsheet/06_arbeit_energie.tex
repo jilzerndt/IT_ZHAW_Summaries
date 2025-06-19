@@ -185,93 +185,35 @@
 
 \subsection{Unity Implementation}
 
-\begin{code}{Energieberechnung in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-public class EnergyMonitor : MonoBehaviour 
-{
-    private Rigidbody rb;
-    public float springConstant = 100f;
-    public Vector3 equilibriumPosition = Vector3.zero;
-    
-    void Start() 
-    {
-        rb = GetComponent<Rigidbody>();
-    }
-    
-    void Update() 
-    {
-        // Kinetische Energie berechnen
-        float kineticEnergy = 0.5f * rb.mass * rb.velocity.sqrMagnitude;
-        
-        // Potentielle Energie (Gravitation)
-        float gravitationalPE = rb.mass * Mathf.Abs(Physics.gravity.y) * 
-                               transform.position.y;
-        
-        // Elastische potentielle Energie
-        Vector3 displacement = transform.position - equilibriumPosition;
-        float elasticPE = 0.5f * springConstant * displacement.sqrMagnitude;
-        
-        // Gesamtenergie
-        float totalEnergy = kineticEnergy + gravitationalPE + elasticPE;
-        
-        Debug.Log($"KE: {kineticEnergy:F2}, PE: {gravitationalPE + elasticPE:F2}, " +
-                  $"Total: {totalEnergy:F2}");
-    }
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Unity Energieberechnung}
+    \textbf{Energieformen:}
+    \begin{itemize}
+        \item Kinetisch: $\frac{1}{2}mv^2$ mit rb.velocity.sqrMagnitude
+        \item Potentiell (Gravitation): $mgh$ mit position.y
+        \item Elastisch: $\frac{1}{2}kx^2$ mit displacement
+        \item Monitoring in Update() für Debugging
+    \end{itemize}
+\end{concept}
 
-\begin{code}{Kollisionsbehandlung in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-public class CollisionHandler : MonoBehaviour 
-{
-    private Rigidbody rb;
-    
-    void Start() 
-    {
-        rb = GetComponent<Rigidbody>();
-    }
-    
-    void OnCollisionEnter(Collision collision) 
-    {
-        Rigidbody otherRb = collision.rigidbody;
-        if (otherRb == null) return;
-        
-        // Massen und Geschwindigkeiten vor Kollision
-        float m1 = rb.mass;
-        float m2 = otherRb.mass;
-        Vector3 v1i = rb.velocity;
-        Vector3 v2i = otherRb.velocity;
-        
-        // Geschwindigkeiten nach elastischer Kollision
-        Vector3 v1f = ((m1 - m2) * v1i + 2 * m2 * v2i) / (m1 + m2);
-        Vector3 v2f = ((m2 - m1) * v2i + 2 * m1 * v1i) / (m1 + m2);
-        
-        // Neue Geschwindigkeiten anwenden
-        rb.velocity = v1f;
-        otherRb.velocity = v2f;
-    }
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Unity Kollision (1D)}
+    \textbf{Elastische Kollision:}
+    \begin{itemize}
+        \item Formeln: $v_{1f} = \frac{(m_1-m_2)v_{1i} + 2m_2v_{2i}}{m_1+m_2}$
+        \item OnCollisionEnter() Event nutzen
+        \item Massen und Geschwindigkeiten auslesen
+        \item Neue Geschwindigkeiten direkt setzen
+    \end{itemize}
+\end{concept}
 
-\begin{code}{Drehimpuls in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-// Drehimpuls eines Koerpers bezueglich eines Pivot-Punkts berechnen
-Vector3 AngularMomentum(Rigidbody rb, Vector3 pivotPoint) 
-{
-    // Vektor vom Pivot zum Schwerpunkt
-    Vector3 rPQ = rb.transform.position - pivotPoint;
-    
-    // Linearer Impuls des Koerpers
-    Vector3 p = rb.velocity * rb.mass;
-    
-    // Drehimpuls berechnen
-    Vector3 angularMomentum = Vector3.Cross(rPQ, p);
-    return angularMomentum;
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Unity Drehimpuls}
+    \textbf{Berechnung:}
+    \begin{itemize}
+        \item $\vec{L} = \vec{r} \times \vec{p}$
+        \item Vector3.Cross() für Kreuzprodukt
+        \item Position relativ zu Pivot-Punkt
+        \item Linearer Impuls $\vec{p} = m\vec{v}$
+    \end{itemize}
+\end{concept}
 
 \begin{KR}{Energie-Impuls-Problemlösung}
     \paragraph{Schritt 1: System und Randbedingungen identifizieren}

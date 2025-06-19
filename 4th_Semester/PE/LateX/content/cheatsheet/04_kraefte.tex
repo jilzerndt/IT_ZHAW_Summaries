@@ -137,50 +137,25 @@
 
 \subsection{Unity Implementation}
 
-\begin{code}{Trockene Reibung in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-void FixedUpdate() {
-    // Normale Kraft berechnen (bei horizontaler Flaeche)
-    float normalForce = rigidbody.mass * 9.81f;
-    
-    // Reibungskraft berechnen
-    float frictionForce = frictionCoefficient * normalForce;
-    
-    // Richtung der Geschwindigkeit bestimmen
-    Vector3 velocityDirection = rigidbody.velocity.normalized;
-    
-    // Reibungskraft nur anwenden, wenn Objekt sich bewegt
-    if (rigidbody.velocity.magnitude > 0.01f) {
-        Vector3 frictionVector = -velocityDirection * frictionForce;
-        rigidbody.AddForce(frictionVector);
-    }
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Unity Reibung}
+    \textbf{Implementierung:}
+    \begin{itemize}
+        \item Normalkraft: $F_N = mg$ (horizontal)
+        \item Reibung: $F_R = \mu F_N$ entgegen Bewegung
+        \item Geschwindigkeitscheck für Stillstand
+        \item AddForce() in entgegengesetzte Richtung
+    \end{itemize}
+\end{concept}
 
-\begin{code}{Luftwiderstand in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-void FixedUpdate() {
-    // Parameter fuer Luftwiderstand
-    float airDensity = 1.2f;      // kg/m^3
-    float dragCoefficient = 0.5f; // dimensionslos
-    float frontalArea = 1.0f;     // m^2
-    
-    // Aktuelle Geschwindigkeit
-    Vector3 velocity = rigidbody.velocity;
-    float velocityMagnitude = velocity.magnitude;
-    
-    // Luftwiderstandskraft berechnen
-    float dragForceMagnitude = 0.5f * airDensity * frontalArea * 
-                             dragCoefficient * velocityMagnitude * velocityMagnitude;
-    
-    // Richtung entgegen der Bewegung
-    Vector3 dragForce = -velocity.normalized * dragForceMagnitude;
-    
-    rigidbody.AddForce(dragForce);
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Unity Luftwiderstand}
+    \textbf{Turbulente Strömung:}
+    \begin{itemize}
+        \item $F_R = \frac{1}{2}\rho A c_w v^2$ entgegen Bewegung
+        \item Quadratische Abhängigkeit von Geschwindigkeit
+        \item velocity.normalized für Richtung
+        \item Material-spezifische Parameter
+    \end{itemize}
+\end{concept}
 
 \subsection{Trägheitskräfte}
 

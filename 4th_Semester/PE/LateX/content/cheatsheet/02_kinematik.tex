@@ -133,27 +133,14 @@
     \end{enumerate}
 \end{KR}
 
-\begin{examplecode}{Bewegung in Unity implementieren}
-    \begin{lstlisting}[language=csh, style=basesmol]
-// Implementierung von Bewegungen mit konstanter Beschleunigung
-void FixedUpdate() {
-    // Aktuelle Zeit seit Start
-    currentTime += Time.deltaTime;
-    
-    // Aktuelle Geschwindigkeit nach v = v0 + a*t berechnen
-    float currentVelocity = initialVelocity + acceleration * currentTime;
-    
-    // Bewegung mit aktueller Geschwindigkeit
-    Vector3 displacement = new Vector3(currentVelocity, 0, 0) * Time.deltaTime;
-    transform.position += displacement;
-    
-    // Alternative: Direkte Berechnung der Position mit r = r0 + v0*t + 0.5*a*t^2
-    // Vector3 newPosition = initialPosition + initialVelocity * currentTime + 
-    //                       0.5f * acceleration * currentTime * currentTime;
-    // transform.position = newPosition;
-}
-    \end{lstlisting}
-\end{examplecode}
+\begin{concept}{Unity Kinematik}
+    \textbf{Implementierung konstanter Beschleunigung:}
+    \begin{itemize}
+        \item Geschwindigkeit: $v = v_0 + at$ mit Time.deltaTime
+        \item Position direkt: $r = r_0 + v_0t + \frac{1}{2}at^2$
+        \item FixedUpdate() für Physikberechnungen verwenden
+    \end{itemize}
+\end{concept}
 
 \begin{example2}{Freier Fall}
     Ein Körper fällt aus der Höhe $r_0$ mit Anfangsgeschwindigkeit $v_0 = 0$.
@@ -174,49 +161,24 @@ void FixedUpdate() {
 
 \subsection{Unity-Implementation}
 
-\begin{code}{Position und Geschwindigkeit in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-// Aktuelle Position eines GameObjects abrufen
-Vector3 currentPosition = transform.position;
+\begin{concept}{Unity Position/Geschwindigkeit}
+    \textbf{Grundoperationen:}
+    \begin{itemize}
+        \item transform.position für Ortsvektor
+        \item Verschiebung als Vektordifferenz
+        \item Position mit velocity * Time.deltaTime aktualisieren
+    \end{itemize}
+\end{concept}
 
-// Verschiebung zwischen zwei Positionen berechnen
-Vector3 displacement = finalPosition - initialPosition;
-
-// Position ueber Zeit aktualisieren
-transform.position += velocity * Time.deltaTime;
-\end{lstlisting}
-\end{code}
-
-\begin{code}{Kinematische Bewegung implementieren}
-\begin{lstlisting}[language=C, style=basesmol]
-public class KinematicMotion : MonoBehaviour 
-{
-    public Vector3 initialVelocity = Vector3.zero;
-    public Vector3 acceleration = Vector3.zero;
-    
-    private Vector3 initialPosition;
-    private float startTime;
-    
-    void Start() 
-    {
-        initialPosition = transform.position;
-        startTime = Time.time;
-    }
-    
-    void Update() 
-    {
-        float t = Time.time - startTime;
-        
-        // Neue Position mit kinematischer Gleichung berechnen
-        Vector3 newPosition = initialPosition + 
-                             initialVelocity * t + 
-                             0.5f * acceleration * t * t;
-        
-        transform.position = newPosition;
-    }
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Kinematik-Script Struktur}
+    \textbf{Wichtige Komponenten:}
+    \begin{itemize}
+        \item Anfangswerte (Position, Geschwindigkeit) speichern
+        \item Zeitvariable t = Time.time - startTime
+        \item Kinematische Gleichung in Update() anwenden
+        \item transform.position direkt setzen
+    \end{itemize}
+\end{concept}
 
 \begin{concept}{Spezialfälle der Bewegung}
     \textbf{Gleichförmige Bewegung} ($\vec{a} = 0$):

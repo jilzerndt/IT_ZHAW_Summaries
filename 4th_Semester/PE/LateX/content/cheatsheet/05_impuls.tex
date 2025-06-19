@@ -151,47 +151,16 @@
 
 \subsection{Unity Implementation}
 
-\begin{code}{Stoßsimulation in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-void OnCollisionEnter(Collision collision) {
-    Rigidbody otherRb = collision.rigidbody;
-    if (otherRb == null) return;
-    
-    // Geschwindigkeiten vor dem Stoss
-    Vector3 v1 = rigidbody.velocity;
-    Vector3 v2 = otherRb.velocity;
-    
-    // Massen
-    float m1 = rigidbody.mass;
-    float m2 = otherRb.mass;
-    
-    // Normale des Stosses
-    Vector3 normal = (otherRb.position - rigidbody.position).normalized;
-    
-    // Projektion der Geschwindigkeiten auf die Stossnormale
-    float v1n = Vector3.Dot(v1, normal);
-    float v2n = Vector3.Dot(v2, normal);
-    
-    // Nur berechnen, wenn Objekte sich annaehern
-    if (v1n - v2n > 0) {
-        // Geschwindigkeiten nach elastischem Stoss
-        float u1n = ((m1 - m2) * v1n + 2 * m2 * v2n) / (m1 + m2);
-        float u2n = ((m2 - m1) * v2n + 2 * m1 * v1n) / (m1 + m2);
-        
-        // Tangentiale Komponenten bleiben unveraendert
-        Vector3 v1Tangential = v1 - v1n * normal;
-        Vector3 v2Tangential = v2 - v2n * normal;
-        
-        // Neue Geschwindigkeiten
-        Vector3 newV1 = v1Tangential + u1n * normal;
-        Vector3 newV2 = v2Tangential + u2n * normal;
-        
-        rigidbody.velocity = newV1;
-        otherRb.velocity = newV2;
-    }
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Unity Stoß-Simulation}
+    \textbf{Elastischer Stoß:}
+    \begin{itemize}
+        \item OnCollisionEnter() für Kollisionserkennung
+        \item Stoßnormale aus Positionsdifferenz
+        \item Geschwindigkeiten in normal/tangential zerlegen
+        \item Elastische Stoßformeln anwenden
+        \item Neue Geschwindigkeiten setzen
+    \end{itemize}
+\end{concept}
 
 \begin{concept}{Wichtige Erkenntnisse}
     \begin{itemize}

@@ -129,68 +129,25 @@
     \end{itemize}
 \end{concept}
 
-\begin{code}{Kräfte in Unity anwenden}
-\begin{lstlisting}[language=C, style=basesmol]
-public class ForceController : MonoBehaviour 
-{
-    private Rigidbody rb;
-    public float springConstant = 100f;
-    public float damping = 10f;
-    
-    void Start() 
-    {
-        rb = GetComponent<Rigidbody>();
-    }
-    
-    void FixedUpdate() 
-    {
-        // Gravitation (automatisch von Unity angewandt)
-        // Vector3 gravity = Physics.gravity * rb.mass;
-        
-        // Federkraft zum Ursprung
-        Vector3 springForce = -springConstant * transform.position;
-        
-        // Daempfungskraft
-        Vector3 dampingForce = -damping * rb.velocity;
-        
-        // Gesamtkraft anwenden
-        rb.AddForce(springForce + dampingForce);
-    }
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Unity Kraftanwendung}
+    \textbf{Wichtige Konzepte:}
+    \begin{itemize}
+        \item Rigidbody.AddForce() für Kräfte
+        \item Federkraft: -k * position
+        \item Dämpfung: -b * velocity
+        \item FixedUpdate() für stabile Physik
+    \end{itemize}
+\end{concept}
 
-\begin{code}{Harmonischer Oszillator in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-public class HarmonicOscillator : MonoBehaviour 
-{
-    public float springConstant = 50f;
-    public float amplitude = 2f;
-    public float phase = 0f;
-    
-    private float mass;
-    private float omega;
-    private Vector3 equilibrium;
-    private float startTime;
-    
-    void Start() 
-    {
-        mass = GetComponent<Rigidbody>().mass;
-        omega = Mathf.Sqrt(springConstant / mass);
-        equilibrium = transform.position;
-        startTime = Time.time;
-    }
-    
-    void Update() 
-    {
-        float t = Time.time - startTime;
-        float x = amplitude * Mathf.Cos(omega * t + phase);
-        
-        transform.position = equilibrium + Vector3.right * x;
-    }
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Harmonischer Oszillator Unity}
+    \textbf{Implementierung:}
+    \begin{itemize}
+        \item $\omega = \sqrt{k/m}$ berechnen
+        \item Position: $x = A\cos(\omega t + \phi)$
+        \item Transform.position direkt setzen
+        \item Equilibrium-Position als Referenz
+    \end{itemize}
+\end{concept}
 
 \subsection{Drehmoment}
 
@@ -201,34 +158,15 @@ public class HarmonicOscillator : MonoBehaviour
     Für Rotation um feste Achse: $\tau = rF\sin\theta$
 \end{definition}
 
-\begin{code}{Drehmoment in Unity}
-\begin{lstlisting}[language=C, style=basesmol]
-public class TorqueExample : MonoBehaviour 
-{
-    private Rigidbody rb;
-    public float torqueStrength = 100f;
-    
-    void Start() 
-    {
-        rb = GetComponent<Rigidbody>();
-    }
-    
-    void Update() 
-    {
-        if (Input.GetKey(KeyCode.Q)) 
-        {
-            // Drehmoment um Y-Achse anwenden
-            rb.AddTorque(Vector3.up * torqueStrength);
-        }
-        
-        // Rotationsfeder zur aufrechten Position
-        Vector3 restoreTorque = -torqueStrength * transform.eulerAngles.x 
-                               * Vector3.right;
-        rb.AddTorque(restoreTorque);
-    }
-}
-\end{lstlisting}
-\end{code}
+\begin{concept}{Unity Drehmoment}
+    \textbf{Anwendung:}
+    \begin{itemize}
+        \item Rigidbody.AddTorque() für Rotation
+        \item Vector3.up/right/forward für Achsen
+        \item Rotationsfeder mit eulerAngles
+        \item Input-gesteuerte Drehung
+    \end{itemize}
+\end{concept}
 
 \begin{KR}{Problemlösungsstrategie für Kräfte}
     \paragraph{Schritt 1: System identifizieren}
@@ -274,10 +212,5 @@ public class TorqueExample : MonoBehaviour
     \textbf{Lösung:} $a = g\sin\theta = 9.81 \times \sin(30°) = 4.905 \, m/s^2$
     
     \textbf{Unity Implementation:}
-\begin{lstlisting}[language=C, style=basesmol]
-Vector3 inclineForce = mass * Physics.gravity.magnitude * 
-                      Mathf.Sin(30f * Mathf.Deg2Rad) * 
-                      inclineDirection;
-rb.AddForce(inclineForce);
-\end{lstlisting}
+Kraft entlang Ebene: $F = mg\sin\theta$, Unity: AddForce mit Richtungsvektor
 \end{example2}
