@@ -1,0 +1,96 @@
+\section{Association Rules - Frequent Pattern Mining}
+
+\subsection{Complexity Problem}
+
+\begin{concept}{Exponential Growth Problem}\\
+The possible number of frequent itemsets is huge. If an itemset is frequent, each of its subsets is frequent as well. For example, a frequent itemset of length 100 contains $\binom{100}{1} = 100$ frequent 1-itemsets, $\binom{100}{2} = 100$ frequent 2-itemsets. Meaning that there are $2^{100} - 1$ possible frequent itemsets.
+\end{concept}
+
+\begin{concept}{Optimization Strategies}
+\begin{enumerate}
+    \item Reduce the number of candidates $M$ by using pruning techniques
+    \item Reduce the number of transactions $N$ by reducing the size of $N$ as the size of itemset increases
+    \item Reduce the number of comparisons ($NM$) by using efficient data structures to store the candidates or transactions
+\end{enumerate}
+\end{concept}
+
+\subsection{Apriori Algorithm}
+
+\begin{KR}{Apriori Algorithm to Generate Frequent Patterns}\\
+Example with $\sigma_{min} = 2$
+
+\paragraph{Step 1: Generate 1-itemset frequent pattern}
+\begin{itemize}
+    \item $C_1 =$ All 1-itemsets
+    \item $L_1 =$ All 1-itemsets with $s \geq s_{min}$
+\end{itemize}
+
+\paragraph{Step 2: Generate 2-itemset frequent pattern}
+\begin{itemize}
+    \item $C_2 =$ All 2-itemsets ($L_1 \bowtie L_1$)
+    \item $L_2 =$ All 2-itemsets $C_2$ with $s \geq s_{min}$
+\end{itemize}
+
+\paragraph{Step 3: Generate 3-itemset frequent pattern}
+\begin{itemize}
+    \item $C_3 =$ All 3-itemsets ($L_2 \bowtie L_2$)
+    \item $L_3 =$ All 3-itemsets with $s \geq s_{min}$
+\end{itemize}
+
+\paragraph{Step 4: Generate 4-itemset frequent pattern}
+\begin{itemize}
+    \item $C_4 =$ All 4-itemsets ($L_3 \bowtie L_3$) $\rightarrow$ $\{coke, chips, ice, whiskey\}$ ($s = 1$)
+    \item $L_4 = \{\}$
+\end{itemize}
+
+\paragraph{Steps 5 + 6: Generate association rules from frequent itemsets}
+For every itemset in $L_n = (L_1, L_2, \ldots)$:
+\begin{enumerate}
+    \item Generate rules
+    \item Check if $\frac{\sigma(I)}{\sigma(S)} = c \geq minc$ where $minc = 0.7 = 70\%$
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Rule Generation Example}\\
+Example: $I = \{coke, chips, whiskey\}$
+
+\textbf{Rule1}: $S = \{coke, chips\} \rightarrow \{whiskey\}$
+$$c = \frac{\sigma(I)}{\sigma(S)} = \frac{2}{4} \rightarrow 0.5 = 50\% \rightarrow \text{rejected}$$
+
+\textbf{Rule2}: $S = \{coke, whiskey\} \rightarrow \{chips\}$
+$$c = \frac{\sigma(I)}{\sigma(S)} = \frac{2}{2} \rightarrow 1 = 100\% \rightarrow \text{accepted}$$
+\end{example2}
+
+% NOTE: Add Apriori algorithm flowchart showing the iterative process
+
+\subsection{FP-Tree Algorithm}
+
+\begin{KR}{FP-Tree Construction}\\
+\paragraph{Step 1: Calculate min support count $min\sigma$}
+$min\_s = 22\% \rightarrow min\sigma = 0.22 \cdot 9 = 1.98 \rightarrow 2$
+
+\paragraph{Step 2: Find frequency of occurrence $\sigma$ of each item}
+\begin{itemize}
+    \item A: Coke $\sigma = 6$
+    \item B: Chips $\sigma = 7$
+    \item C: Whiskey $\sigma = 6$
+    \item D: Beer $\sigma = 2$
+    \item E: Ice $\sigma = 2$
+\end{itemize}
+
+\paragraph{Step 3: Order the items according to priority}
+$\{A, B, E\} \rightarrow \{B, A, E\}$
+
+\paragraph{Step 4: Build the FP-Tree}
+% NOTE: Add FP-Tree construction diagram
+
+\paragraph{Step 5: Find conditional pattern base and conditional FP-Tree for each item}
+\begin{itemize}
+    \item $E: \{B, A: 2\}$
+    \item $D: \{B: 2\}$
+    \item $C: \{B: 4, A: 2\}, \{A: 2\}$
+    \item $A: \{B: 4\}$
+\end{itemize}
+\end{KR}
+
+% NOTE: Add detailed FP-Tree diagrams showing conditional pattern bases
