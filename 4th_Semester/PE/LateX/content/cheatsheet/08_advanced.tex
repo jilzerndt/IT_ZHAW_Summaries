@@ -1,0 +1,1181 @@
+\section{Erweiterte Themen und Unity-Implementierung}
+
+\subsection{Unity Physics System}
+
+\begin{concept}{Unity Physics Pipeline}
+    Unity's Physiksimulation läuft in diskreten Schritten:
+    \begin{itemize}
+        \item \texttt{FixedUpdate()}: Wird in festen Intervallen aufgerufen (Standard 50Hz)
+        \item Physikberechnungen zwischen FixedUpdate-Aufrufen
+        \item \texttt{Update()}: Wird einmal pro Frame aufgerufen (variable Rate)
+        \item \textbf{Regel}: FixedUpdate für physikbezogenen Code verwenden
+    \end{itemize}
+    
+    \textbf{Zeitsteuerung:}
+    \begin{itemize}
+        \item \texttt{Time.fixedDeltaTime}: Zeitschritt für Physik (Standard: 0.02s = 50Hz)
+        \item \texttt{Time.deltaTime}: Zeit seit letztem Frame (variabel)
+        \item \texttt{Time.timeScale}: Globaler Zeitfaktor (für Slow-Motion etc.)
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Rigidbody-Komponenten-Eigenschaften}
+    \textbf{Grundlegende Eigenschaften:}
+    \begin{itemize}
+        \item \textbf{Mass}: Objektmasse in kg
+        \item \textbf{Drag}: Linearer Dämpfungskoeffizient (Luftwiderstand)
+        \item \textbf{Angular Drag}: Rotationsdämpfungskoeffizient
+        \item \textbf{Use Gravity}: Reagiert auf globale Gravitation
+        \item \textbf{Is Kinematic}: Physik-gesteuert vs. Skript-gesteuert
+    \end{itemize}
+    
+    \textbf{Erweiterte Eigenschaften:}
+    \begin{itemize}
+        \item \textbf{Interpolate}: Glättung für visuelle Darstellung
+        \item \textbf{Collision Detection}: Continuous, Discrete, etc.
+        \item \textbf{Constraints}: Einschränkung von Position/Rotation
+        \item \textbf{Center of Mass}: Schwerpunkt-Position
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Unity Physics-Konfiguration}
+\begin{lstlisting}[language=C, style=basesmol]
+public class PhysicsConfiguration : MonoBehaviour 
+{
+    void Start() 
+    {
+        // Globale Physik-Einstellungen
+        Physics.gravity = new Vector3(0, -9.81f, 0);
+        Time.fixedDeltaTime = 0.02f; // 50 Hz Physik-Update
+        
+        // Solver-Einstellungen fuer bessere Stabilitaet
+        Physics.defaultSolverIterations = 6;
+        Physics.defaultSolverVelocityIterations = 1;
+        
+        // Rigidbody-Konfiguration
+        Rigidbody rb = GetComponent<Rigidbody>();
+        rb.mass = 1.0f;
+        rb.drag = 0.1f;                    // Lineare Daempfung
+        rb.angularDrag = 0.05f;            // Winkel-Daempfung
+        rb.useGravity = true;
+        rb.isKinematic = false;
+        
+        // Kollisionserkennung-Modus
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        
+        // Interpolation fuer glatte Bewegung
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        
+        // Schwerpunkt manuell setzen (falls noetig)
+        rb.centerOfMass = new Vector3(0, -0.5f, 0);
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Kraftanwendungsmethoden}
+
+\begin{definition}{Unity Kraftanwendung}
+    \textbf{Kraftmethoden:}
+    \begin{itemize}
+        \item \textbf{AddForce()}: Kontinuierliche Kraftanwendung
+        \item \textbf{AddForceAtPosition()}: Kraft an spezifischem Weltpunkt
+        \item \textbf{AddTorque()}: Rotationskraft-Anwendung
+        \item \textbf{AddExplosionForce()}: Radiale Kraft von Explosionszentrum
+        \item \textbf{AddRelativeForce()}: Kraft im lokalen Koordinatensystem
+    \end{itemize}
+    
+    \textbf{Force-Modi:}
+    \begin{itemize}
+        \item \textbf{Force}: Kontinuierliche Kraft (berücksichtigt Masse und Zeit)
+        \item \textbf{Acceleration}: Beschleunigung (ignoriert Masse)
+        \item \textbf{Impulse}: Impulsive Kraft (berücksichtigt Masse)
+        \item \textbf{VelocityChange}: Geschwindigkeitsänderung (ignoriert Masse)
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Umfassender Kraft-Controller}
+\begin{lstlisting}[language=C, style=basesmol]
+public class AdvancedForceController : MonoBehaviour 
+{
+    private Rigidbody rb;
+    
+    [Header("Kraftparameter")]
+    public float thrustForce = 100f;
+    public float torqueStrength = 50f;
+    public float explosionForce = 500f;
+    public float explosionRadius = 10f;
+    public float maxVelocity = 20f;
+    
+    [Header("Steuerung")]
+    public KeyCode thrustKey = KeyCode.W;
+    public KeyCode leftKey = KeyCode.A;
+    public KeyCode rightKey = KeyCode.D;
+    public KeyCode explosionKey = KeyCode.Space;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+        
+        // Sicherstellen, dass Rigidbody korrekt konfiguriert ist
+        rb.useGravity = true;
+        rb.drag = 0.1f;
+        rb.angularDrag = 0.1f;
+    }
+    
+    void FixedUpdate() 
+    {
+        HandleMovement();
+        HandleRotation();
+        HandleSpecialForces();
+        
+        // Geschwindigkeitsbegrenzung
+        LimitVelocity();
+    }
+    
+    void HandleMovement() 
+    {
+        // Schubkraft in Vorwaertsrichtung
+        if (Input.GetKey(thrustKey)) 
+        {
+            Vector3 thrust = transform.forward * thrustForce;
+            rb.AddForce(thrust, ForceMode.Force);
+            
+            // Visuelle/Audio-Effekte
+            CreateThrustEffects();
+        }
+        
+        // Seitenschub
+        if (Input.GetKey(leftKey)) 
+        {
+            rb.AddForce(-transform.right * thrustForce * 0.5f, ForceMode.Force);
+        }
+        if (Input.GetKey(rightKey)) 
+        {
+            rb.AddForce(transform.right * thrustForce * 0.5f, ForceMode.Force);
+        }
+    }
+    
+    void HandleRotation() 
+    {
+        // Gier-Steuerung (Yaw)
+        if (Input.GetKey(KeyCode.Q)) 
+        {
+            rb.AddTorque(-transform.up * torqueStrength, ForceMode.Force);
+        }
+        if (Input.GetKey(KeyCode.E)) 
+        {
+            rb.AddTorque(transform.up * torqueStrength, ForceMode.Force);
+        }
+        
+        // Nick-Steuerung (Pitch)
+        if (Input.GetKey(KeyCode.R)) 
+        {
+            rb.AddTorque(transform.right * torqueStrength * 0.5f, ForceMode.Force);
+        }
+        if (Input.GetKey(KeyCode.F)) 
+        {
+            rb.AddTorque(-transform.right * torqueStrength * 0.5f, ForceMode.Force);
+        }
+    }
+    
+    void HandleSpecialForces() 
+    {
+        // Explosionskraft
+        if (Input.GetKeyDown(explosionKey)) 
+        {
+            Vector3 explosionCenter = transform.position - Vector3.up * 2f;
+            rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius, 3f);
+            
+            // Alle anderen Rigidbodies in der Naehe beeinflussen
+            ApplyExplosionToNearbyObjects(explosionCenter);
+        }
+        
+        // Kraft an spezifischer Position (erzeugt Kraft und Drehmoment)
+        if (Input.GetKey(KeyCode.T)) 
+        {
+            Vector3 forcePosition = transform.position + transform.right;
+            Vector3 force = transform.up * thrustForce;
+            rb.AddForceAtPosition(force, forcePosition, ForceMode.Force);
+        }
+    }
+    
+    void LimitVelocity() 
+    {
+        // Geschwindigkeitsbegrenzung
+        if (rb.velocity.magnitude > maxVelocity) 
+        {
+            rb.velocity = rb.velocity.normalized * maxVelocity;
+        }
+    }
+    
+    void CreateThrustEffects() 
+    {
+        // Partikeleffekte, Sounds, etc.
+        // Hier wuerden normalerweise visuelle Effekte erstellt
+    }
+    
+    void ApplyExplosionToNearbyObjects(Vector3 center) 
+    {
+        Collider[] nearbyObjects = Physics.OverlapSphere(center, explosionRadius);
+        
+        foreach (Collider col in nearbyObjects) 
+        {
+            Rigidbody nearbyRb = col.GetComponent<Rigidbody>();
+            if (nearbyRb != null && nearbyRb != rb) 
+            {
+                nearbyRb.AddExplosionForce(explosionForce, center, explosionRadius);
+            }
+        }
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Kollisionserkennung und -reaktion}
+
+\begin{definition}{Unity Kollisions-Events}
+    \textbf{Kollisions-Events (für Collider):}
+    \begin{itemize}
+        \item \textbf{OnCollisionEnter()}: Beim Start der Kollision
+        \item \textbf{OnCollisionStay()}: Während anhaltender Kollision
+        \item \textbf{OnCollisionExit()}: Beim Ende der Kollision
+    \end{itemize}
+    
+    \textbf{Trigger-Events (für Trigger):}
+    \begin{itemize}
+        \item \textbf{OnTriggerEnter()}: Objekt betritt Trigger-Zone
+        \item \textbf{OnTriggerStay()}: Objekt bleibt in Trigger-Zone
+        \item \textbf{OnTriggerExit()}: Objekt verlässt Trigger-Zone
+    \end{itemize}
+    
+    \textbf{Kollisions-Informationen:}
+    \begin{itemize}
+        \item \textbf{Collision.contacts}: Kontaktpunkte
+        \item \textbf{Collision.impulse}: Impuls der Kollision
+        \item \textbf{Collision.relativeVelocity}: Relative Geschwindigkeit
+        \item \textbf{ContactPoint.normal}: Oberflächennormale
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Erweiterte Kollisionsbehandlung}
+\begin{lstlisting}[language=C, style=basesmol]
+public class CollisionAnalyzer : MonoBehaviour 
+{
+    [Header("Kollisions-Einstellungen")]
+    public float restitution = 0.8f;           // Restitutionskoeffizient
+    public float minVelocityForSound = 2f;     // Min. Geschw. fuer Sound
+    public float minVelocityForSparks = 5f;    // Min. Geschw. fuer Funken
+    public AudioClip collisionSound;
+    public ParticleSystem sparkEffect;
+    
+    [Header("Material-Eigenschaften")]
+    public float metalDensity = 7800f;         // kg/m^3
+    public float woodDensity = 600f;
+    public float plasticDensity = 1200f;
+    
+    private Rigidbody rb;
+    private AudioSource audioSource;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
+    }
+    
+    void OnCollisionEnter(Collision collision) 
+    {
+        // Kollisionsdetails berechnen
+        Vector3 relativeVelocity = rb.velocity - 
+                                  (collision.rigidbody?.velocity ?? Vector3.zero);
+        float collisionSpeed = relativeVelocity.magnitude;
+        float collisionEnergy = 0.5f * rb.mass * collisionSpeed * collisionSpeed;
+        
+        // Sound basierend auf Kollisionsintensitaet
+        if (collisionSpeed > minVelocityForSound && audioSource && collisionSound) 
+        {
+            float volume = Mathf.Clamp01(collisionSpeed / 10f);
+            float pitch = 0.8f + collisionSpeed / 20f;
+            audioSource.pitch = pitch;
+            audioSource.PlayOneShot(collisionSound, volume);
+        }
+        
+        // Partikeleffekte fuer starke Kollisionen
+        if (collisionSpeed > minVelocityForSparks && sparkEffect) 
+        {
+            Vector3 contactPoint = collision.contacts[0].point;
+            CreateSparkEffect(contactPoint, collision.contacts[0].normal);
+        }
+        
+        // Materialspezifische Reaktionen
+        HandleMaterialInteraction(collision, collisionSpeed);
+        
+        // Benutzerdefinierte Kollisionsreaktion
+        ApplyCustomCollisionResponse(collision, relativeVelocity);
+        
+        // Kollisionsdaten fuer Analyse protokollieren
+        LogCollisionData(collision, collisionSpeed, collisionEnergy);
+    }
+    
+    void HandleMaterialInteraction(Collision collision, float speed) 
+    {
+        // Materialeigenschaften basierend auf Tags
+        string otherTag = collision.gameObject.tag;
+        
+        switch (otherTag) 
+        {
+            case "Metal":
+                // Metallische Kollision - hoher Restitutionskoeffizient
+                restitution = 0.9f;
+                break;
+            case "Wood":
+                // Holz - mittlerer Restitutionskoeffizient
+                restitution = 0.6f;
+                break;
+            case "Rubber":
+                // Gummi - sehr hoher Restitutionskoeffizient
+                restitution = 0.95f;
+                break;
+            default:
+                restitution = 0.8f;
+                break;
+        }
+    }
+    
+    void ApplyCustomCollisionResponse(Collision collision, Vector3 relativeVelocity) 
+    {
+        // Fuer spezielle Kollisionstypen
+        if (collision.gameObject.CompareTag("Bouncy")) 
+        {
+            ApplyBouncyCollision(collision, relativeVelocity);
+        }
+        else if (collision.gameObject.CompareTag("Sticky")) 
+        {
+            ApplyStickyCollision(collision);
+        }
+        else if (collision.gameObject.CompareTag("Breakable")) 
+        {
+            CheckForBreaking(collision, relativeVelocity.magnitude);
+        }
+    }
+    
+    void ApplyBouncyCollision(Collision collision, Vector3 relativeVelocity) 
+    {
+        // Kollisionsnormale ermitteln
+        Vector3 normal = collision.contacts[0].normal;
+        
+        // Reflektierte Geschwindigkeit berechnen
+        Vector3 reflectedVelocity = Vector3.Reflect(relativeVelocity, normal);
+        
+        // Restitution anwenden
+        rb.velocity = reflectedVelocity * restitution;
+    }
+    
+    void ApplyStickyCollision(Collision collision) 
+    {
+        // Objekte "kleben" zusammen
+        if (collision.rigidbody != null) 
+        {
+            // Joint erstellen fuer klebende Verbindung
+            FixedJoint joint = gameObject.AddComponent<FixedJoint>();
+            joint.connectedBody = collision.rigidbody;
+            joint.breakForce = 1000f;  // Kraft zum Trennen
+        }
+    }
+    
+    void CheckForBreaking(Collision collision, float impactSpeed) 
+    {
+        // Zerstoerung bei starkem Aufprall
+        float breakingThreshold = 10f;
+        
+        if (impactSpeed > breakingThreshold) 
+        {
+            BreakObject(collision.gameObject);
+        }
+    }
+    
+    void BreakObject(GameObject obj) 
+    {
+        // Objekt in Fragmente zerteilen
+        // Hier wuerde normalerweise ein Fragmentierungs-System aufgerufen
+        Debug.Log($"Object {obj.name} shattered due to high impact!");
+        
+        // Partikeleffekt fuer Zerstoerung
+        // CreateDestructionEffect(obj.transform.position);
+        
+        // Objekt deaktivieren oder zerstoeren
+        obj.SetActive(false);
+    }
+    
+    void CreateSparkEffect(Vector3 position, Vector3 normal) 
+    {
+        if (sparkEffect != null) 
+        {
+            ParticleSystem sparks = Instantiate(sparkEffect, position, 
+                                               Quaternion.LookRotation(normal));
+            sparks.Play();
+            
+            // Automatisches Loeschen nach Abschluss
+            Destroy(sparks.gameObject, sparks.main.duration + 2f);
+        }
+    }
+    
+    void LogCollisionData(Collision collision, float speed, float energy) 
+    {
+        Debug.Log($"Kollision mit {collision.gameObject.name}: " +
+                  $"Geschwindigkeit: {speed:F2} m/s, " +
+                  $"Energie: {energy:F2} J, " +
+                  $"Kontaktpunkte: {collision.contactCount}, " +
+                  $"Impuls: {collision.impulse.magnitude:F2} N*s");
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Benutzerdefinierte Physik-Implementierung}
+
+\begin{concept}{Numerische Integrationsmethoden}
+    Unity verwendet implizite Euler-Integration, aber benutzerdefinierte Implementierungen können verwenden:
+    \begin{itemize}
+        \item \textbf{Expliziter Euler}: Einfach, aber potentiell instabil
+        \item \textbf{Verlet-Integration}: Bessere Energieerhaltung
+        \item \textbf{Runge-Kutta}: Höhere Genauigkeit für komplexe Systeme
+        \item \textbf{Leapfrog}: Gut für Orbitalprobleme
+    \end{itemize}
+    
+    \textbf{Vergleich der Methoden:}
+    \begin{itemize}
+        \item \textbf{Stabilität}: Verlet > Runge-Kutta > Euler
+        \item \textbf{Genauigkeit}: Runge-Kutta > Verlet > Euler
+        \item \textbf{Performance}: Euler > Verlet > Runge-Kutta
+        \item \textbf{Energieerhaltung}: Verlet > Runge-Kutta > Euler
+    \end{itemize}
+\end{concept}
+
+\begin{code}{Benutzerdefinierter Physik-Integrator}
+\begin{lstlisting}[language=C, style=basesmol]
+public class CustomPhysicsObject : MonoBehaviour 
+{
+    [Header("Physik-Eigenschaften")]
+    public float mass = 1f;
+    public Vector3 velocity = Vector3.zero;
+    public Vector3 acceleration = Vector3.zero;
+    public bool useGravity = true;
+    public float damping = 0.1f;
+    
+    [Header("Integrations-Einstellungen")]
+    public enum IntegrationMethod { Euler, Verlet, RungeKutta, Leapfrog }
+    public IntegrationMethod method = IntegrationMethod.Verlet;
+    public bool showTrajectory = true;
+    public int trajectoryPoints = 50;
+    
+    [Header("Kraefte")]
+    public Vector3 constantForce = Vector3.zero;
+    public float springConstant = 50f;
+    public Vector3 springCenter = Vector3.zero;
+    
+    private Vector3 previousPosition;
+    private Vector3 currentPosition;
+    private List<Vector3> trajectory = new List<Vector3>();
+    private LineRenderer trajectoryRenderer;
+    
+    void Start() 
+    {
+        currentPosition = transform.position;
+        previousPosition = currentPosition;
+        
+        SetupTrajectoryRenderer();
+        
+        // Initiale Geschwindigkeit setzen
+        if (velocity == Vector3.zero) 
+        {
+            velocity = new Vector3(5f, 0f, 0f); // Standardgeschwindigkeit
+        }
+    }
+    
+    void SetupTrajectoryRenderer() 
+    {
+        if (showTrajectory) 
+        {
+            trajectoryRenderer = gameObject.AddComponent<LineRenderer>();
+            trajectoryRenderer.material = new Material(Shader.Find("Sprites/Default"));
+            trajectoryRenderer.color = Color.yellow;
+            trajectoryRenderer.startWidth = 0.05f;
+            trajectoryRenderer.endWidth = 0.05f;
+            trajectoryRenderer.positionCount = trajectoryPoints;
+        }
+    }
+    
+    void FixedUpdate() 
+    {
+        // Kraefte berechnen
+        Vector3 totalForce = CalculateForces();
+        acceleration = totalForce / mass;
+        
+        // Integration basierend auf gewaehlter Methode
+        switch (method) 
+        {
+            case IntegrationMethod.Euler:
+                EulerIntegration();
+                break;
+            case IntegrationMethod.Verlet:
+                VerletIntegration();
+                break;
+            case IntegrationMethod.RungeKutta:
+                RungeKuttaIntegration();
+                break;
+            case IntegrationMethod.Leapfrog:
+                LeapfrogIntegration();
+                break;
+        }
+        
+        // Transform aktualisieren
+        transform.position = currentPosition;
+        
+        // Trajektorie aktualisieren
+        UpdateTrajectory();
+        
+        // Energieanalyse
+        AnalyzeEnergy();
+    }
+    
+    Vector3 CalculateForces() 
+    {
+        Vector3 totalForce = Vector3.zero;
+        
+        // Gravitation
+        if (useGravity) 
+        {
+            totalForce += mass * Physics.gravity;
+        }
+        
+        // Konstante Kraft
+        totalForce += constantForce;
+        
+        // Federkraft zum Zentrum
+        Vector3 displacement = currentPosition - springCenter;
+        totalForce += -springConstant * displacement;
+        
+        // Daempfung (geschwindigkeitsproportional)
+        totalForce += -damping * velocity;
+        
+        // Luftwiderstand (geschwindigkeitsquadratisch)
+        float airResistance = 0.01f;
+        totalForce += -airResistance * velocity.magnitude * velocity;
+        
+        return totalForce;
+    }
+    
+    void EulerIntegration() 
+    {
+        float dt = Time.fixedDeltaTime;
+        
+        velocity += acceleration * dt;
+        currentPosition += velocity * dt;
+    }
+    
+    void VerletIntegration() 
+    {
+        float dt = Time.fixedDeltaTime;
+        
+        Vector3 newPosition = 2f * currentPosition - previousPosition + 
+                             acceleration * dt * dt;
+        
+        velocity = (newPosition - previousPosition) / (2f * dt);
+        
+        previousPosition = currentPosition;
+        currentPosition = newPosition;
+    }
+    
+    void RungeKuttaIntegration() 
+    {
+        float dt = Time.fixedDeltaTime;
+        
+        // RK4-Implementierung
+        Vector3 k1v = acceleration;
+        Vector3 k1x = velocity;
+        
+        Vector3 k2v = CalculateAcceleration(currentPosition + k1x * dt * 0.5f, 
+                                           velocity + k1v * dt * 0.5f);
+        Vector3 k2x = velocity + k1v * dt * 0.5f;
+        
+        Vector3 k3v = CalculateAcceleration(currentPosition + k2x * dt * 0.5f, 
+                                           velocity + k2v * dt * 0.5f);
+        Vector3 k3x = velocity + k2v * dt * 0.5f;
+        
+        Vector3 k4v = CalculateAcceleration(currentPosition + k3x * dt, 
+                                           velocity + k3v * dt);
+        Vector3 k4x = velocity + k3v * dt;
+        
+        velocity += (k1v + 2f * k2v + 2f * k3v + k4v) * dt / 6f;
+        currentPosition += (k1x + 2f * k2x + 2f * k3x + k4x) * dt / 6f;
+    }
+    
+    void LeapfrogIntegration() 
+    {
+        float dt = Time.fixedDeltaTime;
+        
+        // Leapfrog fuer bessere Energieerhaltung
+        velocity += acceleration * dt;
+        currentPosition += velocity * dt;
+    }
+    
+    Vector3 CalculateAcceleration(Vector3 pos, Vector3 vel) 
+    {
+        Vector3 force = Vector3.zero;
+        
+        if (useGravity) force += mass * Physics.gravity;
+        force += constantForce;
+        force += -springConstant * (pos - springCenter);
+        force += -damping * vel;
+        
+        return force / mass;
+    }
+    
+    void UpdateTrajectory() 
+    {
+        if (!showTrajectory) return;
+        
+        trajectory.Add(currentPosition);
+        if (trajectory.Count > trajectoryPoints) 
+        {
+            trajectory.RemoveAt(0);
+        }
+        
+        if (trajectoryRenderer != null) 
+        {
+            trajectoryRenderer.positionCount = trajectory.Count;
+            trajectoryRenderer.SetPositions(trajectory.ToArray());
+        }
+    }
+    
+    void AnalyzeEnergy() 
+    {
+        // Kinetische Energie
+        float kineticEnergy = 0.5f * mass * velocity.sqrMagnitude;
+        
+        // Potentielle Energie (Gravitation)
+        float gravitationalPE = mass * Mathf.Abs(Physics.gravity.y) * 
+                               (currentPosition.y - springCenter.y);
+        
+        // Elastische potentielle Energie
+        Vector3 displacement = currentPosition - springCenter;
+        float elasticPE = 0.5f * springConstant * displacement.sqrMagnitude;
+        
+        // Gesamtenergie
+        float totalEnergy = kineticEnergy + gravitationalPE + elasticPE;
+        
+        // Debug-Ausgabe alle 50 Frames
+        if (Time.fixedTime % 1f < Time.fixedDeltaTime) 
+        {
+            Debug.Log($"Energie - Kinetisch: {kineticEnergy:F2}, " +
+                      $"Potentiell: {gravitationalPE + elasticPE:F2}, " +
+                      $"Gesamt: {totalEnergy:F2}");
+        }
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Performance-Optimierung}
+
+\begin{concept}{Physik-Performance-Tipps}
+    \textbf{Kollisionserkennung optimieren:}
+    \begin{itemize}
+        \item Geeignete Kollisionserkennungs-Modi verwenden
+        \item Compound Collider für komplexe Geometrien
+        \item Mesh Collider nur wenn nötig (sehr teuer)
+        \item Layer-basierte Kollisionsmatrix definieren
+    \end{itemize}
+    
+    \textbf{Rigidbody-Management:}
+    \begin{itemize}
+        \item Anzahl aktiver Rigidbodies minimieren
+        \item Ruhende Objekte als Kinematic setzen
+        \item Object Pooling für Projektile verwenden
+        \item Unnötige Constraints vermeiden
+    \end{itemize}
+    
+    \textbf{Optimierungen:}
+    \begin{itemize}
+        \item Fixed Timestep angemessen anpassen
+        \item Solver-Iterationen reduzieren wenn möglich
+        \item Continuous Collision Detection sparsam einsetzen
+        \item Physics Raycasts in Threads auslagern
+    \end{itemize}
+\end{concept}
+
+\begin{code}{Physik-Objekt-Pool}
+\begin{lstlisting}[language=C, style=basesmol]
+public class PhysicsObjectPool : MonoBehaviour 
+{
+    [Header("Pool-Einstellungen")]
+    public GameObject prefab;
+    public int poolSize = 100;
+    public int maxActiveObjects = 50;
+    public float autoReturnTime = 10f;
+    
+    [Header("Performance")]
+    public bool enableStatistics = true;
+    public float cleanupInterval = 5f;
+    
+    private Queue<GameObject> pool = new Queue<GameObject>();
+    private List<PooledObject> activeObjects = new List<PooledObject>();
+    private Transform poolParent;
+    
+    private class PooledObject 
+    {
+        public GameObject gameObject;
+        public float spawnTime;
+        public Rigidbody rigidbody;
+        
+        public PooledObject(GameObject obj) 
+        {
+            gameObject = obj;
+            spawnTime = Time.time;
+            rigidbody = obj.GetComponent<Rigidbody>();
+        }
+    }
+    
+    void Start() 
+    {
+        // Pool-Container erstellen
+        poolParent = new GameObject("ObjectPool").transform;
+        poolParent.SetParent(transform);
+        
+        // Pool vorab fuellen
+        for (int i = 0; i < poolSize; i++) 
+        {
+            GameObject obj = Instantiate(prefab, poolParent);
+            obj.SetActive(false);
+            pool.Enqueue(obj);
+        }
+        
+        // Regelmaessige Bereinigung starten
+        InvokeRepeating(nameof(CleanupObjects), cleanupInterval, cleanupInterval);
+    }
+    
+    public GameObject GetObject(Vector3 position, Vector3 velocity, Vector3 angularVelocity = default) 
+    {
+        // Begrenzung aktiver Objekte
+        if (activeObjects.Count >= maxActiveObjects) 
+        {
+            // Aeltestes Objekt zurueckgeben
+            ReturnOldestObject();
+        }
+        
+        GameObject obj;
+        
+        if (pool.Count > 0) 
+        {
+            obj = pool.Dequeue();
+        } 
+        else 
+        {
+            // Pool erschoepft, neues Objekt erstellen
+            obj = Instantiate(prefab, poolParent);
+            Debug.LogWarning("Pool exhausted, creating new object");
+        }
+        
+        // Objekt initialisieren
+        obj.transform.position = position;
+        obj.transform.rotation = Random.rotation;
+        obj.SetActive(true);
+        
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null) 
+        {
+            rb.velocity = velocity;
+            rb.angularVelocity = angularVelocity;
+            
+            // Physik-Zustand zuruecksetzen
+            rb.Sleep();
+            rb.WakeUp();
+        }
+        
+        // Zur aktiven Liste hinzufuegen
+        PooledObject pooledObj = new PooledObject(obj);
+        activeObjects.Add(pooledObj);
+        
+        return obj;
+    }
+    
+    public void ReturnObject(GameObject obj) 
+    {
+        if (obj == null) return;
+        
+        // Aus aktiver Liste entfernen
+        for (int i = activeObjects.Count - 1; i >= 0; i--) 
+        {
+            if (activeObjects[i].gameObject == obj) 
+            {
+                activeObjects.RemoveAt(i);
+                break;
+            }
+        }
+        
+        // Physik-Zustand zuruecksetzen
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null) 
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.Sleep();
+        }
+        
+        // Objekt deaktivieren und zurueck in Pool
+        obj.SetActive(false);
+        obj.transform.SetParent(poolParent);
+        pool.Enqueue(obj);
+    }
+    
+    void ReturnOldestObject() 
+    {
+        if (activeObjects.Count > 0) 
+        {
+            PooledObject oldest = activeObjects[0];
+            ReturnObject(oldest.gameObject);
+        }
+    }
+    
+    void CleanupObjects() 
+    {
+        // Objekte zurueckgeben, die zu lange aktiv waren
+        for (int i = activeObjects.Count - 1; i >= 0; i--) 
+        {
+            PooledObject obj = activeObjects[i];
+            
+            if (Time.time - obj.spawnTime > autoReturnTime) 
+            {
+                ReturnObject(obj.gameObject);
+            }
+            // Objekte zurueckgeben, die ausserhalb der Welt gefallen sind
+            else if (obj.gameObject.transform.position.y < -50f) 
+            {
+                ReturnObject(obj.gameObject);
+            }
+            // Objekte zurueckgeben, die zu langsam sind
+            else if (obj.rigidbody != null && obj.rigidbody.velocity.magnitude < 0.1f && 
+                     Time.time - obj.spawnTime > 2f) 
+            {
+                ReturnObject(obj.gameObject);
+            }
+        }
+        
+        // Statistiken ausgeben
+        if (enableStatistics) 
+        {
+            Debug.Log($"Pool-Statistiken: Aktiv: {activeObjects.Count}, " +
+                      $"Pool: {pool.Count}, Total: {poolSize}");
+        }
+    }
+    
+    // Oeffentliche API fuer externe Nutzung
+    public void ReturnAllObjects() 
+    {
+        while (activeObjects.Count > 0) 
+        {
+            ReturnObject(activeObjects[0].gameObject);
+        }
+    }
+    
+    public int GetActiveCount() => activeObjects.Count;
+    public int GetPoolCount() => pool.Count;
+    
+    void OnDrawGizmosSelected() 
+    {
+        // Visualisierung der aktiven Objekte
+        Gizmos.color = Color.green;
+        foreach (var obj in activeObjects) 
+        {
+            if (obj.gameObject != null) 
+            {
+                Gizmos.DrawWireSphere(obj.gameObject.transform.position, 0.5f);
+            }
+        }
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Prüfungsvorbereitung}
+
+\begin{KR}{Unity Physics Prüfungsstrategie}
+    \paragraph{Kernphysik-Konzepte beherrschen}
+    \begin{itemize}
+        \item Newton'sche Gesetze und ihre Anwendungen
+        \item Energie- und Impulserhaltung verstehen
+        \item Rotationsdynamik-Berechnungen üben
+        \item Wichtige Formeln und ihre Herleitungen kennen
+        \item Vektormathematik und Koordinatensysteme
+    \end{itemize}
+    
+    \paragraph{Unity-Implementierungs-Wissen}
+    \begin{itemize}
+        \item Rigidbody-Komponenten-Eigenschaften und -Methoden
+        \item Kraftanwendungstechniken und Force-Modi
+        \item Kollisionserkennung und -reaktion
+        \item Koordinatensystem-Transformationen
+        \item Physics Material und Reibungsmodelle
+    \end{itemize}
+    
+    \paragraph{Problemlösungsansatz}
+    \begin{itemize}
+        \item Beteiligte physikalische Prinzipien identifizieren
+        \item Koordinatensystem und Freikörperdiagramme aufstellen
+        \item Erhaltungsgesetze anwenden wo angemessen
+        \item In Unity-Implementierungskonzepte übersetzen
+        \item Code-Snippets für häufige Szenarien memorieren
+    \end{itemize}
+    
+    \paragraph{Häufige Prüfungsthemen}
+    \begin{itemize}
+        \item Projektilbewegung mit Unity-Vektoren
+        \item Kollisionsanalyse und Impulserhaltung
+        \item Rotationsbewegung und Drehmoment-Berechnungen
+        \item Energieerhaltung in mechanischen Systemen
+        \item Custom Physics Implementation
+        \item Performance-Optimierung in Unity Physics
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Umfassendes Physik-Problem}
+    Eine Kugel (Masse 1 kg, Radius 0.1 m) rollt eine 30°-Schräge hinunter, kollidiert dann elastisch mit einer ruhenden Kugel gleicher Masse. Berechne die Endgeschwindigkeiten und implementiere die Simulation in Unity.
+    \tcblower
+    \textbf{Teil 1: Rollen auf der Schräge}
+    
+    Für Vollkugel: $I = \frac{2}{5}mr^2$, Beschleunigung: $a = \frac{5g\sin\theta}{7}$
+    
+    $a = \frac{5 \times 9.81 \times \sin(30°)}{7} = 3.51 \, m/s^2$
+    
+    Nach Rollstrecke $d = 2m$: $v = \sqrt{2ad} = \sqrt{2 \times 3.51 \times 2} = 3.74 \, m/s$
+    
+    \textbf{Teil 2: Elastische Kollision}
+    
+    Für gleiche Massen in 1D elastischer Kollision:
+    $v_1' = 0$, $v_2' = v_1 = 3.74 \, m/s$
+    
+    \textbf{Unity-Implementierung:}
+\begin{lstlisting}[language=C, style=basesmol]
+public class RollingBallSimulation : MonoBehaviour 
+{
+    [Header("Physik-Parameter")]
+    public float inclineAngle = 30f;
+    public float ballMass = 1f;
+    public float ballRadius = 0.1f;
+    public float rollDistance = 2f;
+    
+    [Header("Simulation")]
+    public bool autoStart = true;
+    public float simulationSpeed = 1f;
+    
+    private GameObject ball1, ball2;
+    private Rigidbody rb1, rb2;
+    
+    void Start() 
+    {
+        if (autoStart) 
+        {
+            StartSimulation();
+        }
+    }
+    
+    public void StartSimulation() 
+    {
+        // Theoretische Berechnungen
+        CalculateTheoreticalValues();
+        
+        // Physik-Simulation aufsetzen
+        SetupSimulation();
+    }
+    
+    void CalculateTheoreticalValues() 
+    {
+        float angleRad = inclineAngle * Mathf.Deg2Rad;
+        float rollingAccel = (5f * Physics.gravity.magnitude * 
+                             Mathf.Sin(angleRad)) / 7f;
+        
+        float finalVelocity = Mathf.Sqrt(2f * rollingAccel * rollDistance);
+        
+        Debug.Log($"Theoretische Werte:");
+        Debug.Log($"Rollbeschleunigung: {rollingAccel:F2} m/s^2");
+        Debug.Log($"Endgeschwindigkeit vor Kollision: {finalVelocity:F2} m/s");
+        Debug.Log($"Nach elastischer Kollision: Ball1 = 0 m/s, Ball2 = {finalVelocity:F2} m/s");
+    }
+    
+    void SetupSimulation() 
+    {
+        // Schraege erstellen
+        SetupIncline();
+        
+        // Kugeln erstellen
+        SetupBalls();
+        
+        // Physik-Materialien konfigurieren
+        SetupPhysicsMaterials();
+    }
+    
+    void SetupIncline() 
+    {
+        GameObject incline = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        incline.name = "Incline";
+        incline.transform.localScale = new Vector3(rollDistance * 2f, 0.1f, 1f);
+        incline.transform.position = new Vector3(-rollDistance / 2f, -0.5f, 0);
+        incline.transform.rotation = Quaternion.Euler(0, 0, -inclineAngle);
+        
+        // Material fuer Rollen ohne Rutschen
+        PhysicMaterial rollMaterial = new PhysicMaterial("Rolling");
+        rollMaterial.staticFriction = 1f;
+        rollMaterial.dynamicFriction = 1f;
+        rollMaterial.frictionCombine = PhysicMaterialCombine.Maximum;
+        
+        incline.GetComponent<Collider>().material = rollMaterial;
+    }
+    
+    void SetupBalls() 
+    {
+        // Rollende Kugel (Ball 1)
+        ball1 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        ball1.name = "RollingBall";
+        ball1.transform.position = new Vector3(-rollDistance - 1f, 2f, 0);
+        ball1.transform.localScale = Vector3.one * ballRadius * 2f;
+        
+        rb1 = ball1.AddComponent<Rigidbody>();
+        rb1.mass = ballMass;
+        rb1.drag = 0f;
+        rb1.angularDrag = 0f;
+        
+        // Ruhende Zielkugel (Ball 2)
+        ball2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        ball2.name = "TargetBall";
+        ball2.transform.position = new Vector3(rollDistance + 1f, ballRadius, 0);
+        ball2.transform.localScale = Vector3.one * ballRadius * 2f;
+        
+        rb2 = ball2.AddComponent<Rigidbody>();
+        rb2.mass = ballMass;
+        rb2.useGravity = true;
+        
+        // Kollisions-Handler hinzufuegen
+        ball1.AddComponent<ElasticCollisionHandler>();
+        ball2.AddComponent<ElasticCollisionHandler>();
+        
+        // Visualisierung
+        ball1.GetComponent<Renderer>().material.color = Color.red;
+        ball2.GetComponent<Renderer>().material.color = Color.blue;
+    }
+    
+    void SetupPhysicsMaterials() 
+    {
+        // Elastisches Material fuer Kollisionen
+        PhysicMaterial elasticMaterial = new PhysicMaterial("Elastic");
+        elasticMaterial.bounciness = 1f;
+        elasticMaterial.frictionCombine = PhysicMaterialCombine.Minimum;
+        elasticMaterial.bounceCombine = PhysicMaterialCombine.Maximum;
+        
+        ball1.GetComponent<Collider>().material = elasticMaterial;
+        ball2.GetComponent<Collider>().material = elasticMaterial;
+        
+        // Globale Physik-Einstellungen
+        Time.timeScale = simulationSpeed;
+        Physics.bounceThreshold = 0f; // Minimaler Bounce-Threshold
+    }
+    
+    void Update() 
+    {
+        // Geschwindigkeiten anzeigen
+        if (rb1 != null && rb2 != null) 
+        {
+            if (Input.GetKeyDown(KeyCode.Space)) 
+            {
+                Debug.Log($"Ball1 Geschwindigkeit: {rb1.velocity.magnitude:F2} m/s");
+                Debug.Log($"Ball2 Geschwindigkeit: {rb2.velocity.magnitude:F2} m/s");
+            }
+        }
+        
+        // Simulation zuruecksetzen
+        if (Input.GetKeyDown(KeyCode.R)) 
+        {
+            ResetSimulation();
+        }
+    }
+    
+    void ResetSimulation() 
+    {
+        if (ball1 != null) DestroyImmediate(ball1);
+        if (ball2 != null) DestroyImmediate(ball2);
+        
+        SetupBalls();
+    }
+}
+
+public class ElasticCollisionHandler : MonoBehaviour 
+{
+    private bool hasCollided = false;
+    
+    void OnCollisionEnter(Collision collision) 
+    {
+        if (hasCollided) return;
+        
+        Rigidbody otherRb = collision.rigidbody;
+        if (otherRb == null) return;
+        
+        Rigidbody thisRb = GetComponent<Rigidbody>();
+        
+        // Nur zwischen Kugeln, nicht mit Schraege
+        if (collision.gameObject.name.Contains("Ball")) 
+        {
+            // Kollisionsdaten protokollieren
+            float v1_before = thisRb.velocity.magnitude;
+            float v2_before = otherRb.velocity.magnitude;
+            
+            Debug.Log($"Kollision erkannt!");
+            Debug.Log($"Geschwindigkeiten vorher: {v1_before:F2}, {v2_before:F2}");
+            
+            // Fuer gleiche Massen in elastischer Kollision
+            Vector3 tempVelocity = thisRb.velocity;
+            thisRb.velocity = otherRb.velocity;
+            otherRb.velocity = tempVelocity;
+            
+            // Nach Kollision protokollieren
+            StartCoroutine(LogPostCollisionVelocities(thisRb, otherRb));
+            
+            hasCollided = true;
+        }
+    }
+    
+    System.Collections.IEnumerator LogPostCollisionVelocities(Rigidbody rb1, Rigidbody rb2) 
+    {
+        yield return new WaitForFixedUpdate();
+        
+        Debug.Log($"Geschwindigkeiten nachher: {rb1.velocity.magnitude:F2}, {rb2.velocity.magnitude:F2}");
+        
+        // Energieerhaltung pruefen
+        float kineticBefore = 0.5f * rb1.mass * Mathf.Pow(3.74f, 2);
+        float kineticAfter = 0.5f * rb1.mass * rb1.velocity.sqrMagnitude + 
+                           0.5f * rb2.mass * rb2.velocity.sqrMagnitude;
+        
+        Debug.Log($"Kinetische Energie vorher: {kineticBefore:F2} J");
+        Debug.Log($"Kinetische Energie nachher: {kineticAfter:F2} J");
+        Debug.Log($"Energieerhaltung: {Mathf.Abs(kineticBefore - kineticAfter) < 0.1f}");
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{concept}{Wichtige Erkenntnisse}
+    \textbf{Theoretische Grundlagen:}
+    \begin{itemize}
+        \item Physikalische Gesetze gelten universell
+        \item Erhaltungsgesetze sind zentral für Problemlösungen
+        \item Numerische Integration beeinflusst Genauigkeit
+        \item Reibung und Dämpfung sind realitätsnah wichtig
+    \end{itemize}
+    
+    \textbf{Unity-spezifische Aspekte:}
+    \begin{itemize}
+        \item Fixed Timestep ist entscheidend für Stabilität
+        \item Physics Materials beeinflussen Verhalten stark
+        \item Performance-Optimierung ist für komplexe Szenen notwendig
+        \item Debugging-Tools helfen bei der Problemanalyse
+    \end{itemize}
+\end{concept}

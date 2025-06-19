@@ -1,0 +1,193 @@
+\section{Einführung und Grundlagen}
+
+\subsection{Physics Engines Überblick}
+\begin{concept}{Physics Engines}
+    Physics Engines sind Softwarekomponenten, die physikalische Effekte in Computerprogrammen simulieren. Unity verwendet PhysX als Standard-Physics-Engine.
+    
+    \textbf{Ziele des Moduls:}
+    \begin{itemize}
+        \item Physikalische Modellierung in Unity verstehen
+        \item Grundprinzipien der Mechanik für realistische Simulationen anwenden
+        \item Kopplung von Physiksimulatoren mit realistischen Parametern
+    \end{itemize}
+\end{concept}
+
+\begin{remark}
+    \textbf{Modellbildungsprozess:}
+    Wirklichkeit $\rightarrow$ Physikalisches Modell $\rightarrow$ Mathematisches Modell $\rightarrow$ Numerisches Modell $\rightarrow$ Unity-Implementation
+\end{remark}
+
+\subsection{Bezugssysteme in der Mechanik}
+\begin{definition}{Bezugssystem}
+    Ein Bezugssystem definiert:
+    \begin{itemize}
+        \item Einen Nullpunkt im Raum
+        \item Die Richtungen der Koordinatenachsen (x, y, z)
+        \item Eine Zeitmessung
+    \end{itemize}
+    Dadurch wird die Position eines Körpers eindeutig durch einen Ortsvektor $\vec{r}$ beschrieben.
+\end{definition}
+
+\begin{concept}{Vektoren}
+    Ein Vektor ist eine physikalische Größe mit Betrag und Richtung.
+    \begin{itemize}
+        \item Darstellung: $\vec{r}$ (mit Pfeil über dem Symbol)
+        \item Betrag: $|\vec{r}| = r$ (ohne Pfeil)
+        \item In Koordinatendarstellung: $\vec{r} = \begin{pmatrix} r_x \\ r_y \\ r_z \end{pmatrix}$
+        \item Einheitsvektor (Betrag = 1): $\vec{e}_r = \frac{\vec{r}}{|\vec{r}|}$
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Rechenregeln für Vektoren}
+    \begin{itemize}
+        \item Addition: $\vec{r}_1 + \vec{r}_2 = \begin{pmatrix} r_{x1} \\ r_{y1} \\ r_{z1} \end{pmatrix} + \begin{pmatrix} r_{x2} \\ r_{y2} \\ r_{z2} \end{pmatrix} = \begin{pmatrix} r_{x1} + r_{x2} \\ r_{y1} + r_{y2} \\ r_{z1} + r_{z2} \end{pmatrix}$
+        
+        \item Skalarprodukt (ergibt einen Skalar): 
+        $s = \vec{r}_1 \cdot \vec{r}_2 = |\vec{r}_1| \cdot |\vec{r}_2| \cdot \cos \angle(\vec{r}_1, \vec{r}_2) = r_{x1}r_{x2} + r_{y1}r_{y2} + r_{z1}r_{z2}$
+        
+        \item Kreuzprodukt (ergibt einen Vektor):
+        $\vec{r}_1 \times \vec{r}_2 = \begin{pmatrix} r_{y1}r_{z2} - r_{z1}r_{y2} \\ r_{z1}r_{x2} - r_{x1}r_{z2} \\ r_{x1}r_{y2} - r_{y1}r_{x2} \end{pmatrix}$
+    \end{itemize}
+\end{formula}
+
+\begin{example2}{Unity vs. Standard-Koordinatensystem}
+    \textbf{Unterschiede:}
+    \begin{itemize}
+        \item Standard-Physik: Rechtssystem
+        \item Unity: Linkssystem
+        \item Unity: positive y-Achse zeigt nach oben
+    \end{itemize}
+    
+    \textbf{Auswirkungen:} Unterschiedliche Kreuzprodukt-Ergebnisse und Rotationsrichtungen.
+\end{example2}
+
+\begin{definition}{SI-Einheiten}
+    Wichtige SI-Einheiten in der Mechanik:
+    \begin{itemize}
+        \item Länge in Meter (m)
+        \item Masse in Kilogramm (kg)
+        \item Zeit in Sekunden (s)
+        \item Kraft in Newton (N = kg·m/s²)
+    \end{itemize}
+    Es ist wichtig, in Unity konsequent SI-Einheiten zu verwenden und bei allen Werten entsprechende Einheiten anzugeben.
+\end{definition}
+
+\begin{KR}{Konventionen für Unity-Code}
+    \paragraph{Deklaration von physikalischen Größen}
+    \begin{lstlisting}[language=csh, style=basesmol]
+// Korrekte Deklaration physikalischer Groessen in Unity
+public float initialVelocity = 6.0f; // in m/s
+public float mass = 1.0f; // in kg
+public float springConstant = 10.0f; // in N/m
+    \end{lstlisting}
+    
+    \paragraph{Abfrage von Vektoren}
+    \begin{lstlisting}[language=csh, style=basesmol]
+// Abfrage von Position und Geschwindigkeit
+Vector3 position = rigidBody.position; // in m
+Vector3 velocity = rigidBody.velocity; // in m/s
+    \end{lstlisting}
+    
+    \paragraph{Berechnung von Kräften}
+    \begin{lstlisting}[language=csh, style=basesmol]
+// Beispiel: Federkraft berechnen
+Vector3 springForce = -springConstant * (position - equilibriumPosition);
+rigidBody.AddForce(springForce); // Kraft in N hinzufuegen
+    \end{lstlisting}
+\end{KR}
+
+\begin{example}
+    Für die Umrechnung der Geschwindigkeit von km/h in m/s teilt man durch 3,6:
+    $v[m/s] = \frac{v[km/h]}{3,6}$
+    
+    Beispiel: 72 km/h = 72 / 3,6 = 20 m/s
+\end{example}
+
+\subsection{Modulstruktur und Bewertung}
+
+\begin{definition}{Kursaufbau}
+    \begin{itemize}
+        \item 2 ECTS = 60h total (30h Präsenz, 30h Selbststudium)
+        \item Moodle-Übungen online: 10\% (4h)
+        \item Unity-Projekte in Gruppen, 3 Phasen (16h total, 40\%):
+        \begin{itemize}
+            \item Einführungsbeispiel, Teil 1: 9. März (5\%)
+            \item Teil 2: 9. April (15\%)
+            \item Teil 3: 9. Mai (20\%)
+        \end{itemize}
+        \item Mündliche Abschlussprüfung: 50\% (10h)
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Modulinhalte}
+    \textbf{Physik-Themen:}
+    \begin{itemize}
+        \item Koordinatensysteme und Bezugssysteme
+        \item Kinematik: Beschreibung von Bewegungen
+        \item Dynamik: Einfluss von Kräften
+        \item Kräfte: Reibung, Anziehung, Kollisionen
+        \item Energie und Impuls: Erhaltungsgesetze
+        \item Rotationsbewegungen und Anwendungen
+    \end{itemize}
+\end{concept}
+
+\subsection{Unity-Grundlagen}
+
+\begin{definition}{Vector3 in Unity}
+    \begin{itemize}
+        \item \texttt{Vector3} für 3D-Positionen und -Richtungen
+        \item Wichtige Eigenschaften: \texttt{Vector3.forward}, \texttt{Vector3.up}, \texttt{Vector3.right}
+        \item Operationen: Skalarprodukt, Kreuzprodukt, Betrag, Normalisierung
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Entwicklungsumgebung}
+    Wichtige Ressourcen für das Modul:
+\begin{lstlisting}[language=C, style=basesmol]
+// Online verfuegbare Kursressourcen:
+// - Moodle: https://moodle.zhaw.ch/course/view.php?id=17534
+// - EduWiki: https://eduwiki.engineering.zhaw.ch/wiki/PE_Physik_Engines
+// - GitHub: https://github.zhaw.ch/physicsenginesmodule
+// - Tipler Lehrbuch: https://link.springer.com/book/10.1007/978-3-662-58281-7
+// - Unity fuer Uebungen
+// - MS Teams fuer Kommunikation
+\end{lstlisting}
+\end{code}
+
+\begin{KR}{Prüfungsvorbereitung}
+    \paragraph{Theorie-Komponente}
+    \begin{itemize}
+        \item Physik-Formeln aus wöchentlicher Formelsammlung studieren
+        \item Herleitungen und Anwendungen jeder Formel verstehen
+        \item Problemlösung mit schrittweisem Vorgehen üben
+    \end{itemize}
+    
+    \paragraph{Unity-Implementation}
+    \begin{itemize}
+        \item Vector3-Operationen und Koordinatentransformationen beherrschen
+        \item Rigidbody-Komponente und Physiksimulation verstehen
+        \item Kräfte und Bewegungsgleichungen in C\# implementieren üben
+    \end{itemize}
+    
+    \paragraph{Projektarbeit}
+    \begin{itemize}
+        \item Alle Projektphasen gründlich dokumentieren
+        \item Physikalische Prinzipien hinter implementierten Features verstehen
+        \item Code-Implementation und Physik-Konzepte erklären können
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Formel-Eingabe in Word}
+    Kursanforderung: Formelsammlung mit Word-Formeleditor führen.
+    \tcblower
+    \begin{itemize}
+        \item Alt + Shift + * (oder Alt + Shift + =) für Gleichungen
+        \item Tiefgestellt: Unterstrich (\_)
+        \item Hochgestellt: Zirkumflex (\^{})
+        \item Formatierung mit Leertaste abschließen
+    \end{itemize}
+\end{example2}
+
+\begin{remark}
+    \textbf{Prüfungshinweis:} Die mündliche Prüfung (15 Min) fokussiert auf Physik-Konzepte. Unity-spezifische Details sind nicht prüfungsrelevant, aber Projektverständnis wird erwartet.
+\end{remark}

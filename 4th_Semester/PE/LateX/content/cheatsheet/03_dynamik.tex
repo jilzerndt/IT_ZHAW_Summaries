@@ -1,0 +1,283 @@
+\section{Dynamik}
+
+\begin{definition}{Dynamik}
+    Die Dynamik untersucht die Ursachen von Bewegungen - die wirkenden Kräfte. Grundlage sind die Newton'schen Gesetze.
+\end{definition}
+
+\begin{concept}{Newton'sche Axiome}
+    Isaac Newton formulierte die drei grundlegenden Gesetze der Bewegung:
+    \begin{enumerate}
+        \item Trägheitsgesetz: Ein Körper bleibt im Zustand der Ruhe oder der gleichförmigen geradlinigen Bewegung, solange keine Kraft auf ihn wirkt.
+        \item Bewegungsgesetz: Die Änderung der Bewegung ist proportional zur einwirkenden Kraft und erfolgt in Richtung der Kraft.
+        \item Wechselwirkungsgesetz: Übt ein Körper auf einen anderen eine Kraft aus (actio), so wirkt eine gleich große, entgegengesetzte Kraft zurück (reactio).
+    \end{enumerate}
+    Ein viertes Prinzip ist das Superpositionsprinzip: Kräfte addieren sich vektoriell.
+\end{concept}
+
+\subsection{Newton'sche Gesetze}
+
+\begin{formula}{Trägheitsgesetz}
+    Das erste Newton'sche Gesetz:
+    \begin{equation}
+        \vec{F} = 0 \Rightarrow \vec{v} = \text{const.}
+    \end{equation}
+    
+    Dies bedeutet auch: $\vec{F} = 0 \Rightarrow \vec{a} = 0$
+    
+    Das Gesetz gilt nur in Inertialsystemen (Bezugssysteme ohne Beschleunigung oder Rotation).
+\end{formula}
+
+\begin{definition}{Impuls}
+    Der Impuls $\vec{p}$ eines Körpers ist das Produkt aus seiner Masse und seiner Geschwindigkeit:
+    \begin{equation}
+        \vec{p} = m \cdot \vec{v}
+    \end{equation}
+    
+    Der Impuls ist eine vektorielle Größe mit der Einheit kg·m/s.
+\end{definition}
+
+\begin{formula}{Bewegungsgesetz}
+    Das zweite Newton'sche Gesetz in seiner allgemeinen Form:
+    \begin{equation}
+        \vec{F} = \frac{d\vec{p}}{dt}
+    \end{equation}
+    
+    Für Körper mit konstanter Masse:
+    \begin{equation}
+        \vec{F} = m \cdot \vec{a}
+    \end{equation}
+    
+    In integraler Form:
+    \begin{equation}
+        \vec{p} = \vec{p}_0 + \int_0^t \vec{F}(t) \, dt
+    \end{equation}
+    wobei $\int \vec{F} \, dt$ als Kraftstoß bezeichnet wird.
+\end{formula}
+
+\begin{formula}{Wechselwirkungsgesetz}
+    Das dritte Newton'sche Gesetz:
+    \begin{equation}
+        \vec{F}_{12} = -\vec{F}_{21}
+    \end{equation}
+    
+    Kräftepaare haben folgende Eigenschaften:
+    \begin{enumerate}
+        \item Gleicher Betrag, entgegengesetzte Richtung
+        \item Greifen an verschiedenen Körpern an
+        \item Haben die gleiche physikalische Ursache
+    \end{enumerate}
+\end{formula}
+
+\begin{formula}{Superpositionsprinzip}
+    Mehrere Kräfte addieren sich vektoriell:
+    \begin{equation}
+        \vec{F}_{res} = \sum_{i=1}^{n} \vec{F}_i
+    \end{equation}
+    
+    Für jede Komponente:
+    \begin{equation}
+        F_x = \sum_{i=1}^{n} F_{xi} \quad F_y = \sum_{i=1}^{n} F_{yi} \quad F_z = \sum_{i=1}^{n} F_{zi}
+    \end{equation}
+\end{formula}
+
+\subsection{Wichtige Krafttypen}
+
+\begin{formula}{Grundlegende Kräfte}
+    \paragraph{Gravitationskraft (nahe Erdoberfläche):} $\vec{F}_g = m\vec{g}$ mit $g = 9.81 \, m/s^2$
+    
+    \paragraph{Federkraft (Hooke'sches Gesetz):} $\vec{F}_s = -k\Delta\vec{l}$
+    
+    \paragraph{Reibungskraft:} 
+    \begin{itemize}
+        \item Haftreibung: $f_s \leq \mu_s N$
+        \item Gleitreibung: $f_k = \mu_k N$
+    \end{itemize}
+    
+    \paragraph{Dämpfungskraft:} $\vec{F}_d = -b\vec{v}$ (geschwindigkeitsproportional)
+\end{formula}
+
+\subsection{Harmonischer Oszillator}
+
+\begin{definition}{Harmonische Schwingung}
+    Bei einer Federkraft entsteht eine harmonische Schwingung mit der Bewegungsgleichung:
+    $$m\frac{d^2x}{dt^2} = -kx$$
+    
+    Lösung: $x(t) = A\cos(\omega t + \phi)$
+    
+    wobei $\omega = \sqrt{\frac{k}{m}}$ die Kreisfrequenz ist.
+\end{definition}
+
+\begin{formula}{Eigenschaften des harmonischen Oszillators}
+    \paragraph{Kreisfrequenz:} $\omega = \sqrt{\frac{k}{m}}$
+    
+    \paragraph{Schwingungsdauer:} $T = \frac{2\pi}{\omega} = 2\pi\sqrt{\frac{m}{k}}$
+    
+    \paragraph{Frequenz:} $f = \frac{1}{T} = \frac{\omega}{2\pi}$
+    
+    \paragraph{Gesamtenergie:} $E = \frac{1}{2}kA^2$ (konstant)
+\end{formula}
+
+\subsection{Unity Implementation}
+
+\begin{concept}{Unity Force Modes}
+    Unity bietet verschiedene Modi für Kraftanwendung über \texttt{Rigidbody.AddForce()}:
+    \begin{itemize}
+        \item \texttt{Force}: Kontinuierliche Kraft mit Masse (Standard)
+        \item \texttt{Acceleration}: Kontinuierliche Kraft ohne Masse
+        \item \texttt{Impulse}: Impulsive Kraft mit Masse
+        \item \texttt{VelocityChange}: Impulsive Kraft ohne Masse
+    \end{itemize}
+\end{concept}
+
+\begin{code}{Kräfte in Unity anwenden}
+\begin{lstlisting}[language=C, style=basesmol]
+public class ForceController : MonoBehaviour 
+{
+    private Rigidbody rb;
+    public float springConstant = 100f;
+    public float damping = 10f;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void FixedUpdate() 
+    {
+        // Gravitation (automatisch von Unity angewandt)
+        // Vector3 gravity = Physics.gravity * rb.mass;
+        
+        // Federkraft zum Ursprung
+        Vector3 springForce = -springConstant * transform.position;
+        
+        // Daempfungskraft
+        Vector3 dampingForce = -damping * rb.velocity;
+        
+        // Gesamtkraft anwenden
+        rb.AddForce(springForce + dampingForce);
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\begin{code}{Harmonischer Oszillator in Unity}
+\begin{lstlisting}[language=C, style=basesmol]
+public class HarmonicOscillator : MonoBehaviour 
+{
+    public float springConstant = 50f;
+    public float amplitude = 2f;
+    public float phase = 0f;
+    
+    private float mass;
+    private float omega;
+    private Vector3 equilibrium;
+    private float startTime;
+    
+    void Start() 
+    {
+        mass = GetComponent<Rigidbody>().mass;
+        omega = Mathf.Sqrt(springConstant / mass);
+        equilibrium = transform.position;
+        startTime = Time.time;
+    }
+    
+    void Update() 
+    {
+        float t = Time.time - startTime;
+        float x = amplitude * Mathf.Cos(omega * t + phase);
+        
+        transform.position = equilibrium + Vector3.right * x;
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Drehmoment}
+
+\begin{definition}{Drehmoment}
+    Rotatorisches Äquivalent zur Kraft:
+    $$\vec{\tau} = \vec{r} \times \vec{F}$$
+    
+    Für Rotation um feste Achse: $\tau = rF\sin\theta$
+\end{definition}
+
+\begin{code}{Drehmoment in Unity}
+\begin{lstlisting}[language=C, style=basesmol]
+public class TorqueExample : MonoBehaviour 
+{
+    private Rigidbody rb;
+    public float torqueStrength = 100f;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void Update() 
+    {
+        if (Input.GetKey(KeyCode.Q)) 
+        {
+            // Drehmoment um Y-Achse anwenden
+            rb.AddTorque(Vector3.up * torqueStrength);
+        }
+        
+        // Rotationsfeder zur aufrechten Position
+        Vector3 restoreTorque = -torqueStrength * transform.eulerAngles.x 
+                               * Vector3.right;
+        rb.AddTorque(restoreTorque);
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\begin{KR}{Problemlösungsstrategie für Kräfte}
+    \paragraph{Schritt 1: System identifizieren}
+    \begin{itemize}
+        \item Untersuchungsobjekt(e) definieren
+        \item Koordinatensystem wählen
+        \item Zeitintervall bestimmen
+    \end{itemize}
+    
+    \paragraph{Schritt 2: Freikörperdiagramm zeichnen}
+    \begin{itemize}
+        \item Alle auf das Objekt wirkenden Kräfte zeigen
+        \item Kraftvektoren mit Symbolen beschriften
+        \item Keine Kräfte einbeziehen, die das Objekt auf andere ausübt
+    \end{itemize}
+    
+    \paragraph{Schritt 3: Newton'sches Bewegungsgesetz anwenden}
+    \begin{itemize}
+        \item $\sum \vec{F} = m\vec{a}$ in Komponentenform schreiben
+        \item $\sum F_x = ma_x$, $\sum F_y = ma_y$, $\sum F_z = ma_z$
+        \item Unbekannte Größen lösen
+    \end{itemize}
+    
+    \paragraph{Schritt 4: In Unity implementieren}
+    \begin{itemize}
+        \item \texttt{Rigidbody.AddForce()} für jede Kraft verwenden
+        \item Passenden Force-Modus berücksichtigen
+        \item \texttt{FixedUpdate()} für Physikberechnungen nutzen
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Klotz auf schiefer Ebene}
+    Ein Klotz der Masse $m = 2kg$ gleitet eine reibungsfreie schiefe Ebene mit Winkel $\theta = 30°$ hinunter. Berechne die Beschleunigung und implementiere in Unity.
+    \tcblower
+    \textbf{Freikörperdiagramm:} Gewichtskraft $mg$ nach unten, Normalkraft $N$ senkrecht zur Oberfläche.
+    
+    \textbf{Komponentenanalyse:}
+    \begin{itemize}
+        \item Entlang der Ebene: $mg\sin\theta = ma$
+        \item Senkrecht dazu: $N - mg\cos\theta = 0$
+    \end{itemize}
+    
+    \textbf{Lösung:} $a = g\sin\theta = 9.81 \times \sin(30°) = 4.905 \, m/s^2$
+    
+    \textbf{Unity Implementation:}
+\begin{lstlisting}[language=C, style=basesmol]
+Vector3 inclineForce = mass * Physics.gravity.magnitude * 
+                      Mathf.Sin(30f * Mathf.Deg2Rad) * 
+                      inclineDirection;
+rb.AddForce(inclineForce);
+\end{lstlisting}
+\end{example2}
