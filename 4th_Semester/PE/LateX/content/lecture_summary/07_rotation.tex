@@ -379,3 +379,321 @@ Quaternion interpolated = Quaternion.Slerp(startRotation, endRotation, t);
     
     Um zuverlässige Ergebnisse zu erhalten, müssen sowohl die Kollisionsgeometrie als auch die Massenverteilung (insbesondere die Position des Schwerpunkts) korrekt definiert werden.
 \end{remark}
+
+\section{Rotational Motion}
+
+\subsection{Rotational Kinematics}
+
+\begin{definition}{Angular Quantities}
+    \begin{itemize}
+        \item \textbf{Angular position:} $\theta$ (radians)
+        \item \textbf{Angular velocity:} $\omega = \frac{d\theta}{dt}$ (rad/s)
+        \item \textbf{Angular acceleration:} $\alpha = \frac{d\omega}{dt} = \frac{d^2\theta}{dt^2}$ (rad/s²)
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Relationship to Linear Motion}\\
+    For circular motion with radius $r$:
+    \begin{itemize}
+        \item Arc length: $s = r\theta$
+        \item Linear velocity: $v = r\omega$
+        \item Tangential acceleration: $a_t = r\alpha$
+        \item Centripetal acceleration: $a_c = \frac{v^2}{r} = r\omega^2$
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Rotational Kinematic Equations}\\
+    For constant angular acceleration $\alpha$:
+    
+    \paragraph{Angular velocity:} $\omega(t) = \omega_0 + \alpha t$
+    
+    \paragraph{Angular position:} $\theta(t) = \theta_0 + \omega_0 t + \frac{1}{2}\alpha t^2$
+    
+    \paragraph{Velocity-position relation:} $\omega^2 = \omega_0^2 + 2\alpha(\theta - \theta_0)$
+\end{formula}
+
+\begin{code}{Rotational Motion in Unity}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class RotationalMotion : MonoBehaviour 
+{
+    public float angularVelocity = 90f; // degrees per second
+    public float angularAcceleration = 10f; // degrees per second squared
+    
+    private float currentAngularVel;
+    
+    void Start() 
+    {
+        currentAngularVel = angularVelocity;
+    }
+    
+    void Update() 
+    {
+        // Update angular velocity
+        currentAngularVel += angularAcceleration * Time.deltaTime;
+        
+        // Apply rotation
+        transform.Rotate(Vector3.up, currentAngularVel * Time.deltaTime);
+        
+        // Alternative: Set angular velocity directly on Rigidbody
+        // GetComponent<Rigidbody>().angularVelocity = 
+        //     Vector3.up * currentAngularVel * Mathf.Deg2Rad;
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Moment of Inertia}
+
+\begin{definition}{Moment of Inertia}\\
+    Measure of an object's resistance to rotational acceleration:
+    $$I = \sum_i m_i r_i^2 = \int r^2 \, dm$$
+    
+    where $r_i$ is the perpendicular distance from the rotation axis.
+\end{definition}
+
+\begin{formula}{Common Moments of Inertia}\\
+    \paragraph{Point mass:} $I = mr^2$
+    
+    \paragraph{Solid cylinder (about center axis):} $I = \frac{1}{2}mr^2$
+    
+    \paragraph{Solid sphere (about center):} $I = \frac{2}{5}mr^2$
+    
+    \paragraph{Thin rod (about center):} $I = \frac{1}{12}ml^2$
+    
+    \paragraph{Thin rod (about end):} $I = \frac{1}{3}ml^2$
+\end{formula}
+
+\begin{concept}{Parallel Axis Theorem}\\
+    For axis parallel to center-of-mass axis:
+    $$I = I_{cm} + md^2$$
+    
+    where $d$ is the distance between axes.
+\end{concept}
+
+\subsection{Rotational Dynamics}
+
+\begin{concept}{Newton's Second Law for Rotation}\\
+    $$\sum \tau = I\alpha$$
+    
+    where $\tau$ is torque, $I$ is moment of inertia, and $\alpha$ is angular acceleration.
+\end{concept}
+
+\begin{definition}{Torque}\\
+    $$\vec{\tau} = \vec{r} \times \vec{F}$$
+    
+    Magnitude: $\tau = rF\sin\phi$
+    
+    where $\phi$ is angle between $\vec{r}$ and $\vec{F}$.
+\end{definition}
+
+\begin{code}{Calculating Torque in Unity}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class TorqueCalculation : MonoBehaviour 
+{
+    public Transform forceApplication; // Point where force is applied
+    public Vector3 forceVector = Vector3.forward;
+    
+    void Update() 
+    {
+        // Calculate position vector from rotation center to force application
+        Vector3 leverArm = forceApplication.position - transform.position;
+        
+        // Calculate torque using cross product
+        Vector3 torque = Vector3.Cross(leverArm, forceVector);
+        
+        // Apply torque to rigidbody
+        GetComponent<Rigidbody>().AddTorque(torque);
+        
+        // Debug visualization
+        Debug.DrawRay(transform.position, leverArm, Color.red);
+        Debug.DrawRay(forceApplication.position, forceVector, Color.blue);
+        Debug.DrawRay(transform.position, torque, Color.green);
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Rotational Energy}
+
+\begin{definition}{Rotational Kinetic Energy}\\
+    $$K_{rot} = \frac{1}{2}I\omega^2$$
+    
+    For rolling motion (combined translation and rotation):
+    $$K_{total} = \frac{1}{2}mv_{cm}^2 + \frac{1}{2}I_{cm}\omega^2$$
+\end{definition}
+
+\begin{concept}{Rolling Without Slipping}\\
+    Condition: $v_{cm} = R\omega$
+    
+    where $R$ is radius and $v_{cm}$ is center-of-mass velocity.
+    
+    Total kinetic energy: $K = \frac{1}{2}mv^2(1 + \frac{I}{mR^2})$
+\end{concept}
+
+\subsection{Work and Power in Rotation}
+
+\begin{definition}{Rotational Work}\\
+    $$W = \int \tau \, d\theta$$
+    
+    For constant torque: $W = \tau\Delta\theta$
+\end{definition}
+
+\begin{definition}{Rotational Power}\\
+    $$P = \tau\omega$$
+    
+    Analogous to $P = Fv$ for linear motion.
+\end{definition}
+
+\begin{formula}{Work-Energy Theorem for Rotation}\\
+    $$W_{net} = \Delta K_{rot} = \frac{1}{2}I\omega_f^2 - \frac{1}{2}I\omega_i^2$$
+\end{formula}
+
+\begin{code}{Energy Analysis for Rotating Object}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class RotationalEnergyMonitor : MonoBehaviour 
+{
+    private Rigidbody rb;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void Update() 
+    {
+        // Calculate rotational kinetic energy
+        // Unity stores angular velocity in rad/s
+        float angularSpeed = rb.angularVelocity.magnitude;
+        
+        // Approximate moment of inertia (for sphere)
+        float momentOfInertia = 0.4f * rb.mass * 
+                               Mathf.Pow(GetComponent<SphereCollider>().radius, 2);
+        
+        float rotationalKE = 0.5f * momentOfInertia * angularSpeed * angularSpeed;
+        
+        // Translational kinetic energy
+        float translationalKE = 0.5f * rb.mass * rb.velocity.sqrMagnitude;
+        
+        // Total kinetic energy
+        float totalKE = rotationalKE + translationalKE;
+        
+        Debug.Log($"Rot KE: {rotationalKE:F2}, Trans KE: {translationalKE:F2}, " +
+                  $"Total: {totalKE:F2}");
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Angular Momentum}
+
+\begin{definition}{Angular Momentum for Rigid Body}\\
+    $$\vec{L} = I\vec{\omega}$$
+    
+    For point particle:
+    $$\vec{L} = \vec{r} \times \vec{p} = m\vec{r} \times \vec{v}$$
+\end{definition}
+
+\begin{concept}{Conservation of Angular Momentum}\\
+    When net external torque is zero:
+    $$\frac{d\vec{L}}{dt} = \vec{\tau}_{ext} = 0 \Rightarrow \vec{L} = \text{constant}$$
+    
+    Applications: spinning ice skater, planetary motion, gyroscopes
+\end{concept}
+
+\begin{KR}{Rotational Problem Solving}\\
+    \paragraph{Step 1: Identify rotation axis}
+    \begin{itemize}
+        \item Fixed axis (door hinge) or moving axis (rolling ball)
+        \item Choose coordinate system with axis perpendicular to motion plane
+    \end{itemize}
+    
+    \paragraph{Step 2: Calculate moment of inertia}
+    \begin{itemize}
+        \item Use standard formulas for common shapes
+        \item Apply parallel axis theorem if needed
+        \item For composite objects, sum individual moments
+    \end{itemize}
+    
+    \paragraph{Step 3: Analyze forces and torques}
+    \begin{itemize}
+        \item Calculate torque: $\tau = rF\sin\phi$
+        \item Apply $\sum \tau = I\alpha$ for dynamics
+        \item Consider constraints (rolling, fixed axis, etc.)
+    \end{itemize}
+    
+    \paragraph{Step 4: Apply conservation laws}
+    \begin{itemize}
+        \item Energy conservation for rolling down inclines
+        \item Angular momentum conservation for isolated systems
+        \item Combined linear and angular analysis for complex motion
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Rolling Sphere Down Incline}\\
+    A solid sphere (radius $R$, mass $m$) rolls without slipping down an incline of angle $\theta$. Find the acceleration of the center of mass.
+    \tcblower
+    \textbf{Given:} $I = \frac{2}{5}mR^2$ for solid sphere, rolling condition $a = R\alpha$
+    
+    \textbf{Force analysis:}
+    \begin{itemize}
+        \item Down incline: $mg\sin\theta - f = ma$
+        \item Torque about center: $fR = I\alpha = \frac{2}{5}mR^2 \cdot \frac{a}{R}$
+    \end{itemize}
+    
+    \textbf{From torque equation:} $f = \frac{2}{5}ma$
+    
+    \textbf{Substituting into force equation:}
+    $mg\sin\theta - \frac{2}{5}ma = ma$
+    
+    $mg\sin\theta = ma(1 + \frac{2}{5}) = \frac{7}{5}ma$
+    
+    $a = \frac{5g\sin\theta}{7} = 0.714 \times g\sin\theta$
+    
+    \textbf{Note:} This is less than $g\sin\theta$ for sliding because some energy goes into rotation.
+\end{example2}
+
+\begin{example2}{Torque Application in Unity}\\
+    Create a Unity script to simulate a door opening with applied torque, including realistic damping.
+    \tcblower
+\begin{lstlisting}[language=C, style=basesmol]
+public class DoorController : MonoBehaviour 
+{
+    public float maxTorque = 50f;
+    public float dampingCoefficient = 2f;
+    public float maxAngle = 90f;
+    
+    private Rigidbody rb;
+    private float initialAngle;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+        initialAngle = transform.eulerAngles.y;
+    }
+    
+    void FixedUpdate() 
+    {
+        float currentAngle = transform.eulerAngles.y - initialAngle;
+        if (currentAngle > 180f) currentAngle -= 360f;
+        
+        if (Input.GetKey(KeyCode.Space) && currentAngle < maxAngle) 
+        {
+            rb.AddTorque(Vector3.up * maxTorque);
+        }
+        
+        // Apply damping torque
+        Vector3 dampingTorque = -dampingCoefficient * rb.angularVelocity;
+        rb.AddTorque(dampingTorque);
+        
+        // Limit rotation
+        if (Mathf.Abs(currentAngle) > maxAngle) 
+        {
+            rb.angularVelocity = Vector3.zero;
+            Vector3 angles = transform.eulerAngles;
+            angles.y = initialAngle + Mathf.Sign(currentAngle) * maxAngle;
+            transform.eulerAngles = angles;
+        }
+    }
+}
+\end{lstlisting}
+\end{example2}

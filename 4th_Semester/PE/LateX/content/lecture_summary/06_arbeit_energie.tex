@@ -214,3 +214,284 @@ void CalculateEnergies() {
 }
     \end{lstlisting}
 \end{examplecode}
+
+\section{Energy and Momentum}
+
+\subsection{Work and Energy}
+
+\begin{definition}{Work}\\
+    Work done by a force $\vec{F}$ over displacement $\vec{s}$:
+    $$W = \vec{F} \cdot \vec{s} = Fs\cos\theta$$
+    
+    For variable force:
+    $$W = \int \vec{F} \cdot d\vec{s}$$
+\end{definition}
+
+\begin{definition}{Kinetic Energy}\\
+    Energy of motion:
+    $$K = \frac{1}{2}mv^2$$
+    
+    For rotational motion:
+    $$K_{rot} = \frac{1}{2}I\omega^2$$
+    
+    where $I$ is moment of inertia and $\omega$ is angular velocity.
+\end{definition}
+
+\begin{definition}{Potential Energy}\\
+    Energy stored in position or configuration:
+    
+    \textbf{Gravitational:} $U_g = mgh$
+    
+    \textbf{Elastic (spring):} $U_s = \frac{1}{2}kx^2$
+    
+    \textbf{General:} $U(\vec{r}) = -\int \vec{F} \cdot d\vec{r}$
+\end{definition}
+
+\begin{concept}{Work-Energy Theorem}\\
+    The work done on an object equals its change in kinetic energy:
+    $$W_{net} = \Delta K = K_f - K_i$$
+\end{concept}
+
+\subsection{Conservation of Energy}
+
+\begin{concept}{Mechanical Energy Conservation}\\
+    In absence of non-conservative forces:
+    $$E = K + U = \text{constant}$$
+    
+    For conservative systems:
+    $$\frac{1}{2}mv_1^2 + U_1 = \frac{1}{2}mv_2^2 + U_2$$
+\end{concept}
+
+\begin{definition}{Conservative vs. Non-Conservative Forces}
+    \begin{itemize}
+        \item \textbf{Conservative:} Work is path-independent (gravity, spring force)
+        \item \textbf{Non-conservative:} Work depends on path (friction, air resistance)
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Energy Calculation in Unity}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class EnergyMonitor : MonoBehaviour 
+{
+    private Rigidbody rb;
+    public float springConstant = 100f;
+    public Vector3 equilibriumPosition = Vector3.zero;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void Update() 
+    {
+        // Calculate kinetic energy
+        float kineticEnergy = 0.5f * rb.mass * rb.velocity.sqrMagnitude;
+        
+        // Calculate gravitational potential energy
+        float gravitationalPE = rb.mass * Mathf.Abs(Physics.gravity.y) * 
+                               transform.position.y;
+        
+        // Calculate elastic potential energy
+        Vector3 displacement = transform.position - equilibriumPosition;
+        float elasticPE = 0.5f * springConstant * displacement.sqrMagnitude;
+        
+        // Total mechanical energy
+        float totalEnergy = kineticEnergy + gravitationalPE + elasticPE;
+        
+        Debug.Log($"KE: {kineticEnergy:F2}, PE: {gravitationalPE + elasticPE:F2}, " +
+                  $"Total: {totalEnergy:F2}");
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Power}
+
+\begin{definition}{Power}\\
+    Rate of doing work:
+    $P = \frac{dW}{dt} = \vec{F} \cdot \vec{v}$
+    
+    For rotational motion:
+    $P = \tau \omega$
+\end{definition}
+
+\subsection{Momentum and Impulse}
+
+\begin{definition}{Linear Momentum}\\
+    $\vec{p} = m\vec{v}$
+    
+    Newton's Second Law in terms of momentum:
+    $\vec{F} = \frac{d\vec{p}}{dt}$
+\end{definition}
+
+\begin{definition}{Impulse}\\
+    Change in momentum due to force over time:
+    $\vec{J} = \int_{t_1}^{t_2} \vec{F} \, dt = \Delta\vec{p} = m\vec{v}_f - m\vec{v}_i$
+    
+    For constant force: $\vec{J} = \vec{F}\Delta t$
+\end{definition}
+
+\begin{concept}{Conservation of Momentum}\\
+    In absence of external forces, total momentum is conserved:
+    $\sum \vec{p}_i = \sum \vec{p}_f$
+    
+    For two-body system:
+    $m_1\vec{v}_{1i} + m_2\vec{v}_{2i} = m_1\vec{v}_{1f} + m_2\vec{v}_{2f}$
+\end{concept}
+
+\subsection{Collisions}
+
+\begin{definition}{Types of Collisions}
+    \begin{itemize}
+        \item \textbf{Elastic:} Both momentum and kinetic energy conserved
+        \item \textbf{Inelastic:} Only momentum conserved
+        \item \textbf{Perfectly inelastic:} Objects stick together after collision
+    \end{itemize}
+\end{definition}
+
+\begin{formula}{Elastic Collision (1D)}\\
+    For two objects with masses $m_1, m_2$ and initial velocities $v_{1i}, v_{2i}$:
+    
+    \paragraph{Final velocities:}
+    $v_{1f} = \frac{(m_1 - m_2)v_{1i} + 2m_2v_{2i}}{m_1 + m_2}$
+    
+    $v_{2f} = \frac{(m_2 - m_1)v_{2i} + 2m_1v_{1i}}{m_1 + m_2}$
+\end{formula}
+
+\begin{code}{Collision Implementation in Unity}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class CollisionHandler : MonoBehaviour 
+{
+    private Rigidbody rb;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void OnCollisionEnter(Collision collision) 
+    {
+        Rigidbody otherRb = collision.rigidbody;
+        if (otherRb == null) return;
+        
+        // Get masses and velocities before collision
+        float m1 = rb.mass;
+        float m2 = otherRb.mass;
+        Vector3 v1i = rb.velocity;
+        Vector3 v2i = otherRb.velocity;
+        
+        // Calculate velocities after elastic collision
+        Vector3 v1f = ((m1 - m2) * v1i + 2 * m2 * v2i) / (m1 + m2);
+        Vector3 v2f = ((m2 - m1) * v2i + 2 * m1 * v1i) / (m1 + m2);
+        
+        // Apply new velocities
+        rb.velocity = v1f;
+        otherRb.velocity = v2f;
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Angular Momentum}
+
+\begin{definition}{Angular Momentum}\\
+    For point particle:
+    $\vec{L} = \vec{r} \times \vec{p} = \vec{r} \times m\vec{v}$
+    
+    For rigid body:
+    $\vec{L} = I\vec{\omega}$
+    
+    where $I$ is moment of inertia and $\vec{\omega}$ is angular velocity.
+\end{definition}
+
+\begin{concept}{Conservation of Angular Momentum}\\
+    In absence of external torques:
+    $\frac{d\vec{L}}{dt} = \vec{\tau}_{ext} = 0 \Rightarrow \vec{L} = \text{constant}$
+\end{concept}
+
+\begin{code}{Angular Momentum in Unity}\\
+\begin{lstlisting}[language=C, style=basesmol]
+// Calculate angular momentum of a body at point Q with respect to pivot P
+Vector3 AngularMomentum(Rigidbody rb, Vector3 pivotPoint) 
+{
+    // Vector from pivot point to center of mass
+    Vector3 rPQ = rb.transform.position - pivotPoint;
+    
+    // Linear momentum of the body
+    Vector3 p = rb.velocity * rb.mass;
+    
+    // Calculate and return angular momentum
+    Vector3 angularMomentum = Vector3.Cross(rPQ, p);
+    return angularMomentum;
+}
+\end{lstlisting}
+\end{code}
+
+\begin{KR}{Energy-Momentum Problem Solving}\\
+    \paragraph{Step 1: Identify the system and constraints}
+    \begin{itemize}
+        \item Define system boundaries
+        \item Identify conservative and non-conservative forces
+        \item Check for momentum/energy conservation conditions
+    \end{itemize}
+    
+    \paragraph{Step 2: Choose appropriate conservation law}
+    \begin{itemize}
+        \item Use energy conservation for problems involving heights, springs
+        \item Use momentum conservation for collision problems
+        \item Use both for complex multi-stage problems
+    \end{itemize}
+    
+    \paragraph{Step 3: Set up equations}
+    \begin{itemize}
+        \item Write initial and final energy/momentum expressions
+        \item Apply conservation principles
+        \item Include any additional constraints
+    \end{itemize}
+    
+    \paragraph{Step 4: Solve and verify}
+    \begin{itemize}
+        \item Solve algebraically before substituting numbers
+        \item Check units and physical reasonableness
+        \item Verify conservation laws are satisfied
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Collision Analysis Problem}\\
+    Two cars approach each other: Car A (1000 kg) at 20 m/s, Car B (1500 kg) at -15 m/s. After collision, Car A moves at 5 m/s. Find Car B's final velocity and energy lost.
+    \tcblower
+    \textbf{Given:} $m_A = 1000kg$, $m_B = 1500kg$, $v_{Ai} = 20m/s$, $v_{Bi} = -15m/s$, $v_{Af} = 5m/s$
+    
+    \textbf{Momentum conservation:}
+    $m_Av_{Ai} + m_Bv_{Bi} = m_Av_{Af} + m_Bv_{Bf}$
+    
+    $1000(20) + 1500(-15) = 1000(5) + 1500v_{Bf}$
+    
+    $20000 - 22500 = 5000 + 1500v_{Bf}$
+    
+    $v_{Bf} = -5m/s$
+    
+    \textbf{Energy analysis:}
+    $KE_i = \frac{1}{2}(1000)(20^2) + \frac{1}{2}(1500)(15^2) = 368750J$
+    
+    $KE_f = \frac{1}{2}(1000)(5^2) + \frac{1}{2}(1500)(5^2) = 31250J$
+    
+    $\Delta E = 368750 - 31250 = 337500J$ lost
+\end{example2}
+
+\begin{example2}{Projectile Motion with Energy}\\
+    A projectile is launched at angle $\theta = 45°$ with initial speed $v_0 = 20m/s$. Find maximum height using energy conservation.
+    \tcblower
+    \textbf{Energy approach:}
+    At launch: $E_i = \frac{1}{2}mv_0^2$ (taking ground as reference)
+    
+    At max height: $E_f = mgh_{max} + \frac{1}{2}mv_x^2$
+    
+    Since $v_x = v_0\cos\theta$ remains constant:
+    
+    $\frac{1}{2}mv_0^2 = mgh_{max} + \frac{1}{2}m(v_0\cos\theta)^2$
+    
+    $\frac{1}{2}v_0^2 = gh_{max} + \frac{1}{2}v_0^2\cos^2\theta$
+    
+    $h_{max} = \frac{v_0^2\sin^2\theta}{2g} = \frac{(20)^2\sin^2(45°)}{2(9.81)} = 10.2m$
+\end{example2}

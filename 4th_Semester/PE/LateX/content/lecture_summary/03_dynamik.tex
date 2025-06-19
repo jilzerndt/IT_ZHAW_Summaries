@@ -160,3 +160,249 @@ void FixedUpdate() {
 }
     \end{lstlisting}
 \end{examplecode}
+
+\section{Dynamics and Forces}
+
+\subsection{Newton's Laws of Motion}
+
+\begin{concept}{Newton's First Law (Law of Inertia)}\\
+    An object at rest stays at rest, and an object in motion stays in motion at constant velocity, unless acted upon by a net external force.
+    $$\sum \vec{F} = 0 \Rightarrow \vec{v} = \text{constant}$$
+\end{concept}
+
+\begin{concept}{Newton's Second Law}\\
+    The acceleration of an object is directly proportional to the net force acting on it and inversely proportional to its mass.
+    $$\sum \vec{F} = m\vec{a}$$
+\end{concept}
+
+\begin{concept}{Newton's Third Law (Action-Reaction)}\\
+    For every action, there is an equal and opposite reaction.
+    $$\vec{F}_{AB} = -\vec{F}_{BA}$$
+\end{concept}
+
+\subsection{Common Forces}
+
+\begin{definition}{Gravitational Force}\\
+    Force between two masses:
+    $$\vec{F}_g = -\frac{Gm_1m_2}{r^2}\hat{r}$$
+    
+    Near Earth's surface:
+    $$\vec{F}_g = m\vec{g} = -mg\hat{j}$$
+    where $g = 9.81 \, m/s^2$
+\end{definition}
+
+\begin{definition}{Spring Force (Hooke's Law)}\\
+    Force exerted by a spring:
+    $$\vec{F}_s = -k\Delta\vec{l}$$
+    where $k$ is the spring constant and $\Delta\vec{l}$ is displacement from equilibrium.
+\end{definition}
+
+\begin{definition}{Friction Force}\\
+    \textbf{Static friction:} $f_s \leq \mu_s N$
+    
+    \textbf{Kinetic friction:} $f_k = \mu_k N$
+    
+    where $\mu_s, \mu_k$ are friction coefficients and $N$ is normal force.
+\end{definition}
+
+\begin{definition}{Damping Force}\\
+    Force opposing motion, proportional to velocity:
+    $$\vec{F}_d = -k_{damper} \vec{v}$$
+    Used in Unity for realistic motion with air resistance or viscous damping.
+\end{definition}
+
+\subsection{Unity Force Implementation}
+
+\begin{code}{Applying Forces in Unity}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class ForceController : MonoBehaviour 
+{
+    private Rigidbody rb;
+    public float springConstant = 100f;
+    public float damping = 10f;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void FixedUpdate() 
+    {
+        // Gravity (automatically applied by Unity)
+        // Vector3 gravity = Physics.gravity * rb.mass;
+        
+        // Spring force to origin
+        Vector3 springForce = -springConstant * transform.position;
+        
+        // Damping force
+        Vector3 dampingForce = -damping * rb.velocity;
+        
+        // Apply total force
+        rb.AddForce(springForce + dampingForce);
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\begin{concept}{Unity Force Modes}\\
+    Unity provides different ways to apply forces through \texttt{Rigidbody.AddForce()}:
+    \begin{itemize}
+        \item \texttt{Force}: Continuous force using mass (default)
+        \item \texttt{Acceleration}: Continuous force ignoring mass
+        \item \texttt{Impulse}: Instantaneous force using mass
+        \item \texttt{VelocityChange}: Instantaneous force ignoring mass
+    \end{itemize}
+\end{concept}
+
+\subsection{Harmonic Oscillator}
+
+\begin{definition}{Simple Harmonic Motion}\\
+    Motion under spring force with equation:
+    $$m\frac{d^2x}{dt^2} = -kx$$
+    
+    Solution: $x(t) = A\cos(\omega t + \phi)$
+    
+    where $\omega = \sqrt{\frac{k}{m}}$ is the angular frequency.
+\end{definition}
+
+\begin{formula}{Harmonic Oscillator Properties}\\
+    \paragraph{Angular frequency:} $\omega = \sqrt{\frac{k}{m}}$
+    
+    \paragraph{Period:} $T = \frac{2\pi}{\omega} = 2\pi\sqrt{\frac{m}{k}}$
+    
+    \paragraph{Frequency:} $f = \frac{1}{T} = \frac{\omega}{2\pi}$
+    
+    \paragraph{Total energy:} $E = \frac{1}{2}kA^2$ (constant)
+\end{formula}
+
+\begin{code}{Harmonic Oscillator in Unity}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class HarmonicOscillator : MonoBehaviour 
+{
+    public float springConstant = 50f;
+    public float amplitude = 2f;
+    public float phase = 0f;
+    
+    private float mass;
+    private float omega;
+    private Vector3 equilibrium;
+    private float startTime;
+    
+    void Start() 
+    {
+        mass = GetComponent<Rigidbody>().mass;
+        omega = Mathf.Sqrt(springConstant / mass);
+        equilibrium = transform.position;
+        startTime = Time.time;
+    }
+    
+    void Update() 
+    {
+        float t = Time.time - startTime;
+        float x = amplitude * Mathf.Cos(omega * t + phase);
+        
+        transform.position = equilibrium + Vector3.right * x;
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Rotational Forces}
+
+\begin{definition}{Torque (Moment)}\\
+    Rotational equivalent of force:
+    $$\vec{\tau} = \vec{r} \times \vec{F}$$
+    
+    For rotation about fixed axis:
+    $$\tau = rF\sin\theta$$
+\end{definition}
+
+\begin{definition}{Angular Spring (Torsional Spring)}\\
+    Analogous to linear spring for rotational motion:
+    $$\tau = -D\Delta\phi$$
+    
+    where $D$ is the angular spring constant and $\Delta\phi$ is angular displacement.
+\end{definition}
+
+\begin{code}{Applying Torque in Unity}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class TorqueExample : MonoBehaviour 
+{
+    private Rigidbody rb;
+    public float torqueStrength = 100f;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void Update() 
+    {
+        if (Input.GetKey(KeyCode.Q)) 
+        {
+            // Apply torque around Y-axis
+            rb.AddTorque(Vector3.up * torqueStrength);
+        }
+        
+        // Rotational spring to upright position
+        Vector3 restoreToruqe = -torqueStrength * transform.eulerAngles.x 
+                               * Vector3.right;
+        rb.AddTorque(restoreToruqe);
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Problem Solving Strategy}
+
+\begin{KR}{Force Analysis Method}\\
+    \paragraph{Step 1: Identify the system}
+    \begin{itemize}
+        \item Define the object(s) of interest
+        \item Choose coordinate system
+        \item Identify time interval of interest
+    \end{itemize}
+    
+    \paragraph{Step 2: Draw free-body diagram}
+    \begin{itemize}
+        \item Show all forces acting on the object
+        \item Label force vectors with symbols
+        \item Do not include forces the object exerts on other objects
+    \end{itemize}
+    
+    \paragraph{Step 3: Apply Newton's Second Law}
+    \begin{itemize}
+        \item Write $\sum \vec{F} = m\vec{a}$ in component form
+        \item $\sum F_x = ma_x$, $\sum F_y = ma_y$, $\sum F_z = ma_z$
+        \item Solve for unknown quantities
+    \end{itemize}
+    
+    \paragraph{Step 4: Implement in Unity}
+    \begin{itemize}
+        \item Use \texttt{Rigidbody.AddForce()} for each force
+        \item Consider appropriate force mode
+        \item Use \texttt{FixedUpdate()} for physics calculations
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Block on Inclined Plane}\\
+    A block of mass $m = 2kg$ slides down a frictionless incline of angle $\theta = 30°$. Find acceleration and implement in Unity.
+    \tcblower
+    \textbf{Free-body diagram:} Weight $mg$ downward, normal force $N$ perpendicular to surface.
+    
+    \textbf{Component analysis:}
+    \begin{itemize}
+        \item Along incline: $mg\sin\theta = ma$
+        \item Perpendicular: $N - mg\cos\theta = 0$
+    \end{itemize}
+    
+    \textbf{Solution:} $a = g\sin\theta = 9.81 \times \sin(30°) = 4.905 \, m/s^2$
+    
+    \textbf{Unity implementation:}
+\begin{lstlisting}[language=C, style=basesmol]
+Vector3 inclineForce = mass * Physics.gravity.magnitude * 
+                      Mathf.Sin(30f * Mathf.Deg2Rad) * 
+                      inclineDirection;
+rb.AddForce(inclineForce);
+\end{lstlisting}
+\end{example2}

@@ -1,0 +1,576 @@
+\section{Advanced Topics and Unity Implementation}
+
+\subsection{Unity Physics System}
+
+\begin{concept}{Unity Physics Pipeline}\\
+    Unity's physics simulation runs in discrete steps:
+    \begin{itemize}
+        \item \texttt{FixedUpdate()}: Called at fixed intervals (default 50Hz)
+        \item Physics calculations performed between FixedUpdate calls
+        \item \texttt{Update()}: Called once per frame (variable rate)
+        \item Use FixedUpdate for physics-related code
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Rigidbody Component Properties}
+    \begin{itemize}
+        \item \textbf{Mass:} Object's mass in kg
+        \item \textbf{Drag:} Linear damping coefficient
+        \item \textbf{Angular Drag:} Rotational damping coefficient
+        \item \textbf{Use Gravity:} Whether object responds to global gravity
+        \item \textbf{Is Kinematic:} Physics-controlled vs. script-controlled
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Unity Physics Settings}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class PhysicsConfiguration : MonoBehaviour 
+{
+    void Start() 
+    {
+        // Global physics settings
+        Physics.gravity = new Vector3(0, -9.81f, 0);
+        Time.fixedDeltaTime = 0.02f; // 50 Hz physics update
+        
+        // Rigidbody configuration
+        Rigidbody rb = GetComponent<Rigidbody>();
+        rb.mass = 1.0f;
+        rb.drag = 0.1f;          // Linear damping
+        rb.angularDrag = 0.05f;  // Angular damping
+        rb.useGravity = true;
+        rb.isKinematic = false;
+        
+        // Collision detection mode
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Force Application Methods}
+
+\begin{definition}{Unity Force Application}
+    \begin{itemize}
+        \item \textbf{AddForce():} Continuous force application
+        \item \textbf{AddForceAtPosition():} Force at specific world point
+        \item \textbf{AddTorque():} Rotational force application
+        \item \textbf{AddExplosionForce():} Radial force from explosion center
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Comprehensive Force Controller}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class AdvancedForceController : MonoBehaviour 
+{
+    private Rigidbody rb;
+    
+    [Header("Force Parameters")]
+    public float thrustForce = 100f;
+    public float torqueStrength = 50f;
+    public float explosionForce = 500f;
+    public float explosionRadius = 10f;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void FixedUpdate() 
+    {
+        HandleMovement();
+        HandleRotation();
+        HandleSpecialForces();
+    }
+    
+    void HandleMovement() 
+    {
+        // Thrust force in forward direction
+        if (Input.GetKey(KeyCode.W)) 
+        {
+            Vector3 thrust = transform.forward * thrustForce;
+            rb.AddForce(thrust, ForceMode.Force);
+        }
+        
+        // Side thrust
+        if (Input.GetKey(KeyCode.A)) 
+        {
+            rb.AddForce(-transform.right * thrustForce * 0.5f);
+        }
+        if (Input.GetKey(KeyCode.D)) 
+        {
+            rb.AddForce(transform.right * thrustForce * 0.5f);
+        }
+    }
+    
+    void HandleRotation() 
+    {
+        // Yaw control
+        if (Input.GetKey(KeyCode.Q)) 
+        {
+            rb.AddTorque(-transform.up * torqueStrength);
+        }
+        if (Input.GetKey(KeyCode.E)) 
+        {
+            rb.AddTorque(transform.up * torqueStrength);
+        }
+    }
+    
+    void HandleSpecialForces() 
+    {
+        // Explosion force
+        if (Input.GetKeyDown(KeyCode.Space)) 
+        {
+            Vector3 explosionCenter = transform.position - Vector3.up * 2f;
+            rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius);
+        }
+        
+        // Force at specific position (creates both force and torque)
+        if (Input.GetKey(KeyCode.F)) 
+        {
+            Vector3 forcePosition = transform.position + transform.right;
+            Vector3 force = transform.up * thrustForce;
+            rb.AddForceAtPosition(force, forcePosition);
+        }
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Collision Detection and Response}
+
+\begin{definition}{Unity Collision Events}
+    \begin{itemize}
+        \item \textbf{OnCollisionEnter():} When collision starts
+        \item \textbf{OnCollisionStay():} While collision continues
+        \item \textbf{OnCollisionExit():} When collision ends
+        \item \textbf{OnTriggerEnter():} For trigger colliders (no physics response)
+    \end{itemize}
+\end{definition}
+
+\begin{code}{Advanced Collision Handler}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class CollisionAnalyzer : MonoBehaviour 
+{
+    [Header("Collision Settings")]
+    public float restitution = 0.8f; // Coefficient of restitution
+    public float minVelocityForSound = 2f;
+    public AudioClip collisionSound;
+    
+    private Rigidbody rb;
+    private AudioSource audioSource;
+    
+    void Start() 
+    {
+        rb = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
+    }
+    
+    void OnCollisionEnter(Collision collision) 
+    {
+        // Calculate collision details
+        Vector3 relativeVelocity = rb.velocity - 
+                                  (collision.rigidbody?.velocity ?? Vector3.zero);
+        float collisionSpeed = relativeVelocity.magnitude;
+        
+        // Play sound based on collision intensity
+        if (collisionSpeed > minVelocityForSound && audioSource && collisionSound) 
+        {
+            float volume = Mathf.Clamp01(collisionSpeed / 10f);
+            audioSource.PlayOneShot(collisionSound, volume);
+        }
+        
+        // Custom collision response
+        if (collision.gameObject.CompareTag("Bouncy")) 
+        {
+            ApplyBouncyCollision(collision, relativeVelocity);
+        }
+        
+        // Log collision data for analysis
+        LogCollisionData(collision, collisionSpeed);
+    }
+    
+    void ApplyBouncyCollision(Collision collision, Vector3 relativeVelocity) 
+    {
+        // Get collision normal
+        Vector3 normal = collision.contacts[0].normal;
+        
+        // Calculate reflection velocity
+        Vector3 reflectedVelocity = Vector3.Reflect(relativeVelocity, normal);
+        
+        // Apply restitution
+        rb.velocity = reflectedVelocity * restitution;
+    }
+    
+    void LogCollisionData(Collision collision, float speed) 
+    {
+        Debug.Log($"Collision with {collision.gameObject.name}: " +
+                  $"Speed: {speed:F2} m/s, " +
+                  $"Contact points: {collision.contactCount}");
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Custom Physics Implementation}
+
+\begin{concept}{Numerical Integration Methods}\\
+    Unity uses implicit Euler integration, but custom implementations may use:
+    \begin{itemize}
+        \item \textbf{Explicit Euler:} Simple but potentially unstable
+        \item \textbf{Verlet Integration:} Better energy conservation
+        \item \textbf{Runge-Kutta:} Higher accuracy for complex systems
+    \end{itemize}
+\end{concept}
+
+\begin{code}{Custom Physics Integrator}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class CustomPhysicsObject : MonoBehaviour 
+{
+    [Header("Physics Properties")]
+    public float mass = 1f;
+    public Vector3 velocity = Vector3.zero;
+    public Vector3 acceleration = Vector3.zero;
+    public bool useGravity = true;
+    
+    [Header("Integration Settings")]
+    public enum IntegrationMethod { Euler, Verlet, RungeKutta }
+    public IntegrationMethod method = IntegrationMethod.Verlet;
+    
+    private Vector3 previousPosition;
+    private Vector3 currentPosition;
+    
+    void Start() 
+    {
+        currentPosition = transform.position;
+        previousPosition = currentPosition;
+    }
+    
+    void FixedUpdate() 
+    {
+        // Calculate forces
+        Vector3 totalForce = CalculateForces();
+        acceleration = totalForce / mass;
+        
+        // Integrate based on selected method
+        switch (method) 
+        {
+            case IntegrationMethod.Euler:
+                EulerIntegration();
+                break;
+            case IntegrationMethod.Verlet:
+                VerletIntegration();
+                break;
+            case IntegrationMethod.RungeKutta:
+                RungeKuttaIntegration();
+                break;
+        }
+        
+        // Update transform
+        transform.position = currentPosition;
+    }
+    
+    Vector3 CalculateForces() 
+    {
+        Vector3 totalForce = Vector3.zero;
+        
+        // Gravity
+        if (useGravity) 
+        {
+            totalForce += mass * Physics.gravity;
+        }
+        
+        // Spring force to origin (example)
+        totalForce += -50f * currentPosition;
+        
+        // Damping
+        totalForce += -2f * velocity;
+        
+        return totalForce;
+    }
+    
+    void EulerIntegration() 
+    {
+        float dt = Time.fixedDeltaTime;
+        
+        velocity += acceleration * dt;
+        currentPosition += velocity * dt;
+    }
+    
+    void VerletIntegration() 
+    {
+        float dt = Time.fixedDeltaTime;
+        
+        Vector3 newPosition = 2f * currentPosition - previousPosition + 
+                             acceleration * dt * dt;
+        
+        velocity = (newPosition - previousPosition) / (2f * dt);
+        
+        previousPosition = currentPosition;
+        currentPosition = newPosition;
+    }
+    
+    void RungeKuttaIntegration() 
+    {
+        float dt = Time.fixedDeltaTime;
+        
+        // RK4 implementation
+        Vector3 k1v = acceleration;
+        Vector3 k1x = velocity;
+        
+        Vector3 k2v = CalculateAcceleration(currentPosition + k1x * dt * 0.5f, 
+                                           velocity + k1v * dt * 0.5f);
+        Vector3 k2x = velocity + k1v * dt * 0.5f;
+        
+        Vector3 k3v = CalculateAcceleration(currentPosition + k2x * dt * 0.5f, 
+                                           velocity + k2v * dt * 0.5f);
+        Vector3 k3x = velocity + k2v * dt * 0.5f;
+        
+        Vector3 k4v = CalculateAcceleration(currentPosition + k3x * dt, 
+                                           velocity + k3v * dt);
+        Vector3 k4x = velocity + k3v * dt;
+        
+        velocity += (k1v + 2f * k2v + 2f * k3v + k4v) * dt / 6f;
+        currentPosition += (k1x + 2f * k2x + 2f * k3x + k4x) * dt / 6f;
+    }
+    
+    Vector3 CalculateAcceleration(Vector3 pos, Vector3 vel) 
+    {
+        Vector3 force = Vector3.zero;
+        if (useGravity) force += mass * Physics.gravity;
+        force += -50f * pos; // Spring force
+        force += -2f * vel;  // Damping
+        return force / mass;
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Performance Optimization}
+
+\begin{concept}{Physics Performance Tips}\\
+    \begin{itemize}
+        \item Use appropriate collision detection modes
+        \item Minimize active Rigidbodies
+        \item Use object pooling for projectiles
+        \item Optimize collision meshes
+        \item Adjust Fixed Timestep appropriately
+    \end{itemize}
+\end{concept}
+
+\begin{code}{Physics Object Pool}\\
+\begin{lstlisting}[language=C, style=basesmol]
+public class PhysicsObjectPool : MonoBehaviour 
+{
+    [Header("Pool Settings")]
+    public GameObject prefab;
+    public int poolSize = 100;
+    
+    private Queue<GameObject> pool = new Queue<GameObject>();
+    private List<GameObject> activeObjects = new List<GameObject>();
+    
+    void Start() 
+    {
+        // Pre-instantiate pool objects
+        for (int i = 0; i < poolSize; i++) 
+        {
+            GameObject obj = Instantiate(prefab);
+            obj.SetActive(false);
+            pool.Enqueue(obj);
+        }
+    }
+    
+    public GameObject GetObject(Vector3 position, Vector3 velocity) 
+    {
+        GameObject obj;
+        
+        if (pool.Count > 0) 
+        {
+            obj = pool.Dequeue();
+        } 
+        else 
+        {
+            // Pool exhausted, create new object
+            obj = Instantiate(prefab);
+        }
+        
+        // Initialize object
+        obj.transform.position = position;
+        obj.SetActive(true);
+        
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        rb.velocity = velocity;
+        rb.angularVelocity = Vector3.zero;
+        
+        activeObjects.Add(obj);
+        return obj;
+    }
+    
+    public void ReturnObject(GameObject obj) 
+    {
+        if (activeObjects.Contains(obj)) 
+        {
+            activeObjects.Remove(obj);
+            obj.SetActive(false);
+            
+            // Reset physics state
+            Rigidbody rb = obj.GetComponent<Rigidbody>();
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            
+            pool.Enqueue(obj);
+        }
+    }
+    
+    void Update() 
+    {
+        // Auto-return objects that fall below world
+        for (int i = activeObjects.Count - 1; i >= 0; i--) 
+        {
+            if (activeObjects[i].transform.position.y < -50f) 
+            {
+                ReturnObject(activeObjects[i]);
+            }
+        }
+    }
+}
+\end{lstlisting}
+\end{code}
+
+\subsection{Exam Preparation}
+
+\begin{KR}{Unity Physics Exam Strategy}\\
+    \paragraph{Core Physics Concepts}
+    \begin{itemize}
+        \item Master Newton's laws and their applications
+        \item Understand energy and momentum conservation
+        \item Practice rotational dynamics calculations
+        \item Know key formulas and their derivations
+    \end{itemize}
+    
+    \paragraph{Unity Implementation Knowledge}
+    \begin{itemize}
+        \item Rigidbody component properties and methods
+        \item Force application techniques and force modes
+        \item Collision detection and response
+        \item Vector operations and coordinate systems
+    \end{itemize}
+    
+    \paragraph{Problem-Solving Approach}
+    \begin{itemize}
+        \item Identify physical principles involved
+        \item Set up coordinate system and free-body diagrams
+        \item Apply conservation laws where appropriate
+        \item Translate to Unity implementation concepts
+    \end{itemize}
+    
+    \paragraph{Common Exam Topics}
+    \begin{itemize}
+        \item Projectile motion with Unity vectors
+        \item Collision analysis and momentum conservation
+        \item Rotational motion and torque calculations
+        \item Energy conservation in mechanical systems
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Comprehensive Physics Problem}\\
+    A ball (mass 1 kg, radius 0.1 m) rolls down a 30° incline, then undergoes an elastic collision with a stationary ball of equal mass. Calculate the final velocities and implement the simulation in Unity.
+    \tcblower
+    \textbf{Part 1: Rolling down incline}
+    
+    For solid sphere: $I = \frac{2}{5}mr^2$, $a = \frac{5g\sin\theta}{7}$
+    
+    $a = \frac{5 \times 9.81 \times \sin(30°)}{7} = 3.51 \, m/s^2$
+    
+    After rolling distance $d = 2m$: $v = \sqrt{2ad} = \sqrt{2 \times 3.51 \times 2} = 3.74 \, m/s$
+    
+    \textbf{Part 2: Elastic collision}
+    
+    For equal masses in 1D elastic collision:
+    $v_1' = 0$, $v_2' = v_1 = 3.74 \, m/s$
+    
+    \textbf{Unity Implementation:}
+\begin{lstlisting}[language=C, style=basesmol]
+public class RollingBallSimulation : MonoBehaviour 
+{
+    public float inclineAngle = 30f;
+    public float ballMass = 1f;
+    public float ballRadius = 0.1f;
+    
+    void Start() 
+    {
+        // Calculate rolling acceleration
+        float angleRad = inclineAngle * Mathf.Deg2Rad;
+        float rollingAccel = (5f * Physics.gravity.magnitude * 
+                             Mathf.Sin(angleRad)) / 7f;
+        
+        Debug.Log($"Rolling acceleration: {rollingAccel:F2} m/s^2");
+        
+        // Set up physics simulation
+        SetupIncline();
+        SetupBalls();
+    }
+    
+    void SetupIncline() 
+    {
+        // Create inclined plane
+        GameObject incline = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        incline.transform.localScale = new Vector3(5, 0.1f, 1);
+        incline.transform.rotation = Quaternion.Euler(0, 0, -inclineAngle);
+        
+        // Add physics material for rolling
+        PhysicMaterial rollMaterial = new PhysicMaterial("Rolling");
+        rollMaterial.staticFriction = 1f;
+        rollMaterial.dynamicFriction = 1f;
+        rollMaterial.frictionCombine = PhysicMaterialCombine.Maximum;
+        
+        incline.GetComponent<Collider>().material = rollMaterial;
+    }
+    
+    void SetupBalls() 
+    {
+        // Create rolling ball
+        GameObject ball1 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        ball1.transform.position = new Vector3(-2, 2, 0);
+        ball1.transform.localScale = Vector3.one * ballRadius * 2;
+        
+        Rigidbody rb1 = ball1.AddComponent<Rigidbody>();
+        rb1.mass = ballMass;
+        
+        // Create stationary target ball
+        GameObject ball2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        ball2.transform.position = new Vector3(2, 0, 0);
+        ball2.transform.localScale = Vector3.one * ballRadius * 2;
+        
+        Rigidbody rb2 = ball2.AddComponent<Rigidbody>();
+        rb2.mass = ballMass;
+        
+        // Add collision handler for elastic collision
+        ball1.AddComponent<ElasticCollisionHandler>();
+        ball2.AddComponent<ElasticCollisionHandler>();
+    }
+}
+
+public class ElasticCollisionHandler : MonoBehaviour 
+{
+    void OnCollisionEnter(Collision collision) 
+    {
+        Rigidbody otherRb = collision.rigidbody;
+        if (otherRb == null) return;
+        
+        Rigidbody thisRb = GetComponent<Rigidbody>();
+        
+        // For equal masses in elastic collision
+        Vector3 tempVelocity = thisRb.velocity;
+        thisRb.velocity = otherRb.velocity;
+        otherRb.velocity = tempVelocity;
+        
+        Debug.Log($"Collision: Ball speeds after = " +
+                  $"{thisRb.velocity.magnitude:F2}, {otherRb.velocity.magnitude:F2}");
+    }
+}
+\end{lstlisting}
+\end{example2}
+
+\begin{remark}
+    Remember that Unity's physics system handles many complexities automatically, but understanding the underlying physics principles is crucial for creating realistic and predictable behavior. The exam will focus on your understanding of these fundamental concepts rather than Unity-specific implementation details.
+\end{remark}
