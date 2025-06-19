@@ -2,7 +2,7 @@
 
 \subsection{Unity Physics System}
 
-\begin{concept}{Unity Physics Pipeline}\\
+\begin{concept}{Unity Physics Pipeline}
     Unity's Physiksimulation läuft in diskreten Schritten:
     \begin{itemize}
         \item \texttt{FixedUpdate()}: Wird in festen Intervallen aufgerufen (Standard 50Hz)
@@ -19,7 +19,7 @@
     \end{itemize}
 \end{concept}
 
-\begin{definition}{Rigidbody-Komponenten-Eigenschaften}\\
+\begin{definition}{Rigidbody-Komponenten-Eigenschaften}
     \textbf{Grundlegende Eigenschaften:}
     \begin{itemize}
         \item \textbf{Mass}: Objektmasse in kg
@@ -38,7 +38,7 @@
     \end{itemize}
 \end{definition}
 
-\begin{code}{Unity Physics-Konfiguration}\\
+\begin{code}{Unity Physics-Konfiguration}
 \begin{lstlisting}[language=C, style=basesmol]
 public class PhysicsConfiguration : MonoBehaviour 
 {
@@ -48,25 +48,25 @@ public class PhysicsConfiguration : MonoBehaviour
         Physics.gravity = new Vector3(0, -9.81f, 0);
         Time.fixedDeltaTime = 0.02f; // 50 Hz Physik-Update
         
-        // Solver-Einstellungen für bessere Stabilität
+        // Solver-Einstellungen fuer bessere Stabilitaet
         Physics.defaultSolverIterations = 6;
         Physics.defaultSolverVelocityIterations = 1;
         
         // Rigidbody-Konfiguration
         Rigidbody rb = GetComponent<Rigidbody>();
         rb.mass = 1.0f;
-        rb.drag = 0.1f;                    // Lineare Dämpfung
-        rb.angularDrag = 0.05f;            // Winkel-Dämpfung
+        rb.drag = 0.1f;                    // Lineare Daempfung
+        rb.angularDrag = 0.05f;            // Winkel-Daempfung
         rb.useGravity = true;
         rb.isKinematic = false;
         
         // Kollisionserkennung-Modus
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         
-        // Interpolation für glatte Bewegung
+        // Interpolation fuer glatte Bewegung
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         
-        // Schwerpunkt manuell setzen (falls nötig)
+        // Schwerpunkt manuell setzen (falls noetig)
         rb.centerOfMass = new Vector3(0, -0.5f, 0);
     }
 }
@@ -75,7 +75,7 @@ public class PhysicsConfiguration : MonoBehaviour
 
 \subsection{Kraftanwendungsmethoden}
 
-\begin{definition}{Unity Kraftanwendung}\\
+\begin{definition}{Unity Kraftanwendung}
     \textbf{Kraftmethoden:}
     \begin{itemize}
         \item \textbf{AddForce()}: Kontinuierliche Kraftanwendung
@@ -94,7 +94,7 @@ public class PhysicsConfiguration : MonoBehaviour
     \end{itemize}
 \end{definition}
 
-\begin{code}{Umfassender Kraft-Controller}\\
+\begin{code}{Umfassender Kraft-Controller}
 \begin{lstlisting}[language=C, style=basesmol]
 public class AdvancedForceController : MonoBehaviour 
 {
@@ -135,7 +135,7 @@ public class AdvancedForceController : MonoBehaviour
     
     void HandleMovement() 
     {
-        // Schubkraft in Vorwärtsrichtung
+        // Schubkraft in Vorwaertsrichtung
         if (Input.GetKey(thrustKey)) 
         {
             Vector3 thrust = transform.forward * thrustForce;
@@ -187,7 +187,7 @@ public class AdvancedForceController : MonoBehaviour
             Vector3 explosionCenter = transform.position - Vector3.up * 2f;
             rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius, 3f);
             
-            // Alle anderen Rigidbodies in der Nähe beeinflussen
+            // Alle anderen Rigidbodies in der Naehe beeinflussen
             ApplyExplosionToNearbyObjects(explosionCenter);
         }
         
@@ -212,7 +212,7 @@ public class AdvancedForceController : MonoBehaviour
     void CreateThrustEffects() 
     {
         // Partikeleffekte, Sounds, etc.
-        // Hier würden normalerweise visuelle Effekte erstellt
+        // Hier wuerden normalerweise visuelle Effekte erstellt
     }
     
     void ApplyExplosionToNearbyObjects(Vector3 center) 
@@ -234,7 +234,7 @@ public class AdvancedForceController : MonoBehaviour
 
 \subsection{Kollisionserkennung und -reaktion}
 
-\begin{definition}{Unity Kollisions-Events}\\
+\begin{definition}{Unity Kollisions-Events}
     \textbf{Kollisions-Events (für Collider):}
     \begin{itemize}
         \item \textbf{OnCollisionEnter()}: Beim Start der Kollision
@@ -258,19 +258,19 @@ public class AdvancedForceController : MonoBehaviour
     \end{itemize}
 \end{definition}
 
-\begin{code}{Erweiterte Kollisionsbehandlung}\\
+\begin{code}{Erweiterte Kollisionsbehandlung}
 \begin{lstlisting}[language=C, style=basesmol]
 public class CollisionAnalyzer : MonoBehaviour 
 {
     [Header("Kollisions-Einstellungen")]
     public float restitution = 0.8f;           // Restitutionskoeffizient
-    public float minVelocityForSound = 2f;     // Min. Geschw. für Sound
-    public float minVelocityForSparks = 5f;    // Min. Geschw. für Funken
+    public float minVelocityForSound = 2f;     // Min. Geschw. fuer Sound
+    public float minVelocityForSparks = 5f;    // Min. Geschw. fuer Funken
     public AudioClip collisionSound;
     public ParticleSystem sparkEffect;
     
     [Header("Material-Eigenschaften")]
-    public float metalDensity = 7800f;         // kg/m³
+    public float metalDensity = 7800f;         // kg/m^3
     public float woodDensity = 600f;
     public float plasticDensity = 1200f;
     
@@ -291,7 +291,7 @@ public class CollisionAnalyzer : MonoBehaviour
         float collisionSpeed = relativeVelocity.magnitude;
         float collisionEnergy = 0.5f * rb.mass * collisionSpeed * collisionSpeed;
         
-        // Sound basierend auf Kollisionsintensität
+        // Sound basierend auf Kollisionsintensitaet
         if (collisionSpeed > minVelocityForSound && audioSource && collisionSound) 
         {
             float volume = Mathf.Clamp01(collisionSpeed / 10f);
@@ -300,7 +300,7 @@ public class CollisionAnalyzer : MonoBehaviour
             audioSource.PlayOneShot(collisionSound, volume);
         }
         
-        // Partikeleffekte für starke Kollisionen
+        // Partikeleffekte fuer starke Kollisionen
         if (collisionSpeed > minVelocityForSparks && sparkEffect) 
         {
             Vector3 contactPoint = collision.contacts[0].point;
@@ -313,7 +313,7 @@ public class CollisionAnalyzer : MonoBehaviour
         // Benutzerdefinierte Kollisionsreaktion
         ApplyCustomCollisionResponse(collision, relativeVelocity);
         
-        // Kollisionsdaten für Analyse protokollieren
+        // Kollisionsdaten fuer Analyse protokollieren
         LogCollisionData(collision, collisionSpeed, collisionEnergy);
     }
     
@@ -344,7 +344,7 @@ public class CollisionAnalyzer : MonoBehaviour
     
     void ApplyCustomCollisionResponse(Collision collision, Vector3 relativeVelocity) 
     {
-        // Für spezielle Kollisionstypen
+        // Fuer spezielle Kollisionstypen
         if (collision.gameObject.CompareTag("Bouncy")) 
         {
             ApplyBouncyCollision(collision, relativeVelocity);
@@ -376,7 +376,7 @@ public class CollisionAnalyzer : MonoBehaviour
         // Objekte "kleben" zusammen
         if (collision.rigidbody != null) 
         {
-            // Joint erstellen für klebende Verbindung
+            // Joint erstellen fuer klebende Verbindung
             FixedJoint joint = gameObject.AddComponent<FixedJoint>();
             joint.connectedBody = collision.rigidbody;
             joint.breakForce = 1000f;  // Kraft zum Trennen
@@ -385,7 +385,7 @@ public class CollisionAnalyzer : MonoBehaviour
     
     void CheckForBreaking(Collision collision, float impactSpeed) 
     {
-        // Zerstörung bei starkem Aufprall
+        // Zerstoerung bei starkem Aufprall
         float breakingThreshold = 10f;
         
         if (impactSpeed > breakingThreshold) 
@@ -397,13 +397,13 @@ public class CollisionAnalyzer : MonoBehaviour
     void BreakObject(GameObject obj) 
     {
         // Objekt in Fragmente zerteilen
-        // Hier würde normalerweise ein Fragmentierungs-System aufgerufen
+        // Hier wuerde normalerweise ein Fragmentierungs-System aufgerufen
         Debug.Log($"Object {obj.name} shattered due to high impact!");
         
-        // Partikeleffekt für Zerstörung
+        // Partikeleffekt fuer Zerstoerung
         // CreateDestructionEffect(obj.transform.position);
         
-        // Objekt deaktivieren oder zerstören
+        // Objekt deaktivieren oder zerstoeren
         obj.SetActive(false);
     }
     
@@ -415,7 +415,7 @@ public class CollisionAnalyzer : MonoBehaviour
                                                Quaternion.LookRotation(normal));
             sparks.Play();
             
-            // Automatisches Löschen nach Abschluss
+            // Automatisches Loeschen nach Abschluss
             Destroy(sparks.gameObject, sparks.main.duration + 2f);
         }
     }
@@ -426,7 +426,7 @@ public class CollisionAnalyzer : MonoBehaviour
                   $"Geschwindigkeit: {speed:F2} m/s, " +
                   $"Energie: {energy:F2} J, " +
                   $"Kontaktpunkte: {collision.contactCount}, " +
-                  $"Impuls: {collision.impulse.magnitude:F2} N·s");
+                  $"Impuls: {collision.impulse.magnitude:F2} N*s");
     }
 }
 \end{lstlisting}
@@ -434,7 +434,7 @@ public class CollisionAnalyzer : MonoBehaviour
 
 \subsection{Benutzerdefinierte Physik-Implementierung}
 
-\begin{concept}{Numerische Integrationsmethoden}\\
+\begin{concept}{Numerische Integrationsmethoden}
     Unity verwendet implizite Euler-Integration, aber benutzerdefinierte Implementierungen können verwenden:
     \begin{itemize}
         \item \textbf{Expliziter Euler}: Einfach, aber potentiell instabil
@@ -452,7 +452,7 @@ public class CollisionAnalyzer : MonoBehaviour
     \end{itemize}
 \end{concept}
 
-\begin{code}{Benutzerdefinierter Physik-Integrator}\\
+\begin{code}{Benutzerdefinierter Physik-Integrator}
 \begin{lstlisting}[language=C, style=basesmol]
 public class CustomPhysicsObject : MonoBehaviour 
 {
@@ -469,7 +469,7 @@ public class CustomPhysicsObject : MonoBehaviour
     public bool showTrajectory = true;
     public int trajectoryPoints = 50;
     
-    [Header("Kräfte")]
+    [Header("Kraefte")]
     public Vector3 constantForce = Vector3.zero;
     public float springConstant = 50f;
     public Vector3 springCenter = Vector3.zero;
@@ -508,11 +508,11 @@ public class CustomPhysicsObject : MonoBehaviour
     
     void FixedUpdate() 
     {
-        // Kräfte berechnen
+        // Kraefte berechnen
         Vector3 totalForce = CalculateForces();
         acceleration = totalForce / mass;
         
-        // Integration basierend auf gewählter Methode
+        // Integration basierend auf gewaehlter Methode
         switch (method) 
         {
             case IntegrationMethod.Euler:
@@ -556,7 +556,7 @@ public class CustomPhysicsObject : MonoBehaviour
         Vector3 displacement = currentPosition - springCenter;
         totalForce += -springConstant * displacement;
         
-        // Dämpfung (geschwindigkeitsproportional)
+        // Daempfung (geschwindigkeitsproportional)
         totalForce += -damping * velocity;
         
         // Luftwiderstand (geschwindigkeitsquadratisch)
@@ -615,7 +615,7 @@ public class CustomPhysicsObject : MonoBehaviour
     {
         float dt = Time.fixedDeltaTime;
         
-        // Leapfrog für bessere Energieerhaltung
+        // Leapfrog fuer bessere Energieerhaltung
         velocity += acceleration * dt;
         currentPosition += velocity * dt;
     }
@@ -679,7 +679,7 @@ public class CustomPhysicsObject : MonoBehaviour
 
 \subsection{Performance-Optimierung}
 
-\begin{concept}{Physik-Performance-Tipps}\\
+\begin{concept}{Physik-Performance-Tipps}
     \textbf{Kollisionserkennung optimieren:}
     \begin{itemize}
         \item Geeignete Kollisionserkennungs-Modi verwenden
@@ -705,7 +705,7 @@ public class CustomPhysicsObject : MonoBehaviour
     \end{itemize}
 \end{concept}
 
-\begin{code}{Physik-Objekt-Pool}\\
+\begin{code}{Physik-Objekt-Pool}
 \begin{lstlisting}[language=C, style=basesmol]
 public class PhysicsObjectPool : MonoBehaviour 
 {
@@ -743,7 +743,7 @@ public class PhysicsObjectPool : MonoBehaviour
         poolParent = new GameObject("ObjectPool").transform;
         poolParent.SetParent(transform);
         
-        // Pool vorab füllen
+        // Pool vorab fuellen
         for (int i = 0; i < poolSize; i++) 
         {
             GameObject obj = Instantiate(prefab, poolParent);
@@ -751,7 +751,7 @@ public class PhysicsObjectPool : MonoBehaviour
             pool.Enqueue(obj);
         }
         
-        // Regelmäßige Bereinigung starten
+        // Regelmaessige Bereinigung starten
         InvokeRepeating(nameof(CleanupObjects), cleanupInterval, cleanupInterval);
     }
     
@@ -760,7 +760,7 @@ public class PhysicsObjectPool : MonoBehaviour
         // Begrenzung aktiver Objekte
         if (activeObjects.Count >= maxActiveObjects) 
         {
-            // Ältestes Objekt zurückgeben
+            // Aeltestes Objekt zurueckgeben
             ReturnOldestObject();
         }
         
@@ -772,7 +772,7 @@ public class PhysicsObjectPool : MonoBehaviour
         } 
         else 
         {
-            // Pool erschöpft, neues Objekt erstellen
+            // Pool erschoepft, neues Objekt erstellen
             obj = Instantiate(prefab, poolParent);
             Debug.LogWarning("Pool exhausted, creating new object");
         }
@@ -788,12 +788,12 @@ public class PhysicsObjectPool : MonoBehaviour
             rb.velocity = velocity;
             rb.angularVelocity = angularVelocity;
             
-            // Physik-Zustand zurücksetzen
+            // Physik-Zustand zuruecksetzen
             rb.Sleep();
             rb.WakeUp();
         }
         
-        // Zur aktiven Liste hinzufügen
+        // Zur aktiven Liste hinzufuegen
         PooledObject pooledObj = new PooledObject(obj);
         activeObjects.Add(pooledObj);
         
@@ -814,7 +814,7 @@ public class PhysicsObjectPool : MonoBehaviour
             }
         }
         
-        // Physik-Zustand zurücksetzen
+        // Physik-Zustand zuruecksetzen
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb != null) 
         {
@@ -823,7 +823,7 @@ public class PhysicsObjectPool : MonoBehaviour
             rb.Sleep();
         }
         
-        // Objekt deaktivieren und zurück in Pool
+        // Objekt deaktivieren und zurueck in Pool
         obj.SetActive(false);
         obj.transform.SetParent(poolParent);
         pool.Enqueue(obj);
@@ -840,7 +840,7 @@ public class PhysicsObjectPool : MonoBehaviour
     
     void CleanupObjects() 
     {
-        // Objekte zurückgeben, die zu lange aktiv waren
+        // Objekte zurueckgeben, die zu lange aktiv waren
         for (int i = activeObjects.Count - 1; i >= 0; i--) 
         {
             PooledObject obj = activeObjects[i];
@@ -849,12 +849,12 @@ public class PhysicsObjectPool : MonoBehaviour
             {
                 ReturnObject(obj.gameObject);
             }
-            // Objekte zurückgeben, die außerhalb der Welt gefallen sind
+            // Objekte zurueckgeben, die ausserhalb der Welt gefallen sind
             else if (obj.gameObject.transform.position.y < -50f) 
             {
                 ReturnObject(obj.gameObject);
             }
-            // Objekte zurückgeben, die zu langsam sind
+            // Objekte zurueckgeben, die zu langsam sind
             else if (obj.rigidbody != null && obj.rigidbody.velocity.magnitude < 0.1f && 
                      Time.time - obj.spawnTime > 2f) 
             {
@@ -870,7 +870,7 @@ public class PhysicsObjectPool : MonoBehaviour
         }
     }
     
-    // Öffentliche API für externe Nutzung
+    // Oeffentliche API fuer externe Nutzung
     public void ReturnAllObjects() 
     {
         while (activeObjects.Count > 0) 
@@ -900,7 +900,7 @@ public class PhysicsObjectPool : MonoBehaviour
 
 \subsection{Prüfungsvorbereitung}
 
-\begin{KR}{Unity Physics Prüfungsstrategie}\\
+\begin{KR}{Unity Physics Prüfungsstrategie}
     \paragraph{Kernphysik-Konzepte beherrschen}
     \begin{itemize}
         \item Newton'sche Gesetze und ihre Anwendungen
@@ -939,7 +939,7 @@ public class PhysicsObjectPool : MonoBehaviour
     \end{itemize}
 \end{KR}
 
-\begin{example2}{Umfassendes Physik-Problem}\\
+\begin{example2}{Umfassendes Physik-Problem}
     Eine Kugel (Masse 1 kg, Radius 0.1 m) rollt eine 30°-Schräge hinunter, kollidiert dann elastisch mit einer ruhenden Kugel gleicher Masse. Berechne die Endgeschwindigkeiten und implementiere die Simulation in Unity.
     \tcblower
     \textbf{Teil 1: Rollen auf der Schräge}
@@ -998,14 +998,14 @@ public class RollingBallSimulation : MonoBehaviour
         float finalVelocity = Mathf.Sqrt(2f * rollingAccel * rollDistance);
         
         Debug.Log($"Theoretische Werte:");
-        Debug.Log($"Rollbeschleunigung: {rollingAccel:F2} m/s²");
+        Debug.Log($"Rollbeschleunigung: {rollingAccel:F2} m/s^2");
         Debug.Log($"Endgeschwindigkeit vor Kollision: {finalVelocity:F2} m/s");
         Debug.Log($"Nach elastischer Kollision: Ball1 = 0 m/s, Ball2 = {finalVelocity:F2} m/s");
     }
     
     void SetupSimulation() 
     {
-        // Schräge erstellen
+        // Schraege erstellen
         SetupIncline();
         
         // Kugeln erstellen
@@ -1023,7 +1023,7 @@ public class RollingBallSimulation : MonoBehaviour
         incline.transform.position = new Vector3(-rollDistance / 2f, -0.5f, 0);
         incline.transform.rotation = Quaternion.Euler(0, 0, -inclineAngle);
         
-        // Material für Rollen ohne Rutschen
+        // Material fuer Rollen ohne Rutschen
         PhysicMaterial rollMaterial = new PhysicMaterial("Rolling");
         rollMaterial.staticFriction = 1f;
         rollMaterial.dynamicFriction = 1f;
@@ -1055,7 +1055,7 @@ public class RollingBallSimulation : MonoBehaviour
         rb2.mass = ballMass;
         rb2.useGravity = true;
         
-        // Kollisions-Handler hinzufügen
+        // Kollisions-Handler hinzufuegen
         ball1.AddComponent<ElasticCollisionHandler>();
         ball2.AddComponent<ElasticCollisionHandler>();
         
@@ -1066,7 +1066,7 @@ public class RollingBallSimulation : MonoBehaviour
     
     void SetupPhysicsMaterials() 
     {
-        // Elastisches Material für Kollisionen
+        // Elastisches Material fuer Kollisionen
         PhysicMaterial elasticMaterial = new PhysicMaterial("Elastic");
         elasticMaterial.bounciness = 1f;
         elasticMaterial.frictionCombine = PhysicMaterialCombine.Minimum;
@@ -1092,7 +1092,7 @@ public class RollingBallSimulation : MonoBehaviour
             }
         }
         
-        // Simulation zurücksetzen
+        // Simulation zuruecksetzen
         if (Input.GetKeyDown(KeyCode.R)) 
         {
             ResetSimulation();
@@ -1121,7 +1121,7 @@ public class ElasticCollisionHandler : MonoBehaviour
         
         Rigidbody thisRb = GetComponent<Rigidbody>();
         
-        // Nur zwischen Kugeln, nicht mit Schräge
+        // Nur zwischen Kugeln, nicht mit Schraege
         if (collision.gameObject.name.Contains("Ball")) 
         {
             // Kollisionsdaten protokollieren
@@ -1131,7 +1131,7 @@ public class ElasticCollisionHandler : MonoBehaviour
             Debug.Log($"Kollision erkannt!");
             Debug.Log($"Geschwindigkeiten vorher: {v1_before:F2}, {v2_before:F2}");
             
-            // Für gleiche Massen in elastischer Kollision
+            // Fuer gleiche Massen in elastischer Kollision
             Vector3 tempVelocity = thisRb.velocity;
             thisRb.velocity = otherRb.velocity;
             otherRb.velocity = tempVelocity;
@@ -1149,7 +1149,7 @@ public class ElasticCollisionHandler : MonoBehaviour
         
         Debug.Log($"Geschwindigkeiten nachher: {rb1.velocity.magnitude:F2}, {rb2.velocity.magnitude:F2}");
         
-        // Energieerhaltung prüfen
+        // Energieerhaltung pruefen
         float kineticBefore = 0.5f * rb1.mass * Mathf.Pow(3.74f, 2);
         float kineticAfter = 0.5f * rb1.mass * rb1.velocity.sqrMagnitude + 
                            0.5f * rb2.mass * rb2.velocity.sqrMagnitude;
@@ -1162,7 +1162,7 @@ public class ElasticCollisionHandler : MonoBehaviour
 \end{lstlisting}
 \end{example2}
 
-\begin{concept}{Wichtige Erkenntnisse}\\
+\begin{concept}{Wichtige Erkenntnisse}
     \textbf{Theoretische Grundlagen:}
     \begin{itemize}
         \item Physikalische Gesetze gelten universell
