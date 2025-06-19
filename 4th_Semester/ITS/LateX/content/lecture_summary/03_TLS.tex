@@ -1,8 +1,8 @@
 \section{Transport Layer Security (TLS)}
 
-\subsection{Introduction to TLS}
+\mult{2}
 
-\begin{definition}{Transport Layer Security (TLS)}\\
+\begin{definition}{Transport Layer Security (TLS)}
 TLS is a cryptographic protocol designed to provide secure communication over a computer network. It provides:
 \begin{itemize}
     \item \textbf{Confidentiality} - Protection against eavesdropping
@@ -13,19 +13,8 @@ TLS is a cryptographic protocol designed to provide secure communication over a 
 TLS is the successor to Secure Sockets Layer (SSL).
 \end{definition}
 
-\begin{concept}{TLS Evolution}\\
-TLS has evolved through several versions:
-\begin{itemize}
-    \item \textbf{SSL 2.0} (1995) - First publicly released version (deprecated)
-    \item \textbf{SSL 3.0} (1996) - Fixed major security issues in 2.0 (deprecated)
-    \item \textbf{TLS 1.0} (1999, RFC 2246) - First IETF standard version (legacy)
-    \item \textbf{TLS 1.1} (2006, RFC 4346) - Added protection against CBC attacks (legacy)
-    \item \textbf{TLS 1.2} (2008, RFC 5246) - Added authenticated encryption, improved flexibility (current)
-    \item \textbf{TLS 1.3} (2018, RFC 8446) - Major redesign with improved security and performance (current)
-\end{itemize}
-\end{concept}
 
-\begin{concept}{TLS Building Blocks}\\
+\begin{concept}{TLS Building Blocks}
 TLS 1.3 relies on several cryptographic building blocks:
 \begin{itemize}
     \item Strong block ciphers (AES, ChaCha20)
@@ -36,19 +25,7 @@ TLS 1.3 relies on several cryptographic building blocks:
 \end{itemize}
 \end{concept}
 
-\begin{definition}{Cipher Suites}\\
-A cipher suite is a combination of cryptographic algorithms used in TLS. In TLS 1.3, cipher suites are simplified and specify only symmetric encryption algorithms:
-\begin{itemize}
-    \item \textbf{TLS\_AES\_128\_GCM\_SHA256} - AES-128 in GCM mode with SHA-256 for key derivation
-    \item \textbf{TLS\_AES\_256\_GCM\_SHA384} - AES-256 in GCM mode with SHA-384 for key derivation
-    \item \textbf{TLS\_CHACHA20\_POLY1305\_SHA256} - ChaCha20 with Poly1305 and SHA-256
-\end{itemize}
-The key exchange algorithms and certificate verification methods are negotiated separately.
-\end{definition}
-
-\subsection{TLS Protocol Stack}
-
-\begin{concept}{TLS Protocol Layers}\\
+\begin{concept}{TLS Protocol Layers}
 TLS consists of multiple protocol layers:
 \begin{itemize}
     \item \textbf{TLS Record Protocol} - The base layer that defines packet format
@@ -59,7 +36,7 @@ TLS consists of multiple protocol layers:
 \end{itemize}
 \end{concept}
 
-\begin{definition}{TLS Protocol Phases}\\
+\begin{definition}{TLS Protocol Phases}
 TLS operates in three distinct phases:
 \begin{itemize}
     \item \textbf{Handshake} - Establishes cryptographic parameters and authenticates parties
@@ -68,9 +45,18 @@ TLS operates in three distinct phases:
 \end{itemize}
 \end{definition}
 
-\subsection{TLS 1.3 Handshake}
+\multend
 
-\begin{concept}{TLS 1.3 Handshake Goals}\\
+
+
+\subsubsection{TLS Protocol Stack}
+
+\mult{2}
+
+
+
+
+\begin{concept}{TLS 1.3 Handshake Goals}
 The TLS 1.3 handshake accomplishes several goals:
 \begin{itemize}
     \item Negotiate cryptographic algorithms
@@ -82,8 +68,9 @@ The TLS 1.3 handshake accomplishes several goals:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{TLS 1.3 Handshake Process}\\
-\paragraph{Initial Exchange}
+\begin{KR}{TLS 1.3 Handshake Process}
+
+\textbf{Initial Exchange}
 \begin{itemize}
     \item Client sends ClientHello message with:
     \begin{itemize}
@@ -92,7 +79,7 @@ The TLS 1.3 handshake accomplishes several goals:
         \item Supported key exchange groups
         \item Client's key shares for preferred groups
     \end{itemize}
-    \item Server responds with ServerHello message containing:
+    \item Server responds with ServerHello message:
     \begin{itemize}
         \item Selected TLS version
         \item Selected cipher suite
@@ -100,50 +87,39 @@ The TLS 1.3 handshake accomplishes several goals:
     \end{itemize}
 \end{itemize}
 
-\paragraph{Key Derivation}
+\textbf{Key Derivation}
 \begin{itemize}
     \item Both parties compute shared secret using Diffie-Hellman
     \item Handshake keys are derived using HKDF with the shared secret
     \item All subsequent handshake messages are encrypted
 \end{itemize}
 
-\paragraph{Server Authentication}
+\textbf{Server Authentication} Server sends...
 \begin{itemize}
-    \item Server sends Certificate message with certificate chain
-    \item Server sends CertificateVerify with signature over handshake transcript
-    \item Server sends Finished message with MAC over handshake transcript
+    \item Certificate message with certificate chain
+    \item CertificateVerify with signature over handshake transcript
+    \item Finished message with MAC over handshake transcript
 \end{itemize}
 
-\paragraph{Client Verification}
+\textbf{Client Verification} Client...
 \begin{itemize}
-    \item Client validates server certificate
-    \item Client verifies server's signature in CertificateVerify
-    \item Client verifies server's Finished message
-    \item Client sends its own Finished message
+    \item validates server certificate
+    \item verifies server's signature in CertificateVerify
+    \item verifies server's Finished message
+    \item sends its own Finished message
 \end{itemize}
 
-\paragraph{Application Data}
+\textbf{Application Data}
 \begin{itemize}
     \item Both parties derive application data keys
-    \item Encrypted application data can now be exchanged
+    \item Encrypted application data can be exchanged
 \end{itemize}
 \end{KR}
 
-\begin{lemma}{TLS 1.3 Improvements}\\
-TLS 1.3 provides several improvements over previous versions:
-\begin{itemize}
-    \item \textbf{Reduced Handshake Latency} - Requires only one round-trip (1-RTT) instead of two
-    \item \textbf{Zero Round-Trip Time (0-RTT)} - Optional resumption mode for repeat connections
-    \item \textbf{Simplified Cryptography} - Removed support for weak algorithms
-    \item \textbf{Forward Secrecy} - Mandatory for all cipher suites
-    \item \textbf{Encrypted Handshake} - Better protection against traffic analysis
-\end{itemize}
-\end{lemma}
 
-\subsection{TLS Data Exchange}
 
-\begin{concept}{TLS Record Protection}\\
-Application data is protected within TLS records:
+
+\begin{concept}{TLS Record Protection} protects app data
 \begin{itemize}
     \item Data is fragmented into manageable chunks
     \item Each fragment is encrypted and authenticated using AEAD ciphers
@@ -152,9 +128,8 @@ Application data is protected within TLS records:
 \end{itemize}
 \end{concept}
 
-\subsection{TLS Session Resumption}
 
-\begin{definition}{TLS Session Resumption}\\
+\begin{definition}{TLS Session Resumption}
 Session resumption allows clients to reconnect to servers more efficiently:
 \begin{itemize}
     \item Avoids the computational cost of public key operations
@@ -165,10 +140,7 @@ Session resumption allows clients to reconnect to servers more efficiently:
 \end{itemize}
 \end{definition}
 
-\subsection{TLS Session Teardown}
-
-\begin{concept}{TLS Connection Termination}\\
-TLS provides a secure mechanism for terminating connections:
+\begin{concept}{TLS Connection Termination}
 \begin{itemize}
     \item Uses close\_notify alerts to signal completion of data transmission
     \item Prevents truncation attacks where an attacker prematurely terminates a connection
@@ -176,7 +148,8 @@ TLS provides a secure mechanism for terminating connections:
 \end{itemize}
 \end{concept}
 
-\subsection{Datagram Transport Layer Security (DTLS)}
+
+
 
 \begin{definition}{Datagram Transport Layer Security (DTLS)}\\
 DTLS is an adaptation of TLS for datagram transport protocols like UDP:
@@ -189,45 +162,9 @@ DTLS is an adaptation of TLS for datagram transport protocols like UDP:
 \end{itemize}
 \end{definition}
 
-\begin{example}
-A web browser connecting to a secure website (https://example.com) initiates a TLS 1.3 handshake. The browser sends a ClientHello message including support for TLS 1.3 and key shares for X25519 and P-256 curves. The server selects TLS 1.3 with X25519 and responds with a ServerHello message. Both compute a shared secret and derive handshake keys. The server sends its certificate chain, a signature over the handshake, and a Finished message. After verifying these, the browser sends its own Finished message. Both derive application data keys and begin encrypted communication, completing the handshake in just one round-trip.
-\end{example}
+\multend
 
-\begin{examplecode}{TLS 1.3 Session Resumption}\\
-\begin{lstlisting}[language=Python, style=basesmol]
-# Client-side pseudocode for TLS 1.3 session resumption
-def resume_tls_session(server, port, psk_identity, psk):
-    # Create ClientHello with PSK
-    client_hello = create_client_hello(
-        supported_versions=[TLS_1_3],
-        cipher_suites=[TLS_AES_128_GCM_SHA256, TLS_CHACHA20_POLY1305_SHA256],
-        psk_identity=psk_identity
-    )
-    
-    # Send ClientHello to server
-    send_message(server, port, client_hello)
-    
-    # Receive ServerHello
-    server_hello = receive_message(server, port)
-    
-    if server_hello.accepts_psk:
-        # Derive traffic keys from PSK
-        traffic_keys = derive_keys_from_psk(psk, client_hello, server_hello)
-        
-        # Send Finished message
-        finished = create_finished_message(traffic_keys.client_handshake_key)
-        send_encrypted_message(server, port, finished, traffic_keys.client_handshake_key)
-        
-        # Receive server Finished
-        server_finished = receive_encrypted_message(server, port, traffic_keys.server_handshake_key)
-        
-        # Ready for application data
-        return Connection(traffic_keys.application_keys)
-    else:
-        # Fall back to full handshake
-        return perform_full_handshake(server, port, client_hello, server_hello)
-\end{lstlisting}
-\end{examplecode}
+
 
 
 % IPsec content moved to Virtual Private Networks chapter for better organization

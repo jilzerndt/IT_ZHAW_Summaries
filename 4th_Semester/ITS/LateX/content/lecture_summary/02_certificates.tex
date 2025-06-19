@@ -1,12 +1,67 @@
 \section{Digital Certificates}
 
-\subsection{Introduction to Digital Certificates}
+\small
+
+
 
 \begin{definition}{Digital Certificates}
 A digital certificate is a signed statement by a trusted third party (Certificate Authority) that a certain public key belongs to a certain entity (person, organization, or system). Certificates are used to authenticate public keys, not the entities themselves.
 \end{definition}
 
-\begin{concept}{Authentication of Public Keys}
+
+
+\subsubsection{Certificate Revocation and Transparency}
+
+\mult{2}
+
+
+\begin{definition}{Certificate Revocation}
+     process of invalidating a certificate before its expiration date, typically due to:
+\begin{itemize}
+    \item Compromise of the associated private key
+    \item Change in the certificate owner's status
+    \item Cessation of operation by the certificate owner
+\end{itemize}
+\end{definition}
+
+\begin{theorem}{Certificate Revocation Mechanisms}
+\begin{itemize}
+    \item \textbf{Certificate Revocation Lists (CRLs)} - Lists of revoked certificates published by CAs
+    \item \textbf{Online Certificate Status Protocol (OCSP)} - Protocol for real-time certificate status checking
+    \item \textbf{OCSP Stapling} - Server includes pre-fetched OCSP response during TLS handshake
+    \item \textbf{OCSP Must-Staple} - Requires OCSP stapling for a certificate to be considered valid
+    \item \textbf{Browser-Summarized CRLs} - Browser vendors compile and compress CRLs for distribution to browser instances
+\end{itemize}
+\end{theorem}
+
+\begin{concept}{Revocation Checking Methods}
+\begin{itemize}
+    \item \textbf{CRLs}: Download revocation list from CA and check certificate serial number
+    \item \textbf{OCSP}: Real-time query to CA for specific certificate status
+    \item \textbf{OCSP Stapling}: Server pre-fetches OCSP response and includes it in TLS handshake
+\end{itemize}
+Each method has trade-offs between performance, privacy, and reliability.
+\end{concept}
+
+
+
+
+
+\begin{definition}{Certificate Transparency}
+Certificate Transparency (CT) is a framework designed to detect and prevent the fraudulent issuance of certificates:
+\begin{itemize}
+    \item Publicly auditable logs of all issued certificates
+    \item Monitors check logs for suspicious certificates
+    \item Browsers require evidence that certificates are logged
+    \item Helps detect malicious or mistakenly issued certificates
+\end{itemize}
+\end{definition}
+
+\multend
+
+\mult{2}
+
+\begin{concept}{Authentication of Public Keys}\\
 The fundamental problem certificates solve is how to reliably distribute public keys in an insecure network:
 \begin{itemize}
     \item Without certificates, it's difficult to know if a public key truly belongs to the claimed entity
@@ -15,18 +70,21 @@ The fundamental problem certificates solve is how to reliably distribute public 
 \end{itemize}
 \end{concept}
 
+
+
 \begin{definition}{Certificate Types}
-Different certificate types serve different purposes:
-\begin{itemize}
-    \item \textbf{TLS Certificates}:
-    \begin{itemize}
-        \item Domain Validation (DV) - Validates domain ownership only
-        \item Organization Validation (OV) - Validates domain ownership and organization details
-        \item Extended Validation (EV) - Provides the highest level of validation
-    \end{itemize}
-    \item \textbf{Code signing certificates} - Authenticate software and files
-    \item \textbf{Client certificates} - Identify individual users or machines
-\end{itemize}
+
+    \textbf{TLS Certificates}:
+
+     Domain Validation (DV) - Validates domain ownership only
+
+        Organization Validation (OV) - Validates domain ownership and organization details
+
+        Extended Validation (EV) - Provides the highest level of validation
+
+\textbf{Code signing certificates} - Authenticate software and files
+
+\textbf{Client certificates} - Identify individual users or machines
 \end{definition}
 
 \begin{concept}{Public Key Infrastructure (PKI)}
@@ -39,32 +97,34 @@ PKI is the framework that manages digital certificates:
 \end{itemize}
 \end{concept}
 
-
-\subsection{X.509 Certificate Structure}
-
 \begin{definition}{X.509 Standard}
-X.509 is the dominant certificate standard, developed by the International Telecommunication Union (ITU). X.509 certificates are described in ASN.1 notation and typically encoded using DER (Distinguished Encoding Rules).
+X.509 certificates are described in ASN.1 notation and typically encoded using DER (Distinguished Encoding Rules).
 \end{definition}
 
 \begin{concept}{X.509 Certificate Fields}
-Key components of an X.509 certificate include:
-\begin{itemize}
-    \item \textbf{Version} - Certificate format version (v1, v2, or v3)
-    \item \textbf{Serial Number} - Unique identifier assigned by the issuing CA
-    \item \textbf{Signature Algorithm ID} - Algorithm used to sign the certificate
-    \item \textbf{Issuer Name} - X.500 Distinguished Name of the issuing CA
-    \item \textbf{Validity Period} - Start and end dates for certificate validity
-    \item \textbf{Subject Name} - X.500 Distinguished Name of the certificate owner
-    \item \textbf{Subject Public Key Info} - The public key and algorithm identifier
-    \item \textbf{Extensions} - Additional fields (e.g., key usage, alternative names)
-    \item \textbf{Certificate Signature} - The digital signature created by the CA
-\end{itemize}
-\includegraphics[width=0.7\linewidth]{x509.png}
+
+\textbf{Version} - Certificate format version (v1, v2, or v3)
+
+\textbf{Serial Number} - Unique identifier assigned by issuing CA
+
+\textbf{Signature Algorithm ID} - Algorithm to sign the certificate
+
+\textbf{Issuer Name} - X.500 Distinguished Name of issuing CA
+
+\textbf{Validity Period} - Start and end dates for certificate validity
+
+\textbf{Subject Name} - X.500 Distinguished Name certif. owner
+
+\textbf{Subject Public Key Info} - public key\& algorithm identifier
+
+\textbf{Extensions} - Additional fields (e.g., key usage)
+
+\textbf{Certificate Signature} - The digital signature created by CA
+
 \end{concept}
 
-\subsection{Certificate Chains and Trust}
 
-\begin{concept}{Certificate Chains}
+\begin{definition}{Certificate Chains}
 Certificates form chains of trust:
 \begin{itemize}
     \item \textbf{End entity certificates} - Used by servers, clients, or devices
@@ -72,7 +132,7 @@ Certificates form chains of trust:
     \item \textbf{Root CA certificates} - Self-signed certificates from trusted root authorities
 \end{itemize}
 To verify a certificate, each certificate in the chain must be validated up to a trusted root.
-\end{concept}
+\end{definition}
 
 \begin{concept}{Certificate Validation Process}
 Certificate validation follows a simple chain of trust:
@@ -95,7 +155,11 @@ Root certificates are the foundation of trust in PKI:
 
 
 
-\includegraphics[width=0.7\linewidth]{certificate_chain.png}
+
+
+\includegraphics[width=\linewidth]{certificate_chain.png}
+
+\multend
 
 
 
@@ -105,51 +169,6 @@ Root certificates are the foundation of trust in PKI:
 
 
 
-\subsection{Certificate Revocation}
 
-\begin{definition}{Certificate Revocation}\\
-Certificate revocation is the process of invalidating a certificate before its expiration date, typically due to:
-\begin{itemize}
-    \item Compromise of the associated private key
-    \item Change in the certificate owner's status
-    \item Cessation of operation by the certificate owner
-\end{itemize}
-\end{definition}
-
-\begin{concept}{Certificate Revocation Mechanisms}\\
-Several mechanisms exist for checking certificate revocation status:
-\begin{itemize}
-    \item \textbf{Certificate Revocation Lists (CRLs)} - Lists of revoked certificates published by CAs
-    \item \textbf{Online Certificate Status Protocol (OCSP)} - Protocol for real-time certificate status checking
-    \item \textbf{OCSP Stapling} - Server includes pre-fetched OCSP response during TLS handshake
-    \item \textbf{OCSP Must-Staple} - Requires OCSP stapling for a certificate to be considered valid
-    \item \textbf{Browser-Summarized CRLs} - Browser vendors compile and compress CRLs for distribution to browser instances
-\end{itemize}
-\end{concept}
-
-\begin{concept}{Revocation Checking Methods}
-\begin{itemize}
-    \item \textbf{CRLs}: Download revocation list from CA and check certificate serial number
-    \item \textbf{OCSP}: Real-time query to CA for specific certificate status
-    \item \textbf{OCSP Stapling}: Server pre-fetches OCSP response and includes it in TLS handshake
-\end{itemize}
-Each method has trade-offs between performance, privacy, and reliability.
-\end{concept}
-
-\subsection{Certificate Transparency}
-
-\begin{concept}{Certificate Transparency}
-Certificate Transparency (CT) is a framework designed to detect and prevent the fraudulent issuance of certificates:
-\begin{itemize}
-    \item Publicly auditable logs of all issued certificates
-    \item Monitors check logs for suspicious certificates
-    \item Browsers require evidence that certificates are logged
-    \item Helps detect malicious or mistakenly issued certificates
-\end{itemize}
-\end{concept}
-
-\begin{example}
-Let's Encrypt, a free and automated Certificate Authority, has become the largest CA with over 234 million active certificates. It uses the ACME (Automatic Certificate Management Environment) protocol to automate the validation, issuance, and renewal of certificates. Let's Encrypt provides only Domain Validation (DV) certificates with a validity period of 90 days, encouraging frequent renewal and automation.
-\end{example}
 
 
