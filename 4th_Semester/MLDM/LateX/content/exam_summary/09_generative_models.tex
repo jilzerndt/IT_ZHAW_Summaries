@@ -2,7 +2,7 @@
 
 \subsection{Probability Fundamentals}
 
-\begin{definition}{Probability Basics}\\
+\begin{definition}{Probability Basics}
 Key probability concepts include:
 \begin{itemize}
     \item \textbf{Sample Space} ($S$): Set of all possible outcomes
@@ -12,13 +12,15 @@ Key probability concepts include:
 \end{itemize}
 \end{definition}
 
-\begin{definition}{Joint and Conditional Probability}\\
+\begin{definition}{Joint and Conditional Probability}
 \begin{itemize}
     \item \textbf{Joint Probability}: $P(A \cap B)$ is the probability of events $A$ and $B$ occurring together
     \item \textbf{Conditional Probability}: $P(B|A) = \frac{P(A \cap B)}{P(A)}$ is the probability of event $B$ given that event $A$ has occurred
     \item \textbf{Independence}: Events $A$ and $B$ are independent if $P(A \cap B) = P(A) \cdot P(B)$
 \end{itemize}
 \end{definition}
+
+\mult{2}
 
 \begin{definition}{Bayes' Theorem}\\
 Bayes' theorem describes how to update probabilities based on new evidence:
@@ -37,25 +39,41 @@ The law of total probability relates the probability of an event to conditional 
 \[P(A) = \sum_{i=1}^{n} P(A|B_i)P(B_i)\]
 where $B_1, B_2, ..., B_n$ form a partition of the sample space (mutually exclusive and collectively exhaustive).
 \end{concept}
+\multend
 
 \subsection{Parameter Estimation}
 
-\begin{definition}{Parameter Estimation}\\
-Two common approaches for parameter estimation:
+\mult{2}
+
+\begin{definition}{Parameter Estimation}
 \begin{itemize}
     \item \textbf{Maximum Likelihood Estimation (MLE)}: Finds parameter values that maximize the likelihood of observing the training data
     \item \textbf{Maximum A Posteriori (MAP)}: Incorporates prior beliefs about parameters, finding values that maximize the posterior probability
 \end{itemize}
 \end{definition}
 
-\begin{definition}{Likelihood Function}\\
+
+\begin{definition}{Likelihood Function}
 The likelihood function measures how well a statistical model (with given parameters) explains observed data:
 \[L(\theta; X) = P(X|\theta)\]
 For independent observations, it's the product of individual probabilities:
 \[L(\theta; X) = \prod_{i=1}^{n} P(x^{(i)}|\theta)\]
 \end{definition}
 
-\begin{KR}{Maximum Likelihood Estimation}\\
+\begin{example}{MLE for Bernoulli Distribution}
+Consider estimating the probability of heads for a biased coin:
+\begin{itemize}
+    \item Data: 7 heads and 3 tails in 10 flips
+    \item Model: Bernoulli distribution with parameter $p$ (probability of heads)
+    \item Likelihood: $L(p; X) = p^7 (1-p)^3$
+    \item Log-likelihood: $\log L(p; X) = 7\log(p) + 3\log(1-p)$
+    \item Derivative: $\frac{\partial}{\partial p} \log L(p; X) = \frac{7}{p} - \frac{3}{1-p}$
+    \item Setting to zero: $\frac{7}{p} - \frac{3}{1-p} = 0$
+    \item Solving: $p_{MLE} = \frac{7}{10} = 0.7$
+\end{itemize}
+\end{example}
+
+\begin{KR}{Maximum Likelihood Estimation}
 \paragraph{Define the likelihood function}
 Express the probability of observing the data given the parameters:
 \[L(\theta; X) = P(X|\theta) = \prod_{i=1}^{n} P(x^{(i)}|\theta)\]
@@ -72,18 +90,9 @@ Set the derivative to zero and solve for parameters:
 Verify second derivative is negative to ensure maximum
 \end{KR}
 
-\begin{example}{MLE for Bernoulli Distribution}
-Consider estimating the probability of heads for a biased coin:
-\begin{itemize}
-    \item Data: 7 heads and 3 tails in 10 flips
-    \item Model: Bernoulli distribution with parameter $p$ (probability of heads)
-    \item Likelihood: $L(p; X) = p^7 (1-p)^3$
-    \item Log-likelihood: $\log L(p; X) = 7\log(p) + 3\log(1-p)$
-    \item Derivative: $\frac{\partial}{\partial p} \log L(p; X) = \frac{7}{p} - \frac{3}{1-p}$
-    \item Setting to zero: $\frac{7}{p} - \frac{3}{1-p} = 0$
-    \item Solving: $p_{MLE} = \frac{7}{10} = 0.7$
-\end{itemize}
-\end{example}
+
+
+\multend
 
 \subsection{Generative vs. Discriminative Models}
 
@@ -105,7 +114,7 @@ Discriminative models directly learn the conditional probability $P(Y|X)$ or the
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Comparing Generative and Discriminative Models}\\
+\begin{concept}{Comparing Generative and Discriminative Models}
 \begin{itemize}
     \item \textbf{Data efficiency}: Generative models often perform better with less data
     \item \textbf{Expressiveness}: Generative models capture the full distribution
@@ -115,11 +124,11 @@ Discriminative models directly learn the conditional probability $P(Y|X)$ or the
 \end{itemize}
 \end{concept}
 
-\begin{example2}{Generative vs. Discriminative Approach}\\
+\begin{example2}{Generative vs. Discriminative Approach}
 Consider a simple email classification task:
 \begin{itemize}
     \item Task: Classify emails as spam or not spam
-    \item Features: Presence of words like "money", "free", "meeting"
+    \item Features: Presence of words like ''money'', ''free'', ''meeting''
 \end{itemize}
 \tcblower
 Discriminative approach (Logistic Regression):
@@ -138,17 +147,50 @@ Generative approach (Naive Bayes):
 \end{itemize}
 \end{example2}
 
+\raggedcolumns
+\columnbreak
+
 \subsection{Naive Bayes Classifier}
 
+\mult{2}
+
 \begin{definition}{Naive Bayes}\\
-Naive Bayes is a probabilistic classifier based on Bayes' theorem with a "naive" independence assumption between features:
+Naive Bayes is a probabilistic classifier based on Bayes' theorem with a ''naive'' independence assumption between features:
 \[P(Y|X) = \frac{P(X|Y) \cdot P(Y)}{P(X)}\]
 The naive assumption allows us to write:
 \[P(X|Y) = \prod_{i=1}^{n} P(X_i|Y)\]
 This simplifies calculations significantly.
 \end{definition}
 
-\begin{KR}{Implementing Naive Bayes}\\
+\begin{theorem}{Advantages and Disadvantages of Naive Bayes}\\
+Advantages:
+\begin{itemize}
+    \item Simple and fast to train
+    \item Works well with high-dimensional data
+    \item Performs well with small training sets
+    \item Handles missing values naturally
+\end{itemize}
+Disadvantages:
+\begin{itemize}
+    \item Independence assumption is often violated in real data
+    \item Not suitable for regression problems
+    \item May be outperformed by more sophisticated models for complex tasks
+    \item Probability estimates may be unreliable
+\end{itemize}
+\end{theorem}
+
+\multend
+
+\begin{concept}{Types of Naive Bayes}\\
+Different implementations of Naive Bayes exist for different types of data:
+\begin{itemize}
+    \item \textbf{Bernoulli Naive Bayes}: For binary features (presence/absence)
+    \item \textbf{Multinomial Naive Bayes}: For discrete features (e.g., word counts)
+    \item \textbf{Gaussian Naive Bayes}: For continuous features, assuming normal distribution
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Implementing Naive Bayes}
 \paragraph{Calculate prior probabilities}
 Compute $P(Y=y_k)$ for each class $y_k$ based on their frequency in the training data
 
@@ -166,34 +208,7 @@ For a new instance $x$, calculate for each class $y_k$:
 Predict the class with highest posterior probability.
 \end{KR}
 
-\begin{definition}{Types of Naive Bayes}\\
-Different implementations of Naive Bayes exist for different types of data:
-\begin{itemize}
-    \item \textbf{Bernoulli Naive Bayes}: For binary features (presence/absence)
-    \item \textbf{Multinomial Naive Bayes}: For discrete features (e.g., word counts)
-    \item \textbf{Gaussian Naive Bayes}: For continuous features, assuming normal distribution
-\end{itemize}
-\end{definition}
 
-\begin{example}{Naive Bayes for Text Classification}
-Spam detection using Naive Bayes:
-\begin{itemize}
-    \item Classes: Spam (1) and Not Spam (0)
-    \item Features: Presence of words like "offer" and "free"
-    \item Prior probabilities: $P(Spam) = 0.3$, $P(NotSpam) = 0.7$
-    \item Likelihoods: 
-    \begin{itemize}
-        \item $P("offer"|Spam) = 0.6$, $P("offer"|NotSpam) = 0.1$
-        \item $P("free"|Spam) = 0.8$, $P("free"|NotSpam) = 0.2$
-    \end{itemize}
-    \item For an email containing both "offer" and "free":
-    \begin{itemize}
-        \item $P(Spam|"offer","free") \propto 0.3 \times 0.6 \times 0.8 = 0.144$
-        \item $P(NotSpam|"offer","free") \propto 0.7 \times 0.1 \times 0.2 = 0.014$
-        \item Since $0.144 > 0.014$, predict Spam
-    \end{itemize}
-\end{itemize}
-\end{example}
 
 \begin{concept}{Laplace Smoothing}\\
 Laplace smoothing (or additive smoothing) addresses the zero-probability problem:
@@ -205,7 +220,8 @@ Laplace smoothing (or additive smoothing) addresses the zero-probability problem
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Text Classification with Naive Bayes}\\
+
+\begin{KR}{Text Classification with Naive Bayes}
 \paragraph{Preprocess text}
 \begin{itemize}
     \item Tokenize text into words
@@ -229,21 +245,35 @@ Laplace smoothing (or additive smoothing) addresses the zero-probability problem
 \end{itemize}
 \end{KR}
 
-\begin{concept}{Advantages and Disadvantages of Naive Bayes}\\
-Advantages:
-\begin{itemize}
-    \item Simple and fast to train
-    \item Works well with high-dimensional data
-    \item Performs well with small training sets
-    \item Handles missing values naturally
-\end{itemize}
-Disadvantages:
-\begin{itemize}
-    \item Independence assumption is often violated in real data
-    \item Not suitable for regression problems
-    \item May be outperformed by more sophisticated models for complex tasks
-    \item Probability estimates may be unreliable
-\end{itemize}
-\end{concept}
 
-% NOTE: Add table showing the training data with RID, age, income, student, credit_rating, buys_computer columns
+\begin{example2}{Naive Bayes Text Classification}
+    $$
+    \begin{gathered}
+    C_1=\text { buys }_{\text {computer }}=\text { yes }, \quad C_2=\text { buys }_{\text {computer }}=\text { no } \\
+    X=\left(\text { age }=\text { youth } ; \text { income }=\text { med } ; \text { student }=\text { yes } ; \text { credit }_{\text {rating }}=\text { fair }\right)
+    \end{gathered}
+    $$
+
+    \includegraphics[width=\linewidth]{naive_bayes_example.png}
+
+    \textbf{Compute $P\left(C_i\right)$}
+
+$$
+P\left(C_1\right)=0.643, \quad P\left(C_2\right)=0.357
+$$
+
+
+\textbf{Compute $P\left(X \mid C_i\right)$}
+\begin{itemize}
+    \item $P\left(X \mid C_1\right)=P\left(\right.$ age $=$ youth $\left.\mid C_1\right) \cdot P\left(\right.$ income $=$ med $\left.\mid C_1\right) \ldots=0.044$
+    \item $P\left(X \mid C_1\right)=P\left(\right.$ age $=$ youth $\left.\mid C_1\right) \cdot P\left(\right.$ income $=$ med $\left.\mid C_1\right) \ldots=0.044$
+\end{itemize}
+
+\textbf{Compute $P\left(X \mid C_i\right) \cdot P\left(C_i\right)$}
+\begin{itemize}
+    \item $P\left(X \mid C_1\right) \cdot P\left(C_1\right)=0.044 \cdot 0.643=0.028$
+    \item $P\left(X \mid C_2\right) \cdot P\left(C_2\right)=0.019 \cdot 0.357=0.007$
+\end{itemize}
+    
+\end{example2}
+

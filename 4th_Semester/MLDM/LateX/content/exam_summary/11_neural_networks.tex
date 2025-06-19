@@ -6,6 +6,8 @@ Neural networks are a powerful class of models inspired by the human brain, capa
 
 Feed-forward neural networks are the foundation of deep learning, consisting of layers of interconnected neurons that process information in one direction.
 
+\mult{2}
+
 \begin{definition}{Neural Network}\\
 A neural network is a computational model inspired by the human brain. The basic building block is the neuron, which computes a weighted sum of its inputs, adds a bias term, and applies an activation function:
 \[a = \zeta(w^T x + b)\]
@@ -19,7 +21,14 @@ where:
 \end{itemize}
 \end{definition}
 
-\begin{definition}{Feed-forward Neural Network}\\
+\begin{definition}{Neuron}\\
+    A Neuron applies an activation function to the weighted sum of its inputs\\
+    \includegraphics[width=\linewidth]{neuron.png}
+\end{definition}
+
+\multend
+
+\begin{definition}{Feed-forward Neural Network}
 Feed-forward neural networks consist of neurons organized in layers:
 \begin{itemize}
     \item Input layer: Passes input features to the network
@@ -27,9 +36,11 @@ Feed-forward neural networks consist of neurons organized in layers:
     \item Output layer: Produces the final prediction
 \end{itemize}
 Information flows in one direction, from input to output, with no cycles/loops.
+
+\includegraphics[width=0.6\linewidth]{feed_forward_nn.png}
 \end{definition}
 
-\begin{definition}{Softmax Regression}\\
+\begin{definition}{Softmax Regression}
 Softmax regression generalizes logistic regression to multi-class classification:
 \begin{itemize}
     \item For each class, it computes a separate linear combination of the inputs
@@ -38,7 +49,7 @@ Softmax regression generalizes logistic regression to multi-class classification
 \end{itemize}
 \end{definition}
 
-\begin{definition}{Activation Functions}\\
+\begin{definition}{Activation Functions}
 Common activation functions include:
 \begin{itemize}
     \item Sigmoid: $\zeta(z) = \frac{1}{1 + e^{-z}}$, outputs in range (0,1)
@@ -48,7 +59,7 @@ Common activation functions include:
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Universality Theorem}\\
+\begin{concept}{Universality Theorem}\\ \small
 The universality theorem (Hornik, 1991) states that a neural network with a single hidden layer using a nonlinear activation function can approximate any continuous function to any desired level of accuracy, given enough hidden units.
 
 This means neural networks are very flexible and can learn complex relationships in data, though deeper networks with multiple hidden layers often learn more efficiently.
@@ -57,6 +68,8 @@ This means neural networks are very flexible and can learn complex relationships
 \subsection{Training Neural Networks}
 
 Training neural networks involves finding optimal weights and biases that minimize the difference between predicted and actual outputs.
+
+\mult{2}
 
 \begin{definition}{Cost Functions for Neural Networks}\\
 Common cost functions include:
@@ -78,7 +91,8 @@ Backpropagation is the algorithm used to train neural networks by:
 This process leverages the chain rule of calculus to efficiently compute gradients.
 \end{definition}
 
-\begin{KR}{Training a Neural Network}\\
+
+\begin{KR}{Training a Neural Network}
 \paragraph{Initialize the network}
 \begin{itemize}
     \item Define network architecture (number of layers, neurons per layer)
@@ -112,6 +126,11 @@ Calculate the difference between predictions and actual values using the cost fu
 \paragraph{Repeat}
 Iterate steps 2-5 until convergence or for a fixed number of epochs
 \end{KR}
+\multend
+
+\begin{theorem}{Training in Feed-Forward Neural Networks}\\
+    \includegraphics[width=\linewidth]{training_feed_forward_nn.png}    
+\end{theorem}
 
 \begin{example2}{Backpropagation Example}\\
 Consider a simple neural network with one input, one hidden layer with two neurons, and one output neuron.
@@ -146,11 +165,47 @@ Backpropagation:
 This gradient is then used to update the weights in the network.
 \end{example2}
 
+\raggedcolumns
+\columnbreak
+
+\begin{KR}{Simple NN Training}
+    \begin{enumerate}
+        \item Choose one sample from our dataset. We only operate on one sample at a time.
+        \item Calculate all the partial derivatives of loss with respect to weights or biases.
+        \item Use the update equation to update each weight and bias.
+        \item Go back to step 1.
+    \end{enumerate}
+\end{KR}
+
+\begin{example2}{Simple Neural Network Calculation}\\
+Consider a simple neural network with:
+\begin{itemize}
+    \item $w_0=$ bias for all nodes $=0.2$
+    \item $\operatorname{act}(z)= \begin{cases}z & \text { if } z \geq 0 \\ 0 & \text { otherwise }\end{cases}$
+    \item Inputs: $i_1=3, i_2=-2$
+\end{itemize}
+\includegraphics[width=0.6\linewidth]{simple_nn_example.png}
+$$
+\begin{gathered}
+z_1=i_1 \cdot 1+i_2 \cdot 0.9+w_{a 1,0}=3 \cdot 1-2 \cdot 0.9+0.2=1.4 \\
+a_1=\operatorname{act}(1.4)=1 \\
+z_2=i_1 \cdot 0.1+i_2 \cdot 0.3+w_{a 2,0}=3 \cdot 0.1-2 \cdot 0.3+0.2=-0.1 \\
+a_2=\operatorname{act}(-0.1)=0 \\
+z_3=i_1 \cdot 1.1+i_2 \cdot 0.7+w_{a 3,0}=3 \cdot 1.1-2 \cdot 0.7+0.2=2.1 \\
+a_3=\operatorname{act}(2.1)=1
+\end{gathered}
+$$
+
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
 \subsection{Neural Network Architectures}
 
 Neural networks come in various architectures, each designed for specific types of data or tasks.
 
-\begin{definition}{Common Neural Network Architectures}\\
+\begin{definition}{Common Neural Network Architectures}
 \begin{itemize}
     \item \textbf{Fully Connected (Dense) Network}: Each neuron is connected to all neurons in adjacent layers
     \item \textbf{Convolutional Neural Network (CNN)}: Uses convolutional layers to process grid-like data (e.g., images)
@@ -160,7 +215,7 @@ Neural networks come in various architectures, each designed for specific types 
 \end{itemize}
 \end{definition}
 
-\begin{concept}{Convolutional Neural Networks}\\
+\begin{concept}{Convolutional Neural Networks}
 CNNs are specialized for processing grid-like data such as images:
 \begin{itemize}
     \item \textbf{Convolutional layers}: Apply filters to detect local patterns
@@ -171,7 +226,7 @@ CNNs are specialized for processing grid-like data such as images:
 These properties make CNNs highly effective for tasks like image classification, object detection, and image segmentation.
 \end{concept}
 
-\begin{concept}{Recurrent Neural Networks}\\
+\begin{concept}{Recurrent Neural Networks}
 RNNs are designed for sequential data:
 \begin{itemize}
     \item Each neuron receives input from the current sample and its own previous output
@@ -181,11 +236,12 @@ RNNs are designed for sequential data:
 \end{itemize}
 \end{concept}
 
-\subsection{Preventing Overfitting}
+\subsubsection{Preventing Overfitting}
 
 Overfitting occurs when a model learns the training data too well, including its noise, and fails to generalize to new data. Several techniques can prevent this issue in neural networks.
 
-\begin{concept}{Dealing with Overfitting in Neural Networks}\\
+\mult{2}
+\begin{concept}{Dealing with Overfitting in Neural Networks}
 Techniques to prevent overfitting include:
 \begin{itemize}
     \item \textbf{Dropout}: Randomly deactivate neurons during training
@@ -195,7 +251,16 @@ Techniques to prevent overfitting include:
 \end{itemize}
 \end{concept}
 
-\begin{definition}{Dropout}\\
+\begin{definition}{Early Stopping}
+Early stopping prevents overfitting by monitoring performance on a validation set:
+\begin{itemize}
+    \item Train the model and evaluate on validation set periodically
+    \item Stop training when validation error starts to increase
+    \item Use the model parameters from the point with best validation performance
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Dropout}
 Dropout is a regularization technique that prevents overfitting in neural networks:
 \begin{itemize}
     \item During training, randomly deactivate a fraction of neurons in each layer
@@ -205,16 +270,9 @@ Dropout is a regularization technique that prevents overfitting in neural networ
 \end{itemize}
 \end{definition}
 
-\begin{definition}{Early Stopping}\\
-Early stopping prevents overfitting by monitoring performance on a validation set:
-\begin{itemize}
-    \item Train the model and evaluate on validation set periodically
-    \item Stop training when validation error starts to increase
-    \item Use the model parameters from the point with best validation performance
-\end{itemize}
-\end{definition}
 
-\begin{definition}{Data Augmentation}\\
+
+\begin{definition}{Data Augmentation}
 Data augmentation increases the effective size of the training dataset:
 \begin{itemize}
     \item For images: rotations, flips, crops, color adjustments
@@ -223,7 +281,25 @@ Data augmentation increases the effective size of the training dataset:
 \end{itemize}
 \end{definition}
 
-\begin{KR}{Implementing Dropout}\\
+\multend
+
+\begin{concept}{Vanishing and Exploding Gradient Problems}
+In deep networks, gradients can become very small (vanishing) or very large (exploding) as they propagate through the network:
+\begin{itemize}
+    \item \textbf{Vanishing gradients}: Parameters in early layers change very slowly or not at all
+    \item \textbf{Exploding gradients}: Parameters in early layers change dramatically, causing instability
+    \item \textbf{Causes}: Repeated multiplication of values less than 1 (vanishing) or greater than 1 (exploding)
+\end{itemize}
+Solutions include:
+\begin{itemize}
+    \item Better activation functions (ReLU, Leaky ReLU)
+    \item Weight initialization techniques (Xavier, He initialization)
+    \item Batch normalization
+    \item Residual connections (skip connections)
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Implementing Dropout}
 \paragraph{During training}
 \begin{itemize}
     \item For each training batch, generate a binary mask for each layer with dropout
@@ -246,27 +322,14 @@ Data augmentation increases the effective size of the training dataset:
 \end{itemize}
 \end{KR}
 
-\begin{concept}{Vanishing and Exploding Gradient Problems}\\
-In deep networks, gradients can become very small (vanishing) or very large (exploding) as they propagate through the network:
-\begin{itemize}
-    \item \textbf{Vanishing gradients}: Parameters in early layers change very slowly or not at all
-    \item \textbf{Exploding gradients}: Parameters in early layers change dramatically, causing instability
-    \item \textbf{Causes}: Repeated multiplication of values less than 1 (vanishing) or greater than 1 (exploding)
-\end{itemize}
-Solutions include:
-\begin{itemize}
-    \item Better activation functions (ReLU, Leaky ReLU)
-    \item Weight initialization techniques (Xavier, He initialization)
-    \item Batch normalization
-    \item Residual connections (skip connections)
-\end{itemize}
-\end{concept}
+
+
 
 \subsection{Hyperparameter Tuning}
 
 Hyperparameters are settings that control the training process and model architecture. Choosing optimal values is crucial for model performance.
 
-\begin{KR}{Choosing Hyperparameters for Neural Networks}\\
+\begin{KR}{Choosing Hyperparameters for Neural Networks}
 \paragraph{Architecture design}
 \begin{itemize}
     \item Number of layers: Start small and increase gradually
@@ -296,6 +359,8 @@ Hyperparameters are settings that control the training process and model archite
     \item Skip connections: Use for networks deeper than 10 layers
 \end{itemize}
 \end{KR}
+
+\mult{2}
 
 \begin{concept}{Cross-Validation for Neural Networks}\\
 Cross-validation helps find optimal hyperparameters:
@@ -336,6 +401,11 @@ Consider the MNIST dataset of handwritten digits:
 \end{itemize}
 \end{example}
 
+\multend
+
+\raggedcolumns
+\columnbreak
+
 \subsection{Advanced Topics}
 
 Neural networks continue to evolve with advanced techniques that improve performance, efficiency, and applicability to various domains.
@@ -372,7 +442,7 @@ Beyond standard gradient descent, advanced optimizers improve training:
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Implementing Transfer Learning}\\
+\begin{KR}{Implementing Transfer Learning}
 \paragraph{Select pre-trained model}
 \begin{itemize}
     \item Choose model trained on a relevant domain
@@ -447,7 +517,7 @@ Techniques to understand neural network decisions:
 Interpretability helps build trust, debug models, and identify potential biases.
 \end{concept}
 
-\begin{KR}{Debugging Neural Networks}\\
+\begin{KR}{Debugging Neural Networks}
 \paragraph{Diagnose learning problems}
 \begin{itemize}
     \item Monitor training and validation losses
@@ -479,4 +549,4 @@ Interpretability helps build trust, debug models, and identify potential biases.
 \end{itemize}
 \end{KR}
 
-% NOTE: Add simple neural network diagram showing the specific calculation example with values
+%TODO: Add simple neural network diagram showing the specific calculation example with values

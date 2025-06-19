@@ -55,6 +55,9 @@ This formulation allows the application of the kernel trick by replacing the dot
     The distance from the hyperplane can be interpreted as a confidence for the prediction.
 \end{theorem}
 
+\raggedcolumns
+\columnbreak
+
 \subsection{Kernel Trick and Soft Margin}
 
 \begin{concept}{Hard Margin vs. Soft Margin}
@@ -70,25 +73,26 @@ The soft margin classifier allows some data points to violate the margin constra
 \[\min_{b,w,\varepsilon} \frac{1}{2}||w||^2 + C\sum_{m=1}^{M}\varepsilon^{(m)}\]
 subject to: $y^{(m)}(b + \mathbf{w}^T \mathbf{x}^{(m)}) \geq 1 - \varepsilon^{(m)}$ and $\varepsilon^{(m)} \geq 0$ for $m = 1,..., M$
 
-The parameter $C$ controls the trade-off between maximizing the margin and minimizing constraint violations.\\
-\includegraphics[width=0.5\linewidth]{softmargin_classifier.png}
+The parameter $C$ controls the trade-off between maximizing the margin and minimizing constraint violations.
 \end{definition}
+
+\mult{2}
+
+\includegraphics[width=\linewidth]{softmargin_classifier.png}
 
 \begin{remark}
     Unbalanced data:\\
-    \includegraphics[width=0.5\linewidth]{unbalanced_data.png}
+    \includegraphics[width=\linewidth]{unbalanced_data.png}
 \end{remark}
 
+\multend
+
 \begin{example2}{'Wrong' Hyperplane}\\
-    \includegraphics[width=\linewidth]{wrong_hyperplane.png}\\
+    \includegraphics[width=0.6\linewidth]{wrong_hyperplane.png}\\
     The \textcolor{red}{\textbf{RED}} line is the optimal hyperplane for the hard margin classifier. The \textcolor{green}{\textbf{GREEN}} line is NOT optimal!
 \end{example2}
 
-\begin{definition}{Standardization and Normalization}\\
-    \includegraphics[width=\linewidth]{standardization_normalization.png}\\
-    \small Normalization: e.g. for Neural Networks\\
-    \small Standardization: e.g. for SVMs, Linear and Logistic Regression    
-\end{definition}
+
 
 \subsubsection{Kernel Trick for non-linearly seperable data}
 
@@ -116,7 +120,6 @@ This formulation allows the application of the kernel trick by replacing the dot
 
 \begin{formula}{Common Kernel Functions}
 
-    \begin{minipage}{0.7\linewidth}
     Linear: $\quad K(a, b)=a^{\top} \cdot b$
 
     Polynomial: $\quad K(a, b)=\left(a^{\top} \cdot b+t\right)^r$ with parameters $\mathbf{t}, \mathbf{r}$
@@ -124,15 +127,13 @@ This formulation allows the application of the kernel trick by replacing the dot
     RBF = Radial Basis Function:
     \[ \mathrm{K}(\mathrm{a}, \mathrm{~b})=e^{-\gamma\|a-b\|^2} \]
     with parameter $\gamma$
-    \end{minipage}
-    \begin{minipage}{0.25\linewidth}
-        \includegraphics[width=\linewidth]{common_kernel_functions.png}
-    \end{minipage}
 \end{formula}
 
 
 
 \begin{KR}{Selecting the Right Kernel and Parameters}
+
+    \begin{minipage}{0.7\linewidth}
 \paragraph{When to use different kernels}
 \begin{itemize}
     \item Linear kernel: 
@@ -162,6 +163,10 @@ This formulation allows the application of the kernel trick by replacing the dot
     \item For RBF kernel, $\gamma$ search range: $[0.01, 0.1, 1, 10]$
     \item For polynomial kernel, degree values: $[2, 3, 4]$
 \end{itemize}
+\end{minipage}
+    \begin{minipage}{0.25\linewidth}
+        \includegraphics[width=\linewidth]{common_kernel_functions.png}
+    \end{minipage}
 
 \paragraph{Optimize for the metric that matters}
 \begin{itemize}
@@ -173,29 +178,21 @@ This formulation allows the application of the kernel trick by replacing the dot
 
 \begin{definition}{RBF Kernel}
     \[ \mathrm{K}(\mathrm{a}, \mathrm{~b}) = e^{-\gamma\|a-b\|^2} = e^{-\frac{||a-b||^2}{2\sigma^2}} \]
+    
+    \begin{minipage}{0.5\linewidth}
     Small $\gamma \rightarrow$ large width $\sigma$ (Gaussian kernel)\\
-    \includegraphics[width=\linewidth]{small_gamma.png}\\
+    \includegraphics[width=\linewidth]{small_gamma.png}
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
     Large $\gamma \rightarrow$ small width $\sigma$ (Gaussian kernel)\\
     \includegraphics[width=\linewidth]{large_gamma.png}
+    \end{minipage}
 \end{definition}
-
-\begin{example2}{RBF Kernel}\\
-    \includegraphics[width=\linewidth]{rbfkernel.png}
-\end{example2}
 
 \begin{theorem}{Interdependence of SVM Hyperparameters}\\
     $C$ and $\gamma$ both influence the shape of the decision boundary and need to be tuned together 
     using hyperparameter optimization (e.g. via cross validation)
 \end{theorem}
-
-\begin{example2}{ConceptTest: RBF Kernel}\\
-    In the SVM below we are using $\mathrm{C}=1$. Which image has the highest value for hyperparameter $\gamma$ ?
-
-    \[ K\left(\mathbf{x}, \mathbf{x}^{(m)}\right)=\exp \left(-\gamma\left\|\mathbf{x}^{(m)}-\mathbf{x}\right\|^2\right) \]
-
-    \includegraphics[width=\linewidth]{rbfexample1.png}\\
-    \includegraphics[width=\linewidth]{rbfexample2.png}
-\end{example2}
 
 \begin{example}{SVM Application} Linear Kernel\\
 Consider classifying flowers based on petal length and width:
@@ -210,6 +207,23 @@ Consider classifying flowers based on petal length and width:
     \end{itemize}
 \end{itemize}
 \end{example}
+
+\begin{example2}{RBF Kernel}\\
+    \includegraphics[width=0.8\linewidth]{rbfkernel.png}
+\end{example2}
+
+
+
+\begin{example2}{ConceptTest: RBF Kernel}\\
+    In the SVM below we are using $\mathrm{C}=1$. Which image has the highest value for hyperparameter $\gamma$ ?
+
+    \[ K\left(\mathbf{x}, \mathbf{x}^{(m)}\right)=\exp \left(-\gamma\left\|\mathbf{x}^{(m)}-\mathbf{x}\right\|^2\right) \]
+
+    \includegraphics[width=0.5\linewidth]{rbfexample1.png}
+    \includegraphics[width=0.5\linewidth]{rbfexample2.png}
+\end{example2}
+
+
 
 \begin{KR}{Training a Support Vector Machine}
     \paragraph{Select kernel}
@@ -248,6 +262,9 @@ SVMs are inherently binary classifiers. For multi-class problems, approaches inc
     \item \textbf{One-vs-All}: Train $K$ SVMs, each separating one class from all others
     \item \textbf{One-vs-One}: Train $\binom{K}{2}$ SVMs, each separating one class from another
 \end{itemize}
+Both approaches use pairwise comparisons. Classify unknown instance by majority vote or highest confidence score among all pairwise comparisons.
+
+\includegraphics[width=\linewidth]{multiclass_classification_svm.png}
 \end{concept}
 
 \begin{definition}{One-vs-All (One-vs-Rest) Approach}\\
@@ -306,12 +323,15 @@ Virginica gets 2 votes, Versicolor gets 1 vote, Setosa gets 0 votes.
 Prediction: Virginica
 \end{example2}
 
+\raggedcolumns
+\columnbreak
+
 \subsection{SVM for Regression}
 
 \begin{definition}{Support Vector Regression (SVR)}\\
 SVR applies the same principles as SVM to regression tasks by:
 \begin{itemize}
-    \item Fitting as many instances as possible on a "street" with width controlled by parameter $\varepsilon$
+    \item Fitting as many instances as possible on a ''street'' with width controlled by parameter $\varepsilon$
     \item Allowing some points to be off the street (margin violations)
     \item Using kernels to handle non-linear regression tasks
 \end{itemize}
@@ -362,7 +382,7 @@ Consider predicting house prices based on size (in square feet):
 \end{example}
 
 
-% NOTE: Add SVM margin visualization showing support vectors and decision boundary
+
 
 \begin{concept}{SVM Classifier Family}
 \begin{itemize}
@@ -372,7 +392,7 @@ Consider predicting house prices based on size (in square feet):
 \end{itemize}
 \end{concept}
 
-\begin{KR}{SVM Implementation Process}\\
+\begin{KR}{SVM Implementation Process}
 \paragraph{Step 1: Data analysis}
 Start with data in a relatively low dimension and assess linear separability
 
@@ -386,7 +406,7 @@ Find a Support Vector Classifier that separates the transformed data with maximu
 Optimize C parameter and kernel parameters using cross-validation
 \end{KR}
 
-% NOTE: Add 3D transformation visualization showing 2D non-separable data becoming 3D separable
+\includegraphics[width=\linewidth]{svm_implementation.png}
 
 \subsection{Hyperparameter Effects}
 
@@ -398,4 +418,4 @@ The C parameter controls the trade-off between margin maximization and classific
 \end{itemize}
 \end{concept}
 
-% NOTE: Add four panels showing different C values and their effects on margin and misclassification
+\includegraphics[width=\linewidth]{svm_margin.png}

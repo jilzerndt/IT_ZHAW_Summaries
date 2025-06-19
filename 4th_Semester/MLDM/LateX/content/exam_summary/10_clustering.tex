@@ -6,8 +6,6 @@
 In unsupervised learning, the training data does not contain any output (target) values. The goal is to model the underlying distribution of the data to describe its structure, discover hidden patterns, and gain insights.
 \end{definition}
 
-\section{Clustering}
-
 \subsection{Introduction to Clustering}
 
 \begin{definition}{Clustering}\\
@@ -42,9 +40,12 @@ Customer segmentation for targeted marketing:
 K-means is a clustering algorithm that aims to partition $M$ data points into $K$ clusters, where each data point belongs to the cluster with the nearest mean (centroid). The algorithm minimizes the within-cluster sum of squares (inertia):
 \[\sum_{k=1}^{K} \sum_{x^{(i)} \in C_k} ||x^{(i)} - \mu_k||^2\]
 where $C_k$ is the set of points in cluster $k$ and $\mu_k$ is the centroid of cluster $k$.
+
+\includegraphics[width=0.7\linewidth]{kmeans_simpleKR.png}
 \end{definition}
 
-\begin{KR}{Implementing K-Means}\\
+
+\begin{KR}{Implementing K-Means}
 \paragraph{Initialize centroids}
 Choose $K$ initial centroids:
 \begin{itemize}
@@ -122,6 +123,8 @@ K-means++ is an initialization method for K-means that selects initial centroids
 This approach typically leads to better and more consistent results than random initialization.
 \end{definition}
 
+
+
 \subsection{Evaluating Clustering Quality}
 
 \begin{definition}{Inertia}\\
@@ -146,16 +149,16 @@ The elbow method helps find the optimal number of clusters:
 \begin{itemize}
     \item Run K-means with different values of $K$
     \item Plot inertia vs. number of clusters
-    \item Look for the "elbow" point where adding more clusters gives diminishing returns
+    \item Look for the ''elbow'' point where adding more clusters gives diminishing returns
 \end{itemize}
 \end{concept}
 
-\begin{KR}{Choosing the Optimal Number of Clusters}\\
+\begin{KR}{Choosing the Optimal Number of Clusters}
 \paragraph{Elbow method}
 \begin{itemize}
     \item Run K-means for a range of $K$ values (e.g., 1-10)
     \item Plot inertia (within-cluster sum of squares) vs. $K$
-    \item Identify the "elbow" point where the rate of decrease sharply changes
+    \item Identify the ''elbow'' point where the rate of decrease sharply changes
 \end{itemize}
 
 \paragraph{Silhouette method}
@@ -178,6 +181,9 @@ The elbow method helps find the optimal number of clusters:
 \end{itemize}
 \end{KR}
 
+\raggedcolumns
+\columnbreak
+
 \subsection{DBSCAN Algorithm}
 
 \begin{definition}{DBSCAN}\\
@@ -190,6 +196,8 @@ Density-Based Spatial Clustering of Applications with Noise (DBSCAN) is a cluste
 \end{itemize}
 \end{definition}
 
+\mult{2}
+
 \begin{definition}{Types of Points in DBSCAN}\\
 DBSCAN classifies points into three types:
 \begin{itemize}
@@ -199,7 +207,11 @@ DBSCAN classifies points into three types:
 \end{itemize}
 \end{definition}
 
-\begin{KR}{Implementing DBSCAN}\\
+\includegraphics[width=0.8\linewidth]{dbscan.png}
+
+\multend
+
+\begin{KR}{Implementing DBSCAN}
 \paragraph{Set parameters}
 \begin{itemize}
     \item $\epsilon$: Maximum distance between points in the same neighborhood
@@ -227,27 +239,33 @@ For each core point $P$ in a cluster:
 \end{itemize}
 \end{KR}
 
-\begin{concept}{Advantages of DBSCAN}\\
-DBSCAN has several advantages over other clustering algorithms:
-\begin{itemize}
-    \item Doesn't require specifying the number of clusters in advance
-    \item Can find arbitrarily shaped clusters, not just spherical ones
-    \item Robust to outliers (identifies them as noise points)
-    \item Only needs two parameters ($\epsilon$ and minPts)
-    \item Can handle clusters of different sizes and densities (to some extent)
-\end{itemize}
+\mult{2}
+
+\begin{concept}{Advantages of DBSCAN}
+
+    Doesn't require specifying the number of clusters in advance
+
+    Can find arbitrarily shaped clusters, not just spherical ones
+
+     Robust to outliers (identifies them as noise points)
+
+     Only needs two parameters ($\epsilon$ and minPts)
+
+     Can handle clusters of different sizes and densities (to some extent)
+
 \end{concept}
 
-\begin{concept}{Limitations of DBSCAN}\\
-DBSCAN also has some limitations:
+\begin{concept}{Limitations of DBSCAN}
 \begin{itemize}
     \item Struggles with varying density clusters
     \item Sensitive to parameter choices
-    \item Doesn't work well with high-dimensional data due to the "curse of dimensionality"
+    \item Doesn't work well with high-dimensional data due to the ''curse of dimensionality''
     \item Not deterministic when points can be reached through multiple paths
     \item Computationally expensive for large datasets (though optimized implementations exist)
 \end{itemize}
 \end{concept}
+
+\multend
 
 \begin{example}{DBSCAN Application}
 Consider identifying geographical regions in a city based on crime density:
@@ -277,7 +295,7 @@ The choice of distance metric affects clustering results:
 \end{itemize}
 \end{definition}
 
-\begin{KR}{Choosing the Right Distance Metric}\\
+\begin{KR}{Choosing the Right Distance Metric}
 \paragraph{Understand the data}
 \begin{itemize}
     \item Consider the nature of features (categorical vs. numerical)
@@ -313,6 +331,65 @@ Hierarchical clustering builds a tree of clusters (dendrogram):
     \item Linkage methods (single, complete, average, Ward) determine how cluster distances are measured
 \end{itemize}
 \end{concept}
+
+\begin{KR}{Hierarchical Clustering Steps}
+    Step 1: Form initial clusters consisting of a single object and compute the distance between each pair of clusters
+
+Step 2: Merge the two clusters having minimum distance
+Step 3: Calculate the distance between the new cluster and all other clusters
+Step 4: Repeat step 2 and 3 until there is only one cluster remaining
+A Dendrogram is a tree of nodes representing clusters, satisfying the following properties:
+- Root represents the whole data set
+- Leaf nodes represent clusters containing a single object
+- Inner nodes represent the union of all objects contained in its corresponding subtrees
+
+\includegraphics[width=\linewidth]{dendrogram.png}
+\end{KR}
+
+\begin{theorem}{Linkage in Hierarchical Clustering}\\
+    Single Linkage: Shortest distance single link $(\min )$ between an element in one cluster and an element in the other, i.e., $d\left(C_i, C_j\right)=\min \left\{d\left(x_{i p}, x_{j q}\right)\right\}$.
+
+Complete Linkage: Largest distance between an element in one cluster complete link (max) and an element in the other, i.e., $d\left(C_i, C_j\right)=\max \left\{d\left(x_{i p}, x_{j p}\right)\right\}$.
+
+Average Linkage: Average distance between average elements in one cluster and elements in the other, i.e. $d\left(C_i, C_j\right)=\operatorname{avg}\left\{d\left(x_{i p}, x_{j p}\right)\right\}$.
+
+\end{theorem}
+
+\begin{example2}{Linkage Example}\\
+    Clustering of the 1-dimensional data set $\{2, \mathbf{1 2}, \mathbf{1 6}, \mathbf{2 5}, \mathbf{2 9}, 45\}$
+
+    1. Find lowest distance $\rightarrow(10,4,9,4,45)$ and build clusters
+$
+\{2,(12,16),(25,29), 45\}
+$
+
+2. Find lowest distance based on metrics and build clusters
+
+- Centroid:
+$
+\{2,(12,16),(25,29), 45\} \rightarrow(12,13,18)
+$, 
+$
+\{(\mathbf{2}, \mathbf{1 2}, \mathbf{1 6}),(25,29), 45\}
+$
+
+- Single:
+$
+\{2,(12,16),(25,29), 45\} \rightarrow(10,9,16)
+$, 
+$
+\{2,(12,16,25,29), 45\}
+$
+
+- Complete:
+$
+\{2,(12,16),(25,29), 45\} \rightarrow(14,17,16)$, $
+\{(2,12,16),(25,29), 45\}
+$
+
+\includegraphics[width=0.7\linewidth]{linkage_example.png}
+\end{example2}
+
 
 \begin{concept}{Gaussian Mixture Models (GMM)}\\
 GMMs are a probabilistic clustering approach:
@@ -357,12 +434,12 @@ Hierarchical Clustering:
 \end{itemize}
 \end{example2}
 
-\begin{KR}{Implementing a Clustering Project}\\
+\begin{KR}{Implementing a Clustering Project}
 \paragraph{Define the problem}
 \begin{itemize}
     \item Clarify business objectives
     \item Understand what insights are needed
-    \item Define what makes a "good" cluster in your context
+    \item Define what makes a ''good'' cluster in your context
 \end{itemize}
 
 \paragraph{Prepare the data}
@@ -396,15 +473,20 @@ Hierarchical Clustering:
 \end{itemize}
 \end{KR}
 
+
+\raggedcolumns
+\pagebreak
+
 \section{Association Rules and Pattern Mining}
 
 \subsection{Association Rules}
+
+\mult{2}
 
 \begin{definition}{Association Rules Goal}\\
 The goal of association rules is to find correlations between multiple items.
 \end{definition}
 
-\subsection{Basic Concepts}
 
 \begin{definition}{Support Count and Support}
 \begin{itemize}
@@ -416,26 +498,23 @@ The goal of association rules is to find correlations between multiple items.
 $$c = \frac{\sigma(X \cup Y)}{\sigma(X)}$$
 \end{definition}
 
-\begin{example2}{Basic Example}\\
-$S_1 = \{bread, milk\}$, $S_2 = \{coke, chips\}$
 
-Support count:
-\begin{itemize}
-    \item $\sigma(S_1) = 5$
-    \item $\sigma(S_2) = 4$
-\end{itemize}
 
-Support:
-\begin{itemize}
-    \item $s(S_1) = 5/9$
-    \item $s(S_2) = 4/9$
-\end{itemize}
+\begin{definition}{Frequent Itemset}\\
+A frequent itemset is an itemset whose support is greater than or equal to a minimum support threshold.
+\end{definition}
 
-Confidence for rule $\{bread, milk\} \rightarrow \{honey\}$:
-$$\frac{\sigma(\{bread, milk, honey\})}{\sigma(\{bread, milk\})} = \frac{3}{5} = 0.6$$
-\end{example2}
+\begin{definition}{Association Rule}\\
+An association rule is an implication expression of the form $X \rightarrow Y$ where $X$ and $Y$ are frequent itemsets.
 
-\subsection{Lift Measure}
+Example: $\{milk, bread\} \rightarrow \{honey\}$
+\end{definition}
+
+\begin{definition}{Association Rule Mining Goal}\\
+Given a set of transactions $T$, the goal of association rule mining is to find all rules having:
+$$s \geq min\_s\_threshold, \quad c \geq min\_c\_threshold$$
+\end{definition}
+
 
 \begin{formula}{Lift}\\
 Lift measures for how likely item $Y$ is purchased when item $X$ is purchased, while controlling for how popular item $Y$ is.
@@ -448,8 +527,6 @@ $$lift(x \rightarrow y) = \frac{support(x, y)}{support(x) \cdot support(y)}$$
     \item $lift > 1$ implies positive association
 \end{itemize}
 \end{formula}
-
-\subsection{Examples of Association Rules}
 
 \begin{example2}{One-Dimensional Example}\\
 $buys(X, iPhone) \rightarrow buys(X, charging\_cable)$
@@ -467,24 +544,18 @@ $age(X, [20,\ldots,29]) \land income(X, [40k,\ldots,49k]) \rightarrow buys(X, iP
 $s = 2$, $c = 60$
 \end{example2}
 
-\subsection{Formal Definitions}
 
-\begin{definition}{Frequent Itemset}\\
-A frequent itemset is an itemset whose support is greater than or equal to a minimum support threshold.
-\end{definition}
 
-\begin{definition}{Association Rule}\\
-An association rule is an implication expression of the form $X \rightarrow Y$ where $X$ and $Y$ are frequent itemsets.
 
-Example: $\{milk, bread\} \rightarrow \{honey\}$
-\end{definition}
+\multend
 
-\begin{definition}{Association Rule Mining Goal}\\
-Given a set of transactions $T$, the goal of association rule mining is to find all rules having:
-$$s \geq min\_s\_threshold, \quad c \geq min\_c\_threshold$$
-\end{definition}
+\begin{example2}{Association Rule Example}\\
+    \includegraphics[width=0.8\linewidth]{association_rule_example.png}
+\end{example2}
 
-% NOTE: Add transaction table showing TID, Items columns with example data
+
+\raggedcolumns
+\columnbreak
 
 \subsection{Frequent Pattern Mining}
 
@@ -502,7 +573,9 @@ The possible number of frequent itemsets is huge. If an itemset is frequent, eac
 
 \subsection{Apriori Algorithm}
 
-\begin{KR}{Apriori Algorithm to Generate Frequent Patterns}\\
+\mult{2}
+
+\begin{KR}{Apriori Algorithm to Generate Frequent Patterns}
 Example with $\sigma_{min} = 2$
 
 \paragraph{Step 1: Generate 1-itemset frequent pattern}
@@ -511,17 +584,20 @@ Example with $\sigma_{min} = 2$
     \item $L_1 =$ All 1-itemsets with $s \geq s_{min}$
 \end{itemize}
 
+
 \paragraph{Step 2: Generate 2-itemset frequent pattern}
 \begin{itemize}
     \item $C_2 =$ All 2-itemsets ($L_1 \bowtie L_1$)
     \item $L_2 =$ All 2-itemsets $C_2$ with $s \geq s_{min}$
 \end{itemize}
 
+
 \paragraph{Step 3: Generate 3-itemset frequent pattern}
 \begin{itemize}
     \item $C_3 =$ All 3-itemsets ($L_2 \bowtie L_2$)
     \item $L_3 =$ All 3-itemsets with $s \geq s_{min}$
 \end{itemize}
+
 
 \paragraph{Step 4: Generate 4-itemset frequent pattern}
 \begin{itemize}
@@ -537,21 +613,31 @@ For every itemset in $L_n = (L_1, L_2, \ldots)$:
 \end{enumerate}
 \end{KR}
 
-\begin{example2}{Rule Generation Example}\\
+\includegraphics[width=\linewidth]{apriori1.png}
+
+\includegraphics[width=\linewidth]{apriori2.png}
+
+\includegraphics[width=\linewidth]{apriori3.png}
+
+\multend
+
+\begin{example2}{Rule Generation Example}
 Example: $I = \{coke, chips, whiskey\}$
 
-\textbf{Rule1}: $S = \{coke, chips\} \rightarrow \{whiskey\}$
-$$c = \frac{\sigma(I)}{\sigma(S)} = \frac{2}{4} \rightarrow 0.5 = 50\% \rightarrow \text{rejected}$$
+\textbf{Rule1}: $S = \{coke, chips\} \rightarrow \{whiskey\} \rightarrow$
+$c = \frac{\sigma(I)}{\sigma(S)} = \frac{2}{4} \rightarrow 0.5 = 50\% \rightarrow \text{rejected}$
 
-\textbf{Rule2}: $S = \{coke, whiskey\} \rightarrow \{chips\}$
-$$c = \frac{\sigma(I)}{\sigma(S)} = \frac{2}{2} \rightarrow 1 = 100\% \rightarrow \text{accepted}$$
+\textbf{Rule2}: $S = \{coke, whiskey\} \rightarrow \{chips\} \rightarrow$
+$c = \frac{\sigma(I)}{\sigma(S)} = \frac{2}{2} \rightarrow 1 = 100\% \rightarrow \text{accepted}$
 \end{example2}
 
-% NOTE: Add Apriori algorithm flowchart showing the iterative process
+\includegraphics[width=0.8\linewidth]{apriori_flow_chart.png}
 
 \subsection{FP-Tree Algorithm}
 
 \begin{KR}{FP-Tree Construction}\\
+    \includegraphics[width=0.8\linewidth]{fptree1.png}
+
 \paragraph{Step 1: Calculate min support count $min\sigma$}
 $min\_s = 22\% \rightarrow min\sigma = 0.22 \cdot 9 = 1.98 \rightarrow 2$
 
@@ -563,12 +649,18 @@ $min\_s = 22\% \rightarrow min\sigma = 0.22 \cdot 9 = 1.98 \rightarrow 2$
     \item D: Beer $\sigma = 2$
     \item E: Ice $\sigma = 2$
 \end{itemize}
+\includegraphics[width=0.2\linewidth]{fptree2.png}
 
 \paragraph{Step 3: Order the items according to priority}
-$\{A, B, E\} \rightarrow \{B, A, E\}$
+$\{A, B, E\} \rightarrow \{B, A, E\}$\\
+\includegraphics[width=0.7\linewidth]{fptree3.png}
+
+\end{KR}
+
+\begin{KR}{FP-Tree Construction Continued}
 
 \paragraph{Step 4: Build the FP-Tree}
-% NOTE: Add FP-Tree construction diagram
+\includegraphics[width=\linewidth]{fptree4.png}
 
 \paragraph{Step 5: Find conditional pattern base and conditional FP-Tree for each item}
 \begin{itemize}
@@ -577,14 +669,16 @@ $\{A, B, E\} \rightarrow \{B, A, E\}$
     \item $C: \{B: 4, A: 2\}, \{A: 2\}$
     \item $A: \{B: 4\}$
 \end{itemize}
+\includegraphics[width=\linewidth]{fptree5.png}
 \end{KR}
 
-% NOTE: Add detailed FP-Tree diagrams showing conditional pattern bases
+\raggedcolumns
+\pagebreak
+
 
 \section{Recommender Systems}
 
-\begin{definition}{Good Recommender System}\\
-A good recommender system...
+\begin{definition}{Good Recommender System}
 \begin{itemize}
     \item Recommends personalized and valuable items within the current context
     \item Recommends items from all different and possible areas of interest
@@ -596,10 +690,10 @@ A good recommender system...
 \subsection{Collaborative Filtering}
 
 \begin{concept}{Collaborative Filtering}\\
-Analysis of behaviour patterns of user groups. Recommends items to a user based on comparison of their behaviour against users with a "similar" behaviour.
+Analysis of behaviour patterns of user groups. Recommends items to a user based on comparison of their behaviour against users with a ''similar'' behaviour.
 \end{concept}
 
-\begin{formula}{Cosine Similarity}\\
+\begin{formula}{Cosine Similarity}
 $$similarity = \cos(\theta) = \frac{A \cdot B}{||A|| \cdot ||B||} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \cdot \sqrt{\sum_{i=1}^{n} B_i^2}}$$
 \end{formula}
 
@@ -629,21 +723,14 @@ Calculates the similarity between the users based on their rating behaviour.
 \end{concept}
 
 \begin{example2}{User Similarity Example}\\
-Given user vectors:
-\begin{itemize}
-    \item $A = (4, 3, 0, 0, 5)^T$
-    \item $B = (5, 0, 4, 0, 4)^T$
-    \item $C = (4, 0, 5, 3, 4)^T$
-\end{itemize}
-
-Calculate similarity:
-$$sim_{AB} = \frac{(4 \cdot 5) + (3 \cdot 0) + \cdots + (5 \cdot 4)}{\sqrt{16 + 9 + 25} \cdot \sqrt{25 + 16 + 16}} = 0.75$$
+\includegraphics[width=0.8\linewidth]{collaborative_filtering1.png}
 
 Recommend items with a high rating from these similar users:
-$$\frac{0.75 \cdot 4 + 0.63 \cdot 5}{0.75 + 0.63}$$
+
+\includegraphics[width=0.3\linewidth]{dkfjdklhgdh.png}
+\includegraphics[width=0.3\linewidth]{collaborative_filtering2.png}
 \end{example2}
 
-% NOTE: Add user-item rating matrix visualization
 
 \subsection{Item-Based Collaborative Filtering}
 
@@ -652,15 +739,7 @@ Calculates the similarity between the items based on their rating.
 \end{concept}
 
 \begin{example2}{Item Similarity Example}\\
-Given item vectors:
-\begin{itemize}
-    \item $A = (4, 5, 4, 0, 0)^T$
-    \item $B = (3, 0, 0, 3, 4)^T$
-\end{itemize}
-
-$$sim_{AB} = \frac{(4 \cdot 3)}{\sqrt{16 + 25 + 16} \cdot \sqrt{9 + 9 + 16}} = 0.27$$
+\includegraphics[width=0.8\linewidth]{itembased_filtering.png}
 
 Recommends the most similar items with the highest ranking.
 \end{example2}
-
-% NOTE: Add item similarity matrix visualization
