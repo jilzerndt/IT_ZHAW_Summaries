@@ -1,0 +1,351 @@
+\section{Authorization}
+
+\mult{2}
+
+\begin{definition}{Authorization}
+determining whether an authenticated entity is permitted to perform a requested action:
+\begin{itemize}
+    \item Follows successful authentication
+    \item Controls access to resources and operations
+    \item Implements security policies
+    \item Enforces principle of least privilege
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Fundamental Building Blocks}
+\begin{itemize}
+    \item \textbf{Access Control Model} - Conceptual framework defining how access decisions are made
+    \item \textbf{Security Policy} - Rules defining who can access what resources
+    \item \textbf{Security Mechanism} - Technical implementation enforcing the security policy
+\end{itemize}
+\end{concept}
+
+\begin{theorem}{Security Policy Drivers}
+\begin{itemize}
+    \item \textbf{Business Drivers} - Efficiency, usability, operational requirements
+    \item \textbf{Security Drivers} - Risk management, threat mitigation, data protection
+    \item \textbf{Regulatory Drivers} - Legal compliance, industry standards
+\end{itemize}
+\end{theorem}
+
+
+
+\subsubsection{Discretionary Access Control (DAC)}
+
+
+\begin{definition}{Discretionary Access Control}
+    resource owner controls access rights:
+\begin{itemize}
+    \item Resource owners determine who can access their resources
+    \item Owners can delegate access control to others
+    \item Access rights can be transferred between users
+    \item Most common model in general-purpose operating systems
+\end{itemize}
+\end{definition}
+
+\begin{concept}{DAC Implementation Methods}
+
+    \textbf{Access Control Lists (ACLs)}:
+    \begin{itemize}
+        \item Lists of permissions attached to objects
+        \item Each entry specifies subject and allowed operations
+        \item Efficiently answers "who can access this object?"
+    \end{itemize}
+
+    \textbf{Capabilities}:
+    \begin{itemize}
+        \item Unforgeable tokens owned by subjects
+        \item Each token grants specific access rights
+        \item Efficiently answers "what can this subject access?"
+    \end{itemize}
+
+\end{concept}
+
+\begin{theorem}{DAC Advantages and Disadvantages}
+
+    \textbf{Advantages}:
+    Flexible and intuitive for users, 
+    Simple to understand and administer,
+    Enables fine-grained access control
+
+    \textbf{Disadvantages}:
+    Vulnerable to Trojan horse attacks,
+    Cannot enforce system-wide security policies,
+    May lead to uncontrolled information flow,
+    Prone to privilege creep over time
+
+\end{theorem}
+
+\multend
+
+\mult{2}
+
+
+\begin{concept}{Major Access Control Models}
+
+\begin{itemize}
+    \item \textbf{Discretionary Access Control (DAC)} - Access decisions made by resource owners
+    \item \textbf{Mandatory Access Control (MAC)} - Access decisions enforced by system policy
+    \item \textbf{Role-Based Access Control (RBAC)} - Access based on user roles within an organization
+\end{itemize}
+Additional models include:
+\begin{itemize}
+    \item \textbf{Attribute-Based Access Control (ABAC)} - Access based on attributes of users, resources, and environment
+    \item \textbf{Rule-Based Access Control} - Access based on predefined rules
+    \item \textbf{Relationship-Based Access Control (ReBAC)} - Access based on relationships between entities
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Standard UNIX Permissions}
+UNIX-style file permissions implement a simple form of DAC:
+\begin{itemize}
+    \item Each file/directory has an owner and group
+    \item Permissions divided into three categories:
+    \begin{itemize}
+        \item Owner (user) permissions
+        \item Group permissions
+        \item Others (world) permissions
+    \end{itemize}
+    \item Each category can have read (r), write (w), and execute (x) permissions
+    \item Represented as 9 bits, often shown in octal notation (e.g., 755)
+\end{itemize}
+\end{definition}
+
+
+
+\begin{KR}{UNIX Permission Interpretation}
+
+Permission bits have different meanings for files and directories:
+
+\textbf{For Files}:
+    \begin{itemize}
+        \item Read (r) - View file contents
+        \item Write (w) - Modify file contents
+        \item Execute (x) - Run file as a program
+    \end{itemize}
+\textbf{For Directories}:
+    \begin{itemize}
+        \item Read (r) - List directory contents
+        \item Write (w) - Create, delete, or rename files within directory
+        \item Execute (x) - Access files and subdirectories (traverse)
+    \end{itemize}
+\end{KR}
+
+
+\begin{concept}{Special Permission Bits}\\
+UNIX systems have additional permission bits for special purposes:
+\begin{itemize}
+    \item \textbf{Setuid bit (4000)} - When set on executable files, the program runs with the permissions of the file owner
+    \item \textbf{Setgid bit (2000)}:
+    \begin{itemize}
+        \item On executable files: Program runs with the permissions of the file's group
+        \item On directories: New files inherit the directory's group
+    \end{itemize}
+    \item \textbf{Sticky bit (1000)} - On directories, files can only be deleted or renamed by their owner (commonly used on /tmp)
+\end{itemize}
+\end{concept}
+
+
+
+\begin{definition}{POSIX ACLs}
+POSIX Access Control Lists extend standard UNIX permissions:
+\begin{itemize}
+    \item Allow specifying permissions for multiple users and groups
+    \item Maintain backward compatibility with standard permissions
+    \item Include:
+    \begin{itemize}
+        \item Minimal ACLs - Equivalent to standard permissions
+        \item Extended ACLs - Additional users/groups with specific permissions
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\begin{concept}{ACL Components}
+\begin{itemize}
+    \item \textbf{Owner entry} - Permissions for the file owner (user::rwx)
+    \item \textbf{Named user entries} - Permissions for specific users (user:alice:rwx)
+    \item \textbf{Group owner entry} - Permissions for the file's group (group::rwx)
+    \item \textbf{Named group entries} - Permissions for specific groups (group:developers:rwx)
+    \item \textbf{Other entry} - Permissions for everyone else (other::rwx)
+    \item \textbf{Mask entry} - Maximum permissions for named users/groups and group owner
+\end{itemize}
+\end{concept}
+
+
+\subsubsection{Mandatory Access Control (MAC)}
+
+\begin{definition}{Mandatory Access Control}
+  system-wide policy determines access rights:
+\begin{itemize}
+    \item Access decisions enforced by the system, not resource owners
+    \item Based on security labels assigned to subjects and objects
+    \item Security policy defined by system administrators
+    \item Users cannot override or modify access controls
+\end{itemize}
+\end{definition}
+
+\begin{concept}{MAC Implementations}
+\begin{itemize}
+    \item \textbf{SELinux (Security-Enhanced Linux)}:
+    \begin{itemize}
+        \item Developed by NSA
+        \item Label-based access control
+        \item Fine-grained policy control
+        \item Used in Red Hat/Fedora distributions
+    \end{itemize}
+    \item \textbf{AppArmor}:
+    \begin{itemize}
+        \item Path-based access control
+        \item Simpler configuration than SELinux
+        \item Used in Ubuntu/SUSE distributions
+    \end{itemize}
+    \item \textbf{Windows Mandatory Integrity Control}:
+    \begin{itemize}
+        \item Introduced in Windows Vista
+        \item Based on integrity levels (Low, Medium, High, System)
+        \item Prevents lower integrity processes from modifying higher integrity resources
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\multend
+
+\begin{theorem}{MAC vs. DAC Comparison}
+
+    \begin{minipage}{0.45\linewidth}
+\textbf{Control}:
+    \begin{itemize}
+        \item DAC - Resource owners control access
+        \item MAC - System policy controls access
+    \end{itemize}
+\textbf{Policy Management}:
+    \begin{itemize}
+        \item DAC - Distributed management
+        \item MAC - Centralized management
+    \end{itemize}
+\end{minipage}
+    \begin{minipage}{0.55\linewidth}
+\textbf{Security Assurance}:
+    \begin{itemize}
+        \item DAC - Lower, vulnerable to user errors
+        \item MAC - Higher, enforces system-wide policy
+    \end{itemize}
+\textbf{Complexity}:
+    \begin{itemize}
+        \item DAC - Simpler to implement and understand
+        \item MAC - More complex, requires specialized knowledge
+    \end{itemize}
+    \end{minipage}
+
+\end{theorem}
+
+\raggedcolumns
+\columnbreak
+
+
+
+\mult{2}
+
+\subsubsection{Role-Based Access Control (RBAC)}
+
+\begin{definition}{Role-Based Access Control}
+based on user roles within an organization:
+\begin{itemize}
+    \item Users are assigned to roles based on job responsibilities
+    \item Permissions are assigned to roles, not directly to users
+    \item Users acquire permissions through role membership
+    \item Standardized in INCITS 359-2004
+\end{itemize}
+\end{definition}
+
+\begin{concept}{RBAC Components}
+\begin{itemize}
+    \item \textbf{Users} - Entities that need access to resources
+    \item \textbf{Roles} - Collections of permissions representing job functions
+    \item \textbf{Permissions} - Approved operations on protected resources
+    \item \textbf{Sessions} - Mappings between users and their activated roles
+\end{itemize}
+\end{concept}
+
+\begin{theorem}{RBAC Security Principles}
+\begin{itemize}
+    \item \textbf{Principle of Least Privilege} - Users have only the permissions needed for their job
+    \item \textbf{Separation of Duties} - Critical operations require multiple users
+    \item \textbf{Data Abstraction} - Permissions defined at higher levels than individual objects
+\end{itemize}
+\end{theorem}
+
+\subsubsection{Attribute-Based Access Control (ABAC)}
+
+\begin{definition}{Attribute-Based Access Control}\\
+ABAC is a flexible access control model based on attributes:
+\begin{itemize}
+    \item Access decisions based on attributes of:
+    \begin{itemize}
+        \item Subjects (users, applications)
+        \item Resources (data, services)
+        \item Actions (read, write, execute)
+        \item Environment (time, location, security level)
+    \end{itemize}
+    \item Uses policies that combine attributes with logical rules
+    \item More dynamic than traditional RBAC
+    \item Can implement complex, context-aware policies
+\end{itemize}
+\end{definition}
+
+\begin{concept}{ABAC vs. RBAC}\\
+ABAC extends beyond traditional RBAC:
+
+\textbf{Flexibility}:
+    \begin{itemize}
+        \item RBAC - Predetermined access based on roles
+        \item ABAC - Dynamic access based on multiple attributes
+    \end{itemize}
+
+    \textbf{Granularity}:
+    \begin{itemize}
+        \item RBAC - Role-level permissions
+        \item ABAC - Fine-grained, attribute-based decisions
+    \end{itemize}
+
+     \textbf{Context Awareness}:
+    \begin{itemize}
+        \item RBAC - Limited environmental context
+        \item ABAC - Rich environmental attributes (time, location, etc.)
+    \end{itemize}
+\textbf{Policy Expression}:
+    \begin{itemize}
+        \item RBAC - Role-permission assignments
+        \item ABAC - Complex boolean logic combining attributes
+    \end{itemize}
+
+\end{concept}
+
+
+\multend
+
+
+\subsubsection{Zero Trust Security Model}
+
+\begin{definition}{Zero Trust} security model that assumes no implicit trust for any entity:
+\begin{itemize}
+    \item Eliminates the concept of trusted internal networks
+    \item Requires continuous verification for all access requests
+    \item Applies least privilege access controls
+    \item Inspects and logs all traffic
+    \item Focuses on protecting resources rather than network segments
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Zero Trust Principles}
+\begin{itemize}
+    \item \textbf{Verify explicitly} - Always authenticate and authorize based on all available data points
+    \item \textbf{Use least privilege access} - Limit user access with Just-In-Time and Just-Enough-Access
+    \item \textbf{Assume breach} - Minimize blast radius and segment access
+    \item \textbf{Identity-based security} - Identity becomes the primary security perimeter
+    \item \textbf{Continuous monitoring} - Collect and analyze data continuously
+\end{itemize}
+\end{concept}
+
+
+% Duplicate content removed - comprehensive authorization coverage is provided above

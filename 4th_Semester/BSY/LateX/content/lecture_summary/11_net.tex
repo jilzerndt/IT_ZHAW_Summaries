@@ -1,0 +1,663 @@
+\section{Networking}
+
+\subsection{Networking Requirements on Operating Systems}
+
+\begin{concept}{Operating System Networking Requirements}\\
+    Modern operating systems must support comprehensive networking capabilities:
+    \begin{itemize}
+        \item \textbf{Local interprocess communication}: Stream or datagram communication between processes
+        \item \textbf{External network connectivity}: Connect machines to networks for distributed applications
+        \item \textbf{Security and protection}: Protect against malicious traffic and network-related attacks
+        \item \textbf{Traffic routing}: Support and route traffic between different network interfaces
+        \item \textbf{Virtualization support}: Network namespaces and virtual interfaces for cloud computing
+        \item \textbf{Distributed applications}: Support for mail, web services, remote access, printing, etc.
+    \end{itemize}
+\end{concept}
+
+\subsection{Network Interface Hardware}
+
+\mult{2}
+
+\begin{definition}{Network Interface Card (NIC) Architecture}\\
+    Network interface cards connect systems to networks via the system bus:
+    \begin{itemize}
+        \item \textbf{Physical Layer Device (PHY)}:
+            \begin{itemize}
+                \item Maintains electrical characteristics defined by the protocol
+                \item Establishes communication with counterpart devices
+                \item Decodes, descrambles, and deserializes incoming signals
+                \item Encodes, scrambles, and serializes outgoing data
+                \item Delivers bit stream to the Media Access Controller
+            \end{itemize}
+        \item \textbf{Media Access Controller (MAC)}:
+            \begin{itemize}
+                \item Handles Ethernet Layer-2 protocols and traffic
+                \item Configures PHY via MDIO interface
+                \item Processes frame integrity (FCS, buffer management)
+                \item Places data into main memory buffers
+                \item Activates NIC driver via interrupts
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+
+
+\begin{concept}{DMA and Data Transfer}\\
+    Modern NICs use Direct Memory Access for efficient data transfer:
+    \begin{itemize}
+        \item MAC-memory data transfer performed by DMA
+        \item Supports multiple concurrent DMA operations
+        \item Each operation described by buffer descriptors
+        \item Often uses Scatter-Gather mechanism for efficiency
+        \item Prevents buffer underflow and overflow conditions
+        \item Reduces CPU overhead for bulk data transfers
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{NIC Device Drivers}\\
+    NIC drivers operate in kernel space and manage hardware interaction:
+    \begin{itemize}
+        \item \textbf{Receive (Rx) side}:
+            \begin{itemize}
+                \item Notified of incoming frames via interrupts
+                \item Checks frame status and discards erroneous frames
+                \item Formats frames for software stack consumption
+            \end{itemize}
+        \item \textbf{Transmit (Tx) side}:
+            \begin{itemize}
+                \item Initializes MAC DMA channels for transmission
+                \item Notifies MAC when frames need transmission
+                \item Monitors transmission status
+            \end{itemize}
+        \item Requires host-side buffering system for efficient operation
+    \end{itemize}
+\end{theorem}
+
+\multend
+
+\subsection{Network Stack Architecture}
+
+\mult{2}
+
+\begin{concept}{Zero-Copy Stack Design}\\
+    Traditional layered networking creates inefficiencies:
+    \begin{itemize}
+        \item \textbf{Naive approach}: Frame copied between each layer
+        \item \textbf{Problems}: Multiple memory copies, CPU intensive operations
+        \item \textbf{Zero-copy solution}:
+            \begin{itemize}
+                \item All frames pooled in buffers at Layer 2
+                \item Only pointers to frame metadata passed between layers
+                \item Frame payload remains in original location
+                \item Significantly reduces memory operations and CPU usage
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Linux sk\_buff Structure}\\
+    Linux implements zero-copy networking using sk\_buff (SKB):
+    \begin{itemize}
+        \item Fundamental structure containing frame processing variables
+        \item Enables communication between network layers
+        \item SKB cloned during layer transfers (metadata copied, payload referenced)
+        \item NIC maintains ring buffer of SKB pointers in kernel memory
+        \item Scatter-Gather DMA transfers data directly to SKB structures
+        \item Provides efficient frame processing with minimal copying
+    \end{itemize}
+\end{definition}
+
+\multend
+
+\subsubsection{Layer 2 - Data Link Layer}
+
+\mult{2}
+
+\begin{definition}{Layer 2 Processing}\\
+    The data link layer handles frame-level operations:
+    \begin{itemize}
+        \item Differentiates between ARP and other frame types
+        \item Checks Ethernet frame characteristics
+        \item Validates frame integrity and format
+        \item Passes frames to appropriate upper layer protocols
+        \item Implements bridging between network segments
+        \item Manages local network addressing (MAC addresses)
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Layer 2 Bridging}\\
+    Bridging connects multiple network segments:
+    \begin{itemize}
+        \item \textbf{Network bridging}: Connects two or more LAN segments
+        \item \textbf{Interface bonding}: Combines multiple NICs for performance or redundancy
+            \begin{itemize}
+                \item Load balancing across multiple interfaces
+                \item Failover protection
+                \item Increased aggregate bandwidth
+            \end{itemize}
+        \item \textbf{Virtual bridges}: Software-based bridging for virtual networks
+        \item Integration with Linux netfilter system for filtering and processing
+    \end{itemize}
+\end{concept}
+
+\multend
+
+\subsubsection{Layer 3 - Network Layer}
+
+\mult{2}
+
+\begin{definition}{Layer 3 Network Processing}
+    The network layer provides internetworking capabilities:
+    \begin{itemize}
+        \item \textbf{Addressing}: IP addressing beyond LAN boundaries
+        \item \textbf{Routing}: Forwards packets to destinations beyond local subnets
+        \item \textbf{Fragmentation}: Handles packet size limitations
+        \item \textbf{Quality of Service}: Manages traffic priorities and bandwidth
+        \item \textbf{Security}: Firewall functionality for traffic filtering
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{IP Packet Processing}\\
+    Linux IP layer processing involves several steps:
+    \begin{itemize}
+        \item Network driver calls IP handler (ip\_rcv)
+        \item Perform sanity checks on IP header (length, checksum)
+        \item Routing subsystem determines packet destination
+        \item Local delivery or forwarding decision
+        \item Integration with netfilter hooks for security and processing
+        \item Connection tracking for stateful operations
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{Linux Netfilter System}\\
+    Netfilter provides packet filtering and manipulation:
+    \begin{itemize}
+        \item \textbf{Functions}:
+            \begin{itemize}
+                \item Packet selection and filtering
+                \item Network Address Translation (NAT)
+                \item Packet mangling and modification
+                \item Connection tracking and state management
+                \item Statistics collection and logging
+            \end{itemize}
+        \item \textbf{Implementation}: Hook system with five points in routing path
+        \item \textbf{Hook return values}:
+            \begin{itemize}
+                \item NF\_ACCEPT: Packet continues traversal
+                \item NF\_DROP: Discard packet silently
+                \item NF\_STOLEN: Packet extracted for special processing
+                \item NF\_QUEUE: Queue packet for userspace processing
+                \item NF\_REPEAT: Call hook function again
+            \end{itemize}
+        \item \textbf{Frontends}: iptables, nftables for user configuration
+    \end{itemize}
+\end{theorem}
+
+
+
+\multend
+
+
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Layer 4 - Transport Layer}
+
+\begin{definition}{Transport Layer Protocols}
+    Layer 4 provides end-to-end communication services:
+    \vspace{2mm}\\
+
+    \begin{minipage}{0.5\linewidth}
+   \textbf{UDP (User Datagram Protocol)}:
+            \begin{itemize}
+                \item Thin wrapper around IP frames
+                \item Provides unreliable, connectionless transmission
+                \item Minimal overhead for simple request-response applications
+                \item Used for DNS, DHCP, streaming media
+            \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+        \textbf{TCP (Transmission Control Protocol)}:
+            \begin{itemize}
+                \item Reliable, connection-oriented transport
+                \item Manages connections, flow control, congestion control
+                \item Assembles data streams from individual segments
+                \item Provides error detection and recovery
+                \item Used for HTTP, FTP, SSH, email
+            \end{itemize}
+    \end{minipage}
+
+\end{definition}
+
+\begin{code}{Basic TCP Socket Programming}
+    Example of TCP socket server and client:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+// TCP Server
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+int server_fd, client_fd;
+struct sockaddr_in address;
+int addrlen = sizeof(address);
+
+// Create socket
+server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+// Setup address
+address.sin_family = AF_INET;
+address.sin_addr.s_addr = INADDR_ANY;
+address.sin_port = htons(8080);
+
+// Bind socket to address
+bind(server_fd, (struct sockaddr *)&address, sizeof(address));
+
+// Listen for connections
+listen(server_fd, 3);
+
+// Accept connection
+client_fd = accept(server_fd, (struct sockaddr *)&address, 
+                   (socklen_t*)&addrlen);
+
+// Read/write data
+char buffer[1024] = {0};
+read(client_fd, buffer, 1024);
+send(client_fd, "Hello from server", 17, 0);
+
+// TCP Client
+int sock = 0;
+struct sockaddr_in serv_addr;
+
+// Create socket
+sock = socket(AF_INET, SOCK_STREAM, 0);
+
+// Setup server address
+serv_addr.sin_family = AF_INET;
+serv_addr.sin_port = htons(8080);
+inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr);
+
+// Connect to server
+connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+
+// Send/receive data
+send(sock, "Hello from client", 17, 0);
+read(sock, buffer, 1024);
+\end{lstlisting}
+\end{code}
+
+
+\subsubsection{Layer 7 - Application Interface}
+
+
+
+\begin{definition}{Berkeley Sockets}
+    Sockets provide the user-facing API for network programming:
+    \begin{itemize}
+        \item Connect port numbers and network addresses with protocols and processes
+        \item \textbf{Socket types}:
+            \begin{itemize}
+                \item SOCK\_STREAM: Reliable, ordered, connection-based (TCP)
+                \item SOCK\_DGRAM: Unreliable, unordered, connectionless (UDP)
+                \item SOCK\_RAW: Direct access to IP layer
+            \end{itemize}
+        \item \textbf{Address families}:
+            \begin{itemize}
+                \item AF\_INET: IPv4 Internet protocols
+                \item AF\_INET6: IPv6 Internet protocols
+                \item AF\_UNIX: Local inter-process communication
+                \item AF\_NETLINK: Kernel-userspace communication
+            \end{itemize}
+        \item Sockets have states and support standard file operations
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Special Socket Types}
+    Linux supports various specialized socket types:
+    \begin{itemize}
+        \item \textbf{Unix Domain Sockets}:
+            \begin{itemize}
+                \item Inter-process communication using socket interface
+                \item Operates over the filesystem namespace
+                \item Cannot traverse host boundaries
+                \item Higher performance than network sockets for local communication
+            \end{itemize}
+        \item \textbf{Loopback Interface}:
+            \begin{itemize}
+                \item Host network interface with itself
+                \item Can be accessed like any network interface
+                \item Used for local services and testing
+            \end{itemize}
+        \item \textbf{Netlink Sockets}:
+            \begin{itemize}
+                \item Kernel-userspace IPC mechanism
+                \item Used for configuration and monitoring
+                \item Families include NETLINK\_ROUTE, NETLINK\_AUDIT, etc.
+                \item Standard message format with adaptable headers
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+
+\raggedcolumns
+\columnbreak
+
+
+\subsection{Network Configuration Tools}
+
+\begin{definition}{Linux Network Configuration}
+    Linux provides various tools for network management:
+    \begin{itemize}
+        \item \textbf{iproute2 suite} (modern, preferred):
+            \begin{itemize}
+                \item \texttt{ip}: Network interface and routing configuration
+                \item \texttt{tc}: Traffic control and QoS management
+                \item \texttt{ss}: Socket statistics and monitoring
+                \item \texttt{bridge}: Bridge configuration and management
+            \end{itemize}
+        \item \textbf{net-tools suite} (legacy, deprecated):
+            \begin{itemize}
+                \item \texttt{ifconfig}: Interface configuration
+                \item \texttt{route}: Routing table manipulation
+                \item \texttt{netstat}: Network statistics
+                \item \texttt{arp}: ARP table management
+            \end{itemize}
+        \item Both suites use different underlying mechanisms (netlink vs ioctl)
+    \end{itemize}
+\end{definition}
+
+\begin{KR}{Network Configuration and Troubleshooting}
+    \paragraph{Interface management}
+    \begin{itemize}
+        \item Show interfaces: \texttt{ip link show}
+        \item Bring interface up: \texttt{sudo ip link set eth0 up}
+        \item Assign IP address: \texttt{sudo ip addr add 192.168.1.100/24 dev eth0}
+        \item Show IP addresses: \texttt{ip addr show}
+        \item Remove IP address: \texttt{sudo ip addr del 192.168.1.100/24 dev eth0}
+    \end{itemize}
+    
+    \paragraph{Routing management}
+    \begin{itemize}
+        \item Show routing table: \texttt{ip route show}
+        \item Add default route: \texttt{sudo ip route add default via 192.168.1.1}
+        \item Add specific route: \texttt{sudo ip route add 10.0.0.0/8 via 192.168.1.1}
+        \item Delete route: \texttt{sudo ip route del 10.0.0.0/8}
+        \item Monitor route changes: \texttt{ip monitor route}
+    \end{itemize}
+    
+    \paragraph{Network diagnostics}
+    \begin{itemize}
+        \item Test connectivity: \texttt{ping 8.8.8.8}
+        \item Trace route: \texttt{traceroute google.com}
+        \item DNS lookup: \texttt{dig google.com}
+        \item Show listening sockets: \texttt{ss -tuln}
+        \item Show network statistics: \texttt{ss -s}
+        \item Monitor network traffic: \texttt{tcpdump -i eth0}
+    \end{itemize}
+    
+    \paragraph{Firewall configuration}
+    \begin{itemize}
+        \item List iptables rules: \texttt{sudo iptables -L}
+        \item Allow SSH: \texttt{sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT}
+        \item Block specific IP: \texttt{sudo iptables -A INPUT -s 192.168.1.100 -j DROP}
+        \item Save rules: \texttt{sudo iptables-save > /etc/iptables/rules.v4}
+        \item Modern alternative: \texttt{sudo nft list ruleset}
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Network Interface Configuration}
+    Complete network interface setup:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Show current network configuration
+ip addr show
+
+# Configure a static IP address
+sudo ip addr add 192.168.1.100/24 dev eth0
+sudo ip link set eth0 up
+
+# Add default gateway
+sudo ip route add default via 192.168.1.1
+
+# Configure DNS (temporary)
+echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+
+# Test connectivity
+ping -c 3 8.8.8.8
+ping -c 3 google.com
+
+# Show routing table
+ip route show
+
+# Show ARP table
+ip neigh show
+
+# Monitor network activity
+ss -tuln | grep :80
+
+# Configure persistent networking (systemd-networkd)
+cat << EOF | sudo tee /etc/systemd/network/10-eth0.network
+[Match]
+Name=eth0
+
+[Network]
+Address=192.168.1.100/24
+Gateway=192.168.1.1
+DNS=8.8.8.8
+DNS=8.8.4.4
+EOF
+
+# Enable systemd-networkd
+sudo systemctl enable systemd-networkd
+sudo systemctl restart systemd-networkd
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Socket Programming Example}\\
+    Simple client-server application:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+// Simple UDP Echo Server
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+int main() {
+    int sockfd;
+    struct sockaddr_in servaddr, cliaddr;
+    char buffer[1024];
+    socklen_t len = sizeof(cliaddr);
+    
+    // Create UDP socket
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0) {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Setup server address
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+    servaddr.sin_port = htons(8080);
+    
+    // Bind socket
+    if (bind(sockfd, (const struct sockaddr *)&servaddr, 
+             sizeof(servaddr)) < 0) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("UDP Echo Server listening on port 8080...\n");
+    
+    // Echo loop
+    while (1) {
+        int n = recvfrom(sockfd, buffer, 1024, 0, 
+                         (struct sockaddr *)&cliaddr, &len);
+        buffer[n] = '\0';
+        printf("Received: %s\n", buffer);
+        
+        sendto(sockfd, buffer, strlen(buffer), 0, 
+               (const struct sockaddr *)&cliaddr, len);
+    }
+    
+    return 0;
+}
+
+// Compile: gcc -o udp_server udp_server.c
+// Test: echo "Hello" | nc -u localhost 8080
+\end{lstlisting}
+\end{example2}
+
+\begin{example2}{Network Namespace Isolation}\\
+    Creating isolated network environments:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Create a new network namespace
+sudo ip netns add isolated
+
+# List network namespaces
+ip netns list
+
+# Show interfaces in the new namespace (should be empty except lo)
+sudo ip netns exec isolated ip link show
+
+# Create a virtual ethernet pair
+sudo ip link add veth0 type veth peer name veth1
+
+# Move one end to the isolated namespace
+sudo ip link set veth1 netns isolated
+
+# Configure the host-side interface
+sudo ip addr add 10.0.0.1/24 dev veth0
+sudo ip link set veth0 up
+
+# Configure the namespace-side interface
+sudo ip netns exec isolated ip addr add 10.0.0.2/24 dev veth1
+sudo ip netns exec isolated ip link set veth1 up
+sudo ip netns exec isolated ip link set lo up
+
+# Test connectivity
+ping -c 3 10.0.0.2
+
+# Run commands in the isolated namespace
+sudo ip netns exec isolated ping -c 3 10.0.0.1
+
+# Show routing in the namespace
+sudo ip netns exec isolated ip route show
+
+# Add default route in namespace (through host)
+sudo ip netns exec isolated ip route add default via 10.0.0.1
+
+# Enable IP forwarding on host for internet access
+echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+
+# Add NAT rule for namespace traffic
+sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -j MASQUERADE
+
+# Test internet connectivity from namespace
+sudo ip netns exec isolated ping -c 3 8.8.8.8
+
+# Clean up
+sudo ip netns delete isolated
+sudo ip link delete veth0
+\end{lstlisting}
+\end{example2}
+
+
+
+\begin{KR}{Network Service Management}\\
+    \paragraph{Service discovery and management}
+    \begin{itemize}
+        \item Check listening services: \texttt{sudo ss -tulpn}
+        \item Find process using port: \texttt{sudo lsof -i :80}
+        \item Check service status: \texttt{systemctl status nginx}
+        \item Control network services: \texttt{sudo systemctl start/stop/restart nginx}
+    \end{itemize}
+    
+    \paragraph{Network security}
+    \begin{itemize}
+        \item Check open ports: \texttt{nmap localhost}
+        \item Monitor failed connections: \texttt{sudo journalctl -f | grep ssh}
+        \item Configure fail2ban: \texttt{sudo systemctl enable fail2ban}
+        \item Check SELinux network policies: \texttt{getsebool -a | grep httpd}
+    \end{itemize}
+    
+    \paragraph{Performance optimization}
+    \begin{itemize}
+        \item Tune network buffers: \texttt{sysctl -w net.core.rmem\_max=16777216}
+        \item Enable TCP window scaling: \texttt{sysctl -w net.ipv4.tcp\_window\_scaling=1}
+        \item Configure congestion control: \texttt{sysctl -w net.ipv4.tcp\_congestion\_control=bbr}
+        \item Monitor network performance: \texttt{iperf3 -c server\_ip}
+    \end{itemize}
+\end{KR}
+
+\begin{definition}{Extended Berkeley Packet Filter (eBPF)}\\
+    Modern Linux networking includes advanced packet filtering:
+    \begin{itemize}
+        \item \textbf{eBPF}: Extended packet filtering beyond traditional BPF
+        \item \textbf{Features}:
+            \begin{itemize}
+                \item Programmable packet processing in kernel space
+                \item JIT compilation for performance
+                \item Safe execution environment with verification
+                \item Integration with various kernel subsystems
+            \end{itemize}
+        \item \textbf{Applications}:
+            \begin{itemize}
+                \item High-performance networking
+                \item Container networking
+                \item Network security and monitoring
+                \item Traffic analysis and manipulation
+            \end{itemize}
+        \item Represents the future of Linux packet filtering and network programming
+    \end{itemize}
+\end{definition}
+
+
+\begin{example2}{Advanced Network Monitoring}\\
+    Comprehensive network monitoring and analysis:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Monitor real-time network connections
+watch -n 1 'ss -tuln'
+
+# Show detailed socket information
+ss -tulpn | grep :80
+
+# Monitor network traffic with detailed statistics
+iftop -i eth0
+
+# Capture and analyze packets
+sudo tcpdump -i eth0 -w capture.pcap
+
+# Analyze captured packets
+tcpdump -r capture.pcap -n | head -20
+
+# Monitor bandwidth usage per process
+sudo nethogs eth0
+
+# Show network interface statistics
+cat /proc/net/dev
+
+# Monitor netlink messages
+ip monitor all
+
+# Check connection tracking
+sudo cat /proc/net/nf_conntrack | head -10
+
+# Show detailed network stack statistics
+ss --info --processes --numeric
+
+# Monitor DNS queries
+sudo tcpdump -i eth0 port 53
+
+# Show kernel network parameters
+sysctl -a | grep net.ipv4 | head -10
+
+# Monitor network errors
+netstat -i
+\end{lstlisting}
+\end{example2}

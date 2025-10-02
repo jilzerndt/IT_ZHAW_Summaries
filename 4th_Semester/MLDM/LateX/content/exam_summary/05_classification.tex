@@ -1,0 +1,243 @@
+\section{Classification with Logistic Regression}
+
+\subsection{Binary Classification}
+
+\begin{definition}{Logistic Regression}\\
+Logistic regression is a supervised learning algorithm for binary classification. It models the probability that an input belongs to the positive class using the logistic function:
+\[\hat{y} = h_\theta(x) = g(\theta^T x) = \frac{1}{1 + e^{-\theta^T x}}\]
+where $g(z) = \frac{1}{1 + e^{-z}}$ is the sigmoid (logistic) function that maps any real number to the range $(0,1)$.
+\end{definition}
+
+\begin{concept}{Decision Boundary}\\
+The decision boundary is the line (or hyperplane in higher dimensions) that separates the regions where the model predicts different classes. For logistic regression:
+\begin{itemize}
+    \item Predict class 1 if $h_\theta(x) \geq 0.5$ 
+    \item Predict class 0 if $h_\theta(x) < 0.5$
+    \item This boundary occurs when $\theta^T x = 0$
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Cost Function for Logistic Regression}\\
+The cost function for logistic regression is the Log Loss (also called Cross-Entropy Loss):
+\[J(\theta) = \frac{1}{M}\sum_{m=1}^{M}[-y^{(m)}\log(h_\theta(x^{(m)})) - (1-y^{(m)})\log(1-h_\theta(x^{(m)}))]\]
+This function penalizes wrong predictions more heavily as they get more confident.
+\end{definition}
+
+\begin{KR}{Training a Logistic Regression Model}
+\paragraph{Initialize parameters}
+Start with random values for parameters $\theta$
+
+\paragraph{Gradient descent}
+Apply gradient descent to minimize the cost function:
+\[\theta_j = \theta_j - \alpha \frac{1}{M}\sum_{m=1}^{M}(h_\theta(x^{(m)}) - y^{(m)})x^{(m)}_j\]
+
+\paragraph{Make predictions}
+For new data point $x$:
+\begin{itemize}
+    \item Calculate probability $h_\theta(x) = \frac{1}{1 + e^{-\theta^T x}}$
+    \item Predict class 1 if $h_\theta(x) \geq 0.5$, otherwise class 0
+\end{itemize}
+
+\paragraph{Evaluate model}
+Use metrics like accuracy, precision, recall, or F1-score to evaluate model performance on a test set.
+\end{KR}
+
+\begin{example}{Logistic Regression Application}
+Suppose we want to predict whether a student will pass an exam based on hours studied and previous GPA.
+\begin{itemize}
+    \item Features: Hours studied ($x_1$), Previous GPA ($x_2$)
+    \item Output: Pass (1) or Fail (0)
+    \item After training, we get: $\theta_0 = -6$, $\theta_1 = 0.05$, $\theta_2 = 1.5$
+    \item Decision boundary: $-6 + 0.05 \times \text{hours} + 1.5 \times \text{GPA} = 0$
+    \item For a student who studied 80 hours with GPA 3.2:
+    \begin{itemize}
+        \item $z = -6 + 0.05 \times 80 + 1.5 \times 3.2 = -6 + 4 + 4.8 = 2.8$
+        \item $h_\theta(x) = \frac{1}{1 + e^{-2.8}} \approx 0.94$
+        \item Prediction: Pass (94\% confidence)
+    \end{itemize}
+\end{itemize}
+\end{example}
+
+\subsection{Differences from Linear Regression}
+
+\begin{concept}{Contrasting Logistic and Linear Regression}\\
+While both logistic and linear regression find a linear relationship between features and output, they differ in key ways:
+\begin{itemize}
+    \item \textbf{Output range}: Linear regression predicts any real number, while logistic regression outputs probabilities between 0 and 1
+    \item \textbf{Interpretation}: Linear regression predicts a quantity, while logistic regression predicts a probability
+    \item \textbf{Cost function}: Linear regression uses squared error, while logistic regression uses log loss
+    \item \textbf{Solution method}: Linear regression has a closed-form solution (normal equation), while logistic regression typically requires iterative optimization
+\end{itemize}
+\end{concept}
+
+\begin{concept}{When to Use Logistic vs. Linear Regression}
+\begin{itemize}
+    \item Use logistic regression when:
+    \begin{itemize}
+        \item The target variable is categorical (especially binary)
+        \item You need probabilistic outputs
+        \item You want a decision boundary for classification
+    \end{itemize}
+    \item Use linear regression when:
+    \begin{itemize}
+        \item The target variable is continuous
+        \item You need to predict a quantity rather than a category
+        \item A linear relationship is appropriate for the data
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+\subsection{Regularization in Logistic Regression}
+
+\begin{definition}{Regularized Logistic Regression}\\
+Regularization can be applied to logistic regression to prevent overfitting:
+\[J(\theta) = \frac{1}{M}\sum_{m=1}^{M}[-y^{(m)}\log(h_\theta(x^{(m)})) - (1-y^{(m)})\log(1-h_\theta(x^{(m)}))] + \frac{\lambda}{2M}\sum_{j=1}^{n}\theta_j^2\]
+The regularization term penalizes large parameter values, encouraging a simpler model.
+\end{definition}
+
+\begin{KR}{Implementing Regularized Logistic Regression}
+\paragraph{Modify the cost function}
+Include the regularization term in the cost function:
+\[J(\theta) = \frac{1}{M}\sum_{m=1}^{M}[-y^{(m)}\log(h_\theta(x^{(m)})) - (1-y^{(m)})\log(1-h_\theta(x^{(m)}))] + \frac{\lambda}{2M}\sum_{j=1}^{n}\theta_j^2\]
+
+\paragraph{Update gradient descent}
+Modify the update rule for regularized parameters ($j \geq 1$):
+\[\theta_j = \theta_j(1-\alpha\frac{\lambda}{M}) - \alpha\frac{1}{M}\sum_{m=1}^{M}(h_\theta(x^{(m)}) - y^{(m)})x^{(m)}_j\]
+Note: The intercept term $\theta_0$ is typically not regularized.
+
+\paragraph{Select regularization parameter}
+Use cross-validation to choose an appropriate value for $\lambda$.
+\end{KR}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Multi-class Classification}
+
+\begin{definition}{One-vs-rest Classification}
+(also called one-vs-all) is an approach to extend binary classification algorithms like logistic regression to multi-class problems:
+\begin{itemize}
+    \item Train $K$ separate binary classifiers, one for each class
+    \item The $k$-th classifier distinguishes class $k$ from all other classes
+    \item For prediction, apply all classifiers and select the class with highest confidence
+\end{itemize}
+\end{definition}
+
+\mult{2}
+
+\begin{KR}{Implementing One-vs-rest Classification}
+
+\textbf{Prepare the data}
+
+For each class $k$ in $\{1, 2, ..., K\}$, create binary labels:
+
+$y^{(m)}_k = 1$ if $y^{(m)} = k$ \\(sample $m$ belongs to class $k$)
+
+$y^{(m)}_k = 0$ otherwise\\ (sample $m$ belongs to any other class)
+
+
+\textbf{Train multiple classifiers}
+For each class $k$:
+\begin{itemize}
+    \item Train a binary logistic regression classifier \\to predict $y^{(m)}_k$
+    \item This gives parameters $\theta^{(k)}$ for class $k$
+\end{itemize}
+
+\textbf{Make predictions}
+For a new data point $x$:
+\begin{itemize}
+    \item Calculate $h_{\theta^{(k)}}(x)$ for each $k$
+    \item Predict the class with highest probability: \\$\hat{y} = \text{argmax}_k h_{\theta^{(k)}}(x)$
+\end{itemize}
+\end{KR}
+
+\begin{example2}{One-vs-rest Classification}\\
+Consider classifying iris flowers into three classes: Setosa, Versicolor, and Virginica.
+\begin{itemize}
+    \item Features: Petal length and width
+    \item Three binary classifiers:
+    \begin{itemize}
+        \item Classifier 1: Setosa (1) vs. rest (0)
+        \item Classifier 2: Versicolor (1) vs. rest (0)
+        \item Classifier 3: Virginica (1) vs. rest (0)
+    \end{itemize}
+\end{itemize}
+\tcblower
+For a new flower with petal length 4.5 cm and width 1.3 cm:
+\begin{itemize}
+    \item Classifier 1 probability: 0.02 (Setosa)
+    \item Classifier 2 probability: 0.87 (Versicolor)
+    \item Classifier 3 probability: 0.15 (Virginica)
+\end{itemize}
+Since Classifier 2 gives the highest probability, we predict this flower is a Versicolor.
+\end{example2}
+
+\multend
+
+\subsection{Evaluating Classification Models}
+
+\mult{2}
+
+\begin{definition}{Classification Metrics}
+binary classification models:
+\begin{itemize}
+    \item \textbf{Accuracy}: Proportion of correct predictions
+    \item \textbf{Precision}: Proportion of positive predictions that are correct
+    \item \textbf{Recall}: Proportion of actual positives that are correctly identified
+    \item \textbf{F1-score}: Harmonic mean of precision and recall
+    \item \textbf{ROC curve}: Plot of true positive rate vs. false positive rate at different thresholds
+    \item \textbf{AUC}: Area under the ROC curve
+\end{itemize}
+\end{definition}
+
+
+
+
+\begin{KR}{Choosing the Right Evaluation Metric}
+\paragraph{Consider class balance}
+\begin{itemize}
+    \item For balanced classes: Accuracy is often sufficient
+    \item For imbalanced classes: Consider precision, recall, F1-score
+\end{itemize}
+
+\paragraph{Consider business context}
+\begin{itemize}
+    \item False positives more costly: Focus on precision
+    \item False negatives more costly: Focus on recall
+    \item Need to balance both: Use F1-score
+\end{itemize}
+
+\paragraph{Consider probability calibration}
+\begin{itemize}
+    \item If probabilities are important (not just class predictions): Use log loss or AUC
+    \item For comparing different types of models: AUC is often useful
+\end{itemize}
+
+\paragraph{Use threshold-independent metrics}
+If the classification threshold might change:
+\begin{itemize}
+    \item Use ROC curve to visualize performance across thresholds
+    \item Use AUC to get a single performance number
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Confusion Matrix Analysis}
+Consider a medical test for a disease with 1000 test cases:
+\begin{itemize}
+    \item True Positives (TP): 150 (correctly identified disease cases)
+    \item False Positives (FP): 50 (incorrectly flagged as disease)
+    \item True Negatives (TN): 700 (correctly identified healthy cases)
+    \item False Negatives (FN): 100 (missed disease cases)
+\end{itemize}
+
+Evaluation metrics:
+\begin{itemize}
+    \item Accuracy = 85\% $$\frac{TP+TN}{TP+FP+TN+FN} = \frac{150+700}{1000} = 0.85$$ 
+    \item Precision = 75\% $$\frac{TP}{TP+FP} = \frac{150}{150+50} = 0.75$$ 
+    \item Recall = 60\% $$\frac{TP}{TP+FN} = \frac{150}{150+100} = 0.60$$ 
+    \item F1-score = $$\frac{2 \times Precision \times Recall}{Precision + Recall} = \frac{2 \times 0.75 \times 0.60}{0.75 + 0.60} = 0.67$$
+\end{itemize}
+\end{example2}
+
+
+\multend

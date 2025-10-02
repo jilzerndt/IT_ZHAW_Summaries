@@ -1,0 +1,459 @@
+\section{Midterm 2019} 
+
+This chapter contains typical exam questions with detailed solutions and systematic approaches (Kochrezepte) for solving similar problems.
+
+\subsection{Cache Performance Analysis}
+
+\begin{KR}{Cache Hit Rate Calculation}
+    \paragraph{Problem identification}
+    \begin{itemize}
+        \item Given: Array access pattern, processor architecture, cache block size
+        \item Find: Cache hit rate during sequential array access
+    \end{itemize}
+    
+    \paragraph{Solution approach}
+    \begin{itemize}
+        \item Calculate data type size based on processor architecture
+        \item Determine how many array elements fit in one cache line
+        \item First access to cache line = miss, subsequent accesses = hits
+        \item Hit rate = (accesses per line - 1) / accesses per line
+    \end{itemize}
+    
+    \paragraph{Key formulas}
+    \begin{itemize}
+        \item Elements per cache line = Cache line size / Data type size
+        \item Hit rate = (Elements per line - 1) / Elements per line
+        \item For 32-bit processor: int = 4 bytes
+        \item For 64-bit processor: int = 4 bytes, long = 8 bytes
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Cache Hit Rate Calculation}
+    Given program code accessing an integer array:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+#define N (10*1000*1000)
+int arVL[N];
+for (int i = 0; i < N; i++) {
+    sum += arVL[i];
+}
+\end{lstlisting}
+
+    Calculate hit rate on a 32-bit processor with 64-byte cache lines.
+    
+    \tcblower
+    
+    \textbf{Solution:}
+    \begin{itemize}
+        \item 32-bit processor: \texttt{int} = 4 bytes
+        \item Cache line size: 64 bytes
+        \item Elements per cache line: 64 / 4 = 16 integers
+        \item First access per line: cache miss
+        \item Next 15 accesses per line: cache hits
+        \item Hit rate: $h_c = \frac{15}{16} = 0.9375 = 93.75\%$
+    \end{itemize}
+\end{example2}
+
+\subsection{Memory Access Time Calculation}
+
+\begin{KR}{Average Memory Access Time}
+    \paragraph{Problem components}
+    \begin{itemize}
+        \item Multi-level cache hierarchy
+        \item Hit rates for each level
+        \item Access times for each level
+        \item Main memory access time
+    \end{itemize}
+    
+    \paragraph{Calculation method}
+    \begin{itemize}
+        \item Start from L1 cache (always accessed first)
+        \item For each miss, calculate probability of accessing next level
+        \item Multiply access time by probability of reaching that level
+        \item Sum all weighted access times
+    \end{itemize}
+    
+    \paragraph{Formula}
+    \begin{itemize}
+        \item $T_{avg} = T_{L1} + (1-h_1) \times T_{L2} + (1-h_1)(1-h_2) \times T_{L3} + \ldots$
+        \item Convert clock cycles to time: Time = Cycles $\times$ Clock period
+        \item Clock period = 1 / Frequency
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Memory Access Time Calculation}
+    2 GHz processor (clock cycle = 0.5 ns) with three-level cache:
+    
+    \begin{tabular}{|l|l|}
+        \hline
+        Cache Level 1 & 4 clock cycles \\
+        Cache Level 2 & 10 clock cycles \\
+        Cache Level 3 & 40 clock cycles \\
+        Main Memory & 60 ns \\
+        \hline
+    \end{tabular}
+    
+    Hit rate on each level: 90\%
+    
+    \tcblower
+    
+    \textbf{Solution:}
+    \begin{itemize}
+        \item L1 access: $4 \times 0.5 = 2$ ns (always accessed)
+        \item L2 access: $10 \times 0.5 = 5$ ns (10\% probability)
+        \item L3 access: $40 \times 0.5 = 20$ ns (1\% probability)  
+        \item Main memory: 60 ns (0.1\% probability)
+        \item $T_{avg} = 2 + 0.1 \times 5 + 0.01 \times 20 + 0.001 \times 60$
+        \item $T_{avg} = 2 + 0.5 + 0.2 + 0.06 = 2.76$ ns
+    \end{itemize}
+\end{example2}
+
+\subsection{Makefile Analysis}
+
+\begin{KR}{Makefile Dependency Analysis}
+    \paragraph{Understanding make behavior}
+    \begin{itemize}
+        \item Make compares timestamps of targets and dependencies
+        \item Target is rebuilt if it's older than any dependency
+        \item Missing targets are always built
+        \item Implicit rules (.c.o:) handle automatic compilation
+    \end{itemize}
+    
+    \paragraph{Analysis steps}
+    \begin{itemize}
+        \item Identify target dependencies from makefile
+        \item Check file timestamps in directory listing
+        \item Determine which object files need recompilation
+        \item Follow linking rules to determine final executable name
+    \end{itemize}
+    
+    \paragraph{Common patterns}
+    \begin{itemize}
+        \item .c.o: rule compiles .c files to .o files automatically
+        \item \$@ refers to the target name
+        \item If .c file is newer than .o file, recompilation occurs
+        \item Missing .o files are always created
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Makefile Analysis}
+    Given Makefile:
+    
+\begin{lstlisting}[style=basesmol]
+CFL = -g
+CMP = gcc $(CFL)
+app: main1.o mythread.o scheduler.o queues.o mylist.o
+	$(CMP) main1.o mythread.o scheduler.o queues.o mylist.o -o $@.e
+.c.o:
+	$(CMP) -c $<
+\end{lstlisting}
+
+    Directory listing shows:
+    \begin{itemize}
+        \item mylist.c: Feb 24 09:31 (newer)
+        \item mylist.o: Feb 24 09:21 (older)  
+        \item queues.c: Feb 24 09:25 (newer)
+        \item queues.o: Feb 24 09:21 (older)
+        \item All other .o files are newer than corresponding .c files
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Solution:}
+    \begin{itemize}
+        \item Files to be compiled: mylist.c, queues.c (because .c files are newer than .o files)
+        \item Executable name: app.e (from \$@.e where \$@ = app)
+    \end{itemize}
+\end{example2}
+
+\subsection{Process Creation with fork()}
+
+\begin{KR}{Fork() Process Tree Analysis}
+    \paragraph{Understanding fork() behavior}
+    \begin{itemize}
+        \item fork() creates an exact copy of the calling process
+        \item Returns child PID to parent, 0 to child
+        \item fork() > 0 is true only in parent process
+        \item Each fork() doubles the number of processes
+    \end{itemize}
+    
+    \paragraph{Analysis method}
+    \begin{itemize}
+        \item Draw a process tree starting with the original process
+        \item For each fork(), branch into parent and child
+        \item Track which path each process takes through if/else statements
+        \item Count total processes and specific execution paths
+    \end{itemize}
+    
+    \paragraph{Counting strategy}
+    \begin{itemize}
+        \item Start with 1 process (the original)
+        \item Each successful fork() adds 1 new process
+        \item Count processes that reach specific code sections
+        \item Be careful with nested forks and conditional execution
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Fork() Process Creation}
+    \important{ADDED GRAPHIC HERE!!}
+    Analyze this code snippet:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+if (fork() > 0)
+    fork();
+else {
+    fork();
+    if (fork() > 0)
+        printf("Hello World\n");
+}
+\end{lstlisting}
+
+    Assume all fork() calls succeed.
+    
+    \tcblower
+    
+    \textbf{Solution:}
+    $$
+    \begin{array}{lll}
+        f--- & f---| & \\
+        \lfloor     & \llcorner ---| & \\
+        ---- & f---- & f--- Hello World \\
+             & \lfloor      & \llcorner ---| \\
+             & ----- & f--- Hello World \\
+             &       & \llcorner ---|\\
+    \end{array} 
+    $$   
+    
+    Process tree analysis:
+    \begin{itemize}
+        \item Original process P1 forks $\rightarrow$ creates P2
+        \item P1 (parent): fork() > 0 is true, executes fork() $\rightarrow$ creates P3
+        \item P2 (child): fork() > 0 is false, goes to else block
+        \item P2 executes fork() $\rightarrow$ creates P4
+        \item P2 executes second fork() $\rightarrow$ creates P5 
+        \item P4 executes second fork() $\rightarrow$ creates P6
+        \item P2 (parent of P5): fork() > 0 is true, prints "Hello World"
+        \item P4 (parent of P6): fork() > 0 is true, prints "Hello World"
+    \end{itemize}
+    
+    \textbf{Results:}
+    \begin{itemize}
+        \item Additional processes created: 5 (P2, P3, P4, P5, P6)
+        \item "Hello World" printed: 2 times (by P2 and P4)
+    \end{itemize}
+\end{example2}
+
+\subsection{Real-Time Scheduling}
+
+\begin{KR}{Earliest Deadline First Scheduling}
+    \paragraph{EDF Algorithm principles}
+    \begin{itemize}
+        \item Always schedule the task with the earliest deadline
+        \item Deadlines = arrival time + period for periodic tasks
+        \item Preemption occurs when a task with earlier deadline arrives
+        \item Re-scheduling happens at specified intervals or task completion
+    \end{itemize}
+    
+    \paragraph{Scheduling steps}
+    \begin{itemize}
+        \item Calculate all task deadlines for the scheduling period
+        \item At each scheduling point, identify available tasks
+        \item Select task with earliest deadline
+        \item Handle ties with specified priority rules (e.g., shorter period)
+        \item Mark execution periods in timeline diagram
+    \end{itemize}
+    
+    \paragraph{Timeline construction}
+    \begin{itemize}
+        \item Create timeline with scheduling intervals marked
+        \item For each interval, determine which task should run
+        \item Show task execution as filled blocks
+        \item Verify all deadlines are met
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{EDF Real-Time Scheduling}
+    \important{ADD GRAPHIC HERE!!}
+    Three periodic tasks with EDF scheduling:
+    
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Task & Period & Execution Time \\
+        \hline
+        1 & 4ms & 1ms \\
+        2 & 8ms & 4ms \\
+        3 & 12ms & 3ms \\
+        \hline
+    \end{tabular}
+    
+    Re-scheduling every 4ms or when task suspends.
+    For equal deadlines, shorter period has higher priority.
+    
+    \tcblower
+    
+    \textbf{Solution approach:}
+    
+    Timeline analysis (0-12ms):
+    \begin{itemize}
+        \item t=0: T1 (deadline 4), T2 (deadline 8), T3 (deadline 12)
+        \item T1 has earliest deadline $\rightarrow$ runs 0-1ms
+        \item t=1: T2 (deadline 8), T3 (deadline 12)  
+        \item T2 has earliest deadline $\rightarrow$ runs 1-4ms (suspended after 3ms)
+        \item t=4: T1 arrives again (deadline 8), T2 continues (1ms left), T3 (deadline 12)
+        \item Multiple tasks with deadline 8: T1 has shorter period $\rightarrow$ higher priority
+        \item Continue this analysis through the full timeline
+    \end{itemize}
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Multi-Level Scheduling}
+
+\begin{KR}{Multi-Level Round Robin Scheduling}
+    \paragraph{Multi-level principles}
+    \begin{itemize}
+        \item Separate queues for different priority levels
+        \item Higher priority queues are served first
+        \item Round robin within each priority level
+        \item Lower priority tasks only run when higher queues are empty
+    \end{itemize}
+    
+    \paragraph{Scheduling algorithm}
+    \begin{itemize}
+        \item Group processes by priority level
+        \item Always check highest priority queue first
+        \item Use round robin with specified time quantum within each queue
+        \item Preemption occurs when higher priority process arrives
+        \item Track remaining execution time for each process
+    \end{itemize}
+    
+    \paragraph{Timeline construction}
+    \begin{itemize}
+        \item Mark process arrivals on timeline
+        \item At each time unit, determine which process should run
+        \item Apply round robin within the highest non-empty priority queue
+        \item Show context switches and queue changes
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Multi-Level Scheduling}
+    \important{ADD GRAPHIC HERE!!}
+    Five processes with priorities and times:
+    
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        Process & Priority & Arrival & Execution \\
+        \hline
+        P1 & 0 & 0 & 4 \\
+        P2 & 1 & 1 & 3 \\
+        P3 & 1 & 2 & 2 \\
+        P4 & 0 & 5 & 3 \\
+        P5 & 0 & 7 & 2 \\
+        \hline
+    \end{tabular}
+    
+    Multi-level scheduling (not feedback), no blocking, RR with q=1.
+    Higher number = higher priority.
+    
+    \tcblower
+    
+    \textbf{Solution timeline (0-14):}
+    \begin{itemize}
+        \item t=0-1: P1 runs (only process, priority 0)
+        \item t=1-2: P2 runs (arrives with priority 1, preempts P1)
+        \item t=2-3: P3 runs (priority 1, round robin with P2)
+        \item t=3-4: P2 runs (continues in priority 1 queue)
+        \item t=4-5: P3 runs (finishes remaining 1 time unit)
+        \item t=5-6: P2 runs (finishes last time unit)
+        \item t=6-7: P1 runs (priority 1 queue empty, resume P1)
+        \item Continue pattern with P4, P5 arrivals...
+    \end{itemize}
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Operating System Concepts}
+
+\begin{KR}{OS Concept Questions}
+    \paragraph{System call identification}
+    \begin{itemize}
+        \item System calls required for kernel mode operations
+        \item I/O operations (screen output, file access) need system calls
+        \item Time-related operations (sleep) need system calls
+        \item Pure computation (arithmetic) doesn't need system calls
+        \item Memory operations within process space don't need system calls
+    \end{itemize}
+    
+    \paragraph{Thread and process concepts}
+    \begin{itemize}
+        \item pthread\_join() waits for thread completion
+        \item Prevents main process from terminating before threads finish
+        \item Software interrupts provide controlled kernel mode entry
+        \item PCB (Process Control Block) stores OS process information
+    \end{itemize}
+    
+    \paragraph{Process states}
+    \begin{itemize}
+        \item Zombie: process finished but parent hasn't waited
+        \item Daemon: background process without controlling terminal
+        \item Orphan: process whose parent has terminated
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Operating System Multiple Choice}
+    Typical OS concept questions:
+    
+    \textbf{Which activities require system calls?}
+    \begin{itemize}
+        \item \textcolor{frog}{$\surd$} Display variable value on screen (I/O operation)
+        \item \textcolor{red}{\textbf{X}} Compare two variables (CPU operation)
+        \item \textcolor{frog}{$\surd$} Sleep for 1 second (timer operation)
+        \item \textcolor{red}{\textbf{X}} Increment integer variable (memory operation)
+        \item \textcolor{red}{\textbf{X}} Increment float variable (CPU operation)
+    \end{itemize}
+    
+    \textbf{What is pthread\_join() used for?}
+    \begin{itemize}
+        \item \textcolor{red}{\textbf{X}} Terminates all user-level threads
+        \item \textcolor{red}{\textbf{X}} Can be replaced by sleep(0)
+        \item \textcolor{frog}{$\surd$} Prevents process termination before threads finish
+        \item \textcolor{red}{\textbf{X}} Blocks CPU until all threads terminate
+    \end{itemize}
+    
+    \textbf{Why use software interrupts for system calls?}
+    \begin{itemize}
+        \item \textcolor{red}{\textbf{X}} They are faster than procedure calls
+        \item \textcolor{frog}{$\surd$} Procedure calls cannot switch to system mode
+        \item \textcolor{frog}{$\surd$} Applications don't know system call routine addresses
+    \end{itemize}
+\end{example2}
+
+\begin{KR}{Exam Preparation Strategy}
+    \paragraph{Time management}
+    \begin{itemize}
+        \item Read all questions first to identify easy wins
+        \item Allocate time based on point values
+        \item Don't spend too much time on single difficult problems
+        \item Reserve time for checking answers
+    \end{itemize}
+    
+    \paragraph{Problem-solving approach}
+    \begin{itemize}
+        \item Identify the problem type and appropriate "Kochrezept"
+        \item Write down given values and what needs to be found
+        \item Draw diagrams for scheduling and process problems
+        \item Show calculation steps clearly
+        \item Double-check units and reasonableness of answers
+    \end{itemize}
+    
+    \paragraph{Common mistakes to avoid}
+    \begin{itemize}
+        \item Forgetting to convert time units (ns, ms, clock cycles)
+        \item Not considering all processes in fork() analysis
+        \item Missing preemption in scheduling problems
+        \item Confusing parent/child behavior in process creation
+        \item Not reading multiple choice questions carefully
+    \end{itemize}
+\end{KR}

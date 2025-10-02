@@ -1,0 +1,628 @@
+\section{File Systems}
+
+\subsection{Introduction to File Systems}
+
+\begin{minipage}{0.55\linewidth}
+\begin{concept}{File System Requirements}\\
+    File systems address three essential requirements for long-term information storage:
+    \begin{itemize}
+        \item It must be possible to store very large amounts of information
+        \item Information must survive termination of processes using it
+        \item Multiple processes must be able to access information concurrently
+    \end{itemize}
+    
+    File systems organize, store, access, and manage persistent data by:
+    \begin{itemize}
+        \item Supporting multiple storage media
+        \item Providing fast data location and protection mechanisms
+        \item Enabling efficient read and write operations on fixed-size blocks
+    \end{itemize}
+\end{concept}
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+\begin{definition}{File System Architecture}\\
+    File systems consist of two main organizational levels:
+    \begin{itemize}
+        \item \textbf{Logical organization} (user perspective):
+            \begin{itemize}
+                \item Hierarchical directory structure
+                \item File abstractions with names and attributes
+                \item Access control and permissions
+            \end{itemize}
+        \item \textbf{Physical organization} (OS perspective):
+            \begin{itemize}
+                \item Block allocation and management
+                \item Data structure layout on storage media
+                \item Device driver interfaces
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+\end{minipage}
+
+\subsection{Files - User Perspective}
+
+
+
+\begin{concept}{File Concept and Structure}\\
+    A file is an abstraction with multiple perspectives:
+    \begin{itemize}
+        \item \textbf{Logical perspective}: Abstract object with a name and access methods for storing data
+        \item \textbf{Physical perspective}: Set of equivalent records or bytes on persistent media
+        \item Files are created and accessed through processes
+        \item Files provide persistent storage beyond process lifetime
+    \end{itemize}
+    
+    File naming conventions:
+    \begin{itemize}
+        \item File names are strings with system-specific rules
+        \item Many systems support multi-part names separated by periods
+        \item File extension typically follows the last period
+        \item Extensions often indicate file type or intended application
+    \end{itemize}
+\end{concept}
+
+\mult{2}
+
+\begin{theorem}{File Types}\\
+    Operating systems recognize several types of files:
+    \begin{itemize}
+        \item \textbf{Ordinary/Regular Files}: User files containing programs and data
+        \item \textbf{Directory Files}: System files containing filesystem structure information
+        \item \textbf{Character Special Files}: Represent character-oriented I/O devices
+        \item \textbf{Block Special Files}: Represent block-oriented I/O devices
+        \item \textbf{Link Files}: References to other files in the filesystem
+        \item \textbf{Socket Files}: Communication endpoints for network or IPC
+        \item \textbf{Named Pipe Files}: Communication channels between processes
+    \end{itemize}
+\end{theorem}
+
+\begin{corollary}{File Access Methods}\\
+    Files can be accessed in different ways:
+    \begin{itemize}
+        \item \textbf{Sequential Access}: Data read/written in order from beginning to end
+            \begin{itemize}
+                \item Common for streaming data, logs, backups
+                \item Simple to implement and efficient for linear processing
+            \end{itemize}
+        \item \textbf{Random Access}: Data can be read/written at any position
+            \begin{itemize}
+                \item Essential for databases, binary files, memory-mapped files
+                \item Requires address calculation and seek operations
+            \end{itemize}
+    \end{itemize}
+\end{corollary}
+
+\multend
+
+\mult{2}
+
+\begin{formula}{File Attributes and Permissions}\\
+    Files have various attributes and access rights:
+    \begin{itemize}
+        \item \textbf{Basic attributes}:
+            \begin{itemize}
+                \item Name: Human-readable identifier
+                \item Size: Number of bytes in the file
+                \item Timestamps: Creation, modification, access times
+                \item Owner: User and group ownership
+                \item Type: Regular, directory, device, etc.
+            \end{itemize}
+        \item \textbf{Unix/Linux permissions}:
+            \begin{itemize}
+                \item Read (r): Ability to read file contents
+                \item Write (w): Ability to modify file contents
+                \item Execute (x): Ability to execute file or search directory
+                \item Applied to three categories: owner, group, others
+            \end{itemize}
+        \item \textbf{Links}: Number of hard links pointing to the file
+    \end{itemize}
+\end{formula}
+
+\begin{code}{File Operations}\\
+    Common file operations supported by operating systems:
+    \begin{itemize}
+        \item \textbf{Creation and deletion}: Create new files, delete existing files
+        \item \textbf{Opening and closing}: Establish/terminate access to files
+        \item \textbf{Reading and writing}: Transfer data to/from files
+        \item \textbf{Seeking}: Change current position in file for random access
+        \item \textbf{Attribute manipulation}: Get and set file metadata
+        \item \textbf{Renaming}: Change file names
+        \item \textbf{Linking}: Create references to existing files
+    \end{itemize}
+\end{code}
+
+\multend
+
+\begin{example}
+    Basic file operations in C:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main() {
+    int fd;
+    char buffer[100];
+    ssize_t bytes_read;
+    
+    // Open file for reading
+    fd = open("example.txt", O_RDONLY);
+    if (fd == -1) {
+        perror("Error opening file");
+        return 1;
+    }
+    
+    // Read from file
+    bytes_read = read(fd, buffer, sizeof(buffer) - 1);
+    if (bytes_read > 0) {
+        buffer[bytes_read] = '\0';
+        printf("Read: %s\n", buffer);
+    }
+    
+    // Close file
+    close(fd);
+    
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Directory Organization}
+
+\begin{concept}{File Organization on Storage}\\
+    Files are organized on storage devices through:
+    \begin{itemize}
+        \item \textbf{Volumes}: Logical storage units (can span multiple physical devices)
+        \item \textbf{Partitions}: Subdivisions of physical storage devices
+        \item \textbf{Directories}: Hierarchical organization of files and subdirectories
+    \end{itemize}
+    
+    Two main organizational approaches:
+    \begin{itemize}
+        \item \textbf{Physical volume with partitions}: Single device divided into sections
+        \item \textbf{Logical volume with multiple disks}: Multiple devices combined into one logical unit
+    \end{itemize}
+\end{concept}
+
+\mult{2}
+
+\begin{definition}{Directory Systems}\\
+    Directory systems range from simple to complex:
+    \begin{itemize}
+        \item \textbf{Flat file system}:
+            \begin{itemize}
+                \item Only one root directory containing all files
+                \item Used in embedded devices, simple systems
+                \item No subdirectories or hierarchical organization
+            \end{itemize}
+        \item \textbf{Hierarchical file system}:
+            \begin{itemize}
+                \item Root directory and subdirectories
+                \item Allows grouping of related files
+                \item Enables multiple files with the same name in different directories
+                \item Supports different user areas and system organization
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Shared Files and Linking}\\
+    File systems support file sharing through linking:
+    \begin{itemize}
+        \item \textbf{Hard links}:
+            \begin{itemize}
+                \item Directory entries that point to the same inode
+                \item Multiple names for the same file
+                \item Cannot span filesystem boundaries
+                \item Cannot link to directories (usually)
+                \item File persists until all hard links are removed
+            \end{itemize}
+        \item \textbf{Symbolic (soft) links}:
+            \begin{itemize}
+                \item Special files containing paths to other files
+                \item Can span filesystem boundaries
+                \item Can link to directories
+                \item Become invalid if target is moved or deleted
+                \item More flexible but with additional indirection overhead
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+
+
+\begin{formula}{Directory Operations}\\
+    Common directory operations:
+    \begin{itemize}
+        \item Create and delete directories
+        \item Open and close directories for reading
+        \item Read directory entries
+        \item Change current working directory
+        \item Rename directories
+        \item Create and remove links between directories and files
+    \end{itemize}
+\end{formula}
+
+\begin{code}{Directory Navigation}\\
+    Hierarchical systems use various directory concepts:
+    \begin{itemize}
+        \item \textbf{Root directory}: Top-level directory \\ (/ in Unix/Linux)
+        \item \textbf{Home directory}: User's personal directory \\ (\textasciitilde{} in Unix/Linux)
+        \item \textbf{Working directory}: Current directory \\ (. in Unix/Linux)
+        \item \textbf{Parent directory}: Directory containing current directory (.. in Unix/Linux)
+        \item \textbf{Absolute path}: Complete path from root \\ (e.g., /usr/local/bin/program)
+        \item \textbf{Relative path}: Path from current directory \\ (e.g., ../docs/readme.txt)
+    \end{itemize}
+\end{code}
+
+
+
+\multend
+
+\begin{KR}{Working with Files and Directories in Linux}
+
+    \begin{minipage}{0.5\linewidth}
+    \paragraph{Basic file operations}
+    \begin{itemize}
+        \item Create empty file: \texttt{touch filename}
+        \item Copy files: \texttt{cp source destination}
+        \item Move/rename files: \texttt{mv oldname newname}
+        \item Delete files: \texttt{rm filename}
+        \item View file contents: \texttt{cat filename}, \texttt{less filename}
+        \item Edit files: \texttt{nano filename}, \texttt{vim filename}
+    \end{itemize}
+    
+    \paragraph{File permissions and ownership}
+    \begin{itemize}
+        \item View permissions: \texttt{ls -l filename}
+        \item Change permissions: \texttt{chmod 755 filename}
+        \item Change ownership: \texttt{chown user:group filename}
+        \item Change group: \texttt{chgrp group filename}
+    \end{itemize}
+    \end{minipage}
+    \begin{minipage}{0.5\linewidth}    
+    \paragraph{Directory operations}
+    \begin{itemize}
+        \item Show current directory: \texttt{pwd}
+        \item Change directory: \texttt{cd /path/to/directory}
+        \item List directory contents: \texttt{ls -la}
+        \item Create directory: \texttt{mkdir dirname}
+        \item Remove empty directory: \texttt{rmdir dirname}
+        \item Remove directory and contents: \texttt{rm -rf dirname}
+        \item Display directory tree: \texttt{tree dirname}
+    \end{itemize}
+    
+    \paragraph{Linking}
+    \begin{itemize}
+        \item Create hard link: \texttt{ln source linkname}
+        \item Create symbolic link: \texttt{ln -s source linkname}
+        \item Find hard links: \texttt{find /path -samefile filename}
+        \item Show link details: \texttt{ls -l linkname}
+    \end{itemize}
+    \end{minipage}
+\end{KR}
+
+\subsection{File System Implementation}
+
+\begin{definition}{File System Layout}
+    File systems are typically organized on storage devices with the following layout:
+    \begin{itemize}
+        \item \textbf{Boot block}: Contains boot code for loading the operating system
+        \item \textbf{Superblock}: Contains metadata about the filesystem
+            \begin{itemize}
+                \item Filesystem type and version
+                \item Block size and total number of blocks
+                \item Number of inodes and free space information
+                \item Pointers to key data structures
+            \end{itemize}
+        \item \textbf{Inode table}: Contains file metadata and allocation information
+        \item \textbf{Data blocks}: Contain actual file data and directory contents
+    \end{itemize}
+\end{definition}
+
+\subsection{File Allocation Methods}
+
+\begin{concept}{Contiguous Allocation}
+    Files are stored in contiguous blocks on the storage device:
+    \begin{itemize}
+        \item \textbf{Advantages}:
+            \begin{itemize}
+                \item Simple to implement
+                \item Excellent read performance (no seeking)
+                \item Minimal metadata required (start block + length)
+            \end{itemize}
+        \item \textbf{Disadvantages}:
+            \begin{itemize}
+                \item External fragmentation over time
+                \item Difficult to grow files (may require moving entire file)
+                \item Need to know maximum file size in advance
+            \end{itemize}
+        \item \textbf{Use cases}: Read-only media, multimedia files
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Linked-List Allocation}
+    Files stored as linked lists of disk blocks:
+    \begin{itemize}
+        \item Each block contains a pointer to the next block
+        \item Directory entry contains pointer to first block
+        \item \textbf{Advantages}:
+            \begin{itemize}
+                \item No external fragmentation
+                \item Files can grow dynamically
+                \item Only need to store address of first block
+            \end{itemize}
+        \item \textbf{Disadvantages}:
+            \begin{itemize}
+                \item Very slow random access (must traverse links)
+                \item Storage overhead for pointers
+                \item Vulnerability to pointer corruption
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Indexed Allocation (Inodes)}
+    Files use index structures to track data blocks:
+    \begin{itemize}
+        \item Each file has an index node (inode) containing metadata and block addresses
+        \item Inode structure typically includes:
+            \begin{itemize}
+                \item File attributes (size, permissions, timestamps)
+                \item Direct pointers to data blocks
+                \item Indirect pointers for large files
+                \item Double and triple indirect pointers for very large files
+            \end{itemize}
+        \item \textbf{Advantages}:
+            \begin{itemize}
+                \item Fast random access
+                \item No external fragmentation
+                \item Efficient for small and large files
+            \end{itemize}
+        \item \textbf{Disadvantages}:
+            \begin{itemize}
+                \item Additional storage overhead for inodes
+                \item Complex management of indirect blocks
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\subsection{Directory Implementation}
+
+\begin{definition}{Directory Storage}
+    Directories map file names to file location information:
+    \begin{itemize}
+        \item Directory entries contain:
+            \begin{itemize}
+                \item File name
+                \item Inode number (in Unix-like systems)
+                \item File type indicator
+                \item Optional cached attributes
+            \end{itemize}
+        \item Two main approaches for storing file attributes:
+            \begin{itemize}
+                \item In directory entry (simpler, but larger directories)
+                \item In separate inode structure (more efficient, used by Unix/Linux)
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{File Name Length Handling}\\
+    Different approaches to variable-length file names:
+    \begin{itemize}
+        \item \textbf{Fixed-length names}: Simple but wastes space or limits name length
+        \item \textbf{Variable-length inline}: Names stored directly in directory entries
+        \item \textbf{Variable-length with pointers}: Directory entries contain pointers to names stored elsewhere
+        \item \textbf{Length prefix}: Each name preceded by its length
+    \end{itemize}
+\end{concept}
+
+\subsection{Free Space Management}
+
+\begin{theorem}{Free Block Tracking}
+    File systems must track available storage space:
+    \begin{itemize}
+        \item \textbf{Linked list of free blocks}:
+            \begin{itemize}
+                \item Free blocks linked together
+                \item Simple but requires disk access to find free space
+            \end{itemize}
+        \item \textbf{Bitmap}:
+            \begin{itemize}
+                \item One bit per block (0 = free, 1 = used)
+                \item Fast to scan and modify
+                \item Compact representation
+            \end{itemize}
+        \item \textbf{Grouping}: Free blocks grouped together with one block containing addresses of other free blocks
+        \item \textbf{Counting}: Store starting address and count of consecutive free blocks
+    \end{itemize}
+\end{theorem}
+
+\begin{corollary}{Block Size Considerations}
+    Choosing the right block size involves trade-offs:
+    \begin{itemize}
+        \item \textbf{Small blocks}:
+            \begin{itemize}
+                \item Less internal fragmentation
+                \item More blocks per file (more metadata overhead)
+                \item Slower access due to more operations
+            \end{itemize}
+        \item \textbf{Large blocks}:
+            \begin{itemize}
+                \item Higher data transfer rates
+                \item More internal fragmentation for small files
+                \item Fewer blocks per file (less metadata overhead)
+            \end{itemize}
+        \item Optimal block size depends on file size distribution and usage patterns
+    \end{itemize}
+\end{corollary}
+
+\important{example in chapter memory management}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Build System Analysis}
+
+\begin{KR}{Make Dependency Analysis}
+    \paragraph{Examine file timestamps}
+    \begin{itemize}
+        \item List all source files (.c) and object files (.o)
+        \item Compare timestamps: source newer than object = recompile needed
+        \item Check dependency requirements in Makefile
+    \end{itemize}
+    
+    \paragraph{Apply make rules}
+    \begin{itemize}
+        \item Target depends on all listed prerequisites
+        \item Suffix rule (.c.o:) applies to C source compilation
+        \item Variable substitution: \$@ = target name, \$< = first prerequisite
+    \end{itemize}
+    
+    \paragraph{Determine final executable name}
+    \begin{itemize}
+        \item Follow target name and any modifications (e.g., \$@.e)
+        \item Check for explicit output naming in link command
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Make Analysis}
+    Given Makefile and file listing:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Makefile
+CFL = -g
+CMP = gcc $(CFL)
+app: main1.o mythread.o scheduler.o queues.o mylist.o
+    $(CMP) main1.o mythread.o scheduler.o queues.o mylist.o -o $@.e
+.c.o:
+    $(CMP) -c $<
+
+# File listing (key timestamps)
+# mylist.c    Feb 24 09:31  (source)
+# mylist.o    Feb 24 09:21  (object)
+# queues.c    Feb 24 09:25  (source)  
+# queues.o    Feb 24 09:21  (object)
+\end{lstlisting}
+
+    \tcblower
+    
+    \textbf{Analysis:}
+    \begin{itemize}
+        \item Files to recompile: mylist.c and queues.c (sources newer than objects)
+        \item Final executable: app.e (from target "app" + ".e" extension)
+        \item Other .o files are up-to-date, no recompilation needed
+    \end{itemize}
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{File System Reliability}
+
+\begin{definition}{File System Consistency}\\
+    File systems can become inconsistent due to system crashes:
+    \begin{itemize}
+        \item \textbf{Consistency checking}: Tools like \texttt{fsck} examine filesystem structures
+            \begin{itemize}
+                \item Check block allocation consistency
+                \item Verify directory structure integrity
+                \item Cross-reference inodes and directory entries
+                \item Identify and fix common inconsistencies
+            \end{itemize}
+        \item Common problems detected:
+            \begin{itemize}
+                \item Missing blocks (allocated but not referenced)
+                \item Duplicate blocks (referenced by multiple files)
+                \item Free blocks marked as allocated
+                \item Directory inconsistencies
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Journaling File Systems}\\
+    Journaling improves filesystem reliability:
+    \begin{itemize}
+        \item \textbf{Goal}: Maintain filesystem consistency in the face of system failures
+        \item \textbf{Concept}: Keep a log (journal) of intended changes before making them
+        \item \textbf{Process}:
+            \begin{itemize}
+                \item Write planned changes to journal
+                \item Mark journal entry as committed
+                \item Apply changes to filesystem
+                \item Mark journal entry as completed
+            \end{itemize}
+        \item \textbf{Recovery}: After crash, replay uncommitted journal entries
+        \item \textbf{Types}:
+            \begin{itemize}
+                \item Metadata journaling: Only filesystem metadata is journaled
+                \item Full journaling: Both metadata and data are journaled
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{example2}{Understanding Inodes and Links}\\
+    Exploring inodes and linking in Linux:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Create a test file
+echo "Hello, World!" > testfile.txt
+# Check inode number
+ls -i testfile.txt
+# Create a hard link
+ln testfile.txt hardlink.txt
+# Check that both files have the same inode
+ls -i testfile.txt hardlink.txt
+# Check link count
+ls -l testfile.txt
+# Create a symbolic link
+ln -s testfile.txt symlink.txt
+# Check inode numbers (symlink has different inode)
+ls -i testfile.txt hardlink.txt symlink.txt
+# Check what symlink points to
+ls -l symlink.txt
+# Delete the original file
+rm testfile.txt
+# Hard link still works
+cat hardlink.txt
+
+# Symbolic link is broken
+cat symlink.txt
+# Output: cat: symlink.txt: No such file or directory
+
+# Clean up
+rm hardlink.txt symlink.txt
+\end{lstlisting}
+
+    This demonstrates:
+    \begin{itemize}
+        \item Hard links share the same inode as the original file
+        \item Symbolic links have their own inode and store a path
+        \item Hard links remain valid even if the original name is removed
+        \item Symbolic links break if the target is removed
+    \end{itemize}
+\end{example2}
+
+\begin{example2}{File System Analysis}\\
+    Examining filesystem structure and usage:
+    
+\begin{lstlisting}[language=bash, style=basesmol]
+# Show filesystem usage
+df -h
+# Show inode usage
+df -i
+# Display filesystem type
+lsblk -f
+# Check filesystem properties
+tune2fs -l /dev/sda1 | head -20
+# Find large files
+find /home -type f -size +100M 2>/dev/null | head -10
+# Check filesystem fragmentation (ext2/3/4)
+e2fsck -fn /dev/sda1
+# Monitor filesystem activity
+iotop
+# Check for filesystem errors in logs
+journalctl -u systemd-fsck* --no-pager
+\end{lstlisting}
+\end{example2}

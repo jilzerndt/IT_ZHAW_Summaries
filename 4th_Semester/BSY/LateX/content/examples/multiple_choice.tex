@@ -1,0 +1,158 @@
+\section{Multiple Choice Questions}
+
+\begin{KR}{Operating System Core Concepts}
+    \paragraph{Synchronisation Mechanisms}
+    \begin{itemize}
+        \item Mutex: Binary lock (0/1) für kritische Bereiche
+        \item Semaphore: Counting mechanism für Resource Management
+        \item Monitor: High-level synchronization construct
+        \item Condition Variables: Wait/Signal mechanism
+    \end{itemize}
+    
+    \paragraph{Memory Management}
+    \begin{itemize}
+        \item Pages: Logische Memory-Einheiten (Virtual Memory)
+        \item Frames: Physische Memory-Einheiten (Physical Memory)  
+        \item MMU: Hardware für Address Translation
+        \item TLB: Cache für Address Translation
+    \end{itemize}
+    
+    \paragraph{Process States und Swapping}
+    \begin{itemize}
+        \item Running: Prozess auf CPU
+        \item Ready: Bereit zur Ausführung
+        \item Blocked: Wartet auf I/O oder Resource
+        \item Swapped: Auf Disk ausgelagert (nicht Ready/Running)
+    \end{itemize}
+    
+    \paragraph{Memory Allocation}
+    \begin{itemize}
+        \item Static Partitioning: Feste Grössen $\rightarrow$ Interne Fragmentierung
+        \item Dynamic Partitioning: Variable Grössen $\rightarrow$ Externe Fragmentierung
+        \item Paging: Feste Page/Frame Grösse $\rightarrow$ Nur interne Fragmentierung
+        \item Compaction: Löst externe Fragmentierung durch Memory-Reorganisation
+    \end{itemize}
+\end{KR}
+
+\begin{KR}{OS Concept Questions}
+    \paragraph{System call identification}
+    \begin{itemize}
+        \item System calls required for kernel mode operations
+        \item I/O operations (screen output, file access) need system calls
+        \item Time-related operations (sleep) need system calls
+        \item Pure computation (arithmetic) doesn't need system calls
+        \item Memory operations within process space don't need system calls
+    \end{itemize}
+    
+    \paragraph{Thread and process concepts}
+    \begin{itemize}
+        \item pthread\_join() waits for thread completion
+        \item Prevents main process from terminating before threads finish
+        \item Software interrupts provide controlled kernel mode entry
+        \item PCB (Process Control Block) stores OS process information
+    \end{itemize}
+    
+    \paragraph{Process states}
+    \begin{itemize}
+        \item Zombie: process finished but parent hasn't waited
+        \item Daemon: background process without controlling terminal
+        \item Orphan: process whose parent has terminated
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Multiple Choice Questions}\\
+    Pro Teilfrage können eine, mehrere oder keine Antworten zutreffen, kreuzen Sie die richtige(n) Antwort(en) an.
+    
+    a) Welche der folgenden Aussagen treffen zu?
+    \begin{itemize}
+        \item[\textcolor{frog}{$\checkmark$}] Alle Mutexes können mit Semaphoren realisiert werden
+        \item[\textcolor{red}{$\times$}] Semaphore können in allen Fällen durch Mutexes ersetzt werden  
+        \item[\textcolor{red}{$\times$}] Mutexes sollten immer anstelle von Semaphoren eingesetzt werden, weil es dann keine Deadlocks geben kann
+        \item[\textcolor{frog}{$\checkmark$}] Mit Semaphoren lässt sich die Verarbeitungsreihenfolge von Prozessen und Threads erzwingen
+    \end{itemize}
+    
+    b) Welcher der folgenden Aussagen treffen zu?
+    \begin{itemize}
+        \item[\textcolor{red}{$\times$}] Pages müssen grösser als Frames dimensioniert werden
+        \item[\textcolor{red}{$\times$}] Es müssen mindestens so viele Pages wie Frames in einem System vorhanden sein
+        \item[\textcolor{red}{$\times$}] Sowohl interne wie auch externe Fragmentierung treten bei Paging auf
+        \item[\textcolor{frog}{$\checkmark$}] Pages und Frames müssen gleich gross dimensioniert werden
+    \end{itemize}
+    
+    c) Welcher der folgenden Aussagen treffen zu?
+    \begin{itemize}
+        \item[\textcolor{frog}{$\checkmark$}] Ein MMU übersetzt Logischen Adressen zu Physikalische Adressen
+        \item[\textcolor{red}{$\times$}] Swap in bedeutet dass ein Prozess auf die Hard-Disk verlagert wird
+        \item[\textcolor{red}{$\times$}] Ein Prozess der auf der Harddisk verlagert worden ist kann sich im Zustand Running befinden
+    \end{itemize}
+    
+    d) Welcher der folgenden Aussagen treffen zu?
+    \begin{itemize}
+        \item[\textcolor{red}{$\times$}] Bei Static Partitioning tritt External Fragmentation auf
+        \item[\textcolor{frog}{$\checkmark$}] Bei Dynamic Partitioning tritt External Fragmentation auf  
+        \item[\textcolor{red}{$\times$}] Nur bei Best Fit Allocation wird kein Compaction benötigt
+    \end{itemize}
+    
+    \tcblower
+    
+    \textbf{Erklärungen:}
+    
+    a) Semaphore vs. Mutexes:
+    \begin{itemize}
+        \item[\textcolor{frog}{$\checkmark$}] Mutexes sind Binary Semaphores (0/1) - können mit Semaphoren realisiert werden
+        \item[\textcolor{red}{$\times$}] Counting Semaphores (>1) können nicht durch Mutexes ersetzt werden
+        \item[\textcolor{red}{$\times$}] Auch mit Mutexes sind Deadlocks möglich
+        \item[\textcolor{frog}{$\checkmark$}] Semaphore eignen sich gut für Prozess-Synchronisation
+    \end{itemize}
+    
+    b) Paging:
+    \begin{itemize}
+        \item[\textcolor{red}{$\times$}] Pages und Frames sind gleich gross
+        \item[\textcolor{red}{$\times$}] Anzahl ist unabhängig - Virtual Memory ermöglicht mehr Pages als Frames
+        \item[\textcolor{red}{$\times$}] Nur interne Fragmentierung (innerhalb Pages)
+        \item[\textcolor{frog}{$\checkmark$}] Pages (logisch) = Frames (physisch) in der Grösse
+    \end{itemize}
+    
+    c) Memory Management:
+    \begin{itemize}
+        \item[\textcolor{frog}{$\checkmark$}] MMU (Memory Management Unit) macht Address Translation
+        \item[\textcolor{red}{$\times$}] Swap in = von Disk in Memory (nicht umgekehrt)
+        \item[\textcolor{red}{$\times$}] Ausgelagerte Prozesse sind nicht Running
+    \end{itemize}
+    
+    d) Partitioning:
+    \begin{itemize}
+        \item[\textcolor{red}{$\times$}] Static: Interne Fragmentierung (feste Grössen)
+        \item[\textcolor{frog}{$\checkmark$}] Dynamic: Externe Fragmentierung (variable Grössen)
+        \item[\textcolor{red}{$\times$}] Alle Dynamic Allocation Methoden benötigen eventüll Compaction
+    \end{itemize}
+\end{example2}
+
+\begin{example2}{Operating System Multiple Choice}
+    Typical OS concept questions:
+    
+    \textbf{Which activities require system calls?}
+    \begin{itemize}
+        \item \textcolor{frog}{$\surd$} Display variable value on screen (I/O operation)
+        \item \textcolor{red}{\textbf{X}} Compare two variables (CPU operation)
+        \item \textcolor{frog}{$\surd$} Sleep for 1 second (timer operation)
+        \item \textcolor{red}{\textbf{X}} Increment integer variable (memory operation)
+        \item \textcolor{red}{\textbf{X}} Increment float variable (CPU operation)
+    \end{itemize}
+    
+    \textbf{What is pthread\_join() used for?}
+    \begin{itemize}
+        \item \textcolor{red}{\textbf{X}} Terminates all user-level threads
+        \item \textcolor{red}{\textbf{X}} Can be replaced by sleep(0)
+        \item \textcolor{frog}{$\surd$} Prevents process termination before threads finish
+        \item \textcolor{red}{\textbf{X}} Blocks CPU until all threads terminate
+    \end{itemize}
+    
+    \textbf{Why use software interrupts for system calls?}
+    \begin{itemize}
+        \item \textcolor{red}{\textbf{X}} They are faster than procedure calls
+        \item \textcolor{frog}{$\surd$} Procedure calls cannot switch to system mode
+        \item \textcolor{frog}{$\surd$} Applications don't know system call routine addresses
+    \end{itemize}
+\end{example2}
+

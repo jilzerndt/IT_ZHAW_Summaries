@@ -1,0 +1,216 @@
+
+
+\section{Numerical Solution of Nonlinear Equation Systems}
+
+\subsection{Introduction and Motivation}
+
+\begin{definition}{Nonlinear Equation Systems}\\
+A nonlinear equation system is a system of $n$ equations with $n$ unknowns that cannot be written in the form $Ax = b$ where $A$ is a matrix, $x$ is the vector of unknowns, and $b$ is a constant vector. Solving such systems requires finding values for variables that simultaneously satisfy all equations.
+\end{definition}
+
+\begin{example}
+Consider the nonlinear system:
+\begin{align*}
+f_1(x_1, x_2) &= x_1^2 + x_2 - 11 = 0\\
+f_2(x_1, x_2) &= x_1 + x_2^2 - 7 = 0
+\end{align*}
+
+This can be represented as finding the zeros of a vector-valued function $f: \mathbb{R}^2 \rightarrow \mathbb{R}^2$:
+\begin{align*}
+f(x) = \begin{pmatrix} x_1^2 + x_2 - 11 \\ x_1 + x_2^2 - 7 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \end{pmatrix}
+\end{align*}
+
+The geometric interpretation is finding the intersection points of two curves: $x_1^2 + x_2 = 11$ and $x_1 + x_2^2 = 7$.
+\end{example}
+
+\subsection{Functions of Several Variables}
+
+\begin{definition}{Functions of Several Variables}\\
+A function with $n$ independent variables $x_1, x_2, \ldots, x_n$ and one dependent variable $y$ is a mapping that assigns to each point $(x_1, x_2, \ldots, x_n)$ from a domain $D \subset \mathbb{R}^n$ exactly one element $y$ from a range $W \subset \mathbb{R}$.
+
+We write: $f: D \subset \mathbb{R}^n \rightarrow W \subset \mathbb{R}$, $(x_1, x_2, \ldots, x_n) \mapsto y = f(x_1, x_2, \ldots, x_n)$
+\end{definition}
+
+\begin{definition}{Vector-Valued Functions}\\
+A vector-valued function maps points from $\mathbb{R}^n$ to $\mathbb{R}^m$:
+$f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ with
+$f(x_1, \ldots, x_n) = \begin{pmatrix} y_1 = f_1(x_1, x_2, \ldots, x_n) \\ y_2 = f_2(x_1, x_2, \ldots, x_n) \\ \vdots \\ y_m = f_m(x_1, x_2, \ldots, x_n) \end{pmatrix}$
+
+Where the $m$ components $f_i: \mathbb{R}^n \rightarrow \mathbb{R}$ are scalar-valued functions.
+\end{definition}
+
+\subsubsection{Partial Derivatives}
+
+\begin{definition}{Partial Derivatives}\\
+For a function $z = f(x,y)$, the partial derivatives at the point $(x,y)$ are defined as:
+
+\begin{align*}
+\frac{\partial f}{\partial x}(x,y) &= \lim_{\Delta x \rightarrow 0} \frac{f(x+\Delta x, y) - f(x,y)}{\Delta x}\\
+\frac{\partial f}{\partial y}(x,y) &= \lim_{\Delta y \rightarrow 0} \frac{f(x, y+\Delta y) - f(x,y)}{\Delta y}
+\end{align*}
+
+Alternative notations include: $f_x(x,y)$, $f_y(x,y)$ or $\frac{\partial f}{\partial x}$, $\frac{\partial f}{\partial y}$.
+
+Geometrically, $\frac{\partial f}{\partial x}(x_0, y_0)$ represents the slope of the tangent to the surface $z=f(x,y)$ at the point $(x_0, y_0, z_0)$ in the positive $x$-direction, and similarly for $\frac{\partial f}{\partial y}(x_0, y_0)$ in the $y$-direction.
+\end{definition}
+
+\begin{example}
+For the function $z = f(x,y) = 3xy^2 + \ln(x^3y^2)$, the partial derivatives are:
+\begin{align*}
+f_x &= 3 \cdot 1 \cdot y^2 + \frac{1}{x^3y^2} \cdot 3x^2 \cdot y^2 = 3y^2 + \frac{3y^2}{x}\\
+f_y &= 3x \cdot 2y + \frac{1}{x^3y^2} \cdot x^3 \cdot 2y = 6xy + \frac{2}{y}
+\end{align*}
+\end{example}
+
+\subsubsection{Linearization of Functions of Several Variables}
+
+\begin{definition}{Jacobian Matrix and Linearization}\\
+For a function $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ with $y = f(x) = \begin{pmatrix} y_1 = f_1(x) \\ \vdots \\ y_m = f_m(x) \end{pmatrix}$ and $x = (x_1, x_2, \ldots, x_n)^T \in \mathbb{R}^n$, the Jacobian matrix contains all first-order partial derivatives and is defined as:
+
+\begin{align*}
+Df(x) := \begin{pmatrix} 
+\frac{\partial f_1}{\partial x_1}(x) & \frac{\partial f_1}{\partial x_2}(x) & \cdots & \frac{\partial f_1}{\partial x_n}(x) \\
+\frac{\partial f_2}{\partial x_1}(x) & \frac{\partial f_2}{\partial x_2}(x) & \cdots & \frac{\partial f_2}{\partial x_n}(x) \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial f_m}{\partial x_1}(x) & \frac{\partial f_m}{\partial x_2}(x) & \cdots & \frac{\partial f_m}{\partial x_n}(x)
+\end{pmatrix}
+\end{align*}
+
+The linearization of $f$ at a point $x^{(0)}$ is given by:
+\begin{align*}
+g(x) = f(x^{(0)}) + Df(x^{(0)}) \cdot (x - x^{(0)})
+\end{align*}
+This gives a linear approximation of $f(x)$ in the neighborhood of $x^{(0)}$.
+\end{definition}
+
+\begin{example}
+Consider $f(x_1, x_2) = \begin{pmatrix} x_1^2 + x_2 - 11 \\ x_1 + x_2^2 - 7 \end{pmatrix}$, linearized at $x^{(0)} = (1,1)^T$.
+
+The Jacobian matrix is:
+\begin{align*}
+Df(x_1, x_2) = \begin{pmatrix} 2x_1 & 1 \\ 1 & 2x_2 \end{pmatrix}
+\end{align*}
+
+At the point $x^{(0)} = (1,1)^T$:
+\begin{align*}
+Df(1,1) = \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}
+\end{align*}
+
+The linearization is:
+\begin{align*}
+g(x) &= f(x^{(0)}) + Df(x^{(0)}) \cdot (x - x^{(0)})\\
+&= \begin{pmatrix} -9 \\ -5 \end{pmatrix} + \begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix} \cdot \begin{pmatrix} x_1 - 1 \\ x_2 - 1 \end{pmatrix}\\
+&= \begin{pmatrix} -9 + 2(x_1 - 1) + (x_2 - 1) \\ -5 + (x_1 - 1) + 2(x_2 - 1) \end{pmatrix}\\
+&= \begin{pmatrix} 2x_1 + x_2 - 12 \\ x_1 + 2x_2 - 8 \end{pmatrix}
+\end{align*}
+\end{example}
+
+\subsection{Newton's Method for Systems}
+
+\begin{KR}{Newton's Method for Nonlinear Systems}\\
+We seek to find zeros of a function $f: \mathbb{R}^n \rightarrow \mathbb{R}^n$.
+
+\paragraph{Algorithm}
+\begin{enumerate}
+    \item Start with an initial guess $x^{(0)}$ close to a zero of $f$.
+    \item For $n = 0, 1, 2, \ldots$ until convergence:
+    \begin{itemize}
+        \item Compute the correction $\delta^{(n)}$ by solving the linear system:
+        
+        $Df(x^{(n)})\delta^{(n)} = -f(x^{(n)})$
+        
+        \item Update the approximation:
+        
+        $x^{(n+1)} = x^{(n)} + \delta^{(n)}$
+    \end{itemize}
+    \item Convergence is achieved when a suitable stopping criterion is met, such as:
+    \begin{itemize}
+        \item $n \geq n_{max}$ (maximum iterations reached)
+        \item $\|x^{(n+1)} - x^{(n)}\| \leq \epsilon\|x^{(n+1)}\|$ 
+        \item $\|x^{(n+1)} - x^{(n)}\| \leq \epsilon$
+        \item $\|f(x^{(n+1)})\| \leq \epsilon$
+    \end{itemize}
+\end{enumerate}
+
+\paragraph{Convergence} 
+Newton's method converges quadratically if the starting point is sufficiently close to a zero, $Df(x)$ is regular, and $f$ is three times continuously differentiable.
+\end{KR}
+
+\begin{example2}{Newton's Method Application}\\
+Let's solve the system:
+\begin{align*}
+f(x_1, x_2) = \begin{pmatrix} 2x_1 + 4x_2 \\ 4x_1 + 8x_2^3 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \end{pmatrix}
+\end{align*}
+
+The Jacobian matrix is:
+\begin{align*}
+Df(x_1, x_2) = \begin{pmatrix} 2 & 4 \\ 4 & 24x_2^2 \end{pmatrix}
+\end{align*}
+
+Starting with $x^{(0)} = \begin{pmatrix} 4 \\ 2 \end{pmatrix}$:
+
+1. Compute:
+   \begin{align*}
+   Df(4, 2) &= \begin{pmatrix} 2 & 4 \\ 4 & 96 \end{pmatrix}\\
+   f(4, 2) &= \begin{pmatrix} 16 \\ 80 \end{pmatrix}
+   \end{align*}
+
+2. Solve the linear system:
+   \begin{align*}
+   \begin{pmatrix} 2 & 4 \\ 4 & 96 \end{pmatrix}\delta^{(0)} = -\begin{pmatrix} 16 \\ 80 \end{pmatrix}
+   \end{align*}
+   Yielding $\delta^{(0)} = \begin{pmatrix} -\frac{76}{11} \\ \frac{6}{11} \end{pmatrix}$
+
+3. Update:
+   \begin{align*}
+   x^{(1)} = \begin{pmatrix} 4 \\ 2 \end{pmatrix} + \begin{pmatrix} -\frac{76}{11} \\ \frac{6}{11} \end{pmatrix} = \begin{pmatrix} -\frac{32}{11} \\ \frac{16}{11} \end{pmatrix} \approx \begin{pmatrix} -2.909 \\ 1.455 \end{pmatrix}
+   \end{align*}
+
+The sequence converges to $(-2, 1)^T$, one of the solutions.
+\end{example2}
+
+\subsubsection{Simplified Newton's Method}
+
+\begin{definition}{Simplified Newton's Method}\\
+To reduce computational effort per iteration, we can use the same Jacobian matrix for all iterations:
+
+\begin{align*}
+Df(x^{(0)})\delta^{(n)} = -f(x^{(n)})
+\end{align*}
+
+This method converges only linearly but requires fewer computations per step.
+\end{definition}
+
+\subsubsection{Damped Newton's Method}
+
+\begin{KR}{Damped Newton's Method}\\
+When the Jacobian matrix is nearly singular, the standard Newton step may cause the iterations to diverge. The damped Newton's method adjusts the step size to ensure convergence.
+
+\paragraph{Algorithm}
+\begin{enumerate}
+    \item Start with an initial guess $x^{(0)}$ close to a zero of $f$.
+    \item For $n = 0, 1, 2, \ldots$ until convergence:
+    \begin{itemize}
+        \item Compute $\delta^{(n)}$ by solving:
+        
+        $Df(x^{(n)})\delta^{(n)} = -f(x^{(n)})$
+        
+        \item Find the smallest $k \in \{0,1,\ldots,k_{max}\}$ such that:
+        
+        $\|f(x^{(n)} + \frac{\delta^{(n)}}{2^k})\|_2 < \|f(x^{(n)})\|_2$
+        
+        \item If no such $k$ is found, use $k = 0$
+        
+        \item Update:
+        
+        $x^{(n+1)} = x^{(n)} + \frac{\delta^{(n)}}{2^k}$
+    \end{itemize}
+\end{enumerate}
+
+\paragraph{Notes}
+\begin{itemize}
+    \item The damping parameter $k_{max}$ is problem-dependent
+    \item A value of $k_{max} = 4$ is often a good starting point
+    \item Damped Newton's method generally converges more reliably than the standard method
+\end{itemize}
+\end{KR}

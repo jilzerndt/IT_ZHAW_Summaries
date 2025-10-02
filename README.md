@@ -22,3 +22,29 @@ if you need additional materials or some old exercises/maybe some solutions here
 But be warned - this is by nooo means a complete collection of all materials, and there might be some mistakes. but it might still be helpful :)
 
 good luck with your exams!
+
+LateX Setup:
+
+I use vscode, so good luck figuring this out if you're using smth different. In vscode install the following extensions:
+
+mathematic.vscode-latex
+tecosaur.latex-utilities
+James-Yu.latex-workshop
+tomoki1207.pdf
+
+I recommend using some kind of installation manager, like chocolatey. Go and download at https://chocolatey.org/install#individual
+If you're using a different manager just replace "choco" with whatever you want to use.
+
+Afterwards run Windows Powershell as Administrator. Run the following command:
+
+choco install python 
+
+Now install Miktex at: https://miktex.org/download 
+and perl at: https://strawberryperl.com/
+
+and now if you're in the main.tex file of any LateX project you should be able to build the pdf by pressing run (the little green triangle in the top right corner, and if you want to build & view the pdf press the page icon with the little magnifying glass).
+
+Whenever you save a LateX file, it will automatically rebuild the pdf. Look at the existing LateX projects to see how a main.tex file should be setup (best examples in folder 4th Semester). The pdf can be found in the "output" folder.
+
+If you want to past images use ctrl + shift + V. This will automatically add the image to the repo.
+

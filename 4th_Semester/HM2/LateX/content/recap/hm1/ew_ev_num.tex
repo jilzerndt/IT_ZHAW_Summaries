@@ -1,0 +1,440 @@
+\subsection{Numerische Berechnung von Eigenwerten}
+
+\subsubsection{QR-Verfahren}
+
+\begin{concept}{QR-Verfahren}\\
+Das QR-Verfahren transformiert die Matrix $A$ iterativ in eine obere Dreiecksmatrix, deren Diagonalelemente die Eigenwerte sind:
+\begin{enumerate}
+    \item Initialisierung: $A_0 := A$, $P_0 := I_n$
+    \item Für $i = 0,1,2,\ldots$:
+    \begin{itemize}
+        \item QR-Zerlegung: $A_i = Q_iR_i$
+        \item Neue Matrix: $A_{i+1} = R_iQ_i$
+        \item Update: $P_{i+1} = P_iQ_i$
+    \end{itemize}
+\end{enumerate}
+\end{concept}
+
+\begin{KR}{QR-Verfahren}
+\paragraph{Voraussetzungen}
+\begin{itemize}
+    \item Matrix $A \in \mathbb{R}^{n \times n}$
+    \item Eigenwerte sollten verschiedene Beträge haben für gute Konvergenz
+\end{itemize}
+
+\paragraph{Algorithmus}
+\begin{enumerate}
+    \item Initialisierung:
+    \begin{itemize}
+        \item $A_0 := A$ und $Q_0 := I_n$
+        \item Maximale Iterationszahl und Toleranz festlegen
+    \end{itemize}
+
+    \item Für $k = 0,1,2,\ldots$ bis zur Konvergenz:
+    \begin{itemize}
+        \item QR-Zerlegung von $A_k$ berechnen: $A_k = Q_kR_k$
+        \item Neue Matrix berechnen: $A_{k+1} = R_kQ_k$
+        \item Transformationsmatrix aktualisieren: $P_{k+1} = P_kQ_k$
+    \end{itemize}
+
+    \item Abbruchkriterien prüfen:
+    \begin{itemize}
+        \item Subdiagonalelemente nahe Null: $|a_{i+1,i}| < \varepsilon$
+        \item Änderung der Diagonalelemente klein
+        \item Maximale Iterationszahl erreicht
+    \end{itemize}
+\end{enumerate}
+
+\paragraph{Auswertung}
+\begin{itemize}
+    \item Eigenwerte: Diagonalelemente von $A_k$
+    \item Eigenvektoren: Spalten der Matrix $P_k$
+    \item Bei $2\times2$-Blöcken: Komplexe Eigenwertpaare
+\end{itemize}
+\end{KR}
+
+\begin{example2}{QR-Verfahren}
+Gegeben sei die Matrix
+$A = \begin{psmallmatrix} 
+1 & 2 & 0 \\
+2 & 1 & 1 \\
+0 & 1 & 1
+\end{psmallmatrix}$
+
+\begin{enumerate}
+    \item Erste Iteration:
+    \begin{itemize}
+        \item QR-Zerlegung:
+        $Q_1 = \begin{psmallmatrix} 
+        0.45 & 0.89 & 0 \\
+        0.89 & -0.45 & 0 \\
+        0 & 0 & 1
+        \end{psmallmatrix}$,
+        $R_1 = \begin{psmallmatrix}
+        2.24 & 2.24 & 0.45 \\
+        0 & -1 & 0.89 \\
+        0 & 0 & 1
+        \end{psmallmatrix}$
+        \item $A_1 = R_1Q_1 = \begin{psmallmatrix}
+        2.24 & 0.45 & 0.45 \\
+        0.45 & 0.38 & 0.89 \\
+        0.45 & 0.89 & 1
+        \end{psmallmatrix}$
+    \end{itemize}
+
+    \item Nach Konvergenz:
+    $A_k \approx \begin{psmallmatrix}
+    3 & * & * \\
+    0 & 0 & * \\
+    0 & 0 & 0
+    \end{psmallmatrix}$
+
+    Eigenwerte sind also $\lambda_1 = 3, \lambda_2 = 0, \lambda_3 = 0$
+\end{enumerate}
+\end{example2}
+
+\begin{example2}{QR-Iteration} Gegeben:
+$A = \begin{psmallmatrix}
+1 & 1 \\
+1 & 0
+\end{psmallmatrix}$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item QR-Zerlegung von $A$:
+    $Q_1 = \frac{1}{\sqrt{2}}\begin{psmallmatrix}
+    1 & -1 \\
+    1 & 1
+    \end{psmallmatrix}, 
+    R_1 = \frac{1}{\sqrt{2}}\begin{psmallmatrix}
+    \sqrt{2} & 1 \\
+    0 & -1
+    \end{psmallmatrix}$
+    \vspace{1mm}
+    \item Neue Matrix:
+    $A_1 = R_1Q_1 = \begin{psmallmatrix}
+    1.5 & 0.5 \\
+    0.5 & -0.5
+    \end{psmallmatrix}$
+    \vspace{1mm}
+    \item Konvergenz nach mehreren Iterationen gegen:\\
+    $A_\infty \approx \begin{psmallmatrix}
+    \phi & 0 \\
+    0 & -\phi^{-1}
+    \end{psmallmatrix}$
+    mit $\phi = \frac{1+\sqrt{5}}{2}$
+    \vspace{1mm}
+    \item Eigenwerte: $\lambda_1 = \phi, \lambda_2 = -\phi^{-1}$
+\end{enumerate}
+\end{example2}
+
+\subsubsection{Von-Mises-Iteration}
+
+\begin{concept}{Von-Mises-Iteration (Vektoriteration)}\\
+Für eine diagonalisierbare Matrix $A$ mit Eigenwerten $|\lambda_1| > |\lambda_2| \geq \cdots \geq |\lambda_n|$ konvergiert die Folge:
+$$v^{(k+1)} = \frac{Av^{(k)}}{\|Av^{(k)}\|_2}, \quad
+\lambda^{(k+1)} = \frac{(v^{(k)})^TAv^{(k)}}{(v^{(k)})^Tv^{(k)}}$$
+gegen einen Eigenvektor $v$ zum betragsmäßig größten Eigenwert $\lambda_1$.\\
+$\Rightarrow$ sehe \textcolor{blue}{Spektralradius} auf nächster Seite
+\end{concept}
+
+\begin{KR}{Von-Mises-Iteration / Vektoriteration}
+\paragraph{Voraussetzungen}
+\begin{itemize}
+    \item Matrix diagonalisierbar und $|\lambda_1| > |\lambda_2|$
+\end{itemize}
+
+\paragraph{Iteration durchführen}
+\begin{itemize}
+    \item Startvektor $v^{(0)}$ wählen:
+    \begin{itemize}
+        \item Zufälligen Vektor oder $(1,\ldots,1)^T$ wählen
+        \item Auf Länge 1 normieren: $\|v^{(0)}\|_2 = 1$
+    \end{itemize}
+
+    \item Für $k = 0,1,2,\ldots$ bis zur Konvergenz:
+    \vspace{1mm}
+    \begin{enumerate}
+        \item Iterationsvektor berechnen: $w^{(k)} = Av^{(k)}$
+        \vspace{1mm}
+        \item Normieren: $v^{(k+1)} = \frac{w^{(k)}}{\|w^{(k)}\|_2}$
+        \vspace{1mm}
+        \item Eigenwertapproximation:
+              $\lambda^{(k+1)} = \frac{(v^{(k)})^TAv^{(k)}}{(v^{(k)})^Tv^{(k)}}$\\
+              (Rayleigh-Quotient)
+        \end{enumerate}
+        \vspace{1mm}
+    
+
+    \item Abbruchkriterien prüfen:
+    \begin{itemize}
+        \item Änderung des Eigenvektors: $\|v^{(k+1)} - v^{(k)}\| < \varepsilon$
+        \item Änderung des Eigenwertes: $|\lambda^{(k+1)} - \lambda^{(k)}| < \varepsilon$
+        \item Maximale Iterationszahl erreicht
+    \end{itemize}
+
+    \item Konvergenz:
+\begin{itemize}
+    \item $v^{(k)} \to$ Eigenvektor zu $|\lambda_1|$
+    \item $\lambda^{(k)} \to |\lambda_1|$
+\end{itemize}
+\end{itemize}
+
+\paragraph{Verifikation}
+\begin{itemize}
+    \item Prüfen ob $Av^{(k)} \approx \lambda^{(k)}v^{(k)}$
+    \item Residuum berechnen: $\|Av^{(k)} - \lambda^{(k)}v^{(k)}\|$
+    \item Orthogonalität zu anderen Eigenvektoren prüfen
+\end{itemize}
+\end{KR}
+
+\begin{example2}{Von-Mises-Iteration}
+Gegeben sei die Matrix
+$A = \begin{psmallmatrix} 
+4 & -1 & 1 \\
+-1 & 3 & -2 \\
+1 & -2 & 3
+\end{psmallmatrix}$
+
+Mit Startvektor $v^{(0)} = \frac{1}{\sqrt{3}}(1,1,1)^T$:
+\vspace{1mm}\\
+\begin{enumerate}
+    \item Erste Iteration:
+    \vspace{1mm}
+    \begin{itemize}
+        \item $w^{(0)} = Av^{(0)} = \frac{1}{\sqrt{3}}(4,0,2)^T$
+        \vspace{1mm}
+        \item $v^{(1)} = \frac{w^{(0)}}{\|w^{(0)}\|} = \frac{1}{\sqrt{20}}(4,0,2)^T$
+        \vspace{1mm}
+        \item $\lambda^{(1)} = (v^{(0)})^TAv^{(0)} = 3.33$
+        \vspace{1mm}
+    \end{itemize}
+
+    \item Zweite Iteration:
+    \vspace{1mm}
+    \begin{itemize}
+        \item $w^{(1)} = Av^{(1)} = \frac{1}{\sqrt{20}}(18,-2,8)^T$
+        \vspace{1mm}
+        \item $v^{(2)} = \frac{w^{(1)}}{\|w^{(1)}\|} = \frac{1}{\sqrt{388}}(18,-2,8)^T$
+        \vspace{1mm}
+        \item $\lambda^{(2)} = 5.12$
+        \vspace{1mm}
+    \end{itemize}
+
+Konvergenz gegen $\lambda_1 \approx 5.17$ und $v = (0.89, -0.10, 0.39)^T$
+\end{enumerate}
+\end{example2}
+
+
+
+
+
+\subsubsection{Inverse Iteration}
+
+\begin{concept}{Inverse Iteration}
+Die inverse Iteration berechnet einen Eigenvektor zu einem bekannten oder geschätzten Eigenwert $\mu$ durch:
+$$v^{(k+1)} = \frac{(A-\mu I)^{-1}v^{(k)}}{\|(A-\mu I)^{-1}v^{(k)}\|_2}$$
+Konvergiert typischerweise gegen den Eigenvektor zum betragsmäßig kleinsten Eigenwert $\lambda_i - \mu$.
+\end{concept}
+
+\begin{KR}{Inverse Iteration anwenden}
+\begin{enumerate}
+    \item Vorbereitung:
+    \begin{itemize}
+        \item Näherungswert $\mu$ für Eigenwert wählen
+        \item Zufälligen Startvektor $v^{(0)}$ normieren 
+        \item LR-Zerlegung von $(A-\mu I)$ berechnen
+    \end{itemize}
+    
+    \item Iteration durchführen:
+    \begin{itemize}
+        \item LR-System $(A-\mu I)w^{(k)} = v^{(k)}$ lösen
+        \item Neuen Vektor normieren: $v^{(k+1)} = \frac{w^{(k)}}{\|w^{(k)}\|_2}$
+        \item Rayleigh-Quotient berechnen für Eigenwert
+    \end{itemize}
+    
+    \item Abbruch wenn:
+    \begin{itemize}
+        \item Residuum $\|(A-\lambda^{(k)}I)v^{(k)}\| < \epsilon$
+        \item Maximale Iterationszahl erreicht
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Inverse Iteration}
+Bestimmen Sie einen Eigenvektor zum Eigenwert $\lambda \approx 2$ der Matrix:
+$$A = \begin{psmallmatrix}
+2.1 & -0.1 & 0.1 \\
+-0.1 & 2.0 & 0.2 \\
+0.1 & 0.2 & 1.9
+\end{psmallmatrix}$$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item $\mu = 2.0$ als Näherung wählen
+    \item Startvektor $v^{(0)} = \frac{1}{\sqrt{3}}(1,1,1)^T$
+    \item Erste Iteration:
+    \begin{itemize}
+        \item $(A-2I)w^{(0)} = v^{(0)}$ lösen
+        \item $v^{(1)} = \frac{w^{(0)}}{\|w^{(0)}\|} \approx (0.61, 0.63, 0.48)^T$
+        \item $\lambda^{(1)} \approx 2.01$
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+
+\subsubsection{Vergleich der Eigenwertverfahren}
+
+
+
+
+
+\begin{concept}{Vergleich der Eigenwertverfahren}
+\begin{enumerate}
+    \item Von-Mises Iteration: Findet betragsmäßig größten Eigenwert
+    \begin{itemize}
+        \item Einfach zu implementieren, Langsame lineare Konvergenz
+    \end{itemize}
+    
+    \item Inverse Iteration: Braucht Näherung für Eigenwert
+    \begin{itemize}
+        \item Schnelle Konvergenz, LR-Zerlegung pro Schritt nötig
+    \end{itemize}
+    
+    \item QR-Verfahren: Berechnet alle Eigenwerte
+    \begin{itemize}
+        \item Kubischer Aufwand pro Iteration, Globale und stabile Konvergenz
+    \end{itemize}
+\end{enumerate}
+\end{concept}
+
+\begin{corollary}{Numerische Aspekte der Verfahren}
+\begin{itemize}
+    \item Wahl des Startpunkts:
+    \begin{itemize}
+        \item Von-Mises: zufälliger normierter Vektor
+        \item Inverse Iteration: Näherung für $\mu$ wichtig
+        \item QR: Matrix vorher auf Hessenberg-Form
+    \end{itemize}
+    
+    \item Konvergenzprüfung:
+    \begin{itemize}
+        \item Residuum $\|Ax^{(k)} - \lambda^{(k)}x^{(k)}\|$
+        \item Änderung in aufeinanderfolgenden Iterationen
+        \item Subdiagonalelemente bei QR
+    \end{itemize}
+\end{itemize}
+\end{corollary}
+
+\subsubsection{Spektralradius und Konvergenz}
+
+\begin{definition}{Spektralradius}
+Der Spektralradius einer Matrix $A$ ist definiert als:
+$$\rho(A) = \max\{|\lambda| \mid \lambda \text{ ist Eigenwert von } A\}$$
+Er gibt den Betrag des betragsmäßig größten Eigenwerts an.
+\end{definition}
+
+\begin{concept}{Bedeutung des Spektralradius}
+Der Spektralradius ist wichtig für:
+\begin{itemize}
+    \item Konvergenz von Iterationsverfahren
+    \item Stabilität dynamischer Systeme 
+    \item Abschätzung von Matrixnormen
+    \item Konvergenz von Potenzreihen mit Matrizen
+\end{itemize}
+\end{concept}
+\begin{theorem}{Konvergenzsatz}
+Für eine Matrix $A \in \mathbb{R}^{n\times n}$ sind äquivalent:
+\begin{itemize}
+    \item $\rho(A) < 1$
+    \item $\lim_{k\to\infty} A^k = 0$
+    \item Die Neumannsche Reihe $\sum_{k=0}^\infty A^k$ konvergiert
+    \item $(I-A)$ ist invertierbar mit $(I-A)^{-1} = \sum_{k=0}^\infty A^k$
+\end{itemize}
+\end{theorem}
+
+\begin{KR}{Spektralradius bestimmen und anwenden}
+\begin{enumerate}
+    \item Berechnung:
+    \begin{itemize}
+        \item Eigenwerte $\lambda_i$ bestimmen
+        \item Maximum der Absolutbeträge bilden
+        \item Bei großen Matrizen: numerische Verfahren
+    \end{itemize}
+    
+    \item Konvergenzanalyse:
+    \begin{itemize}
+        \item Bei Iterationsverfahren: $\rho(M) < 1$ prüfen
+        \item Bei Matrixpotenzen: $\rho(A) < 1$ prüfen
+        \item Konvergenzgeschwindigkeit $\approx |\rho(A)|^k$
+    \end{itemize}
+    
+    \item Abschätzungen:
+    \begin{itemize}
+        \item $\rho(A) \leq \|A\|$ für jede Matrixnorm
+        \item $\rho(AB) = \rho(BA)$ für beliebige Matrizen
+        \item $\rho(A^k) = [\rho(A)]^k$ für $k \in \mathbb{N}$
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{KR}{Anwendungen des Spektralradius}
+\begin{enumerate}
+    \item Iterative Verfahren:
+    \begin{itemize}
+        \item Jacobi: $\rho(-D^{-1}(L+R)) < 1$
+        \item Gauss-Seidel: $\rho(-(D+L)^{-1}R) < 1$
+        \item SOR: Optimaler Parameter $\omega$ bestimmen
+    \end{itemize}
+    
+    \item Matrixreihen:
+    \begin{itemize}
+        \item Konvergenz von $\sum_{k=0}^\infty A^k$
+        und Existenz von $(I-A)^{-1}$
+        \item Abschätzung der Reihensumme
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{Spektralradius und Konvergenz}
+Untersuchen Sie die Konvergenz des Jacobi-Verfahrens für:
+$A = \begin{psmallmatrix}
+4 & -1 & 0 \\
+-1 & 4 & -1 \\
+0 & -1 & 4
+\end{psmallmatrix}$
+
+\paragraph{Lösung:}
+\begin{enumerate}
+    \item Zerlegung $A = D + L + R$:
+    $D = \begin{psmallmatrix}
+    4 & 0 & 0 \\
+    0 & 4 & 0 \\
+    0 & 0 & 4
+    \end{psmallmatrix}, L+R = \begin{psmallmatrix}
+    0 & -1 & 0 \\
+    -1 & 0 & -1 \\
+    0 & -1 & 0
+    \end{psmallmatrix}$
+    
+    \item Jacobi-Matrix $M = -D^{-1}(L+R)$:
+    $M = \begin{psmallmatrix}
+    0 & 1/4 & 0 \\
+    1/4 & 0 & 1/4 \\
+    0 & 1/4 & 0
+    \end{psmallmatrix}$
+    
+    \item Eigenwerte von $M$: $\lambda_1 = 0.5$, $\lambda_2 = 0$, $\lambda_3 = -0.5$
+    
+    \item Spektralradius: $\rho(M) = 0.5 < 1$
+    
+    \item Schlussfolgerung:
+    \begin{itemize}
+        \item Jacobi-Verfahren konvergiert (Konvergenzrate ist linear)
+        \item Fehler reduziert sich pro Iteration etwa um Faktor 0.5
+    \end{itemize}
+\end{enumerate}
+\end{example2}
+
+
+

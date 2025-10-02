@@ -1,0 +1,279 @@
+\section{Erweiterte Themen und Unity-Implementierung}
+
+\subsection{Unity Physics System}
+
+\begin{concept}{Unity Physics Pipeline}
+    Unity's Physiksimulation läuft in diskreten Schritten:
+    \begin{itemize}
+        \item \texttt{FixedUpdate()}: Wird in festen Intervallen aufgerufen (Standard 50Hz)
+        \item Physikberechnungen zwischen FixedUpdate-Aufrufen
+        \item \texttt{Update()}: Wird einmal pro Frame aufgerufen (variable Rate)
+        \item \textbf{Regel}: FixedUpdate für physikbezogenen Code verwenden
+    \end{itemize}
+    
+    \textbf{Zeitsteuerung:}
+    \begin{itemize}
+        \item \texttt{Time.fixedDeltaTime}: Zeitschritt für Physik (Standard: 0.02s = 50Hz)
+        \item \texttt{Time.deltaTime}: Zeit seit letztem Frame (variabel)
+        \item \texttt{Time.timeScale}: Globaler Zeitfaktor (für Slow-Motion etc.)
+    \end{itemize}
+\end{concept}
+
+\mult{2}
+
+\begin{definition}{Rigidbody-Komponenten-Eigenschaften}
+
+    \textbf{Grundlegende Eigenschaften:}
+    \begin{itemize}
+        \item \textbf{Mass}: Objektmasse in kg
+        \item \textbf{Drag}: Linearer Dämpfungskoeffizient\\ (Luftwiderstand)
+        \item \textbf{Angular Drag}: Rotationsdämpfungskoeffizient
+        \item \textbf{Use Gravity}: Reagiert auf globale Gravitation
+        \item \textbf{Is Kinematic}: \\ Physik-gesteuert vs. Skript-gesteuert
+    \end{itemize}
+    
+    \textbf{Erweiterte Eigenschaften:}
+    \begin{itemize}
+        \item \textbf{Interpolate}: Glättung für visuelle Darstellung
+        \item \textbf{Collision Detection}: Continuous, Discrete, etc.
+        \item \textbf{Constraints}: Einschränkung Position/Rotation
+        \item \textbf{Center of Mass}: Schwerpunkt-Position
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Unity Physics Setup}
+
+    \textbf{Wichtige Konfigurationen:}
+    \begin{itemize}
+        \item Physics.gravity für globale Gravitation
+        \item Time.fixedDeltaTime für Physik-Zeitschritt
+        \item Rigidbody: mass, drag, angularDrag
+        \item CollisionDetectionMode.Continuous für schnelle Objekte
+        \item RigidbodyInterpolation für glatte Bewegung
+    \end{itemize}
+\end{concept}
+
+
+\begin{theorem}{Wichtige Erkenntnisse}
+
+    \textbf{Theoretische Grundlagen:}
+    \begin{itemize}
+        \item Physikalische Gesetze gelten universell
+        \item Erhaltungsgesetze zentral für Problemlösungen
+        \item Numerische Integration beeinflusst Genauigkeit
+        \item Reibung und Dämpfung sind realitätsnah wichtig
+    \end{itemize}
+    
+    \textbf{Unity-spezifische Aspekte:}
+    \begin{itemize}
+        \item Fixed Timestep ist entscheidend für Stabilität
+        \item Physics Materials beeinflussen Verhalten stark
+        \item Performance-Optimierung ist für komplexe Szenen notwendig
+        \item Debugging-Tools helfen bei der Problemanalyse
+    \end{itemize}
+\end{theorem}
+
+\begin{example2}{Kugel-Kollisions-Simulation}
+
+    \textbf{Problem:} Rollende Kugel auf Schräge kollidiert elastisch
+    
+    \textbf{Physik-Berechnung:}
+    \begin{itemize}
+        \item Rollbeschleunigung: $a = \frac{5g\sin\theta}{7} = 3.51 \, m/s^2$
+        \item Endgeschwindigkeit: $v = \sqrt{2ad} = 3.74 \, m/s$
+        \item Elastische Kollision: Geschwindigkeiten tauschen
+    \end{itemize}
+    
+    \textbf{Unity-Konzept:}
+    \begin{itemize}
+        \item Schräge mit PhysicMaterial (hohe Reibung)
+        \item Zwei Kugeln mit elastischem Material
+        \item OnCollisionEnter() für Geschwindigkeitstausch
+        \item Debug-Ausgabe für Energieerhaltung
+    \end{itemize}
+\end{example2}
+
+\multend
+
+\subsubsection{Unity Kraft-Modi}
+
+\mult{2}
+
+\begin{definition}{Unity Kraftanwendung}
+
+    \textbf{Kraftmethoden:}
+    \begin{itemize}
+        \item \textbf{AddForce()}: Standard-Kraftanwendung
+        \item \textbf{AddForceAtPosition()}: Kraft + Drehmoment
+        \item \textbf{AddTorque()}: Nur Rotation
+        \item \textbf{AddExplosionForce()}: Radiale Explosion
+    \end{itemize}
+    
+    \textbf{Force-Modi:}
+    \begin{itemize}
+        \item \textbf{Force}: $F = ma$ (mit Masse/Zeit)
+        \item \textbf{Acceleration}: $a$ direkt (ohne Masse)
+        \item \textbf{Impulse}: $J = F\Delta t$ (mit Masse)
+        \item \textbf{VelocityChange}: $\Delta v$ direkt (ohne Masse)
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Erweiterte Kraftsteuerung}
+
+    \textbf{Controller-Konzept:}
+    \begin{itemize}
+        \item Input-basierte Kraftanwendung
+        \item Bewegung: transform.forward * thrustForce
+        \item Rotation: AddTorque mit transform.up/right
+        \item Explosion: AddExplosionForce für Umgebung
+        \item Geschwindigkeitsbegrenzung mit velocity.normalized
+    \end{itemize}
+\end{concept}
+
+\multend
+
+\subsubsection{Unity Kollisionen}
+
+\mult{2}
+
+\begin{definition}{Unity Kollisions-Events}
+
+    \textbf{Events:}
+    \begin{itemize}
+        \item \textbf{Collision}: OnCollisionEnter/Stay/Exit
+        \item \textbf{Trigger}: OnTriggerEnter/Stay/Exit
+    \end{itemize}
+    
+    \textbf{Informationen:}
+    \begin{itemize}
+        \item \textbf{contacts}: Kontaktpunkte
+        \item \textbf{impulse}: Stoßimpuls
+        \item \textbf{relativeVelocity}: Relativgeschwindigkeit
+        \item \textbf{normal}: Oberflächennormale
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Erweiterte Kollisions-Analyse}
+    \textbf{Reaktions-System:}
+    \begin{itemize}
+        \item Kollisionsgeschwindigkeit aus relativeVelocity
+        \item Material-spezifische Restitution (Tags)
+        \item Audio/Partikel basierend auf Intensität
+        \item Spezielle Reaktionen: Bouncy, Sticky, Breakable
+        \item Vector3.Reflect() für elastische Reflektion
+    \end{itemize}
+\end{concept}
+
+\multend
+
+\subsubsection{Custom Physics}
+
+\begin{concept}{Numerische Integrationsmethoden}
+
+    Unity verwendet implizite Euler-Integration, aber benutzerdefinierte Implementierungen können verwenden:
+    \begin{itemize}
+        \item \textbf{Expliziter Euler}: Einfach, aber potentiell instabil
+        \item \textbf{Verlet-Integration}: Bessere Energieerhaltung
+        \item \textbf{Runge-Kutta}: Höhere Genauigkeit für komplexe Systeme
+        \item \textbf{Leapfrog}: Gut für Orbitalprobleme
+    \end{itemize}
+    
+    \textbf{Vergleich der Methoden:}
+    \begin{itemize}
+        \item \textbf{Stabilität}: Verlet > Runge-Kutta > Euler
+        \item \textbf{Genauigkeit}: Runge-Kutta > Verlet > Euler
+        \item \textbf{Performance}: Euler > Verlet > Runge-Kutta
+        \item \textbf{Energieerhaltung}: Verlet > Runge-Kutta > Euler
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Custom Physics Integration}
+
+    \textbf{Integrationsmethoden:}
+    \begin{itemize}
+        \item \textbf{Euler}: $v += a \Delta t$, $x += v \Delta t$
+        \item \textbf{Verlet}: $x_{new} = 2x - x_{old} + a \Delta t^2$
+        \item \textbf{Runge-Kutta}: Höhere Genauigkeit, 4 Evaluationen
+        \item Kraftberechnung: Gravitation + Feder + Dämpfung
+        \item LineRenderer für Trajektorie
+    \end{itemize}
+\end{concept}
+
+\subsubsection{Performance-Tipps}
+
+\mult{2}
+
+\begin{concept}{Physik-Performance-Tipps}
+
+    \textbf{Kollisions-Optimierung:}
+    \begin{itemize}
+        \item Passende CollisionDetectionMode wählen
+        \item Primitive Collider bevorzugen
+        \item Layer-Matrix für Kollisions-Filtering
+    \end{itemize}
+    
+    \textbf{Rigidbody-Optimierung:}
+    \begin{itemize}
+        \item Kinematic für statische Objekte
+        \item Object Pooling für viele Objekte
+        \item Fixed Timestep anpassen
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Object Pooling}
+
+    \textbf{Performance-Optimierung:}
+    \begin{itemize}
+        \item Queue<GameObject> für Pool-Verwaltung
+        \item GetObject() / ReturnObject() API
+        \item Automatisches Cleanup nach Zeit/Position
+        \item Rigidbody-Zustand zurücksetzen (Sleep/WakeUp)
+        \item Prefab-basierte Instanziierung
+    \end{itemize}
+\end{concept}
+
+\multend
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Prüfungstipps}
+
+\begin{KR}{Unity Physics Prüfungsstrategie}
+    \paragraph{Kernphysik-Konzepte beherrschen}
+    \begin{itemize}
+        \item Newton'sche Gesetze und ihre Anwendungen
+        \item Energie- und Impulserhaltung verstehen
+        \item Rotationsdynamik-Berechnungen üben
+        \item Wichtige Formeln und ihre Herleitungen kennen
+        \item Vektormathematik und Koordinatensysteme
+    \end{itemize}
+    
+    \paragraph{Unity-Implementierungs-Wissen}
+    \begin{itemize}
+        \item Rigidbody-Komponenten-Eigenschaften und -Methoden
+        \item Kraftanwendungstechniken und Force-Modi
+        \item Kollisionserkennung und -reaktion
+        \item Koordinatensystem-Transformationen
+        \item Physics Material und Reibungsmodelle
+    \end{itemize}
+    
+    \paragraph{Problemlösungsansatz}
+    \begin{itemize}
+        \item Beteiligte physikalische Prinzipien identifizieren
+        \item Koordinatensystem und Freikörperdiagramme aufstellen
+        \item Erhaltungsgesetze anwenden wo angemessen
+        \item In Unity-Implementierungskonzepte übersetzen
+        \item Code-Snippets für häufige Szenarien memorieren
+    \end{itemize}
+    
+    \paragraph{Häufige Prüfungsthemen}
+    \begin{itemize}
+        \item Projektilbewegung mit Unity-Vektoren
+        \item Kollisionsanalyse und Impulserhaltung
+        \item Rotationsbewegung und Drehmoment-Berechnungen
+        \item Energieerhaltung in mechanischen Systemen
+        \item Custom Physics Implementation
+        \item Performance-Optimierung in Unity Physics
+    \end{itemize}
+\end{KR}

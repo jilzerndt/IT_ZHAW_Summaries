@@ -1,0 +1,641 @@
+\section{Processes and Threads}
+
+\subsection{Processes}
+
+\subsubsection{Process Model}
+
+\begin{definition}{Programs vs. Processes}
+    A program is fundamentally different from a process:
+    \vspace{1mm}\\
+    \begin{minipage}{0.5\linewidth}
+    \textbf{Program}: A compiled executable (binary)
+            \begin{itemize}
+                \item Set of CPU instructions and related data
+                \item Targets a specific platform (OS + hardware)
+                \item Static entity stored on disk
+            \end{itemize}
+        \end{minipage}
+    \begin{minipage}{0.5\linewidth}
+        \textbf{Process}: An active instance of a program
+            \begin{itemize}
+                \item Has a program, input, output, and state
+                \item Dynamic entity in memory
+                \item Multiple instances of the same program can run as separate processes
+            \end{itemize}
+    \end{minipage}
+\end{definition}
+
+\mult{2}
+
+\begin{definition}{Process Characteristics}\\
+    Processes have several important characteristics:
+    \begin{itemize}
+        \item Can run sequentially or in parallel (multi-tasking)
+        \item Selected for execution by the OS scheduler
+        \item Associated with an owner \\ (defines access privileges)
+        \item Run within an environment \\ (environment variables)
+        \item Can run in foreground (interactive) \\ or background (non-interactive)
+        \item Can be user processes or system processes
+    \end{itemize}
+\end{definition}
+
+\begin{example2}{Viewing process information in Linux}
+\begin{lstlisting}[language=bash, style=basesmol]
+# List all processes with details
+ps aux
+# Interactive process viewer
+top
+# Show environment variables
+env
+# Run a process in the background
+wc /dev/zero &
+# List background jobs
+jobs
+# Bring a background job to foreground
+fg %job_number
+\end{lstlisting}
+\end{example2}
+
+\multend
+
+\subsubsection{Process Creation}
+
+\mult{2}
+
+\begin{definition}{Process Creation by the OS}\\
+    When creating a process, the OS performs several operations:
+    \begin{itemize}
+        \item Loads the executable into RAM
+        \item Sets up the memory map
+        \item Updates scheduler and process table entries
+        \item Sets program counter and stack pointer
+        \item Switches from system mode to user mode
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Memory Layout}\\
+    Process memory is typically divided into several segments:
+    \begin{itemize}
+        \item \textbf{Text}: Contains CPU instructions and constant data
+        \item \textbf{Data}: Global and static variables
+            \begin{itemize}
+                \item Initialized data segment: Pre-initialized variables
+                \item Uninitialized data segment (BSS): Zero-initialized variables
+            \end{itemize}
+        \item \textbf{Stack}: Local variables and function call information (LIFO structure)
+        \item \textbf{Heap}: Dynamically allocated memory (controlled by the programmer)
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Process Creation Events}\\
+    Processes can be created in several ways:
+    \begin{itemize}
+        \item System boot (initial processes)
+        \item User request (launching an application)
+        \item Process creating another process (fork/exec)
+        \item Scheduled creation (cron jobs)
+        \item System request (responding to interrupts)
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Parent-Child Process Relationship}\\
+    When a process creates another process:
+    \begin{itemize}
+        \item The creating process becomes the parent
+        \item The new process becomes the child
+        \item Child's memory map is initially a copy of the parent's memory map
+        \item Two memory handling approaches:
+            \begin{itemize}
+                \item Distinct address space: Separate memory regions for parent and child
+                \item Copy-on-write: Memory shared until a change is made by either process
+            \end{itemize}
+        \item Forms a process hierarchy (starting with PID 1)
+    \end{itemize}
+\end{definition}
+
+\begin{example2}{Linux Process Creation}\\
+    Linux terminal command execution involves process creation:
+\begin{lstlisting}[language=bash, style=basesmol]
+# When you run a command in the terminal:
+ls -la
+
+# The shell:
+# 1. Forks itself (duplicate the process)
+# 2. Child process executes the 'ls' binary
+# 3. Parent waits for child to complete
+# 4. Shell continues after child terminates
+\end{lstlisting}
+
+    This process can be visualized with \texttt{pstree} showing the parent-child relationships.
+\end{example2}
+
+\multend
+
+\subsubsection{Process Termination}
+
+\mult{2}
+
+\begin{definition}{Process Termination}\\
+    A process can terminate in several ways:
+    \begin{itemize}
+        \item Voluntary normal exit (job completed, return from main())
+        \item Voluntary error exit (required resource unavailable)
+        \item Involuntary error exit (segmentation fault, division by zero)
+        \item Termination by another process (kill signal)
+    \end{itemize}
+\end{definition}
+
+\begin{example}
+    Process termination in Linux:
+    \begin{lstlisting}[language=bash, style=basesmol]
+    # Start a process
+    wc /dev/zero &
+    
+    # Get its process ID
+    pidof wc
+    
+    # Terminate the process
+    kill -9 <PID>
+    \end{lstlisting}
+\end{example}
+
+\multend
+
+\subsubsection{Process States}
+
+\mult{2}
+
+\begin{definition}{Process States}\\
+    Each process has a life-cycle with specific states:
+    \begin{itemize}
+        \item \textbf{Running}: The process is currently executing on the CPU
+        \item \textbf{Ready}: The process is ready to run but waiting for CPU allocation
+        \item \textbf{Blocked}: The process is unable to run (waiting for an event or resource)
+            \begin{itemize}
+                \item Dependencies not met for running
+                \item Waiting for external resource
+                \item Waiting for I/O completion
+                \item Sleeping
+                \item Under job control or debugger
+            \end{itemize}
+    \end{itemize}
+\end{definition}
+
+
+
+\begin{concept}{User Mode vs. System Mode}\\
+    CPU supports two execution modes:
+    \begin{itemize}
+        \item \textbf{User Mode}: Limited privileges
+            \begin{itemize}
+                \item Application logic execution
+                \item Application data manipulation
+                \item Restricted access to hardware and system resources
+            \end{itemize}
+        \item \textbf{System Mode} (Kernel Mode): Full privileges
+            \begin{itemize}
+                \item System management operations
+                \item Hardware access
+                \item Interrupt handling
+                \item Device management
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Process State Changes}\\
+    Processes change state for various reasons:
+    \begin{itemize}
+        \item \textbf{Timer expiration}: CPU allocation time ended
+        \item \textbf{Interrupt}: Hardware/resource calls for service
+        \item \textbf{Page fault}: Data not in memory, requires disk access
+        \item \textbf{System call}: Explicit OS service request
+    \end{itemize}
+    
+    State changes involve a switch between user mode and system (kernel) mode.
+\end{definition}
+
+\begin{concept}{Context Switch vs. Mode Switch}\\
+    Two types of switches occur during system operation:
+    \begin{itemize}
+        \item \textbf{Mode Switch}: Transition between user mode and kernel mode
+            \begin{itemize}
+                \item Occurs during system calls, interrupts, exceptions
+                \item Same process continues execution in different mode
+                \item No scheduler involvement
+            \end{itemize}
+        \item \textbf{Context Switch}: Changing from one process to another
+            \begin{itemize}
+                \item Involves saving the state of the current process
+                \item Loading the state of another process
+                \item Typically involves mode switches (user $\rightarrow$ kernel $\rightarrow$ user)
+                \item Requires scheduler involvement
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\multend
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{Process Management}
+
+\begin{definition}{Process Control Block}\\
+    The OS maintains a Process Control Block (PCB) for each process:
+    \begin{itemize}
+        \item Process identification (PID, UID, GID)
+        \item Process state information
+        \item Program counter and CPU registers
+        \item CPU scheduling information (priority)
+        \item Memory management information
+        \item I/O status information
+        \item Accounting information
+    \end{itemize}
+    
+    In Linux, PCBs are implemented as \texttt{task\_struct} entries in the process table.
+\end{definition}
+
+\begin{KR}{Process Management in Linux}
+    \paragraph{Viewing process information}
+    \begin{itemize}
+        \item \texttt{ps aux} - List all processes
+        \item \texttt{ps -ef} - List processes in full format
+        \item \texttt{ps -eLF} - List processes and threads
+        \item \texttt{top} - Interactive process viewer
+        \item \texttt{top -H} - Show threads in top
+        \item \texttt{pstree} - Display process tree
+    \end{itemize}
+    
+    \paragraph{Creating processes}
+    \begin{itemize}
+        \item Write a C program using \texttt{fork()} to create a child process
+        \item Use \texttt{getpid()} to retrieve the process ID
+        \item Use \texttt{sleep()} to pause execution
+    \end{itemize}
+    
+    \paragraph{Identifying zombie processes}
+    \begin{itemize}
+        \item Create a parent process that doesn't wait for its child
+        \item Child terminates while parent continues running
+        \item Check process state with \texttt{ps} (state "Z" indicates zombie)
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Creating Processes in C}\\
+    Simple process creation with fork():
+    
+\begin{lstlisting}[language=C, style=basesmol]
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    pid_t pid = fork();
+    
+    if (pid < 0) {
+        // Error
+        fprintf(stderr, "Fork failed\n");
+        return 1;
+    } else if (pid == 0) {
+        // Child process
+        printf("Child process: PID = %d\n", getpid());
+        sleep(5);
+    } else {
+        // Parent process
+        printf("Parent process: PID = %d, Child PID = %d\n", getpid(), pid);
+        sleep(10);
+    }
+    
+    return 0;
+}
+\end{lstlisting}
+\end{example2}
+
+\subsubsection{Fork Process Trees}
+
+\begin{KR}{Fork() Process Tree Analysis}
+    \paragraph{Understanding fork() behavior}
+    \begin{itemize}
+        \item fork() creates an exact copy of the calling process
+        \item Returns child PID to parent, 0 to child
+        \item fork() > 0 is true only in parent process
+        \item Each fork() doubles the number of processes
+    \end{itemize}
+    
+    \paragraph{Analysis method}
+    \begin{itemize}
+        \item Draw a process tree starting with the original process
+        \item For each fork(), branch into parent and child
+        \item Track which path each process takes through if/else statements
+        \item Count total processes and specific execution paths
+    \end{itemize}
+
+    \paragraph{Trace execution paths}
+    \begin{itemize}
+        \item Parent: fork() returns child PID (> 0)
+        \item Child: fork() returns 0
+        \item Follow if-else logic for each process
+    \end{itemize}
+    
+    \paragraph{Counting strategy}
+    \begin{itemize}
+        \item Start with 1 process (the original)
+        \item Each successful fork() adds 1 new process
+        \item Count processes that reach specific code sections
+        \item Be careful with nested forks and conditional execution
+    \end{itemize}
+
+    \paragraph{Count results}
+    \begin{itemize}
+        \item Total processes = original + all children created
+        \item Count specific outputs by tracing paths to printf statements
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Process Creation Analysis}
+    Analyze the following code:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+if (fork() > 0)
+    fork();
+else {
+    fork();
+    if (fork() > 0)
+        printf("Hello World\n");
+}
+\end{lstlisting}
+
+    \tcblower
+
+    $$
+    \begin{array}{lll}
+        f--- & f---| & \\
+        \lfloor     & \llcorner ---| & \\
+        ---- & f---- & f--- Hello World \\
+             & \lfloor      & \llcorner ---| \\
+             & ----- & f--- Hello World \\
+             &       & \llcorner ---|\\
+    \end{array} 
+    $$   
+    
+    \textbf{Process tree and analysis:}
+    \begin{itemize}
+        \item Original process P forks $\rightarrow$ creates child C1
+        \item Parent P (fork() > 0): executes second fork() $\rightarrow$ creates child C2
+        \item Child C1 (fork() == 0): executes fork() $\rightarrow$ creates child C3
+        \item Child C1: executes second fork() $\rightarrow$ creates child C4, then prints
+        \item Child C3: executes second fork() $\rightarrow$ creates child C5, then prints
+    \end{itemize}
+    
+    \textbf{Results:}
+    \begin{itemize}
+        \item Additional processes created: 5 (C1, C2, C3, C4, C5)
+        \item "Hello World" printed: 2 times (by C1 and C3)
+    \end{itemize}
+\end{example2}
+
+\subsection{Threads}
+
+\mult{2}
+
+\begin{definition}{Threads}\\
+    Threads are execution entities within a process:
+    \begin{itemize}
+        \item Created and owned by a process
+        \item Share the address space and all data of the owning process
+        \item Allow multiple executions to take place within the same process environment
+        \item Enable a process to continue even when some operations would block
+        \item Cooperate toward the objective of the owning process
+    \end{itemize}
+    
+    Each thread has:
+    \begin{itemize}
+        \item Program counter (tracks next instruction)
+        \item Registers (hold working variables)
+        \item Stack (with frames for procedure calls)
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Thread Implementation Approaches}\\
+    Threads can be implemented in different ways:
+    \begin{itemize}
+        \item \textbf{User Space Threading (M:1)}:
+            \begin{itemize}
+                \item All threads in user space appear as a single process to the OS
+                \item Thread functionality provided by a library
+                \item Scheduling handled by the process (no mode switch required)
+                \item Based on cooperation (threads voluntarily yield CPU)
+                \item Disadvantages: Single thread can monopolize CPU time, blocked threads block the entire process, no SMP advantage
+            \end{itemize}
+        \item \textbf{Kernel-supported Threading (1:1)}:
+            \begin{itemize}
+                \item One kernel structure per user thread
+                \item Kernel schedules all threads
+                \item Advantages: Better handling of blocking I/O, full SMP exploitation
+                \item Disadvantages: Higher overhead, slower creation/removal, mode switching for scheduling
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+
+
+\begin{definition}{Kernel Threads}\\
+    Kernel threads are special processes that:
+    \begin{itemize}
+        \item Run exclusively in system (kernel) mode
+        \item Have a PID and state like any process
+        \item Are listed in the process table but flagged as "kernel thread"
+        \item Are scheduled/dispatched like regular processes
+        \item Uninterruptible (!! voluntarily yield CPU)
+        \item Listen to kernel signals
+    \end{itemize}
+    
+    Kernel threads are organized around working queues and thread pools:
+    \begin{itemize}
+        \item Working queues ordered by priority
+        \item Mapped onto a pool of reusable kernel threads
+        \item Number of threads dynamically managed based on workload
+        \item Managed by the \texttt{kthread} daemon
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Thread Implementation in Linux}\\
+    Linux doesn't have a dedicated concept of threads:
+    \begin{itemize}
+        \item All threads are standard processes (tasks)
+        \item A thread is a process that shares resources with other processes
+        \item Shared resources can include: address space, file descriptors, sockets, signal handlers, etc.
+        \item Implemented using system calls: \texttt{fork()} and \texttt{clone()}
+        \item Two implementation frameworks:
+            \begin{itemize}
+                \item LinuxThreads (legacy)
+                \item NPTL (Native POSIX Thread Library, current standard)
+            \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Thread Management in Linux}
+    \paragraph{Creating threads}
+    \begin{itemize}
+        \item Use POSIX threads library (pthread)
+        \item Include \texttt{<pthread.h>}
+        \item Create threads with \texttt{pthread\_create()}
+        \item Join threads with \texttt{pthread\_join()}
+    \end{itemize}
+\end{formula}
+
+\multend
+
+\begin{KR}{POSIX Thread Programming}
+    \paragraph{Essential POSIX thread functions}
+    \begin{itemize}
+        \item pthread\_create(): Create new thread
+        \item pthread\_join(): Wait for thread completion
+        \item pthread\_exit(): Terminate calling thread
+        \item pthread\_detach(): Detach thread (no join needed)
+    \end{itemize}
+    
+    \paragraph{Programming pattern}
+    \begin{itemize}
+        \item Include pthread.h header
+        \item Define thread function with void* signature
+        \item Create threads in loop if multiple needed
+        \item Always join threads to avoid zombies
+        \item Compile with -lpthread flag
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Creating Threads in C}\\
+    Simple thread creation with POSIX threads:
+    
+\begin{lstlisting}[language=C, style=basesmol]
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+
+void* thread_function(void* arg) {
+    int thread_id = *(int*)arg;
+    printf("Thread %d: running\n", thread_id);
+    sleep(3);
+    printf("Thread %d: exiting\n", thread_id);
+    return NULL;
+}
+
+int main() {
+    pthread_t threads[2];
+    int thread_args[2];
+    
+    for (int i = 0; i < 2; i++) {
+        thread_args[i] = i;
+        pthread_create(&threads[i], NULL, thread_function, &thread_args[i]);
+        printf("Main: created thread %d\n", i);
+    }
+    
+    // Wait for threads to finish
+    for (int i = 0; i < 2; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    
+    printf("Main: all threads completed\n");
+    return 0;
+}
+\end{lstlisting}
+\end{example2}
+
+
+
+\begin{example2}{Thread Programming with POSIX}
+    Write a program that creates two threads, both printing "Hello World":
+    
+    \tcblower
+    
+\begin{lstlisting}[language=C, style=basesmol]
+#include <stdio.h>
+#include <pthread.h>
+
+void *hello_world(void *arg) {
+    printf("Hello World\n");
+    return NULL;
+}
+
+int main() {
+    pthread_t thread[2];
+    
+    // Create two threads
+    for (int i = 0; i < 2; i++) {
+        pthread_create(&thread[i], NULL, hello_world, NULL);
+    }
+    
+    // Wait for both threads to complete
+    for (int i = 0; i < 2; i++) {
+        pthread_join(thread[i], NULL);
+    }
+    
+    return 0;
+}
+\end{lstlisting}
+
+    Note: Threads created with pthread\_create() start immediately.
+\end{example2}
+
+
+
+\subsubsection{Processes vs. Threads}
+
+\begin{theorem}{Linux Process vs. Thread Creation}\\
+    Linux offers different system calls for process and thread creation:
+    \begin{itemize}
+        \item \texttt{fork()}: Creates a child process by duplicating the parent
+            \begin{itemize}
+                \item Child and parent run in separate memory spaces
+            \end{itemize}
+        \item \texttt{clone()}: Provides precise control over what execution context is shared
+            \begin{itemize}
+                \item Allows sharing of address space, file descriptors, signal handlers, etc.
+                \item Used to implement threads in Linux
+            \end{itemize}
+    \end{itemize}
+\end{theorem}
+
+\begin{example2}{Process vs. Thread Differences}
+    Explain the difference between processes and threads:
+    
+    \tcblower
+    
+    \textbf{Solution:}
+    The main difference is that processes have their own memory space, while threads (belonging to the same process) share the process memory space.
+    
+    \begin{minipage}{0.5\linewidth}
+    \textbf{Processes:}
+    \begin{itemize}
+        \item Independent memory spaces
+        \item Higher creation/switching overhead
+        \item Better isolation and fault tolerance
+        \item Communication via IPC mechanisms
+    \end{itemize}
+    \end{minipage}%
+    \begin{minipage}{0.5\linewidth}    
+    \textbf{Threads:}
+    \begin{itemize}
+        \item Shared memory space within process
+        \item Lower creation/switching overhead
+        \item Faster communication via shared memory
+        \item Risk of interference between threads
+    \end{itemize}
+    \end{minipage}
+\end{example2}
+
+\begin{KR}{Analyzing Process vs. Thread Questions}
+    \paragraph{Key comparison points}
+    \begin{itemize}
+        \item Memory organization: separate vs. shared address space
+        \item Creation overhead: high vs. low
+        \item Communication methods: IPC vs. shared memory
+        \item Isolation level: strong vs. weak
+        \item Context switching cost: expensive vs. cheap
+    \end{itemize}
+\end{KR}
+
+\important{ADD EXERCISE 1D SEP07 USER VS KERNEL-LEVEL-THREADS}
+

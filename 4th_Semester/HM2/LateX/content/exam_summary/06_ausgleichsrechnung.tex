@@ -1,0 +1,457 @@
+\section{Ausgleichsrechnung}
+
+
+\begin{definition}{Ausgleichsproblem} ('Polyfit')\\
+Gegeben: $n$ Wertepaare $(x_i, y_i)$, $i = 1, ..., n$ mit $x_i \neq x_j$ für $i \neq j$.
+
+Gesucht: stetige Funktion $f: \mathbb{R} \rightarrow \mathbb{R}$, die die Wertepaare bestmöglich annähert (es soll gelten)
+$f(x_i) \approx y_i \quad \text{für alle } i = 1, ..., n$
+\end{definition}
+
+\begin{concept}{Fehlerfunktional und kleinste Fehlerquadrate}\\
+Eine Ausgleichsfunktion $f$ minimiert das \textbf{Fehlerfunktional}:
+\vspace{-3mm}\\
+$$E(f) := \|y - f(x)\|_2^2 = \sum_{i=1}^{n} (y_i - f(x_i))^2$$
+\small
+Gefundenes $f$ optimal im Sinne der \textbf{kleinsten Fehlerquadrate} (least squares fit).
+\end{concept}
+
+\subsubsection{Lineare Ausgleichsprobleme}
+
+\begin{definition}{Lineares Ausgleichsproblem} \\
+Gegeben: $n$ Wertepaare $(x_i, y_i)$ und $m$ Basisfunktionen $f_1, ..., f_m$
+\vspace{1mm}\\
+Ansatzfunktion:
+$f(x) = \lambda_1 f_1(x) + \lambda_2 f_2(x) + \cdots + \lambda_m f_m(x)$
+
+Fehlerfunktional:
+$E(f) = \|y - A\lambda\|_2^2$
+
+wobei $A$ die $n \times m$ Matrix ist:
+$A = \begin{bsmallmatrix}
+f_1(x_1) & f_2(x_1) & \cdots & f_m(x_1) \\
+f_1(x_2) & f_2(x_2) & \cdots & f_m(x_2) \\
+\cdots  & \cdots & \cdots & \cdots \\
+f_1(x_n) & f_2(x_n) & \cdots & f_m(x_n)
+\end{bsmallmatrix}$
+\end{definition}
+
+\begin{theorem}{Normalgleichungen}
+Die Lösung des linearen Ausgleichsproblems ergibt sich aus dem \textbf{Normalgleichungssystem}:
+$A^T A \lambda = A^T y$
+
+Nach Lösung des Normalgleichungssystems erhält man die Koeffizienten für die optimale Ausgleichsfunktion.
+
+Für bessere numerische Stabilität: \\ QR-Zerlegung $A = QR$ verwenden!
+$R\lambda = Q^T y$
+\end{theorem}
+
+\begin{KR}{Lineare Ausgleichsrechnung durchführen}
+
+    \begin{itemize}
+        \item \textbf{Basisfunktionen bestimmen} $f_1(x), f_2(x), ..., f_m(x)$
+        \item \textbf{Matrix $A$} Berechne $A_{ij} = f_j(x_i)$ $\forall$ $i = 1, ..., n$ und $j = 1, ..., m$
+        \item \textbf{Normalgleichungssystem} Berechne $A^T A$ und $A^T y$
+        \item \textbf{LGS lösen} Löse $A^T A \lambda = A^T y$ 
+        \item \textbf{Ausgleichsfunktion} $f(x) = \lambda_1 f_1(x) + \lambda_2 f_2(x) + \cdots + \lambda_m f_m(x)$
+        \item \textbf{Fehlerfunktional} Berechne $E(f) = \|y - A\lambda\|_2^2$
+        \item \textbf{Konvergenz} Prüfe, ob $E(f)$ klein genug ist (z.B. $\leq 10^{-6}$)
+    \end{itemize}
+\end{KR}
+
+\begin{example2}{Lineare Ausgleichsrechnung}
+Ausgleichsgerade $f(x) = ax + b$ für:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & 1 & 2 & 3 & 4 \\
+\hline
+$y_i$ & 6 & 6.8 & 10 & 10.5 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Basisfunktionen}: $f_1(x) = x$, $f_2(x) = 1$
+
+\textbf{Matrix }:
+$A = \begin{bsmallmatrix} 1 & 1 \\ 2 & 1 \\ 3 & 1 \\ 4 & 1 \end{bsmallmatrix}, \quad \text{\textbf{Vektor }} y = \begin{psmallmatrix} 6 \\ 6.8 \\ 10 \\ 10.5 \end{psmallmatrix}$
+\end{example2}
+
+\begin{example2}{Lineare Ausgleichsrechnung mit Normalgleichungen}
+
+\textbf{Normalgleichungen}:
+$A^T A = \begin{bsmallmatrix} 30 & 10 \\ 10 & 4 \end{bsmallmatrix}, \quad A^T y = \begin{psmallmatrix} 91.6 \\ 33.3 \end{psmallmatrix}$
+\vspace{1mm}\\
+\textbf{LGS lösen:}
+$\begin{bsmallmatrix} 30 & 10 \\ 10 & 4 \end{bsmallmatrix} \begin{psmallmatrix} a \\ b \end{psmallmatrix} = \begin{psmallmatrix} 91.6 \\ 33.3 \end{psmallmatrix}$
+Lösung: $a = 1.67$, $b = 4.15$
+\vspace{1mm}\\
+Die \textbf{Ausgleichsgerade} lautet: $f(x) = 1.67x + 4.15$
+\vspace{1mm}\\
+\textbf{Residuen berechnen:} $r_i = y_i - f(x_i)$
+\vspace{1mm}\\
+\begin{minipage}{0.5\linewidth}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$i$ & $y_i$ & $f(x_i)$ & $r_i$\\
+\hline
+1 & 6 & 5.82 & 0.18\\
+2 & 6.8 & 7.49 & -0.69\\
+3 & 10 & 9.16 & 0.84 \\
+4 & 10.5 & 10.83 & -0.33 \\
+\hline
+\end{tabular}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\textbf{Residuenvektor:} $r = \begin{psmallmatrix} 0.18 \\ -0.69 \\ 0.84 \\ -0.33 \end{psmallmatrix}$
+
+\textbf{Residuenquadrate:} \\ $r_i^2 = 0.0324, 0.4761, 0.7056, 0.1089$
+\end{minipage}
+\vspace{1mm}\\
+\textbf{Fehlerfunktional:} (Summe der Residuenquadrate)
+\vspace{1mm}\\
+$E(f) = \|y - A\lambda\|_2^2 = \sum_{i=1}^{n} r_i^2 = 1.323$
+\end{example2}
+
+
+
+\begin{example2}{Lineare Ausgleichsrechnung mit QR-Zerlegung}
+
+Löse das gleiche Problem wie zuvor mit QR-Zerlegung:\\
+$\rightarrow$ gleiche Stützpunkte, Basisfunktionen, Matrix $A$, Vektor $y$ wie zuvor.
+
+
+
+\textbf{Verifikation der Normalgleichungen:}
+$A = \begin{bsmallmatrix} 1 & 1 \\ 2 & 1 \\ 3 & 1 \\ 4 & 1 \end{bsmallmatrix}$, $y = \begin{psmallmatrix} 6 \\ 6.8 \\ 10 \\ 10.5 \end{psmallmatrix}$
+\vspace{-2mm}\\
+$A^T A = \begin{bsmallmatrix} 1 & 2 & 3 & 4 \\ 1 & 1 & 1 & 1 \end{bsmallmatrix} \begin{bsmallmatrix} 1 & 1 \\ 2 & 1 \\ 3 & 1 \\ 4 & 1 \end{bsmallmatrix} = \begin{bsmallmatrix} 30 & 10 \\ 10 & 4 \end{bsmallmatrix}$
+
+$A^T y = \begin{bsmallmatrix} 1 & 2 & 3 & 4 \\ 1 & 1 & 1 & 1 \end{bsmallmatrix} \begin{psmallmatrix} 6 \\ 6.8 \\ 10 \\ 10.5 \end{psmallmatrix} = \begin{psmallmatrix} 91.6 \\ 33.3 \end{psmallmatrix}$
+\vspace{1mm}\\
+Lösung: $\begin{bsmallmatrix} 30 & 10 \\ 10 & 4 \end{bsmallmatrix} \begin{psmallmatrix} a \\ b \end{psmallmatrix} = \begin{psmallmatrix} 91.6 \\ 33.3 \end{psmallmatrix}$ $\Rightarrow$ $a = 1.67$, $b = 4.15$
+\vspace{2mm}\\
+\textbf{QR-Zerlegung} (\important{See QR-Zerlegung} in basics for KR \& this example):
+\vspace{1mm}\\
+$Q = \begin{bsmallmatrix} -0.183 & -0.905 & -0.234 & -0.316 \\ -0.365 & -0.302 & 0.877 & 0.000 \\ -0.548 & 0.302 & -0.234 & 0.745 \\ -0.730 & 0.905 & -0.409 & -0.559 \end{bsmallmatrix}$
+$\quad R = \begin{bsmallmatrix} -5.477 & -1.826 \\ 0 & -1.633 \\ 0 & 0 \\ 0 & 0 \end{bsmallmatrix}$
+\vspace{1mm}\\
+\textbf{Berechne $Q^T y$:}
+$Q^T y = \begin{psmallmatrix} -16.77 \\ -6.78 \\ 0.35 \\ -0.32 \end{psmallmatrix}$
+Reduzierte Form: $\tilde{b} = \begin{psmallmatrix} -16.77 \\ -6.78 \end{psmallmatrix}$
+\vspace{1mm}\\
+\textbf{Löse $\tilde{R} \lambda = \tilde{b}$ durch Rückwärtseinsetzen:}
+\vspace{1mm}\\
+Aus zweiter Zeile: $0 \cdot a + (-1.633) \cdot b = -6.78$
+
+$\Rightarrow b = \frac{-6.78}{-1.633} = 4.15$ $\checkmark$
+\vspace{1mm}\\
+Aus erster Zeile: $(-5.477) \cdot a + (-1.826) \cdot 4.15 = -16.77$
+
+$\Rightarrow -5.477 \cdot a = -16.77 + 7.578 = -9.192$
+
+$\Rightarrow a = \frac{-9.192}{-5.477} = 1.678 \approx 1.67$ $\checkmark$
+\vspace{1mm}\\
+\textbf{Ergebnis:} $a = 1.67$, $b = 4.15$ (identisch mit Normalgleichungen!)
+\vspace{1mm}\\
+\textbf{Konditionszahl-Vergleich:}
+
+$\kappa(A^T A) \approx 15.0$, $\kappa(R) \approx 3.4$ $\Rightarrow$ QR ist numerisch stabiler!
+\vspace{1mm}\\
+\textbf{Bemerkung:} Beide Methoden liefern dasselbe mathematische Ergebnis. Der Vorteil der QR-Zerlegung liegt in der besseren numerischen Stabilität bei schlecht konditionierten Problemen.
+\end{example2}
+
+
+\begin{KR}{Lineare Ausgleichsrechnung mit QR-Zerlegung}
+
+\textbf{Vorbereitung}
+\begin{itemize}
+    \item Aufstellen Matrix $A$ und Vektors $y$ wie bei Normalgleichungen
+    \item Berechne QR-Zerlegung: $A = QR$
+\end{itemize}
+
+\textbf{Gleichungssystem umformen}
+Aus $A^T A \lambda = A^T y$ folgt:
+\begin{itemize}
+    \item $(QR)^T (QR) \lambda = (QR)^T y$
+    \item $R^T Q^T Q R \lambda = R^T Q^T y$
+    \item $R^T R \lambda = R^T Q^T y$ (da $Q^T Q = I$)
+    \item $R \lambda = Q^T y$ (da $R^T$ invertierbar)
+\end{itemize}
+
+\textbf{Lösung berechnen}
+\begin{itemize}
+    \item Berechne $b = Q^T y$
+    \item Löse $R \lambda = b$ durch Rückwärtseinsetzen
+    \item Da $R$ rechtsobere Dreiecksmatrix: einfach lösbar
+\end{itemize}
+
+\textbf{Vorteile gegenüber Normalgleichungen}
+\begin{itemize}
+    \item Bessere numerische Stabilität
+    \item Konditionszahl von $R$ oft besser als die von $A^T A$
+    \item Vermeidung der Bildung von $A^T A$
+\end{itemize}
+\end{KR}
+
+\subsubsection{Nichtlineare Ausgleichsprobleme}
+
+\begin{definition}{Allgemeines Ausgleichsproblem}
+Gegeben: $n$ Wertepaare $(x_i, y_i)$ und nichtlineare Ansatzfunktion $f_p(x, \lambda_1, ..., \lambda_m)$ mit $m$ Parametern
+
+Allgemeines Ausgleichsproblem: bestimme Parameter $\lambda_1, ..., \lambda_m$ so dass das Fehlerfunktional minimal wird:
+\vspace{-3mm}\\
+$$E(\lambda) = \sum_{i=1}^{n} (y_i - f_p(x_i, \lambda_1, ..., \lambda_m))^2$$
+\end{definition}
+
+\begin{concept}{Gauss-Newton-Verfahren}\\
+löst nichtlineare Ausgleichsprobleme durch Linearisierung:
+$$g(\lambda) := y - f(\lambda)$$
+$\rightarrow$ Problem äquivalent zur Minimierung von $\|g(\lambda)\|_2^2$.
+\vspace{2mm}\\
+In jeder Iteration $g(\lambda)$ linearisieren:
+
+$$g(\lambda) \approx g(\lambda^{(k)}) + Dg(\lambda^{(k)}) \cdot (\lambda - \lambda^{(k)})$$
+\end{concept}
+
+\begin{KR}{Gauss-Newton-Verfahren}
+
+\textbf{Funktionen definieren}
+$g(\lambda) := y - f(\lambda)$ und $Dg(\lambda)$ berechnen
+
+\textbf{Iterationsschleife}
+Für $k = 0, 1, ...$:
+\begin{itemize}
+    \item Löse das lineare Ausgleichsproblem: $$\min \|g(\lambda^{(k)}) + Dg(\lambda^{(k)}) \cdot \delta^{(k)}\|_2^2$$
+    \item Das ergibt: $$Dg(\lambda^{(k)})^T Dg(\lambda^{(k)}) \delta^{(k)} = -Dg(\lambda^{(k)})^T g(\lambda^{(k)})$$
+    \item Setze $\lambda^{(k+1)} = \lambda^{(k)} + \delta^{(k)}$
+\end{itemize}
+\vspace{1mm}
+
+\textbf{Dämpfung (optional)}
+\vspace{-1mm}\\
+Bei Konvergenzproblemen: $\lambda^{(k+1)} = \lambda^{(k)} + \frac{\delta^{(k)}}{2^p}$ mit geeignetem $p$.
+\vspace{1mm}\\
+\textbf{Konvergenzprüfung}\\
+Abbruch wenn $\|\delta^{(k)}\| < \text{TOL}$ oder $\|g(\lambda^{(k+1)})\| < \text{TOL}$.
+\end{KR}
+
+\begin{theorem}{Wahl zwischen linearer und nichtlinearer Ausgleichsrechnung:}
+\begin{itemize}
+    \item \textbf{Linear:} Wenn die Ansatzfunktion linear in den Parametern ist
+    \item \textbf{Nichtlinear:} Wenn Parameter "verwoben" mit der Funktionsgleichung
+    \item \textbf{Stabilität:} Gedämpfte Verfahren sind robuster, aber aufwendiger
+\end{itemize}
+\end{theorem}
+
+\begin{example2}{Gauss-Newton-Verfahren}\\
+\textbf{Aufgabe:} Fitten Sie die Funktion $f(x) = a \cdot e^{-bx} + c$ an die Datenpunkte:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x$ & 0 & 1 & 2 & 3 \\
+\hline
+$y$ & 5.2 & 3.8 & 3.1 & 2.9 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Funktionen definieren:}
+$g(\lambda) = y - f(\lambda) = \begin{psmallmatrix} 5.2 \\ 3.8 \\ 3.1 \\ 2.9 \end{psmallmatrix} - \begin{psmallmatrix} ae^{-b \cdot 0} + c \\ ae^{-b \cdot 1} + c \\ ae^{-b \cdot 2} + c \\ ae^{-b \cdot 3} + c \end{psmallmatrix}$
+\vspace{2mm}\\
+Jacobi-Matrix von $g$:
+$\frac{\partial g_i}{\partial a} = -e^{-bx_i}, \quad \frac{\partial g_i}{\partial b} = ax_ie^{-bx_i}, \quad \frac{\partial g_i}{\partial c} = -1$
+
+$$Dg(\lambda) = \begin{bsmallmatrix}
+-e^{-b \cdot 0} & a \cdot 0 \cdot e^{-b \cdot 0} & -1 \\
+-e^{-b \cdot 1} & a \cdot 1 \cdot e^{-b \cdot 1} & -1 \\
+-e^{-b \cdot 2} & a \cdot 2 \cdot e^{-b \cdot 2} & -1 \\
+-e^{-b \cdot 3} & a \cdot 3 \cdot e^{-b \cdot 3} & -1
+\end{bsmallmatrix} = \begin{bsmallmatrix}
+-1 & 0 & -1 \\
+-e^{-b} & ae^{-b} & -1 \\
+-e^{-2b} & 2ae^{-2b} & -1 \\
+-e^{-3b} & 3ae^{-3b} & -1
+\end{bsmallmatrix}$$
+
+\textbf{Gauss-Newton-Schritt mit $\lambda^{(0)} = (2, 0.5, 2.5)^T$:}
+
+$f(\lambda^{(0)}) = \begin{psmallmatrix} 2 + 2.5 \\ 2e^{-0.5} + 2.5 \\ 2e^{-1} + 2.5 \\ 2e^{-1.5} + 2.5 \end{psmallmatrix} = \begin{psmallmatrix} 4.5 \\ 3.71 \\ 3.24 \\ 2.95 \end{psmallmatrix}$
+
+$g(\lambda^{(0)}) = \begin{psmallmatrix} 5.2 \\ 3.8 \\ 3.1 \\ 2.9 \end{psmallmatrix} - \begin{psmallmatrix} 4.5 \\ 3.71 \\ 3.24 \\ 2.95 \end{psmallmatrix} = \begin{psmallmatrix} 0.7 \\ 0.09 \\ -0.14 \\ -0.05 \end{psmallmatrix}$
+
+$Dg(\lambda^{(0)}) = \begin{bsmallmatrix}
+-1 & 0 & -1 \\
+-0.606 & 1.213 & -1 \\
+-0.368 & 1.472 & -1 \\
+-0.223 & 1.340 & -1
+\end{bsmallmatrix}$
+
+Normalgleichungssystem: $Dg^T Dg \delta = -Dg^T g$
+\vspace{2mm}\\
+Nach Lösung: $\delta^{(0)} = \begin{psmallmatrix} 0.32 \\ -0.18 \\ 0.61 \end{psmallmatrix}$
+$\lambda^{(1)} = \lambda^{(0)} + \delta^{(0)} = \begin{psmallmatrix} 2.32 \\ 0.32 \\ 3.11 \end{psmallmatrix}$
+\vspace{2mm}\\
+\textbf{Physikalische Interpretation:}
+Die Funktion $f(x) = ae^{-bx} + c$ beschreibt einen exponentiellen Abfall mit:
+\begin{itemize}
+    \item $a = 2.32$: Anfangsamplitude des abfallenden Anteils
+    \item $b = 0.32$: Abfallkonstante (je größer, desto schneller der Abfall)
+    \item $c = 3.11$: Asymptotischer Grenzwert für $x \rightarrow \infty$
+\end{itemize}
+Dies könnte z.B. einen Abkühlungsprozess, radioaktiven Zerfall oder Entladung eines Kondensators beschreiben.
+\end{example2}
+
+\subsection{Interpolation}
+
+\begin{remark}
+Interpolation: Spezialfall der linearen Ausgleichsrechnung. Suche zu einer Menge von vorgegebenen Punkten eine Funktion, die exakt durch diese Punkte verlăuft.
+\end{remark}
+
+\begin{definition}{Interpolationsproblem}\\
+Gegeben: $n+1$ Wertepaare $(x_i, y_i)$\\ $i = 0, ..., n$, mit $x_i \neq x_j$ für $i \neq j$. 
+\vspace{2mm}\\
+Gesucht: stetige Funktion $g$ mit Eigenschaft $g(x_i) = y_i$ $\forall i = 0, ..., n$.
+\begin{itemize}
+    \item \textbf{Stützpunkte}: $n+1$ $(x_i, y_i)$ 
+    \item \textbf{Stützstellen}: $x_i$
+    \item \textbf{Stützwerte}: $y_i$
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Interpolation vs. Ausgleichsrechnung}
+\begin{itemize}
+    \item \textbf{Interpolation:} Gesuchte Funktion geht \emph{exakt} durch alle Datenpunkte
+    \item \textbf{Ausgleichsrechnung:} \\Funktion \emph{approximiert} die Datenpunkte möglichst gut
+    \item Interpolation: Spezialfall der Ausgleichsrechnung ($m = n$, $E(f) = 0$)
+\end{itemize}
+\end{concept}
+
+\subsubsection{Polynominterpolation}
+
+\begin{theorem}{Lagrange Interpolationsformel}\\
+Durch $n+1$ Stützpunkte mit verschiedenen Stützstellen $\exists$ genau ein Polynom $P_n(x)$ vom Grade $\leq n$, das alle Stützpunkte interpoliert.
+
+$P_n(x) \text{ lautet in der Lagrangeform: } P_n(x) = \sum_{i=0}^{n} l_i(x) y_i$
+
+$l_i(x)$ (Lagrangepolynome vom Grad $n$):
+$l_i(x) = \prod_{\substack{j=0 \\ j \neq i}}^{n} \frac{x - x_j}{x_i - x_j}$
+\end{theorem}
+
+\begin{corollary}{Fehlerabschätzung}\\
+$y_i$ = Funktionswerte einer genügend oft stetig differenzierbaren Funktion $f$ (also $y_i=f(x_i)$ ), 
+dann Interpolationsfehler an Stelle $x$:
+
+$
+\left|f(x)-P_n(x)\right| \leq \frac{\left|(x-x_0)(x-x_1) \ldots(x-x_n)\right|}{(n+1)!} \max _{x_0 \leq \xi \leq x_n} f^{(n+1)}(\xi)
+$
+\end{corollary}
+
+\begin{KR}{Lagrange-Interpolation durchführen}
+
+Gegeben: $(x_0, y_0), (x_1, y_1), ..., (x_n, y_n)$ und gesuchter Punkt $x$.
+
+\textbf{Lagrangepolynome} $l_i(x)$:
+Für $i = 0, 1, ..., n$ berechne:
+$$l_i(x) = \frac{(x-x_0)(x-x_1)\cdots(x-x_{i-1})(x-x_{i+1})\cdots(x-x_n)}{(x_i-x_0)(x_i-x_1)\cdots(x_i-x_{i-1})(x_i-x_{i+1})\cdots(x_i-x_n)}$$
+\textbf{Interpolationspolynom}:
+$P_n(x) = y_0 \cdot l_0(x) + y_1 \cdot l_1(x) + \cdots + y_n \cdot l_n(x)$
+
+\textbf{Funktionswert berechnen}:
+Setze gewünschten $x$-Wert ein: \\ $P_n(x) = $ gesuchter Interpolationswert
+\end{KR}
+
+\begin{example2}{Lagrange-Interpolation}
+    Bestimme Atmosphärendruck bei 3750m:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Höhe [m] & 0 & 2500 & 5000 & 10000 \\
+\hline
+Druck [hPa] & 1013 & 747 & 540 & 226 \\
+\hline
+\end{tabular}
+\end{center}
+\textbf{Stützpunkte} $(0, 1013)$, $(2500, 747)$, $(5000, 540)$ für $x = 3750$.
+
+\textbf{Lagrangepolynome:}  
+$$l_0(3750) = \frac{(3750-2500)(3750-5000)}{(0-2500)(0-5000)} = \frac{1250 \cdot (-1250)}{(-2500) \cdot (-5000)} = -0.125$$
+$$l_1(3750) = \frac{(3750-0)(3750-5000)}{(2500-0)(2500-5000)} = \frac{3750 \cdot (-1250)}{2500 \cdot (-2500)} = 0.75$$
+$$l_2(3750) = \frac{(3750-0)(3750-2500)}{(5000-0)(5000-2500)} = \frac{3750 \cdot 1250}{5000 \cdot 2500} = 0.375$$
+\textbf{Interpolationswert:} \\
+$P(3750) = 1013 \cdot (-0.125) + 747 \cdot 0.75 + 540 \cdot 0.375 = 636.0 \text{ hPa}$
+\end{example2}
+
+\raggedcolumns
+
+\subsubsection{Splineinterpolation}
+
+\begin{concept}{Probleme der Polynominterpolation} \small
+Polynome mit hohem Grad oszillieren stark, besonders an den Rändern des Interpolationsintervalls. Für viele Stützpunkte ist Polynominterpolation daher ungeeignet.
+\textbf{Lösung:} Spline-Interpolation verwendet stückweise kubische Polynome mit glatten Übergängen.
+\end{concept}
+
+\begin{definition}{Natürliche kubische Splinefunktion}\\
+Natürliche kubische Splinefunktion $S(x)$ ist in jedem Intervall $[x_i, x_{i+1}]$ durch kubisches Polynom dargestellt:
+$$S_i(x) = a_i + b_i(x - x_i) + c_i(x - x_i)^2 + d_i(x - x_i)^3$$
+
+mit den Randbedingungen $S''_0(x_0) = 0$ und $S''_{n-1}(x_n) = 0$.
+\end{definition}
+
+\begin{KR}{Natürliche kubische Splinefunktion berechnen}
+
+\textbf{Parameter initialisieren:}
+$a_i = y_i$ und $h_i = x_{i+1} - x_i$
+
+\textbf{Randbedingungen setzen:} $c_0 = 0$ und $c_n = 0$ (natürliche Spline).
+
+\textbf{Gleichungssystem für $c_i$ lösen}
+Für $i = 1, ..., n-1$:
+$$h_{i-1} c_{i-1} + 2(h_{i-1} + h_i) c_i + h_i c_{i+1} = 3(\frac{y_{i+1} - y_i}{h_i} - \frac{y_i - y_{i-1}}{h_{i-1}})$$
+\textbf{Restliche Koeffizienten}:
+
+$b_i = \frac{y_{i+1} - y_i}{h_i} - \frac{h_i}{3}(c_{i+1} + 2c_i)$,
+$d_i = \frac{1}{3h_i}(c_{i+1} - c_i)$
+\end{KR}
+
+\begin{example2}{Kubische Splinefunktion}
+Stützpunkte:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x_i$ & 4 & 6 & 8 & 10 \\
+\hline
+$y_i$ & 6 & 3 & 9 & 0 \\
+\hline
+\end{tabular}
+\end{center}
+\textbf{Parameter}: $a_0 = 6, a_1 = 3, a_2 = 9$, $h_0 = h_1 = h_2 = 2$\\
+\textbf{Randbedingungen}: $c_0 = 0, c_3 = 0$ (natürliche Spline)
+
+\textbf{Gleichungssystem:} für $c_1, c_2$:
+$$2 \cdot 8 \cdot c_1 + 2 \cdot c_2 = 3(3 - (-1.5)) = 13.5$$
+$$2 \cdot c_1 + 2 \cdot 8 \cdot c_2 = 3((-4.5) - 3) = -22.5$$
+
+Lösung: $c_1 = 1.2, c_2 = -1.8$
+
+\textbf{Restliche Koeffizienten}:\\
+$b_0 = -2.8, b_1 = 2.2, b_2 = -7.2$, 
+$d_0 = 0.6, d_1 = -1.5, d_2 = 0.9$
+
+Die Splinefunktionen sind:
+
+$S_0(x) = 6 - 2.8(x-4) + 0.6(x-4)^3$
+
+$S_1(x) = 3 + 2.2(x-6) + 1.2(x-6)^2 - 1.5(x-6)^3$
+
+$S_2(x) = 9 - 7.2(x-8) - 1.8(x-8)^2 + 0.9(x-8)^3$
+\end{example2}
+
+
+
+
+
+
+

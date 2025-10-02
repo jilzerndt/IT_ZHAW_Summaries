@@ -1,0 +1,506 @@
+\section{Architecture Patterns}
+
+\subsection{Einführung in Architektur-Muster}
+
+\begin{definition}{Was sind Architektur-Patterns?}\\
+    Architektur-Patterns (Architekturmuster) sind bewährte Lösungen für wiederkehrende Architekturprobleme in der Softwareentwicklung:
+    \begin{itemize}
+        \item Dokumentierte, erprobte Lösungsansätze für typische Probleme
+        \item Beschreiben die Struktur, das Verhalten und die Interaktion von Komponenten
+        \item Höhere Abstraktionsebene als Design Patterns (GoF)
+        \item Befassen sich mit der übergreifenden Systemorganisation
+        \item Helfen bei grundlegenden Architekturentscheidungen
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Warum Architektur-Patterns wichtig sind}\\
+    Architektur-Patterns bieten zahlreiche Vorteile:
+    \begin{itemize}
+        \item Bewährte Lösungen für komplexe Probleme
+        \item Gemeinsame Sprache für Architekturentscheidungen
+        \item Reduzieren technische Risiken durch erprobte Ansätze
+        \item Verbessern die Wartbarkeit und Erweiterbarkeit von Systemen
+        \item Erleichtern die Einarbeitung neuer Teammitglieder
+        \item Unterstützen die Dokumentation der Systemarchitektur
+    \end{itemize}
+\end{concept}
+
+\subsection{CQRS (Command Query Responsibility Segregation)}
+
+\begin{definition}{CQRS - Command Query Responsibility Segregation}\\
+    CQRS ist ein Architekturmuster, das Lese- und Schreiboperationen in einem System trennt:
+    \begin{itemize}
+        \item \textbf{Commands:} Ändern den Systemzustand, liefern kein Ergebnis zurück
+        \item \textbf{Queries:} Liefern Ergebnisse, ändern nicht den Systemzustand
+        \item Separate Modelle für Lese- und Schreiboperationen
+        \item Ermöglicht unterschiedliche Optimierungen für beide Operationstypen
+        \item Kann mit Event Sourcing kombiniert werden
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Aufbau von CQRS}\\
+    Ein CQRS-System besteht aus folgenden Hauptkomponenten:
+    \begin{itemize}
+        \item \textbf{Command-Seite:} 
+        \begin{itemize}
+            \item Command-Objekte (repräsentieren Benutzerabsichten)
+            \item Command-Handler (verarbeiten Commands)
+            \item Write-Model (Domänenmodell, optimiert für Konsistenz)
+            \item Write-Datenbank (häufig relationale DB)
+        \end{itemize}
+        
+        \item \textbf{Query-Seite:} 
+        \begin{itemize}
+            \item Query-Objekte (repräsentieren Leseanfragen)
+            \item Query-Handler (verarbeiten Queries)
+            \item Read-Model (denormalisierte Views, optimiert für Leseoperationen)
+            \item Read-Datenbank (häufig NoSQL oder spezialisierte Leseoptimierung)
+        \end{itemize}
+        
+        \item Optional: Synchronisationsmechanismus (um Änderungen vom Write- zum Read-Model zu propagieren)
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Vorteile von CQRS}\\
+    \begin{itemize}
+        \item Ermöglicht unabhängige Skalierung von Lese- und Schreiboperationen
+        \item Optimierung für spezifische Anwendungsfälle (z.B. komplexe Berichte)
+        \item Bessere Leistung durch spezialisierte Datenmodelle
+        \item Vereinfachte Domänenmodelle durch Trennung der Verantwortlichkeiten
+        \item Verbesserte Sicherheit durch getrennte Berechtigungsmodelle möglich
+        \item Unterstützung von komplexen Geschäftsregeln auf der Schreibseite
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Nachteile von CQRS}\\
+    \begin{itemize}
+        \item Erhöhte Komplexität durch doppelte Modelle und Synchronisation
+        \item Eventual Consistency kann für Benutzer verwirrend sein
+        \item Höherer Entwicklungsaufwand, besonders in der Anfangsphase
+        \item Größere Lernkurve für Entwickler
+        \item Nicht für alle Anwendungen sinnvoll (Overengineering für einfache CRUD-Systeme)
+    \end{itemize}
+\end{concept}
+
+\begin{examplecode}{CQRS Implementierungsbeispiel}\\
+\begin{lstlisting}[language=Java, style=basesmol]
+// Command-Seite
+public class CreateOrderCommand {
+    private final String customerId;
+    private final List<OrderItem> items;
+    
+    // Constructor, getters...
+}
+
+public class CreateOrderHandler {
+    private final OrderRepository repository;
+    
+    public void handle(CreateOrderCommand command) {
+        // Geschaeftslogik, Validierung
+        Order order = new Order(command.getCustomerId(), command.getItems());
+        repository.save(order);
+        eventBus.publish(new OrderCreatedEvent(order.getId()));
+    }
+}
+
+// Query-Seite
+public class GetOrderQuery {
+    private final String orderId;
+    // Constructor, getters...
+}
+
+public class GetOrderHandler {
+    private final OrderReadRepository readRepository;
+    
+    public OrderDto handle(GetOrderQuery query) {
+        return readRepository.findById(query.getOrderId());
+    }
+}
+\end{lstlisting}
+\end{examplecode}
+
+\subsection{Event Sourcing}
+
+\begin{definition}{Event Sourcing}\\
+    Event Sourcing ist ein Architekturmuster, bei dem der Zustand eines Systems als Sequenz von Ereignissen modelliert wird:
+    \begin{itemize}
+        \item Der aktuelle Zustand wird durch Anwenden aller historischen Ereignisse rekonstruiert
+        \item Ereignisse (Events) sind unveränderlich und werden nur hinzugefügt
+        \item Jede Änderung am System wird als Event aufgezeichnet
+        \item Bietet vollständige Nachvollziehbarkeit und Audit-Trail
+        \item Häufig in Kombination mit CQRS eingesetzt
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Kernkonzepte von Event Sourcing}\\
+    \begin{itemize}
+        \item \textbf{Event:} Aufzeichnung einer Zustandsänderung (z.B. OrderPlaced, ItemAdded)
+        \item \textbf{Event Store:} Persistente Speicherung aller Events
+        \item \textbf{Aggregate:} Konsistenzgrenzen für Entities (z.B. Order, Customer)
+        \item \textbf{Snapshots:} Momentaufnahmen des Zustands zur Performance-Optimierung
+        \item \textbf{Event Handlers:} Verarbeiten Events und aktualisieren Read-Modelle
+        \item \textbf{Projections:} Erzeugen verschiedene Ansichten der Daten aus Events
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Vorteile von Event Sourcing}\\
+    \begin{itemize}
+        \item Komplette Historie aller Änderungen (Audit-Trail)
+        \item Zeitreise-Fähigkeit (Zustand zu jedem historischen Zeitpunkt rekonstruierbar)
+        \item Ermöglicht Debugging durch Wiedergabe von Events
+        \item Vereinfacht das Testen von Geschäftslogik
+        \item Erlaubt nachträgliche Erstellung neuer Projektionen
+        \item Verbesserte Skalierbarkeit durch Vermeidung von Update-Konflikten
+        \item Robustheit gegen Datenverlust durch append-only Natur
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Nachteile von Event Sourcing}\\
+    \begin{itemize}
+        \item Erhöhte Komplexität, besonders bei der ersten Umsetzung
+        \item Erhöhte Anforderungen an die Infrastruktur (Event Store)
+        \item Eventual Consistency kann für Benutzer verwirrend sein
+        \item Versioning von Events kann herausfordernd sein
+        \item Performance-Überlegungen bei großen Event-Streams
+        \item Erhöhter initialer Entwicklungsaufwand
+    \end{itemize}
+\end{concept}
+
+\begin{examplecode}{Event Sourcing Implementierungsbeispiel}\\
+\begin{lstlisting}[language=Java, style=basesmol]
+// Event
+public class OrderPlacedEvent {
+    private final String orderId;
+    private final String customerId;
+    private final LocalDateTime timestamp;
+    private final List<OrderItem> items;
+    
+    // Constructor, getters...
+}
+
+// Aggregate
+public class Order {
+    private String id;
+    private String customerId;
+    private List<OrderItem> items = new ArrayList<>();
+    private OrderStatus status;
+    
+    // Apply-Methoden fuer Events
+    public void apply(OrderPlacedEvent event) {
+        this.id = event.getOrderId();
+        this.customerId = event.getCustomerId();
+        this.items.addAll(event.getItems());
+        this.status = OrderStatus.PLACED;
+    }
+    
+    // Command-Handling
+    public OrderPlacedEvent placeOrder(String customerId, List<OrderItem> items) {
+        // Validierung
+        OrderPlacedEvent event = new OrderPlacedEvent(
+            UUID.randomUUID().toString(), 
+            customerId, 
+            LocalDateTime.now(), 
+            items
+        );
+        apply(event);
+        return event;
+    }
+}
+
+// Event Store
+public class EventStore {
+    private final Map<String, List<Event>> eventStreams = new HashMap<>();
+    
+    public void saveEvents(String aggregateId, List<Event> events) {
+        List<Event> stream = eventStreams.getOrDefault(aggregateId, new ArrayList<>());
+        stream.addAll(events);
+        eventStreams.put(aggregateId, stream);
+    }
+    
+    public List<Event> getEventsForAggregate(String aggregateId) {
+        return eventStreams.getOrDefault(aggregateId, new ArrayList<>());
+    }
+}
+\end{lstlisting}
+\end{examplecode}
+
+\subsection{Strangler Pattern / Online-Migration}
+
+\begin{definition}{Strangler Pattern}\\
+    Das Strangler Pattern (auch Strangler Fig Pattern) ist ein Ansatz zur schrittweisen Migration eines Legacy-Systems zu einer neuen Architektur:
+    \begin{itemize}
+        \item Benannt nach der "Würgefeige" (Strangler Fig), die um einen Wirtsbaum wächst und ihn schließlich ersetzt
+        \item Neue Funktionalität wird parallel zum alten System entwickelt
+        \item Bestehende Funktionen werden schrittweise migriert
+        \item Die Umstellung erfolgt inkrementell, nicht als Big-Bang-Ansatz
+        \item Das Legacy-System wird nach und nach "erwürgt" (ersetzt)
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Implementierung des Strangler Patterns}\\
+    Typische Implementierungsstrategie:
+    \begin{itemize}
+        \item \textbf{Facade:} Einrichten einer Fassade vor dem Legacy-System
+        \item \textbf{Interception:} Abfangen von Anfragen und Weiterleitung an das neue oder alte System
+        \item \textbf{Koexistenz:} Altes und neues System arbeiten parallel
+        \item \textbf{Graduelle Migration:} Feature für Feature wird migriert
+        \item \textbf{Auslaufen:} Das alte System wird schrittweise abgeschaltet
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Vorteile des Strangler Patterns}\\
+    \begin{itemize}
+        \item Reduziertes Risiko im Vergleich zu einem kompletten Neubau
+        \item Frühes Wertschöpfungspotenzial durch inkrementelle Lieferung
+        \item Möglichkeit, früh Feedback zu erhalten und zu reagieren
+        \item Kontinuierliche Bereitstellung von Geschäftswert
+        \item Lernen während der Migration
+        \item Bessere Ressourcenplanung möglich
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Herausforderungen des Strangler Patterns}\\
+    \begin{itemize}
+        \item Komplexere Übergangszustände während der Migration
+        \item Höherer Koordinationsaufwand zwischen Systemen
+        \item Notwendigkeit für Kompatibilitätsschichten
+        \item Daten-Synchronisationsprobleme
+        \item Längere Gesamtmigrationsdauer
+        \item Risiko unvollständiger Migration ("ewiges" Projekt)
+    \end{itemize}
+\end{concept}
+
+\begin{KR}{Durchführung einer Strangler-Migration}\\
+    \paragraph{Analyse und Planung}
+    \begin{itemize}
+        \item Legacy-System analysieren und verstehen
+        \item Abhängigkeiten und Integrationspunkte identifizieren
+        \item Migrationsreihenfolge basierend auf Geschäftswert und technischer Machbarkeit festlegen
+        \item Fassadenschicht planen (API Gateway, Reverse Proxy etc.)
+    \end{itemize}
+    
+    \paragraph{Implementierung}
+    \begin{itemize}
+        \item Fassadenschicht vor dem Legacy-System einrichten
+        \item Routingregeln definieren (neu vs. alt)
+        \item Mit isolierten, weniger kritischen Funktionen beginnen
+        \item Schrittweise weitere Funktionen migrieren
+        \item Dual-Write-Mechanismen für Datenmigration einsetzen
+    \end{itemize}
+    
+    \paragraph{Konsolidierung}
+    \begin{itemize}
+        \item Erfolgskriterien für jede migrierte Funktion definieren
+        \item Traffic schrittweise zum neuen System umleiten
+        \item Alt-System-Komponenten nach erfolgreicher Migration abschalten
+        \item Ressourcen für das Legacy-System reduzieren
+        \item Migration dokumentieren und Lessons Learned festhalten
+    \end{itemize}
+\end{KR}
+
+\subsection{Circuit Breaker / Bulkhead / Retry}
+
+\begin{definition}{Circuit Breaker Pattern}\\
+    Das Circuit Breaker Pattern verhindert, dass eine Anwendung versucht, eine Operation auszuführen, die wahrscheinlich fehlschlagen wird:
+    \begin{itemize}
+        \item Basiert auf der Idee elektrischer Sicherungen
+        \item Überwacht Fehler in Aufrufen externer Systeme
+        \item Bei zu vielen Fehlern "öffnet" sich der Circuit Breaker und blockiert weitere Aufrufe
+        \item Nach einer Wartezeit wird ein "Halboffener" Zustand eingenommen, um probeweise Aufrufe zuzulassen
+        \item Bei erfolgreichen Aufrufen schließt sich der Circuit Breaker wieder
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Zustände eines Circuit Breakers}\\
+    Ein Circuit Breaker hat typischerweise drei Zustände:
+    \begin{itemize}
+        \item \textbf{Geschlossen (Closed):} Aufrufe werden normal durchgeführt, Fehler werden gezählt
+        \item \textbf{Offen (Open):} Aufrufe werden sofort abgewiesen, ohne den externen Service zu kontaktieren
+        \item \textbf{Halb-offen (Half-Open):} Einige Testaufrufe werden durchgelassen, um zu prüfen, ob der Dienst wieder verfügbar ist
+    \end{itemize}
+\end{concept}
+
+\begin{definition}{Bulkhead Pattern}\\
+    Das Bulkhead Pattern isoliert Elemente eines Systems, sodass der Ausfall eines Elements nicht zum Ausfall des gesamten Systems führt:
+    \begin{itemize}
+        \item Benannt nach den wasserdichten Schotten in Schiffen
+        \item Ressourcen werden in isolierte Pools aufgeteilt
+        \item Jeder Dienst/Komponente erhält eigene Ressourcen (z.B. Threadpools, Verbindungspools)
+        \item Verhindert Ressourcenerschöpfung des Gesamtsystems
+        \item Begrenzt die Auswirkungen von Fehlern auf einzelne Komponenten
+    \end{itemize}
+\end{definition}
+
+\begin{definition}{Retry Pattern}\\
+    Das Retry Pattern ermöglicht einer Anwendung, vorübergehende Fehler zu behandeln, indem Operationen automatisch wiederholt werden:
+    \begin{itemize}
+        \item Geeignet für transiente Fehler (z.B. Netzwerkunterbrechungen)
+        \item Verschiedene Retry-Strategien möglich:
+        \begin{itemize}
+            \item Sofortiges Retry
+            \item Exponentielles Backoff (zunehmende Wartezeiten)
+            \item Jitter (zufällige Variationen der Wartezeiten)
+        \end{itemize}
+        \item Begrenzte Anzahl von Wiederholungen, um endlose Schleifen zu vermeiden
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Kombination der Patterns}\\
+    Diese Resilience Patterns werden oft kombiniert:
+    \begin{itemize}
+        \item Circuit Breaker schützt vor anhaltenden Fehlern
+        \item Bulkhead isoliert Auswirkungen von Fehlern
+        \item Retry behandelt vorübergehende Fehler
+        \item Zusammen bilden sie eine umfassende Resilienzstrategie
+        \item Weitere ergänzende Patterns: Timeout, Fallback, Cache
+    \end{itemize}
+\end{concept}
+
+\begin{examplecode}{Circuit Breaker Implementierung mit Resilience4j}\\
+\begin{lstlisting}[language=Java, style=basesmol]
+// Circuit Breaker Konfiguration
+CircuitBreakerConfig config = CircuitBreakerConfig.custom()
+    .failureRateThreshold(50)     // 50% Fehlerrate oeffnet den Circuit Breaker
+    .waitDurationInOpenState(Duration.ofMillis(1000))  // 1s im Open-State
+    .ringBufferSizeInHalfOpenState(10)  // Anzahl Aufrufe im Half-Open State
+    .ringBufferSizeInClosedState(100)   // Anzahl Aufrufe im Closed State
+    .build();
+
+// Circuit Breaker erstellen
+CircuitBreaker circuitBreaker = CircuitBreaker.of("backendService", config);
+
+// Funktion mit Circuit Breaker absichern
+Supplier<String> decoratedSupplier = CircuitBreaker
+    .decorateSupplier(circuitBreaker, () -> backendService.doSomething());
+
+// Aufruf der geschuetzten Funktion
+try {
+    String result = decoratedSupplier.get();
+} catch (Exception e) {
+    // Handle exception (Circuit open or service error)
+}
+\end{lstlisting}
+\end{examplecode}
+
+\subsection{Vergleich von Architekturstilen}
+
+\begin{concept}{Monolith}\\
+    Eine Monolith-Architektur ist eine traditionelle Softwarearchitektur, bei der alle Komponenten in einer einzigen Anwendung integriert sind:
+    \begin{itemize}
+        \item \textbf{Vorteile:}
+        \begin{itemize}
+            \item Einfachere Entwicklung und Deployment
+            \item Weniger Komplexität bei Transaktionen und Konsistenz
+            \item Einfacheres Debugging und Testen
+            \item Geringere Latenz bei internen Aufrufen
+        \end{itemize}
+        
+        \item \textbf{Nachteile:}
+        \begin{itemize}
+            \item Schwierigere Skalierung einzelner Komponenten
+            \item Langsamere Entwicklungszyklen bei großen Anwendungen
+            \item Höhere Kopplung zwischen Komponenten
+            \item Technologieabhängigkeit (Plattform, Sprache)
+        \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Modulith}\\
+    Ein Modulith ist ein gut strukturierter Monolith mit internen Modulen:
+    \begin{itemize}
+        \item \textbf{Vorteile:}
+        \begin{itemize}
+            \item Behält Einfachheit des Monoliths bei
+            \item Verbesserte Struktur und Wartbarkeit
+            \item Klarere Domänengrenzen innerhalb der Anwendung
+            \item Kann später leichter in Microservices aufgeteilt werden
+        \end{itemize}
+        
+        \item \textbf{Nachteile:}
+        \begin{itemize}
+            \item Weiterhin Einschränkungen bei unabhängiger Skalierbarkeit
+            \item Gemeinsame Deployment-Einheit kann weiterhin problematisch sein
+            \item Erfordert Disziplin zur Einhaltung der Modulgrenzen
+        \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Microservices}\\
+    Microservices sind eine Architektur, bei der eine Anwendung als Sammlung kleiner, unabhängiger Dienste entwickelt wird:
+    \begin{itemize}
+        \item \textbf{Vorteile:}
+        \begin{itemize}
+            \item Unabhängige Entwicklung und Deployment
+            \item Bessere Skalierbarkeit einzelner Komponenten
+            \item Technologische Flexibilität
+            \item Resilienz durch Isolation von Fehlern
+            \item Ermöglicht Conway's Law positiv zu nutzen
+        \end{itemize}
+        
+        \item \textbf{Nachteile:}
+        \begin{itemize}
+            \item Erhöhte Komplexität der Infrastruktur
+            \item Herausforderungen bei verteilten Transaktionen
+            \item Potential für erhöhte Latenz
+            \item Anspruchsvolleres Monitoring und Debugging
+            \item Höhere Betriebskosten
+        \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Self-contained Systems (SCS)}\\
+    Self-contained Systems sind unabhängige Systeme, die zusammen eine größere Anwendung bilden:
+    \begin{itemize}
+        \item \textbf{Vorteile:}
+        \begin{itemize}
+            \item Autonomie einzelner Teams
+            \item Gröber als Microservices, daher weniger Overhead
+            \item Reduzierte Abhängigkeiten zwischen Teams
+            \item Gute Balance zwischen Monolith und Microservices
+        \end{itemize}
+        
+        \item \textbf{Nachteile:}
+        \begin{itemize}
+            \item Mögliche Duplizierung von Funktionalität
+            \item Herausforderungen bei systemübergreifender Konsistenz
+            \item Komplexere Benutzeroberflächen-Integration
+        \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{Serverless}\\
+    Serverless ist ein Cloud-Computing-Modell, bei dem der Cloud-Anbieter die Infrastruktur dynamisch verwaltet:
+    \begin{itemize}
+        \item \textbf{Vorteile:}
+        \begin{itemize}
+            \item Keine Server-Verwaltung notwendig
+            \item Automatische Skalierung
+            \item Pay-per-Use-Preismodell
+            \item Schnelle Markteinführung
+            \item Fokus auf Geschäftslogik statt Infrastruktur
+        \end{itemize}
+        
+        \item \textbf{Nachteile:}
+        \begin{itemize}
+            \item Cold-Start-Problematik (Latenz)
+            \item Vendor Lock-in
+            \item Beschränkungen bei Laufzeit und Ressourcen
+            \item Schwierigere Fehlersuche und Testing
+            \item Komplexeres Monitoring
+        \end{itemize}
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Wahl der richtigen Architektur}\\
+    Folgende Faktoren sollten bei der Wahl der Architektur berücksichtigt werden:
+    \begin{itemize}
+        \item \textbf{Organisationsstruktur:} Conway's Law beachten
+        \item \textbf{Teamgröße:} Kleine Teams - Monolith/Modulith, große Teams - Microservices/SCS
+        \item \textbf{Veränderungsrate:} Hohe Änderungsrate begünstigt Microservices
+        \item \textbf{Domänenkomplexität:} Komplexe Domänen erfordern klare Grenzen
+        \item \textbf{Skalierungsbedarf:} Unterschiedliche Skalierungsanforderungen begünstigen Microservices
+        \item \textbf{Konsistenzanforderungen:} Hohe Konsistenz begünstigt Monolith
+        \item \textbf{Technologie-Diversität:} Bedarf an verschiedenen Technologien begünstigt Microservices
+        \item \textbf{Betriebsreife:} DevOps-Fähigkeiten sind Voraussetzung für Microservices
+    \end{itemize}
+\end{formula}

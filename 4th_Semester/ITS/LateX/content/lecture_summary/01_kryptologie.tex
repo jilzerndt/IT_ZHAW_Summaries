@@ -1,0 +1,449 @@
+\section{Introduction to Security and Cryptology}
+
+\begin{concept}{Cryptography Goals}
+    Cryptography aims to achieve four fundamental security properties:
+    \begin{itemize}
+        \item \textbf{Confidentiality and Integrity}
+        \item \textbf{Authenticity} - Origin of information can be verified
+        \item \textbf{Freshness/Non-repudiation} - Information is current and sender cannot deny transmission
+    \end{itemize}
+    These goals align with the broader CIA triad of information security but add authentication and non-repudiation.
+\end{concept}
+
+
+\begin{definition}{Kommunikationsmodel}
+
+    \begin{minipage}{0.4\linewidth}
+    \includegraphics[width=\linewidth]{kommunikationsmodel.png}
+    \end{minipage}
+    \begin{minipage}{0.6\linewidth}
+    \begin{itemize}
+        \item \textcolor{darkblue}{\textbf{Alice}} sendet eine Nachricht an Bob. Dabei sollen die oben genannten Ziele, confidentiality, integrity, authenticity, non-repudiation und freshness erfüllt werden.
+        \item \textcolor{darkgreen}{\textbf{Bob}} empfängt die Nachrichten von Allice. Er will überprüfen können, dass die Ziele eingehalten wurden.
+        \item \textcolor{darktangerine}{\textbf{Eve}}  ist ein Attacker. Sie kann Nachrichten mitlesen, aber sie nicht verändern.
+        \item \textcolor{darkred}{\textbf{Mallory}} ist ein anderer Attacker. Er kann Daten sowohl mitlesen als auch verändern. Er kann auch Nachrichten abfangen und später weitersenden, oder ganz verwerfen. Er kann auch neue Nachrichten generieren.
+        \item \textcolor{darkgrey}{\textbf{Trent}} ist eine Drittperson/Instanz, welcher sowohl Alice und Bob vertrauen. Trent unterstützt Alice und Bob bei der sicheren Kommunikation.
+    \end{itemize}
+    \end{minipage}
+\end{definition}
+
+
+
+
+\begin{KR}{Attacktypen auf Kryptosysteme} Auf was hat Attacker Zugriff?
+    \begin{itemize}
+        \item \textbf{Ciphertext-only attack} - Zugriff auf Ciphertext, aber nicht auf Plaintext oder Schlüssel.
+        \item \textbf{Chosen-ciphertext attack} - kann Ciphertexte generieren und diese entschlüsseln lassen.
+        bekommt entweder den zum gewählten Ciphertext gehörenden Plaintext (daraus evtl. Rückschlüsse auf den verwendeten Schlüssel) 
+        oder Teilinformationen wie 'Verschlüsselung konnte durchgeführt werden / nicht durchgeführt werden'
+        \item \textbf{Known-plaintext attack} - kennt sowohl Teile des Plaintext als auch dazugehörenden Ciphertext.
+        \item \textbf{Chosen-plaintext attack} - kann Plaintexte wählen, welche er verschlüsseln lassen will. 
+        Erhält dazugehörenden Ciphertext: daraus Rückschlüsse auf andere Plaintexte oder gar Schlüssel 
+        \item \textbf{Brute-force attack} - Der Attacker probiert alle möglichen Schlüssel aus, bis er den richtigen gefunden hat (Plaintext erscheint sinnvoll)
+    \end{itemize}
+\end{KR}
+
+\begin{remark}
+    Grundsätzlich können alle Verschlüsselungsalgorithmen mittels brute-force Attacken geknackt werden. 
+    Ein wichtiges Evaluationskriterium eines Verschlüsselungsalgorithmus ist also, wie lange eine solche brute-force Attacke im Durchschnitt benötigt. Dieser Anzahl sagt man auch kryptographischer Work Factor.
+\end{remark}
+
+\begin{concept}{Model der Verschlüsselung}
+    Um eine vertrauliche Kommunikation zu erreichen, werden Nachrichten vor dem Senden verschlüsselt und nach dem Empfangen wieder entschlüsselt.
+
+    \begin{minipage}{0.4\linewidth}
+    \includegraphics[width=0.9\linewidth]{model_encrypt1.png}
+    \end{minipage}
+    \begin{minipage}{0.4\linewidth}
+    \includegraphics[width=0.9\linewidth]{modelencrypt2.png}
+    \end{minipage}
+
+    \begin{itemize}
+        \item \textcolor{darkcorn}{\textbf{Plaintext (Klartext):}} Der Plaintext ist der Text, so wie er geschrieben, respektive gelesen werden kann. Er wird mit dem Buchstaben "p" abgekürzt.
+        \item \textcolor{darkorange}{\textbf{Ciphertext (Verschlüsselter Text):}} Der Ciphertext ist der Text, welcher durch die Verschlüsselung entsteht. Er wird mit dem Buchstaben "c" abgekürzt.
+        \item \textcolor{darkturquoise}{\textbf{Encryption (Verschlüsselung):}} Die Verschlüsselung macht aus dem Plaintext den dazugehörenden Ciphertext. Dazu wird ein Schlüssel verwendet. Die Verschlüsselung kann wie folgt angegeben werden: $c=E[k](p)$. Der Verschlüsselungsalgorithmus selbst ist öffentlich bekannt und kann von allen analysiert werden, um mögliche Schwachstellen zu finden.
+        \item \textcolor{darkturquoise}{\textbf{Decryption (Entschlüsselung):}} Die Entschlüsselung macht aus einem Ciphertext den dazugehörenden Plaintext. Dazu wird ein Schlüssel verwendet. Die Entschlüsselung kann wie folgt angegeben werden p' = D[k](c'). Der Entschlüsselungsmechanismus ist öffentlich bekannt und kann von allen analysiert werden, um mögliche Schwachstellen zu finden.
+        \item \textcolor{darkpink}{\textbf{Key (Schlüssel):}} Nur mit dem richtigen Schlüssel, kann eine Nachricht richtig entschlüsselt werden. Je nach Art der Verschlüsselung wird derselbe Key für die Verschlüsselung und die Entschlüsselung verwendet (Secret Key Kryptographie) oder es werden unterschiedliche Schlüssel verwendet (Public Key Kryptographie). Damit die Verschlüsselung sicher ist, muss der Schlüssel, welcher für die Entschlüsselung gebraucht wird, geheim bleiben.
+    \end{itemize}    
+\end{concept}
+
+\begin{minipage}{0.65\linewidth}
+\begin{theorem}{Encryption}
+    Encryption is a transformation from P (plaintexts) to C (ciphertexts) under control of some key, chosen from K (key space).
+    
+    The idea is to have a whole family of transformations, where each key gives a different transformation.
+    \begin{itemize}
+        \item $c = E(k, p) = E_k(p)$
+        \item $p = D(k, c) = D_k(c)$
+    \end{itemize}
+    
+    Each transformation must be reversible. It follows that $|C|$ can not be smaller than $|P|$. Meistens: $P = C$.
+\end{theorem}
+\end{minipage}
+\begin{minipage}{0.35\linewidth}
+\includegraphics[width=0.9\linewidth]{encryption_decryption.png}
+\end{minipage}
+
+\raggedcolumns
+
+
+\subsubsection{Cryptographic Work Factor}
+
+\mult{2}
+
+\begin{definition}{Work Factor}
+    The number of times it takes to come upon the correct key is called (cryptographic) work factor.
+    \begin{itemize}
+        \item Work factor (WF) = average number of keys to try
+        \item Work factor is usually given in bits: $\log_2(n)$, $n = key\ space\ size$
+    \end{itemize}
+\end{definition}
+
+
+\begin{concept}{Entropy of Cryptographic Keys}\\
+    Cryptographic keys are typically created with random generators, so they can be considered as elements of a random variable.
+    
+    What's the entropy of a key with 128-bit?
+    \begin{itemize}
+        \item Independent with equal probability: $128 \cdot 1 = 128$ bits
+        \item Dependent with inequal probability: $p(0) = 0.25, p(1) = 0.75 \rightarrow 128 \cdot 0.81 \approx 104$ bits
+    \end{itemize}
+\end{concept}
+
+\begin{formula}{Entropy}
+    Entropy is maximal if all outcomes are equally likely
+    $$H = \sum_{i=1}^{n} p(i) \cdot \log_2 \left(\frac{1}{p(i)}\right)$$
+    
+    $$H_{binary} = \sum_{i=1}^{n} \frac{1}{n} \log_2(n) = \log_2(n)$$
+\end{formula}
+
+
+\begin{theorem}{Relation between entropy and work factor}\\
+    Work Factor $\approx$ entropy, key size = max. entropy $\approx$ max. work factor
+\end{theorem}
+
+\begin{definition}{Computationally secure}
+    Work factor $\approx$ key entropy
+\end{definition}
+
+
+\multend
+
+\begin{definition}{Information-theoretically secure}
+    Intercepting a ciphertext tells you nothing about the plain
+\end{definition}
+
+
+\subsubsection{Secret Key Cryptography}
+
+\mult{2}
+
+\begin{theorem}{Perfect Secrecy}
+    A cryptographic system has perfect secrecy if for all possible plaintexts $p$ and ciphertexts $c$:
+    $$
+        P[p|c] = P[p]
+    $$
+    This means that observing the ciphertext provides no information about the plaintext.
+\end{theorem}
+
+\begin{concept}{Limitations of One-Time Pad}
+    \begin{itemize}
+        \item Key must be as long as the message
+        \item Key must be completely random
+        \item Key must be pre-shared securely
+        \item Key can only be used once
+    \end{itemize}
+\end{concept}
+
+\begin{concept}{One-Time Pad (Vernam Cipher)}
+    The only known encryption scheme with perfect secrecy:
+    \begin{itemize}
+        \item Key must be completely random and at least as long as the message
+        \item Encryption: $c_j = p_j \oplus k_j$ for all bits $j$
+        \item Each key can only be used once
+        \item If reused: $P_1 \oplus P_2 = C_1 \oplus C_2$ (major vulnerability)
+    \end{itemize}
+    \includegraphics[width=\linewidth]{vernam_cipher.png}
+\end{concept}
+
+\multend
+
+\subsubsection{Modern Symmetric Encryption}
+
+\mult{2}
+
+\begin{concept}{Modern Cipher Properties}
+    Since perfect secrecy is impractical, modern ciphers aim for computational security:
+    \begin{itemize}
+        \item Publicly known algorithms
+        \item No known practical attacks
+        \item Work factor > $2^{128}$
+        \item Use standardized implementations only
+    \end{itemize}
+\end{concept}
+
+\begin{theorem}{Overview of AES Modes}
+AES can operate in different modes to handle messages longer than single block (16 bytes):
+\begin{itemize}
+    \item \textbf{Confidentiality-only modes}: ECB, CBC, CFB, OFB, CTR
+    \item \textbf{Authenticated encryption modes}: GCM, CCM, OCB
+    \item Each mode has different security properties and use cases
+\end{itemize}
+\end{theorem}
+
+
+
+
+\begin{concept}{Block Ciphers}
+    encrypt fixed-size blocks of data:
+    \begin{itemize}
+        \item Require padding for messages not multiple of block size
+        \item Use modes of operation for longer messages
+        \item Examples: DES (insecure), Triple-DES (legacy), AES (current standard)
+    \end{itemize}
+    \includegraphics[width=\linewidth]{block_cipher.png}
+\end{concept}
+
+
+
+
+
+\begin{definition}{Electronic Code Book (ECB) Mode} simplest mode
+
+    each block encrypted independently
+\begin{itemize}
+    \item \normalsize $C_i = E_K(P_i)$ for each plaintext block $P_i$ \small
+    \item \textcolor{red}{\textbf{Major weakness}}: Identical plaintext blocks produce identical ciphertext blocks
+    \item Patterns in plaintext remain visible in ciphertext
+    \item \textbf{Use case}: Almost never - only for single blocks or random data
+\end{itemize}
+\includegraphics[width=0.8\linewidth]{ECB.png}
+\end{definition}
+
+\begin{definition}{Cipher Block Chaining (CBC) Mode}
+Each plaintext block XORed with previous ciphertext block before encryption:
+
+\normalsize $C_i = E_K(P_i \oplus C_{i-1})$, $IV = C_0$ \small
+
+\textbf{Advantages}: Identical plaintext blocks produce different ciphertext
+
+\textbf{Disadvantages}: Sequential encryption, padding oracle attacks possible
+
+\textbf{Use case}: File encryption, legacy TLS 
+
+\includegraphics[width=0.9\linewidth]{CBC.png}
+\end{definition}
+
+
+
+\begin{definition}{Output Feedback (OFB) Mode}
+Creates keystream by repeatedly encrypting the previous output:
+
+\normalsize $O_i = E_K(O_{i-1})$, $C_i = P_i \oplus O_i$, with $O_0 = IV$ \small
+
+\textbf{Advantages}: No padding needed, self-synchronizing
+
+\textbf{Disadvantages}: Sequential operation, no integrity protection
+
+\textbf{Use case}: Stream-oriented transmission (rarely used today)
+
+\includegraphics[width=\linewidth]{OFB.png}
+\end{definition}
+
+\begin{KR}{Mode Selection Guidelines}
+
+    \textbf{Never use ECB} - except for single blocks
+
+    \textbf{Use GCM} - when you need both encryption and authentication
+
+    \textbf{Use CBC} - for compatibility with legacy systems (with HMAC for authentication)
+
+    \textbf{Use CTR} - when you need parallel processing and will add authentication separately
+
+    \textbf{Avoid OFB/CFB} - unless specifically required by legacy protocols
+
+\end{KR}
+
+
+\multend
+
+\mult{2}
+
+\begin{definition}{Counter (CTR) Mode}
+Converts block cipher into stream cipher by encrypting a counter:
+\begin{itemize}
+    \item \normalsize $C_i = P_i \oplus E_K(\text{IV} + i)$ \small
+    \item \textbf{Advantages}: Parallel encryption/decryption, no padding needed
+    \item \textbf{Disadvantages}: CNT must never repeat with same key
+    \item \textbf{Use case}: High-performance apps, disk encryption
+\end{itemize}
+\includegraphics[width=\linewidth]{CTR.png}
+\end{definition}
+
+
+
+\begin{definition}{Galois/Counter Mode (GCM)}
+Authenticated encryption mode combining CTR mode with Galois field multiplication:
+\begin{itemize}
+    \item Provides both confidentiality and authenticity
+    \item \normalsize $C_i = P_i \oplus E_K(\text{IV} + i)$, plus authentication tag \small
+    \item \textbf{Advantages}: Parallel operation, built-in authentication, high performance
+    \item \textbf{Use case}: Modern TLS, IPsec, wireless protocols
+\end{itemize}
+\includegraphics[width=\linewidth]{GCM.png}
+\end{definition}
+
+\multend
+
+\mult{2}
+\begin{concept}{Stream Ciphers}
+    Stream ciphers encrypt data bit-by-bit or byte-by-byte:
+    \begin{itemize}
+        \item No need to wait for complete blocks
+        \item Generally faster than block ciphers
+        \item Most historical stream ciphers are broken (RC4, A5/1, A5/2)
+        \item ChaCha20 is the current standard for stream ciphers
+    \end{itemize}
+    
+\end{concept}
+
+\includegraphics[width=0.65\linewidth]{stream_ciphers.png}
+
+\multend
+
+
+
+
+
+
+
+
+\subsubsection{Hash Functions and Message Authentication}
+
+
+
+
+
+\begin{minipage}{0.7\linewidth}
+
+    \begin{definition}{Cryptographic Hash Function}
+    A function that takes arbitrary-length input and produces fixed-length output:
+    \begin{itemize}
+        \item \textbf{Efficient computation} - Fast to compute
+        \item \textbf{Preimage resistance} - Hard to find input for given output
+        \item \textbf{Collision resistance} - Hard to find two inputs with same output
+        \item \textbf{Pseudo-random output} - Small input changes cause large output changes
+    \end{itemize}
+\end{definition}
+
+\begin{concept}{Digital Signatures vs. MACs}
+    \begin{itemize}
+        \item \textbf{MACs}: Fast, require shared secret, provide authentication
+        \item \textbf{Digital Signatures}: Slower, use public keys, provide non-repudiation
+        \item Signatures enable verification by anyone with the public key
+        \item MACs only verifiable by parties with the shared secret
+    \end{itemize}
+\end{concept}
+\end{minipage}
+\begin{minipage}{0.3\linewidth}
+    \includegraphics[width=\linewidth]{digital_signature.png}
+\end{minipage}
+
+\mult{2}
+
+
+\begin{definition}{Message Authentication Code (MAC)}
+    Combines hash functions \& secret keys for message integrity:
+    \begin{itemize}
+        \item Detects unauthorized message modifications
+        \item Provides authentication of message origin
+        \item Requires shared secret key between sender and receiver
+        \item HMAC is the most common MAC construction
+    \end{itemize}
+    \includegraphics[width=0.8\linewidth]{MAC.png}
+\end{definition}
+
+\begin{concept}{HMAC Construction}\\
+    Hash-based Message Authentication Code:
+
+    \resizebox{\linewidth}{!}{
+    $\text{HMAC}(K, M) = H((K \oplus \text{opad}) || H((K \oplus \text{ipad}) || M))$}
+    \begin{itemize}
+        \item Uses nested hash function calls with key padding
+        \item Secure (if with cryptographic hash functions)
+        \item Resistant to length extension attacks
+    \end{itemize}
+    \includegraphics[width=0.9\linewidth]{HMAC.png}
+\end{concept}
+
+\multend
+
+
+
+
+\subsubsection{Public Key Cryptography}
+
+\begin{minipage}{0.6\linewidth}
+\begin{concept}{Key Distribution Challenge}
+    Secret key cryptography faces significant scalability issues:
+    \begin{itemize}
+        \item Keys must be exchanged securely before communication
+        \item Difficult to establish keys with unknown parties
+        \item $n$ users require $\frac{n(n-1)}{2}$ key pairs for complete connectivity
+        \item Key management complexity grows quadratically
+    \end{itemize}
+    
+\end{concept}
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+    \includegraphics[width=\linewidth]{key_distribution.png}
+\end{minipage}
+
+\subsubsection{Public Key Principles}
+
+\mult{2}
+
+\begin{definition}{Public Key Cryptography}
+    Uses mathematically related key pairs for encryption and decryption:
+    \begin{itemize}
+        \item \textbf{Public Key} - Known to everyone, \\used for encryption
+        \item \textbf{Private Key} - Known only to owner, \\used for decryption
+        \item Keys mathematically related: $D(E(M)) = M$
+        \item Private key cannot be feasibly computed from public key
+    \end{itemize}
+    \includegraphics[width=\linewidth]{public_key.png}
+\end{definition}
+
+\begin{KR}{Diffie-Hellman Protocol}
+    \paragraph{Setup}
+    Alice and Bob agree on public parameters:
+    \begin{itemize}
+        \item Large prime $p$
+        \item Generator $g$ of the multiplicative group $\mathbb{Z}_p^*$
+    \end{itemize}
+    
+    \paragraph{Key Generation}
+    \begin{itemize}
+        \item Alice chooses private $a$, computes $A = g^a \bmod p$
+        \item Bob chooses private $b$, computes $B = g^b \bmod p$
+        \item They exchange $A$ and $B$ publicly
+        \item Shared secret: $S = B^a = A^b = g^{ab} \bmod p$
+    \end{itemize}
+    \includegraphics[width=0.7\linewidth]{diffie_hellman_diagram.png}
+\end{KR}
+
+\begin{definition}{RSA Cryptosystem}
+    Based on the computational difficulty of factoring large numbers:
+    \begin{itemize}
+        \item Public Key: $(n, e)$ where $n = p \cdot q$ (product of large primes)
+        \item Private Key: $(n, d)$ where $ed \equiv 1 \pmod{\varphi(n)}$
+        \item Encryption: $c = m^e \bmod n$
+        \item Decryption: $m = c^d \bmod n$
+    \end{itemize}
+\end{definition}
+
+\multend
+
+
+
+

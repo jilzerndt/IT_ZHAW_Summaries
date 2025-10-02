@@ -1,0 +1,211 @@
+\section{Polynomial Regression}
+
+\subsection{Polynomial Models}
+
+\begin{definition}{Polynomial Regression}\\
+Polynomial regression extends linear regression to fit non-linear relationships by using polynomial terms. For example:
+\[h_\theta(x) = \theta_0 + \theta_1 x + \theta_2 x^2 + \theta_3 x^3 + ...\]
+This is accomplished by creating artificial variables $z_1 = x, z_2 = x^2, z_3 = x^3,...$ and solving as a multivariate linear regression in the transformed space.
+\end{definition}
+
+\begin{KR}{Implementing Polynomial Regression}
+\paragraph{Transform the features}
+Create new features by applying polynomial transformations to original features:
+\begin{itemize}
+    \item For univariate case: Add powers of the feature ($x^2$, $x^3$, etc.)
+    \item For multivariate case: Add powers and interaction terms ($x_1^2$, $x_1x_2$, etc.)
+\end{itemize}
+
+\paragraph{Apply linear regression}
+Use standard linear regression methods (normal equation or gradient descent) on the expanded feature set:
+\begin{itemize}
+    \item Create design matrix $X$ with transformed features
+    \item Train the model as in linear regression
+    \item Apply regularization to prevent overfitting
+\end{itemize}
+
+\paragraph{Select polynomial degree}
+Use cross-validation to determine the optimal polynomial degree:
+\begin{itemize}
+    \item Try different degrees and evaluate on validation set
+    \item Choose degree that gives the best trade-off between bias and variance
+\end{itemize}
+\end{KR}
+
+\begin{example}{Simple Polynomial Regression}
+Consider fitting a quadratic model to the following data points: (1,1), (2,4), (3,9):
+\begin{itemize}
+    \item We use the hypothesis: $h_\theta(x) = \theta_0 + \theta_1 x + \theta_2 x^2$
+    \item Create artificial features: $z_1 = x, z_2 = x^2$
+    \item Apply linear regression in the transformed space
+    \item Result: $\theta_0 = 0, \theta_1 = 0, \theta_2 = 1$
+    \item Final model: $h_\theta(x) = x^2$, which perfectly fits the data
+\end{itemize}
+\end{example}
+
+\subsection{Over- and Underfitting}
+
+\begin{definition}{Overfitting and Underfitting}
+\begin{itemize}
+    \item \textbf{Underfitting}: Model is too simple to capture the underlying pattern in the data, leading to high bias and low variance
+    \item \textbf{Overfitting}: Model fits the training data too closely, including noise, leading to low bias but high variance. The model doesn't generalize well to new data
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Bias-Variance Tradeoff}\\
+The bias-variance tradeoff is central to model selection:
+\begin{itemize}
+    \item \textbf{Bias}: Error from erroneous assumptions in the model. High bias can cause underfitting.
+    \item \textbf{Variance}: Error from sensitivity to small fluctuations in the training set. High variance can cause overfitting.
+    \item \textbf{Tradeoff}: Increasing model complexity typically reduces bias but increases variance
+\end{itemize}
+The goal is to find the sweet spot that minimizes the total error.
+\end{concept}
+
+\begin{example2}{Polynomial Degree Selection}\\
+Fitting polynomial models of different degrees to noisy data:
+\begin{itemize}
+    \item True function: $f(x) = \sin(x)$ in range $[0, 2\pi]$
+    \item Training data: 20 points with added Gaussian noise
+\end{itemize}
+\tcblower
+Results with different polynomial degrees:
+\begin{itemize}
+    \item Degree 1 (linear): High training error (5.2), high test error (5.1) - underfitting
+    \item Degree 3: Moderate training error (2.1), moderate test error (2.3) - good fit
+    \item Degree 9: Very low training error (0.3), high test error (8.7) - overfitting
+\end{itemize}
+
+The degree 3 polynomial provides the best balance between fitting the training data and generalizing to new data. The degree 9 polynomial follows the noise in the training data rather than the underlying pattern.
+\end{example2}
+
+\subsection{Regularization}
+
+\begin{concept}{Regularization}\\
+Regularization prevents overfitting by adding a penalty term to the cost function that discourages large parameter values:
+\[J(\theta) = \frac{1}{2M}[\sum_{m=1}^{M}(y^{(m)} - h_\theta(x^{(m)}))^2 + \lambda\sum_{j=1}^{n}\theta_j^2]\]
+where $\lambda$ is the regularization parameter that controls the trade-off between fitting the data and keeping the model simple.
+\end{concept}
+
+\begin{definition}{Ridge Regression}\\
+Ridge regression (also called L2 regularization) adds a penalty term proportional to the sum of squared coefficients:
+\[J(\theta) = \frac{1}{2M}[\sum_{m=1}^{M}(y^{(m)} - h_\theta(x^{(m)}))^2 + \lambda\sum_{j=1}^{n}\theta_j^2]\]
+The solution for ridge regression with the normal equation is:
+\[\theta = (X^T X + \lambda I)^{-1}X^T y\]
+where $I$ is the identity matrix (with 0 in the position corresponding to the intercept term $\theta_0$).
+\end{definition}
+
+\begin{concept}{Effect of Regularization}\\
+Regularization has several effects:
+\begin{itemize}
+    \item Shrinks coefficients toward zero (but typically not exactly to zero)
+    \item Reduces model variance
+    \item Works well when most features are useful
+    \item Helps with multicollinearity (highly correlated features)
+\end{itemize}
+The regularization parameter $\lambda$ controls the strength of regularization:
+\begin{itemize}
+    \item $\lambda = 0$: No regularization (standard linear regression)
+    \item $\lambda \to \infty$: All coefficients approach zero (except $\theta_0$ if not regularized)
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Implementing Regularized Polynomial Regression}
+\paragraph{Feature transformation}
+Create polynomial features as in standard polynomial regression
+
+\paragraph{Feature scaling}
+Scale features to have similar ranges, which is important for regularization to work effectively:
+\begin{itemize}
+    \item Use standardization: $$x' = \frac{x - \mu}{\sigma}$$ 
+    where $\mu$ is the mean and $\sigma$ is the standard deviation of the feature
+    \item Or min-max scaling: $$x' = \frac{x - \min(x)}{\max(x) - \min(x)}$$
+    where $\min(x)$ and $\max(x)$ are the minimum and maximum values of the feature
+\end{itemize}
+
+\paragraph{Apply ridge regression}
+Incorporate regularization into the cost function:
+\begin{itemize}
+    \item For normal equation: $\theta = (X^T X + \lambda I)^{-1}X^T y$
+    \item For gradient descent: $\theta_j = \theta_j(1-\alpha\frac{\lambda}{m}) - \alpha\frac{1}{m}\sum_{i=1}^{m}(h_\theta(x^{(i)}) - y^{(i)})x^{(i)}_j$ for $j \geq 1$
+\end{itemize}
+
+\paragraph{Select hyperparameters}
+Use cross-validation to select both polynomial degree and regularization parameter:
+\begin{itemize}
+    \item Try combinations of degrees and $\lambda$ values
+    \item Choose combination with best validation performance
+\end{itemize}
+\end{KR}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Hyperparameter Tuning}
+
+\begin{concept}{Hyperparameter Tuning}\\
+Hyperparameters like the regularization parameter $\lambda$ and polynomial degree must be tuned. Approaches include:
+\begin{itemize}
+    \item \textbf{Grid Search}: Try all combinations of hyperparameter values
+    \item \textbf{Random Search}: Try random combinations from parameter distributions
+    \item \textbf{Cross-validation}: Use validation set to evaluate different hyperparameter values
+\end{itemize}
+\end{concept}
+
+\begin{KR}{Cross-Validation for Hyperparameter Tuning}
+\paragraph{Split the data}
+Divide your data into three parts:
+\begin{itemize}
+    \item Training set (e.g., 60\%): Used to fit models
+    \item Validation set (e.g., 20\%): Used to select hyperparameters
+    \item Test set (e.g., 20\%): Used for final evaluation
+\end{itemize}
+
+\paragraph{Define parameter grid}
+Create a grid of hyperparameter values to explore:
+\begin{itemize}
+    \item Polynomial degrees: e.g., [1, 2, 3, 4, 5]
+    \item Regularization parameters: e.g., [0.001, 0.01, 0.1, 1, 10, 100]
+\end{itemize}
+
+\paragraph{Train and evaluate models}
+For each combination of hyperparameters:
+\begin{itemize}
+    \item Train model on training set
+    \item Evaluate on validation set
+    \item Record validation error
+\end{itemize}
+
+\paragraph{Select best hyperparameters}
+Choose the combination with lowest validation error
+
+\paragraph{Final evaluation}
+Train a model with the selected hyperparameters on combined training+validation data, and evaluate on test set
+\end{KR}
+
+\begin{example}{Cross-Validation Example}
+Consider tuning a polynomial regression model:
+\begin{itemize}
+    \item Dataset: 1000 samples split into 600 training, 200 validation, 200 test
+    \item Grid: Degrees [1, 2, 3, 4] and $\lambda$ values [0.1, 1, 10]
+    \item Results:
+    \begin{itemize}
+        \item Degree=1, $\lambda$=0.1: Validation MSE = 5.2
+        \item Degree=2, $\lambda$=1: Validation MSE = 2.1
+        \item Degree=3, $\lambda$=10: Validation MSE = 2.3
+        \item Degree=4, $\lambda$=1: Validation MSE = 2.4
+    \end{itemize}
+    \item Best combination: Degree=2, $\lambda$=1
+    \item Final test MSE = 2.0
+\end{itemize}
+\end{example}
+
+\begin{concept}{Regularization Path}\\
+The regularization path shows how model coefficients change as the regularization parameter varies:
+\begin{itemize}
+    \item As $\lambda$ increases, coefficients generally shrink toward zero
+    \item Some coefficients may shrink faster than others
+    \item The path helps visualize the relative importance of features
+    \item It can help identify a good range for $\lambda$
+\end{itemize}
+\end{concept}
