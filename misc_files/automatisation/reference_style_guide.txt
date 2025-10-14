@@ -1,0 +1,560 @@
+# STYLE GUIDE REFERENCE
+
+Quick reference for layout_and_colours.sty conventions.
+
+Example files using these conventions are in the directory 'misc_files/automatisation/example_files/'.
+Fully analyze these examples to see how the conventions are applied in practice, before starting your own files!
+
+---
+
+## ENVIRONMENT REFERENCE
+
+### CONTENT BLOCKS (use appropriate tcolorbox environment):
+
+#### Core Content Blocks
+
+CORE CONTENT:
+- definition{Title}\\ → Formal definitions of terms/concepts
+- concept{Title}\\ → Important overarching concepts
+- theorem{Title}\\ → Mathematical theorems or proven statements
+- corollary{Title}\\ → Consequences/extensions of theorems
+- lemma{Title}\\ → Supporting proven facts
+
+**definition{Title}\\**
+- Formal term definitions
+- Use for: key vocabulary, technical terms
+- Example: "Binary Search Tree"
+
+**concept{Title}\\**
+- Important overarching concepts
+- Use for: particularly significant ideas
+- Example: "Object-Oriented Programming"
+
+**theorem{Title}\\**
+- Mathematical theorems, proven statements
+- Use for: formal mathematical results
+- Example: "Pythagorean Theorem"
+
+**corollary{Title}\\**
+- Consequences/extensions of theorems
+- Use for: follow-up results
+- Example: "Properties of Even Numbers"
+
+**lemma{Title}\\**
+- Supporting proven facts
+- Use for: helper theorems
+- Example: "Triangle Inequality"
+
+#### Practical Content Blocks
+
+PRACTICAL CONTENT:
+- KR{Title}\\ → Step-by-step procedures, algorithms ("Kochrezept" = recipe)
+- formula{Title}\\ → Formula overviews and assembly instructions
+- code{Title}\\ → Code snippets explaining concepts or commands
+
+**KR{Title}\\**
+- Step-by-step procedures ("Kochrezept")
+- Use for: HOW to do something
+- Example: "How to Normalize to 3NF"
+
+**formula{Title}\\**
+- Formula overviews and assembly
+- Use for: collections of related formulas
+- Example: "Integration Rules"
+
+**code{Title}\\**
+- Code explaining concepts
+- Use for: conceptual code snippets
+- Example: "Singleton Pattern Structure"
+
+#### Supporting Content Blocks
+
+SUPPORTING CONTENT:
+- example → Simple examples (no title needed)
+- example2{Title}\\ → Complex examples with title
+- examplecode{Title}\\ → Code-focused examples
+- remark → Additional notes, warnings, tips (no title needed)
+- highlight{Title}\\ → Important overview blocks
+
+**example**
+- Simple examples (no title needed)
+- Use for: brief illustrations
+
+**example2{Title}\\**
+- Complex examples with title
+- Use for: worked problems with solutions
+- Example: "Binary Search Implementation"
+
+**examplecode{Title}\\**
+- Code-focused examples
+- Use for: complete code examples
+- Example: "REST API Endpoint"
+
+**remark**
+- Additional notes, warnings, tips (no title)
+- Use for: side notes, important reminders
+
+**highlight{Title}\\**
+- Important overview blocks
+- Use for: summary tables, formula collections
+- Example: "Complexity Comparison"
+
+---
+
+## FORMATTING RULES
+
+### Line Breaks (\\)
+- Add \\ after environment titles
+- EXCEPTION: NO \\ before \begin{itemize} or \begin{enumerate}
+- Add \\ before AND after \includegraphics
+
+**Add \\ after environment titles:**
+```latex
+✅ CORRECT:
+\begin{definition}{Title}\\
+Content here
+
+❌ WRONG:
+\begin{definition}{Title}
+Content here
+```
+
+**Exception - NO \\ before lists:**
+```latex
+✅ CORRECT:
+\begin{definition}{Title}
+\begin{itemize}
+    \item List item
+\end{itemize}
+
+❌ WRONG:
+\begin{definition}{Title}\\
+\begin{itemize}
+    \item List item
+\end{itemize}
+```
+
+**Add \\ before AND after images:**
+```latex
+✅ CORRECT:
+\\
+% \includegraphics[width=\linewidth]{image.png}
+\\
+
+❌ WRONG:
+% \includegraphics[width=\linewidth]{image.png}
+```
+
+### Image Handling (CRITICAL)
+- For EVERY image/diagram/graphic in source material:
+% TODO: Add image from [Exact_Source_File.pdf, Page/Slide X]
+% Description: [Specific description of what the image shows]
+% Priority: CRITICAL/IMPORTANT/SUPPLEMENTARY
+% Suggested filename: lectureXX_topic_type.png
+\\
+% \includegraphics[width=\linewidth]{lectureXX_topic_type.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+PRIORITY LEVELS:
+- CRITICAL: Essential for understanding (key diagrams, crucial flowcharts)
+- IMPORTANT: Significantly enhances understanding (helpful visualizations)
+- SUPPLEMENTARY: Nice-to-have but not necessary (decorative elements)
+
+FILENAME PATTERN: lectureXX_topic_type.png or scriptXX_topic_type.png
+Examples: lecture03_normalization_diagram.png, lecture05_btree_structure.png
+
+IMPORTANT: Keep \includegraphics line COMMENTED OUT so LaTeX can compile!
+
+**Always comment out \includegraphics:**
+```latex
+✅ CORRECT:
+% TODO: Add image from Lecture_03.pdf, Slide 15
+% Description: Normalization diagram
+% Priority: CRITICAL
+% Suggested filename: 03_norm_diagram.png
+\\
+% \includegraphics[width=\linewidth]{03_norm_diagram.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+❌ WRONG (prevents compilation):
+\\
+\includegraphics[width=\linewidth]{03_norm_diagram.png}
+\\
+```
+
+### Code Blocks
+- more details in file 'misc_files/automatisation/specialty_programming.txt'
+- ALL code must use lstlisting inside a tcolorbox
+- ALWAYS specify: [language=Python/Java/JavaScript/C/CPP/SQL/HTML/CSS/bash, style=base]
+- In lstlisting blocks: use ae/oe/ue NOT ä/ö/ü
+- Keep all code content in English only
+- Preserve proper indentation
+
+Example:
+\begin{examplecode}{Function Example}\\
+\begin{lstlisting}[language=Python, style=base]
+def calculate_sum(a, b):
+    return a + b  # ae, oe, ue in comments!
+\end{lstlisting}
+
+\textbf{Complexity:} O(1)
+\textbf{Use when:} [Description]
+\end{examplecode}
+
+**Always use lstlisting with parameters:**
+```latex
+✅ CORRECT:
+\begin{examplecode}{Function}\\
+\begin{lstlisting}[language=Python, style=base]
+def hello():
+    return "world"
+\end{lstlisting}
+\end{examplecode}
+
+❌ WRONG (missing parameters):
+\begin{lstlisting}
+def hello():
+    return "world"
+\end{lstlisting}
+```
+
+**Character encoding in lstlisting:**
+```latex
+✅ CORRECT:
+print("Hallo Welt")  # ae, oe, ue
+
+❌ WRONG:
+print("Hallö Welt")  # ö not allowed!
+```
+
+### Special Characters
+
+**Must be escaped:**
+```latex
+\$ → $
+\& → &
+\% → %
+\_ → _
+\{ → {
+\} → }
+\textbackslash → \
+\textasciitilde → ~
+\textasciicircum → ^
+```
+
+### Math Notation
+- more details in file 'misc_files/automatisation/specialty_math.txt'
+- Inline math: $x^2 + y^2 = z^2$
+- Display math: $\int_a^b f(x)\,dx = F(b) - F(a)$
+- Number sets: \N (naturals), \Z (integers), \Q (rationals), \R (reals), \C (complex)
+- Operators: \sin, \cos, \log, \lim, \sum, \int, \prod (upright, not italic)
+- Important equations: \begin{iequation}...\end{iequation}
+
+**Inline math:**
+```latex
+The equation $x^2 + y^2 = z^2$ shows...
+```
+
+**Display math:**
+```latex
+$$\int_a^b f(x)\,dx = F(b) - F(a)$$
+```
+
+**Number sets:**
+```latex
+\N → ℕ (naturals)
+\Z → ℤ (integers)
+\Q → ℚ (rationals)
+\R → ℝ (reals)
+\C → ℂ (complex)
+```
+
+**Operators (upright, not italic):**
+```latex
+\sin, \cos, \tan, \log, \ln, \exp
+\lim_{x \to a}, \sum_{i=1}^{n}, \int_a^b
+```
+
+**Important equations:**
+```latex
+\begin{iequation}
+E = mc^2
+\end{iequation}
+```
+
+### Multi-Column Layout
+
+**Group related short blocks side by side:**
+```latex
+\mult{2}
+\begin{definition}{Concept A}\\
+Short definition
+\end{definition}
+
+\begin{definition}{Concept B}\\
+Short definition
+\end{definition}
+\multend
+```
+
+**Keep long content single-column:**
+```latex
+Long examples, KRs, detailed explanations
+should NOT be in \mult{2}...\multend
+```
+Keep long examples, KRs, and detailed content in single-column!
+
+---
+
+## FILE ORGANIZATION
+
+### Naming Convention
+
+```
+XX_descriptive_topic_name.tex
+
+Examples:
+00_intro.tex
+00_table_of_contents.tex
+01_introduction.tex
+02_basic_concepts.tex
+03_database_normalization.tex
+```
+
+### File Structure
+
+**Each .tex file:**
+```latex
+\section{Topic Name}
+
+\subsection{Subtopic}
+
+[Content blocks]
+
+% ===== IMAGE SUMMARY =====
+% [List of images needed]
+% =====================
+```
+
+**NO in chapter files:**
+- \documentclass
+- \usepackage
+- \begin{document}
+- \end{document}
+
+**Main.tex handles all that!**
+
+---
+
+## CONTENT ORGANIZATION
+
+### Hierarchy
+
+```
+\section{Main Topic (Chapter)}
+  \subsection{Major Subtopic}
+    \subsubsection{Specific Concept}
+      \paragraph{Detailed Point}
+```
+
+**Avoid over-nesting!** Use paragraphs sparingly.
+
+### Logical Flow
+
+```
+1. Definition/Concept
+2. Theorem/Rule (if applicable)
+3. KR (how to apply)
+4. Example (concrete application)
+```
+
+### Grouping
+
+**Related concepts together:**
+```latex
+\mult{2}
+[Definition A]
+[Definition B]
+\multend
+
+[KR comparing A and B]
+
+[Example using both]
+```
+
+---
+
+## COMMON PATTERNS
+
+### Definition with List
+
+```latex
+\begin{definition}{Title}
+\begin{itemize}
+    \item Property 1
+    \item Property 2
+\end{itemize}
+\end{definition}
+```
+
+### KR Structure
+
+```latex
+\begin{KR}{How to [Task]}\\
+\textbf{Given:} [Initial conditions]
+\textbf{Goal:} [What to achieve]
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item [Step 1]
+    \item [Step 2: If X then Y, else Z]
+    \item [Step 3]
+\end{enumerate}
+
+\textbf{Verification:} [How to check]
+
+\textbf{Common mistakes:}
+\begin{itemize}
+    \item [Mistake 1 + avoidance]
+\end{itemize}
+\end{KR}
+```
+
+### Example with Solution
+
+```latex
+\begin{example2}{Problem Type}\\
+\textbf{Given:} [Problem data]
+\textbf{Find:} [What to solve for]
+
+\tcblower
+
+\textbf{Solution:}
+\begin{enumerate}
+    \item [Step 1 with reasoning]
+    \item [Step 2 with calculation]
+\end{enumerate}
+
+\textbf{Answer:} [Final result]
+
+\important{Key insight:} [Transferable technique]
+\end{example2}
+```
+
+### Code Example
+
+```latex
+\begin{examplecode}{Algorithm Name}\\
+\begin{lstlisting}[language=Python, style=base]
+def algorithm(input_data):
+    # Step 1: Initialize
+    result = []
+    
+    # Step 2: Process
+    for item in input_data:
+        result.append(process(item))
+    
+    # Step 3: Return
+    return result
+\end{lstlisting}
+
+\textbf{Complexity:} $O(n)$ time, $O(n)$ space
+
+\textbf{Use when:} [Scenario description]
+\end{examplecode}
+```
+
+### WHEN TO SPLIT FILES
+
+#### Split when:
+- Content exceeds ~800-1000 lines of LaTeX code (or Claude isn't able to handle in one file)
+- Resource File covers multiple distinct major topics
+- Natural break points exist (e.g., "Part 1: Theory" / "Part 2: Applications")
+- File becomes difficult to navigate
+
+#### Keep together when:
+- Content < ~800-1000 lines
+- Single cohesive topic
+- Topics tightly interconnected
+
+#### Example:
+```
+Lecture 02 (45 pages, covers: Arrays, Lists, Trees)
+→ Split into:
+   - lecture02A.tex: Arrays and Lists
+   - lecture02B.tex: Trees and Tree Operations
+```
+---
+
+## VALIDATION CHECKLIST
+
+Before considering a file complete:
+
+**Syntax:**
+- [ ] All tcolorbox environments properly opened and closed
+- [ ] All \begin{} have \end{}
+- [ ] All \mult{} have \multend
+- [ ] No unclosed braces/brackets
+
+**Style:**
+- [ ] \\ after content block titles (EXCEPT before itemize/enumerate)
+- [ ] All lstlisting blocks have [language=X, style=base]
+- [ ] Every image has complete TODO comment
+- [ ] ALL \includegraphics lines are COMMENTED OUT (%)
+- [ ] No ä/ö/ü in lstlisting blocks (use ae/oe/ue)
+- [ ] No special characters in lstlisting blocks!!
+- [ ] Math symbols wrapped in $ $ or $ $
+- [ ] Special characters properly escaped
+
+**Content:**
+- [ ] Definitions for key terms
+- [ ] KRs for procedures
+- [ ] Examples for complex topics
+- [ ] Images documented in TODOs
+
+**Structure:**
+- [ ] Long content appropriately split into multiple files
+- [ ] Logical section hierarchy
+- [ ] Related concepts grouped
+- [ ] Flow: theory → procedure → example
+
+---
+
+## ANTI-PATTERNS (Avoid These!)
+
+❌ Using definition{} for procedures → Use KR{}
+
+❌ Multiple \\ after title → Use only one
+
+❌ Uncommented \includegraphics → Comment out
+
+❌ Empty or near-empty blocks → Merge or remove
+
+❌ Deeply nested subsections → Simplify hierarchy
+
+❌ Missing language in lstlisting → Always specify
+
+❌ Umlauts in code blocks → Use ae/oe/ue
+
+❌ Multiple main topics in one file → Split files
+
+---
+
+## QUICK FIXES
+
+**File won't compile:**
+1. Check all \includegraphics commented
+2. Count \begin{} vs \end{}
+3. Verify \mult{} has \multend
+
+**Formatting looks wrong:**
+1. Check \\ after titles
+2. Verify environment types correct
+3. Review multi-column usage
+
+**Content incomplete:**
+1. Check all procedures have KRs
+2. Verify examples for major topics
+3. Ensure image TODOs complete
