@@ -6,17 +6,29 @@ Step-by-step process from course materials to exam-ready PDF.
 
 ## PREPARATION (One-time per course)
 
-### 1. Setup Claude Project
-- Create new Project for course
-- Add relevant Files to Project Knowledge
+### 1. Analyze Context Files and Prompts
+- Fully Analyze Files to Project Knowledge (listed in the file 'index_all_files.txt')
 
-### 2. Gather Materials
-- All PDFs (slides, scripts, textbooks)
-- Exercise sheets + solutions
-- Previous exams
-- Syllabus and course outline
+### 2. Course Materials
+- Quickly analyze provided course materials: lectures, exercises, old exams, quizzes, etc. 
 
-### 3. Create main.tex
+---
+
+## PHASE 0: FOUNDATION FILES
+
+### Create 00_intro.tex
+- Use PROMPT: Phase 0 Part A
+- Include: course materials, course info, exam details, grading, assignments
+
+### Create 00_table_of_contents.tex
+- Use PROMPT: Phase 0 Part B
+- Include: all chapters, structure, planned KRs
+
+### Update 00_table_of_contents.tex
+- Use PROMPT: Phase 0 Part B 
+- Rerun after adding new course materials to update contents of 00_intro.tex
+
+### Create main.tex
 ```latex
 \documentclass[a4paper, fontsize = 8pt, landscape]{scrartcl}
 \usepackage{path/to/layout_and_colours}
@@ -55,64 +67,55 @@ Step-by-step process from course materials to exam-ready PDF.
 
 ---
 
-## PHASE 0: FOUNDATION FILES
-
-**Time: 45-90 minutes**
-
-### Create 00_intro.tex
-- Use PROMPT: Phase 0 Part A
-- Include: course info, exam details, grading, assignments
-- Time: 15-30 min
-
-### Create 00_table_of_contents.tex
-- Use PROMPT: Phase 0 Part B
-- Include: all chapters, structure, planned KRs
-- Time: 30-60 min
-
-### Add to main.tex
-```latex
-\input{00_intro.tex}
-\raggedcolumns
-\pagebreak
-\input{00_table_of_contents.tex}
-\raggedcolumns
-\pagebreak
-```
-
----
-
 ## PHASE 1: EXTRACTION
 
-**Time: 15-60 min per chapter**
+1. Verify relevant course materials available (listed in 00_intro.tex under "Course Materials")
+   - Identify if it is THEORETICAL (Phase 1A) or EXERCISE/EXAM (Phase 1B)
+   - Create new file '00_extraction_checklist.tex' with a list of relevant course materials for each phase (1A and 1B) that can be used to track progress
+   - "Relevant" means it contains content that should be included in the final summary (e.g., lectures, scripts, exercises, old exams) but not administrative documents or unrelated materials
+   - If file already exists, and we are re-running Phase 1, check if all relevant files listed in 00_intro.tex under "Course Materials" are already extracted. If not, add to checklist.
 
-### For each chapter:
+2. **Use PROMPT: Phase 1A**
+   - Go through each file in the checklist for Phase 1A
+   - Input: [SOURCE_FILE.pdf]
+   - Extract content to LaTeX following the instrructions in the prompt
 
-1. **Use PROMPT: Phase 1**
-   - Attach source PDF
-   - Specify topic clearly
-   - Note if multiple topics (will create multiple files)
-
-2. **Output: XX_topic_name.tex**
+3. **Output: XX_topic_name.tex**
    - Complete content
    - All images in TODO comments (commented out)
-   - One file per major section
+   - One LateX file per course material file (split long files as needed)
 
-3. **Quick validation:**
+4. **Quick validation:**
    - Proper \section{} structure?
    - lstlisting formatted correctly?
    - Images commented out?
 
-4. **Optional: Batch extract images**
-   - Review image summary at end of file
-   - Extract all at once
-   - Uncomment \includegraphics as you add each
-   - OR wait until later
+5. Mark as DONE in checklist
+
+6. Repeat steps 2-5 for all files in Phase 1A checklist
+
+7. **Use PROMPT: Phase 1B**
+   - Go through each file in the checklist for Phase 1B
+   - Input: [SOURCE_FILE.pdf]
+   - Extract content to LaTeX following the instrructions in the prompt
+
+8. **Output: XX_exercises.tex, XX_old_exams.tex, etc**
+   - Complete content
+   - All images in TODO comments (commented out)
+   - One LateX file per course material file (split long files as needed)
+
+9. **Quick validation:**
+   - Proper \section{} structure?
+   - lstlisting formatted correctly?
+   - Images commented out?
+
+10. Mark as DONE in checklist
+
+11. Repeat steps 7-10 for all files in Phase 1B checklist
 
 ---
 
-## PHASE 1.5: STRUCTURE PLANNING (NEW!)
-
-**Time: 30-60 min analysis + 15-30 min your review**
+## PHASE 1.5: STRUCTURE PLANNING
 
 ### Purpose:
 Analyze all Phase 1 content and propose optimal summary structure BEFORE starting Phase 2 summarization.
@@ -120,17 +123,15 @@ Analyze all Phase 1 content and propose optimal summary structure BEFORE startin
 ### For ALL extracted chapters:
 
 1. **Use PROMPT: Phase 1.5**
-   - Input: All Phase 1 .tex files
+   - Input: All in Phase 1A and Phase 1B generated .tex files
    - Specify exam format and priorities
    - Request structure analysis
 
 2. **Output: Structure Proposal**
    - Proposed chapter reorganization
    - KR inventory (complete list)
-   - Example distribution plan
    - Content reduction analysis
    - Dependency mapping
-   - Exam alignment matrix
 
 3. **YOUR REVIEW (Critical!):**
    - Does chapter structure make sense?
@@ -146,41 +147,24 @@ Analyze all Phase 1 content and propose optimal summary structure BEFORE startin
 
 5. **Claude adjusts if needed**
 
-6. **Final approval → proceed to Phase 2**
+6. **Final approval**
 
-### Why This Matters:
+7. **Create '00_summary_structure.tex'** with final chapter list and titles
 
-- **Catch structural issues early** (before hours of Phase 2 work)
-- **You control final organization** (verify it makes sense)
-- **Clearer Phase 2 execution** (following approved roadmap)
-- **Time savings** (1-2 hrs planning saves 2-3 hrs revision)
-
-### When to Use:
-
-✅ **Always use for:**
-- First course with this system
-- Complex multi-topic courses
-- Uncertain about optimal structure
-
-⚠️ **Can skip for:**
-- Very simple courses (< 5 chapters)
-- Obvious linear structure
-- Strong existing outline
+8. **proceed to Phase 2**
 
 ---
 
 ## PHASE 2: SUMMARIZATION
 
-**Time: 30-90 min per chapter**
-
 ### For each chapter (using approved Phase 1.5 structure):
 
 1. **Use PROMPT: Phase 2**
-   - Input: complete file from Phase 1
+   - Input: All in Phase 1A and Phase 1B generated .tex files, '00_summary_structure.tex'
    - Specify exam format
    - Note high-priority topics
 
-2. **Output: Condensed file (30-50% shorter)**
+2. **Output: Condensed file (As short and concise as possible without losing relevant information)**
    - Only exam-relevant content
    - KRs for all procedures
    - 2-3 examples per topic
@@ -192,16 +176,9 @@ Analyze all Phase 1 content and propose optimal summary structure BEFORE startin
    - Image TODOs still intact?
    - Structure reorganized logically (not just lecture order)?
 
-4. **Note reorganizations made:**
-   - Which topics were grouped together?
-   - What order changes improve understanding?
-   - Does structure facilitate exam preparation?
-
 ---
 
 ## PHASE 3: VALIDATION
-
-**Time: 10-30 min per chapter**
 
 ### For each chapter:
 
@@ -243,30 +220,6 @@ Analyze all Phase 1 content and propose optimal summary structure BEFORE startin
 
 ---
 
-## IMAGE EXTRACTION
-
-**Can be done at any point**
-
-### Option A: After Phase 1 (each chapter)
-- Extract images immediately
-- Uncomment \includegraphics lines
-- File compiles with images
-
-### Option B: Batch at end (all chapters)
-- Keep all images commented throughout
-- Extract all images at once using summaries
-- Uncomment all at final stage
-
-### Process:
-1. Review image summary in each .tex file
-2. Open source PDF
-3. Screenshot/export at exact location
-4. Save with suggested filename
-5. Place in /content/images/
-6. Uncomment \includegraphics line (remove %)
-
----
-
 ## FINAL COMPILATION
 
 ### Full build:
@@ -284,80 +237,6 @@ Analyze all Phase 1 content and propose optimal summary structure BEFORE startin
 - Check error line number
 - Verify environment nesting
 - Test compile problem section alone
-
----
-
-## QUALITY CHECKLIST
-
-Before considering complete:
-
-**Content:**
-- [ ] All learning objectives covered
-- [ ] KR for every procedure
-- [ ] 2+ examples per major topic
-- [ ] Examples match exam difficulty
-- [ ] No untested content
-
-**LaTeX:**
-- [ ] Compiles without errors
-- [ ] No style violations
-- [ ] Math notation correct
-- [ ] Code blocks formatted
-- [ ] Images display (or commented)
-
-**Exam Readiness:**
-- [ ] Can solve typical problems with this summary
-- [ ] Quick reference sections present
-- [ ] Easy navigation (<30 sec to any topic)
-- [ ] Appropriate length for exam constraints
-
----
-
-## TIME ESTIMATES
-
-**Per 10-chapter course:**
-
-| Phase | Time |
-|-------|------|
-| Setup + Phase 0 | 2-3 hrs |
-| Phase 1 (10 chapters) | 5-10 hrs |
-| Phase 2 (10 chapters) | 8-15 hrs |
-| Phase 3 (10 chapters) | 3-5 hrs |
-| Image extraction | 2-4 hrs |
-| Integration + compile | 1-2 hrs |
-| **TOTAL** | **21-39 hrs** |
-
-**Old method: 110-160 hrs**
-**Savings: 70-85%**
-
----
-
-## BATCH PROCESSING STRATEGY
-
-### Week 1: Foundation + Extraction
-- Day 1-2: Setup, Phase 0
-- Day 3-7: Phase 1 all chapters (1-2/day)
-
-### Week 2: Summarization
-- Day 1-7: Phase 2 all chapters (1-2/day)
-
-### Week 3: Validation + Completion
-- Day 1-3: Phase 3 all chapters
-- Day 4-5: Image extraction
-- Day 6-7: Final compilation, polish
-
----
-
-## PARALLEL PROCESSING
-
-**For faster wall-clock time:**
-
-Open multiple Claude conversations:
-- Conversation 1: Chapters 1-3 (Phase 1)
-- Conversation 2: Chapters 4-6 (Phase 1)
-- Conversation 3: Chapters 1-2 (Phase 2, after extraction)
-
-**Caution:** Don't mix phases in same conversation
 
 ---
 
@@ -422,68 +301,3 @@ Review [file] for style consistency: environment usage, spacing,
 
 ---
 
-## SUCCESS METRICS
-
-Track these to measure improvement:
-
-- **Time per chapter:** Aim 3.5-5 hrs
-- **First-compile success:** Aim >80%
-- **Revisions needed:** Aim <3 per chapter
-- **Exam preparation confidence:** Subjective but important
-
----
-
-## AFTER THE EXAM
-
-### Archive:
-```
-/completed_summaries/
-  /2024-FS-DatabaseSystems/
-    main.tex
-    main.pdf
-    /content/
-    /images/
-    README.md (lessons learned)
-```
-
-### Document:
-```
-# Post-Exam Review
-
-What worked:
-- [Effective techniques]
-- [Good prompt choices]
-
-Improve next time:
-- [Areas for improvement]
-- [Topics needing more examples]
-
-Exam performance:
-- Score: [X/100]
-- Strong topics: [list]
-- Weak topics: [list]
-```
-
-### Reuse for future:
-- Keep as template
-- Extract reusable KRs/examples
-- Note course-specific quirks
-
----
-
-## QUICK START CHECKLIST
-
-- [ ] Create Claude Project
-- [ ] Add style sheet + examples
-- [ ] Create main.tex
-- [ ] Run Phase 0 (foundation)
-- [ ] For each chapter:
-  - [ ] Phase 1 (extract)
-  - [ ] Phase 2 (summarize)
-  - [ ] Phase 3 (validate)
-- [ ] Extract images
-- [ ] Compile final PDF
-- [ ] Verify exam readiness
-
-**Time commitment: 21-39 hours for 10-chapter course**
-**vs 110-160 hours with old method**
