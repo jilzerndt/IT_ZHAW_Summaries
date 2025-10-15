@@ -1,0 +1,332 @@
+\section{Understanding Memory and I/O - Part B: Digital I/O Processing}
+
+% SOURCE: MC1_T01_understanding_memory_and_IO.pdf (Slides 38-end)
+% SOURCE: edge_debouncing.pdf (supplementary material)
+% Week 1 (19.09) - Lecture on I/O processing
+% This file covers: Processing of digital I/O (Hardware aspects, software techniques)
+
+\subsection{Hardware Aspects}
+
+\begin{concept}{GPIO Architecture on STM32F4xx}\\
+General Purpose Input/Output (GPIO) pins on the STM32F4xx microcontroller have configurable hardware features including Schmitt triggers, pull-up/pull-down resistors, and edge detection capabilities.
+\end{concept}
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 40]
+% Description: STM32 GPIO internal structure diagram showing input buffer, Schmitt trigger, and output buffer
+% \includegraphics[width=\linewidth]{lecture01_gpio_architecture.png}
+
+\begin{definition}{GPIO Voltage Levels}\\
+\textbf{VDD Configuration:}
+\begin{itemize}
+    \item User-defined voltage level through VDD pin
+    \item Range: 1.2V to 3.6V
+    \item CMOS voltage levels
+    \item Most GPIOs are 5V tolerant (check datasheet for individual pins)
+\end{itemize}
+
+\textbf{Voltage compatibility:}
+\begin{itemize}
+    \item Output stage VOL/VOH must match input stage VIL/VIH of external device
+    \item STM32 and external device must have compatible logic levels
+    \item Some interfaces require external level shifters or drivers (e.g., RS-232)
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 41]
+% Description: GPIO voltage level diagram showing VDD, VSS configuration
+% \includegraphics[width=0.8\linewidth]{lecture01_gpio_voltage_levels.png}
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 42]
+% Description: Logic level compatibility diagram between STM32 and external device
+% \includegraphics[width=0.8\linewidth]{lecture01_logic_levels.png}
+
+\begin{definition}{Schmitt Trigger}\\
+A Schmitt trigger is a comparator circuit with hysteresis that provides noise immunity on digital inputs. It has two threshold voltages:
+\begin{itemize}
+    \item Upper threshold for rising edge detection
+    \item Lower threshold for falling edge detection
+    \item Typical hysteresis: ~200mV on STM32F4xx
+\end{itemize}
+
+This prevents multiple transitions when the input signal slowly crosses the threshold or has noise.
+\end{definition}
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 43]
+% Description: Schmitt trigger characteristic showing hysteresis curve
+% \includegraphics[width=0.8\linewidth]{lecture01_schmitt_trigger.png}
+
+\begin{lemma}{Hardware Best Practices:}
+\begin{enumerate}
+    \item \textbf{Avoid floating inputs} - Noise causes floating inputs to change randomly. Connect unused inputs to VDD or VSS through pull-up/pull-down resistors.
+    \item \textbf{Avoid oscilloscope probes on high-impedance nodes} - Probe capacitance can cause unwanted behavior. Use buffered test points for measurement.
+\end{enumerate}
+\end{lemma}
+
+\subsection{Software Techniques for I/O}
+
+\begin{concept}{Edge Detection Challenge}\\
+Detecting signal transitions (edges) on GPIO inputs is a fundamental task in embedded systems. However, mechanical switches introduce bounce, 
+which creates multiple false edges during a single button press. Software must handle both edge detection and debouncing.
+\end{concept}
+
+\subsubsection{Edge Detection by Polling}
+
+\begin{KR}{Edge Detection by Polling}\\
+Edge detection can be implemented by comparing current and previous button states in a polling loop.
+
+\textbf{Algorithm:}
+\begin{enumerate}
+    \item Read current GPIO state
+    \item Compare with previous state
+    \item Detect transitions:
+    \begin{itemize}
+        \item Rising edge: was 0, now 1 $\rightarrow$ \texttt{(\textasciitilde last) \& current}
+        \item Falling edge: was 1, now 0 $\rightarrow$ \texttt{last \& (\textasciitilde current)}
+    \end{itemize}
+    \item Store current state for next iteration
+\end{enumerate}
+
+\textbf{Limitation:} This basic approach assumes no bouncing. Real mechanical switches bounce!
+\end{KR}
+
+\begin{examplecode}{Basic Edge Detection Implementation}\\
+\textbf{Source:} Lecture 01, Slide 47
+
+\begin{lstlisting}[language=C, style=base]
+#include <reg_ctboard.h>
+
+#define CT_BUTTON (*(uint8_t *)0x60000210)
+
+int main(void) {
+    uint8_t levels_of_buttons;
+    uint8_t last_levels_of_buttons = 0;
+    uint8_t buttons_rising_edge;
+    
+    while (1) {
+        // Read current button state
+        levels_of_buttons = CT_BUTTON;
+        
+        // Detect rising edges
+        // Rising edge = was 0, now 1
+        buttons_rising_edge = (~last_levels_of_buttons) & levels_of_buttons;
+        
+        if (buttons_rising_edge) {
+            // ... do something on button press
+        }
+        
+        // Store current state for next iteration
+        last_levels_of_buttons = levels_of_buttons;
+        
+        // ... other code
+    }
+}
+\end{lstlisting}
+\end{examplecode}
+
+\begin{formula}{Key concepts:}
+\begin{itemize}
+    \item Polling: Repeatedly read button state in main loop
+    \item Edge detection: Compare current reading to previous reading
+    \item Rising edge formula: \texttt{(\textasciitilde last) \& current}
+    \item Falling edge formula: \texttt{last \& (\textasciitilde current)}
+    \item Bitwise operations enable parallel processing of multiple GPIO pins
+\end{itemize}
+\end{formula}
+
+\subsubsection{Hardware Edge Detection}
+
+\begin{definition}{Interrupt-Based Edge Detection}\\
+STM32 microcontrollers have built-in hardware edge detection in GPIO peripherals. Each GPIO can generate an interrupt (EXTI) on rising edge, falling edge, or both.
+\end{definition}
+
+% TODO: Add image from [edge_debouncing.pdf, Slide 3]
+% Description: Hardware edge detection circuit using flip-flops
+% \includegraphics[width=\linewidth]{lecture01_hardware_edge_detection.png}
+
+% TODO: Add image from [edge_debouncing.pdf, Slide 4]
+% Description: STM32 GPIO edge detection architecture with NVIC
+% \includegraphics[width=\linewidth]{lecture01_gpio_interrupt_architecture.png}
+
+\begin{concept}{Hardware Edge Detection Process}
+\begin{enumerate}
+    \item GPIO pin has built-in edge detection circuit
+    \item Edge detected $\rightarrow$ Interrupt request sent to NVIC (Nested Vectored Interrupt Controller)
+    \item NVIC prioritizes interrupt and triggers corresponding ISR (Interrupt Service Routine)
+    \item CPU executes ISR to handle the event
+\end{enumerate}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item No polling required - CPU can sleep
+    \item Immediate response to events
+    \item Multiple GPIO lines can generate interrupts
+\end{itemize}
+
+\textbf{Challenge:} Hardware still detects every bounce!
+\end{concept}
+
+\subsubsection{Software Debouncing}
+
+\begin{definition}{Button Bounce}\\
+Mechanical switches do not transition cleanly between states. When pressed or released, the contacts bounce, creating multiple rapid transitions before settling. Bounce duration is typically 5-20ms but can be longer for poor-quality switches.
+\end{definition}
+
+\mult{2}
+\begin{concept}{Low Sampling Rate Debouncing}\\
+Sample the input at a rate slower than the bounce frequency. The low sample rate acts as a filter.
+
+\textbf{Problem:} Timing is critical. Sample too early during bounce and detect wrong state. Sample rate must be carefully chosen relative to bounce duration.
+\end{concept}
+
+\begin{concept}{High Sampling Rate Debouncing}\\
+Sample input at high frequency and detect every transition, including bounces.
+
+\textbf{Problem:} Every bounce is detected as a separate edge, causing multiple false triggers per button press.
+\end{concept}
+\multend
+
+% TODO: Add image from [edge_debouncing.pdf, Slide 12]
+% Description: Low sampling rate debouncing timing diagram
+% \includegraphics[width=\linewidth]{lecture01_low_rate_debouncing.png}
+
+% TODO: Add image from [edge_debouncing.pdf, Slide 14]
+% Description: High sampling rate debouncing showing all bounces
+% \includegraphics[width=\linewidth]{lecture01_high_rate_debouncing.png}
+
+\begin{KR}{Sliding Window Filter for Debouncing}\\
+The sliding window (moving average) filter is an effective debouncing technique:
+
+\textbf{Algorithm:}
+\begin{enumerate}
+    \item Maintain a buffer of recent input samples (e.g., 8-20 samples)
+    \item At each sampling time:
+    \begin{itemize}
+        \item Shift buffer contents (discard oldest, add newest)
+        \item Read new input value and store in buffer
+    \end{itemize}
+    \item Detect edges only when buffer shows stable transition:
+    \begin{itemize}
+        \item Rising edge: All zeros followed by one (newest bit = 1)
+        \item Falling edge: All ones followed by zero (newest bit = 0)
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Implementation approach:}
+\begin{itemize}
+    \item Use \texttt{static} array to store samples across function calls
+    \item Use bitwise operations (\&, \textasciitilde) for parallel edge detection on multiple pins
+    \item Choose buffer size based on bounce duration and sample rate
+\end{itemize}
+
+\textbf{Buffer size selection:}
+\begin{itemize}
+    \item Bounce duration: typically 5-20ms
+    \item Sample rate: e.g., 1ms (1kHz)
+    \item Buffer size: 10-20 samples usually sufficient
+    \item Test with actual hardware to verify
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from [edge_debouncing.pdf, Slide 17]
+% Description: Sliding window filter operation timing diagram
+% \includegraphics[width=\linewidth]{lecture01_sliding_window_filter.png}
+
+\begin{examplecode}{Sliding Window Debouncing Implementation Concept}\\
+\textbf{Source:} Lab P\_01, MCP\_Debouncing.pdf
+
+Conceptual implementation of sliding window debouncing:
+
+\begin{lstlisting}[language=C, style=base]
+#define NR_SAMPLES 10  // Adjust based on bounce characteristics
+
+uint8_t detect_switch_change_debounce(void) {
+    // Static array persists between function calls
+    static uint8_t switch_samples[NR_SAMPLES];
+    
+    // Shift all samples one position (discard oldest)
+    for (int i = NR_SAMPLES - 1; i > 0; i--) {
+        switch_samples[i] = switch_samples[i-1];
+    }
+    
+    // Read new sample from GPIO
+    switch_samples[0] = read_gpio_inputs();
+    
+    // Detect rising edges: all samples were 0, now newest is 1
+    uint8_t all_zero = 0xFF;  // Start assuming all pins have all zeros
+    for (int i = 1; i < NR_SAMPLES; i++) {
+        all_zero &= ~switch_samples[i];  // AND with inverted samples
+    }
+    uint8_t rising_edges = all_zero & switch_samples[0];
+    
+    // Detect falling edges: all samples were 1, now newest is 0
+    uint8_t all_ones = 0xFF;  // Start assuming all pins have all ones
+    for (int i = 1; i < NR_SAMPLES; i++) {
+        all_ones &= switch_samples[i];  // AND with samples
+    }
+    uint8_t falling_edges = all_ones & ~switch_samples[0];
+    
+    return rising_edges;  // Or return falling_edges, or both
+}
+\end{lstlisting}
+\end{examplecode}
+
+\begin{formula}{Key implementation details:}
+\begin{itemize}
+    \item \texttt{static} array maintains state between function calls
+    \item Parallel processing using bitwise operations handles multiple pins simultaneously
+    \item Buffer size \texttt{NR\_SAMPLES} determines debouncing strength
+    \item Function must be called at regular intervals (e.g., every 1ms from timer interrupt)
+\end{itemize}
+
+\textbf{Optimization:} Use circular buffer with index pointer instead of shifting all elements (more efficient, covered in lab).
+\end{formula}
+
+\subsection{Key Takeaways}
+
+\begin{highlight}{Critical Takeaways from This Lecture}\\
+\textbf{Memory Management:}
+\begin{itemize}
+    \item Understand the six attributes: Type, Name, Value, Location, Scope, Lifetime
+    \item Know where variables are allocated: Stack, Heap, BSS, Data, RO Data, Code
+    \item Use \texttt{static} for module encapsulation
+    \item Use \texttt{const} for read-only data and function parameters
+    \item Always initialize automatic variables
+    \item Always check \texttt{malloc()} return values
+\end{itemize}
+
+\textbf{Module Design:}
+\begin{itemize}
+    \item Header files: declarations only (interface)
+    \item Implementation files: definitions (implementation)
+    \item Use \texttt{static} for private module functions and variables
+    \item Use \texttt{extern} for cross-module access
+\end{itemize}
+
+\textbf{Digital I/O:}
+\begin{itemize}
+    \item Schmitt triggers provide noise immunity
+    \item Mechanical switches bounce - must debounce in software
+    \item Sliding window filter is effective debouncing technique
+    \item Extract state from functions for reusability
+    \item Sample rate and buffer size affect debouncing performance
+\end{itemize}
+
+\textbf{See also:} Labs P\_01 (Edge detection and debouncing) and P\_02 (Matrix keyboard) for hands-on practice.
+\end{highlight}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 8
+% CRITICAL priority: 5
+% IMPORTANT priority: 3
+%
+% Quick extraction checklist:
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 40] - GPIO architecture with Schmitt trigger (CRITICAL)
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 41] - GPIO voltage levels (IMPORTANT)
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 42] - Logic level compatibility (IMPORTANT)
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 43] - Schmitt trigger characteristic (CRITICAL)
+% [ ] [edge_debouncing.pdf, Slide 3] - Hardware edge detection circuit (CRITICAL)
+% [ ] [edge_debouncing.pdf, Slide 4] - GPIO interrupt architecture (CRITICAL)
+% [ ] [edge_debouncing.pdf, Slide 12] - Low rate debouncing timing (IMPORTANT)
+% [ ] [edge_debouncing.pdf, Slide 14] - High rate debouncing timing (IMPORTANT)
+% [ ] [edge_debouncing.pdf, Slide 17] - Sliding window filter operation (CRITICAL)
+% =====================

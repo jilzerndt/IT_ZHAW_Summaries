@@ -1,0 +1,567 @@
+\section{Understanding Memory and I/O - Part A: Memory Objects}
+
+% SOURCE: MC1_T01_understanding_memory_and_IO.pdf (Slides 1-37)
+% Week 1 (19.09) - Lecture on memory management
+% This file covers: Memory objects in C (Type, Name, Value, Location, Scope, Lifetime)
+
+\subsection{Learning Objectives}
+
+At the end of this lesson, you will be able to:
+
+\begin{itemize}
+    \item Enumerate the attributes of a variable in C
+    \item Explain the effect a chosen data type has on memory usage
+    \item Differentiate between a variable declaration and a variable definition
+    \item Write C-modules that distinguish between interface and implementation
+    \item Explain how memory contents are interpreted based on the attributes
+    \item Analyze a piece of C-code and identify where (in which section) memory will be allocated
+    \item Indicate the scope and the lifetime of a variable in C:
+    \begin{itemize}
+        \item Where in code is a variable visible
+        \item When will memory be allocated, and when will memory be deallocated
+        \item How and when will a variable be initialized
+    \end{itemize}
+    \item Apply the qualifier \texttt{static} to provide encapsulation for private module data
+    \item Apply the qualifier \texttt{const} to pass read-only data structures
+    \item Apply the critical take-aways in your own C-code
+    \item Allow the reuse of functions by extracting the state from a function
+\end{itemize}
+
+\subsection{Motivation}
+
+\begin{concept}{Understanding Code-Hardware Interactions}\\
+This lecture summarizes known aspects from previous courses and adds microcontroller-specific details. The key motivation is to understand interactions between source code, compilation, and hardware memory layout in embedded systems.
+\end{concept}
+
+\subsection{Memory Objects in C}
+
+\begin{concept}{Six Attributes of Memory Objects}\\
+Every memory object in C has six fundamental attributes:
+\begin{enumerate}
+    \item \textbf{Type} - Data type of the object
+    \item \textbf{Name} - Identifier used to reference the object
+    \item \textbf{Value} - The data stored in the object
+    \item \textbf{Location} - Which memory section the object resides in
+    \item \textbf{Scope} - Where in the code the object is visible
+    \item \textbf{Lifetime} - When the object exists in memory
+\end{enumerate}
+\end{concept}
+
+\subsubsection{Type}
+
+\begin{definition}{Data Type}\\
+The type attribute specifies:
+\begin{itemize}
+    \item How much memory space is allocated
+    \item How the bit pattern in memory is interpreted
+    \item Which operations are valid on the object
+\end{itemize}
+\end{definition}
+
+\begin{theorem}{Basic Data Types in Embedded Systems}\\
+Basic data types and their typical sizes:
+\begin{lstlisting}[language=C, style=base]
+uint8_t  var1;  // 1 byte, unsigned
+int16_t  var2;  // 2 bytes, signed
+uint32_t var3;  // 4 bytes, unsigned
+float    var4;  // 4 bytes, floating point
+\end{lstlisting}
+\end{theorem}
+
+\begin{corollary}{Platform-dependent pointer sizes}\\
+    \begin{itemize}
+        \item \textbf{8051/Keil:} \texttt{char *} has variable size
+        \item \textbf{Cortex-M/Keil:} \texttt{void *} is 4 bytes (32-bit)
+        \item \textbf{x86-64 (i7)/gcc:} \texttt{void *} is 8 bytes (64-bit)
+    \end{itemize}
+\end{corollary}
+
+\begin{code}{typedef}\\
+The \texttt{typedef} facility creates new data type names for better code readability and maintainability.
+
+\begin{lstlisting}[language=C, style=base]
+typedef int length_t;     // length_t is now an alias for int
+typedef char *string_t;   // string_t is now an alias for char*
+
+int i;
+length_t length;  // Same as: int length;
+string_t name;    // Same as: char *name;
+\end{lstlisting}
+\end{code}
+
+\subsubsection{Name}
+
+\begin{definition}{Definition vs Declaration}\\
+\textbf{Definition:}
+\begin{itemize}
+    \item Introduces name/type \textbf{and} allocates storage space
+    \item Includes function bodies for functions
+\end{itemize}
+
+\textbf{Declaration:}
+\begin{itemize}
+    \item Introduces name/type only
+    \item Does \textbf{not} allocate storage space
+    \item Uses \texttt{extern} to specify object is defined elsewhere
+\end{itemize}
+\end{definition}
+
+\begin{examplecode}{Definition vs Declaration}
+\begin{lstlisting}[language=C, style=base]
+// DEFINITION - allocates memory
+uint8_t var1;
+
+// DEFINITION - provides function body
+uint16_t foo(void) {
+    // what the function does
+}
+\end{lstlisting}
+
+\tcblower
+
+\begin{lstlisting}[language=C, style=base]
+// DECLARATION - no memory allocation
+extern uint8_t var1;
+
+// DECLARATION - no function body
+extern uint16_t foo(void);
+\end{lstlisting}
+
+The \texttt{extern} keyword specifies that the declared object is defined elsewhere (i.e., in another module). This is optional for functions but required for variables.
+\end{examplecode}
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 12]
+% Description: Visual comparison of definition vs declaration
+% \includegraphics[width=0.9\linewidth]{lecture01_definition_vs_declaration.png}
+
+\subsubsection{Module Structure: Interface and Implementation}
+
+\mult{2}
+
+\begin{concept}{Header Files (Interface)}\\
+Header files contain:
+\begin{itemize}
+    \item Only declarations $\rightarrow$ \textbf{NO} definitions
+    \item Function prototypes (declarations)
+    \item Type definitions (\texttt{typedef}, \texttt{struct}, \texttt{enum})
+    \item No other \texttt{\#include} statements (except for required typedefs)
+\end{itemize}
+
+\textbf{Key principle:} Interface $\rightarrow$ header file
+\end{concept}
+
+\begin{concept}{Implementation Files (.c files)}\\
+Implementation files provide:
+\begin{itemize}
+    \item Definitions of items declared in the header file
+    \item Include their own header file
+    \item Private (static) helper functions
+    \item Private (static) module variables
+\end{itemize}
+
+\textbf{Key principle:} Implementation $\rightarrow$ .c file
+\end{concept}
+
+\multend
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 16]
+% Description: Diagram showing relationship between foo.c, bar.h, and bar.c with interface/implementation distinction
+% \includegraphics[width=\linewidth]{lecture01_interface_implementation.png}
+
+
+\begin{examplecode}{Module Interface Example}\\
+Example of a properly structured module interface (bar.h):
+
+\begin{lstlisting}[language=C, style=base]
+// bar.h - Header file contains only declarations
+typedef enum {
+    RED   = 0x01,
+    BLUE  = 0x02,
+    GREEN = 0x03
+} colors_t;
+
+/* Set specified color */
+void bar_set(colors_t color);
+
+/* global --> very bad style */
+extern uint32_t bar_x;
+\end{lstlisting}
+
+\tcblower
+
+Implementation file (bar.c):
+
+\begin{lstlisting}[language=C, style=base]
+// bar.c - Implementation file
+#include "bar.h"
+
+void bar_set(colors_t color) {
+    // what the function does
+}
+
+uint32_t bar_x;  // Definition of the extern variable
+\end{lstlisting}
+
+Usage in another file (foo.c):
+
+\begin{lstlisting}[language=C, style=base]
+#include "bar.h"
+
+void foo_ex(void) {
+    bar_set(BLUE);
+    bar_x = 0x27;
+    ...
+}
+\end{lstlisting}
+\end{examplecode}
+
+\subsection{Location - Memory Sections}
+
+\begin{definition}{Memory Sections in Embedded Systems}\\
+Memory for variables is allocated in different sections depending on their characteristics:
+
+\begin{itemize}
+    \item \textbf{CODE RO / .text} - Program code (read-only)
+    \item \textbf{DATA RO / .rodata} - Read-only data (constants)
+    \item \textbf{DATA ZI / .bss} - Zero-initialized data (static allocation without initial value)
+    \item \textbf{DATA RW / .data} - Read-write data (initialized static variables)
+    \item \textbf{HEAP} - Dynamic allocation (malloc/free)
+    \item \textbf{STACK} - Automatic variables and function call data
+\end{itemize}
+
+These sections are managed by the linker/loader and have different memory characteristics.
+\end{definition}
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 20]
+% Description: Memory section layout diagram showing CODE RO, DATA RO, DATA ZI, DATA RW, HEAP, and STACK
+% \includegraphics[width=\linewidth]{lecture01_memory_sections.png}
+
+\begin{concept}{Linker and Loader Process}\\
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 21]
+% Description: Diagram showing compilation process from source files to memory sections
+% \includegraphics[width=\linewidth]{lecture01_linker_loader_process.png}
+
+\textbf{Compilation process:}
+\begin{enumerate}
+    \item Each .c source file produces a combination of CODE RO and DATA (RO, ZI, RW)
+    \item Linker/Loader combines object files and allocates actual memory addresses
+    \item Final memory layout has distinct sections in Flash and RAM
+\end{enumerate}
+\end{concept}
+
+\begin{examplecode}{Memory Allocation by Section}\\
+\textbf{Source:} Lecture 01, Slide 23
+
+The following code demonstrates where different variables are allocated:
+
+\begin{lstlisting}[language=C, style=base]
+// Global variables
+uint32_t bss_a;                    // -> DATA ZI (.bss)
+uint32_t data_a = 0x12;            // -> DATA RW (.data)
+static uint32_t bss_b;             // -> DATA ZI (.bss)
+static uint32_t data_b = 0x34;    // -> DATA RW (.data)
+const uint32_t read_only_a = 0x35; // -> DATA RO (.rodata)
+
+void foo(void) {
+    uint32_t *p;                   // -> STACK (or register)
+    uint32_t stack_a;              // -> STACK (or register)
+    static uint32_t bss_c;         // -> DATA ZI (.bss)
+    static uint32_t data_d = 0x56; // -> DATA RW (.data)
+    const uint32_t read_only_b = 0x78; // -> STACK or DATA RO
+    
+    // Dynamic allocation
+    p = (uint32_t*) malloc(sizeof(uint32_t)); // -> HEAP
+    if (p == NULL) { /* handle error */ }
+    ...
+    free(p);
+}
+\end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{Memory Allocation by Section} Solution
+\begin{itemize}
+    \item Produced object code $\rightarrow$ CODE RO / .text
+    \item Global uninitialized variables $\rightarrow$ DATA ZI / .bss
+    \item Global initialized variables $\rightarrow$ DATA RW / .data
+    \item \texttt{const} global variables $\rightarrow$ DATA RO / .rodata
+    \item Local variables $\rightarrow$ STACK (or registers if optimized)
+    \item \texttt{static} local variables $\rightarrow$ DATA ZI or DATA RW
+    \item \texttt{malloc()} allocated memory $\rightarrow$ HEAP
+\end{itemize}
+
+\textbf{Note:} Requires \texttt{\#include <stdlib.h>} for \texttt{malloc()} and \texttt{free()}. Compiler optimizations may place stack objects in registers. Depending on the compiler, \texttt{const} local variables might be placed on the stack instead of DATA RO.
+\end{example2}
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 23]
+% Description: Color-coded diagram showing memory sections in ARM Keil
+% \includegraphics[width=\linewidth]{lecture01_memory_sections_example.png}
+
+\subsection{Scope}
+
+\begin{definition}{Scope}\\
+Scope determines the visibility of names in source code. It defines where in the code a variable or function can be accessed. Scope is an arrangement between the compiler/assembler and programmer, and is not relevant for object code.
+\end{definition}
+
+\begin{concept}{Scope Levels in C}
+\begin{itemize}
+    \item \textbf{Function local} - Visible only within the function
+    \item \textbf{Module local} - Visible throughout the module (.c file), uses \texttt{static}
+    \item \textbf{Global} - Visible across all modules that include the declaration
+\end{itemize}
+
+Terms "local variables" and "automatic variables" are used interchangeably.
+\end{concept}
+
+\begin{code}{Automatic Variable Scope}\\
+Automatic variables have local scope:
+\begin{itemize}
+    \item Scope begins at point of definition
+    \item Scope ends at end of containing block (closing brace)
+\end{itemize}
+
+\begin{lstlisting}[language=C, style=base]
+void foo(void) {
+    int a;  // Scope begins here
+    {
+        int b;  // Scope of b begins here
+        a = 5;  // a is visible here
+        b = 10; // b is visible here
+    }  // Scope of b ends here
+    a = 15;  // a still visible
+    // b is NOT visible here
+}  // Scope of a ends here
+\end{lstlisting}
+\end{code}
+
+\subsection{Lifetime}
+
+\begin{definition}{Lifetime}\\
+Lifetime is the duration of a memory object's existence. It defines:
+\begin{itemize}
+    \item When memory is allocated (Creation)
+    \item When initial values are assigned (Initialization)
+    \item When memory is deallocated (Destruction)
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Three Types of Lifetime}\\
+C has three distinct types of memory objects based on lifetime:
+\begin{enumerate}
+    \item \textbf{Automatic} - Local variables (stack/registers)
+    \item \textbf{Static} - Global and static variables
+    \item \textbf{Dynamic} - Heap-allocated memory
+\end{enumerate}
+\end{concept}
+
+\subsubsection{Automatic Variables}
+
+\begin{definition}{Automatic Lifetime}\\
+\textbf{Storage:} Local variables in registers or on the stack
+
+\textbf{Creation:} Each time the program enters the function in which the variable is defined. If the function is called recursively, several instances may exist simultaneously.
+
+\textbf{Initialization:} 
+\begin{itemize}
+    \item Default: No automatic initialization (contains garbage)
+    \item If defined with assignment: Initialized each time function is entered
+\end{itemize}
+
+\textbf{Destruction:} On each return of the function, the memory on the stack will be released (not deleted/zeroed)
+\end{definition}
+
+\begin{examplecode}{Automatic Variables Example}
+\begin{lstlisting}[language=C, style=base]
+void foo(void) {
+    int a;        // No initialization - contains garbage!
+    int b = 5;    // Initialized to 5 each time foo() is called
+    
+    for (int i = 0; i < 10; i++) {
+        int c = i;  // c is created and initialized each iteration
+        // Use c
+    }  // c is destroyed here
+    
+}  // a and b are destroyed here
+\end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{Automatic Variables Example} Key Points:
+\begin{itemize}
+    \item Memory for a, b, and c allocated on stack (or registers) each time \texttt{foo()} is entered
+    \item If \texttt{foo()} is called recursively, several instances of a, b, and c may exist
+    \item Variable \texttt{a} is NOT automatically initialized (undefined behavior)
+    \item Variable \texttt{b} is initialized each time \texttt{foo()} is entered
+    \item Variable \texttt{c} is initialized each time the for loop block is entered
+    \item Memory is released on return, but not actively cleared
+\end{itemize}
+\end{example2}
+
+\subsubsection{Static Variables}
+
+\begin{definition}{Static Lifetime}\\
+\textbf{Storage:} Memory objects in DATA sections (DATA ZI or DATA RW)
+
+Types of static variables:
+\begin{enumerate}
+    \item Global variables
+    \item Module-wide variables with qualifier \texttt{static}
+    \item \texttt{static} variables within functions
+\end{enumerate}
+
+\textbf{Creation:} Once, at start of program (when program is loaded into memory)
+
+\textbf{Initialization:} Once, just before program starts:
+\begin{itemize}
+    \item Variables in DATA section (.data) initialized to specified values
+    \item Variables in BSS section (.bss) initialized to zero
+\end{itemize}
+
+\textbf{Destruction:} When the program terminates
+\end{definition}
+
+\begin{examplecode}{Static Variables Example}
+\begin{lstlisting}[language=C, style=base]
+// Global static variables
+static int s;         // Module-wide, initialized to 0 (.bss)
+static int t = 10;    // Module-wide, initialized to 10 (.data)
+
+int u;                // Global, initialized to 0 (.bss)
+int v = 20;           // Global, initialized to 20 (.data)
+
+void foo(void) {
+    static int w;     // Function static, initialized to 0 (.bss)
+    static int x = 30; // Function static, initialized to 30 (.data)
+    
+    w++;  // Persists across function calls
+    x++;  // Persists across function calls
+}
+\end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{Static Variables Example} Key points:
+\begin{itemize}
+    \item Memory for all variables (s, t, u, v, w, x) allocated when program loads
+    \item Initialization happens just before program starts:
+    \begin{itemize}
+        \item t, v, x (data section) initialized to specified values
+        \item s, u, w (bss section) initialized to zero automatically
+    \end{itemize}
+    \item Although s, u, w have no initial value in source code, they are initialized to 0
+    \item Memory persists for entire program execution
+    \item Function-local \texttt{static} variables retain their value between function calls
+    \item Memory released only when program terminates
+\end{itemize}
+\end{example2}
+
+\subsubsection{Dynamic Variables}
+
+\begin{definition}{Dynamic Lifetime}\\
+\textbf{Storage:} Memory objects on the heap
+
+\textbf{Creation:} By calling \texttt{malloc()} or similar allocation functions
+\begin{itemize}
+    \item Use \texttt{sizeof()} operator to specify size
+    \item ALWAYS check return value (NULL indicates failure)
+    \item Failure can occur due to insufficient memory or heap fragmentation
+\end{itemize}
+
+\textbf{Initialization:} 
+\begin{itemize}
+    \item \texttt{malloc()} does NOT initialize memory (contains garbage)
+    \item \texttt{calloc()} provides zero-initialized memory
+    \item Programmer responsible for initialization
+\end{itemize}
+
+\textbf{Destruction:} By calling \texttt{free()}
+\begin{itemize}
+    \item Responsibility of programmer
+    \item Failure to free causes memory leaks
+\end{itemize}
+\end{definition}
+
+\begin{examplecode}{Dynamic Memory Example}
+\begin{lstlisting}[language=C, style=base]
+#include <stdlib.h>
+
+void bar(void) {
+    uint32_t *p;
+    
+    // Allocate memory on heap
+    p = (uint32_t*) malloc(sizeof(uint32_t));
+    
+    // CRITICAL: Always check for allocation failure
+    if (p == NULL) {
+        // Handle error: out of memory or fragmentation
+        return;
+    }
+    
+    // Use the allocated memory
+    *p = 42;  // Assign value
+    
+    // CRITICAL: Free the memory when done
+    free(p);
+    p = NULL;  // Good practice: avoid dangling pointer
+}
+\end{lstlisting}
+\end{examplecode}
+
+\begin{example2}{Dynamic Memory Example} Key points:
+\begin{itemize}
+    \item Memory allocated on heap persists until explicitly freed
+    \item ALWAYS check return value of \texttt{malloc()} for NULL
+    \item Memory is NOT automatically initialized (use \texttt{calloc()} for zero-init)
+    \item Programmer has full responsibility for allocation and deallocation
+    \item Forgetting to \texttt{free()} causes memory leaks
+    \item Setting pointer to NULL after \texttt{free()} prevents dangling pointers
+    \item Requires \texttt{\#include <stdlib.h>}
+\end{itemize}
+\end{example2}
+
+\subsection{Function Reusability}
+
+\begin{KR}{Extracting State from Functions}\\
+Functions with \texttt{static} variables are not reusable for multiple instances. To make functions reusable:
+
+\textbf{Problem:} Function with internal state can only handle one instance:
+\begin{lstlisting}[language=C, style=base]
+uint8_t debounce_switches(void) {
+    static uint8_t samples[NR_SAMPLES];  // Only one instance!
+    // ... processing
+}
+\end{lstlisting}
+
+If you need to debounce switches on two different ports, you cannot reuse this function.
+
+\textbf{Solution:} Move state out of function, pass pointer to state:
+\begin{lstlisting}[language=C, style=base]
+// Caller allocates state
+uint8_t port_A_samples[NR_SAMPLES];
+uint8_t port_B_samples[NR_SAMPLES];
+
+// Function accepts state as parameter
+uint8_t debounce_switches(uint8_t *samples) {
+    // Use samples array for processing
+    // ... processing
+}
+
+// Now reusable for multiple ports
+debounce_switches(port_A_samples);
+debounce_switches(port_B_samples);
+\end{lstlisting}
+\end{KR}
+
+\begin{lemma}{Design principle}\\
+Functions should be stateless when possible. If state is needed, pass it as a parameter to enable reuse. The caller manages the state, and the function operates on it. This is a fundamental principle of reusable software design.
+\end{lemma}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 5
+% CRITICAL priority: 4
+% IMPORTANT priority: 1
+%
+% Quick extraction checklist:
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 12] - Definition vs declaration (IMPORTANT)
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 16] - Interface/implementation (CRITICAL)
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 20] - Memory sections layout (CRITICAL)
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 21] - Linker/loader process (CRITICAL)
+% [ ] [MC1_T01_understanding_memory_and_IO.pdf, Slide 23] - Memory sections with color coding (CRITICAL)
+% =====================
