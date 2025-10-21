@@ -4,6 +4,10 @@
 % Week 1 (19.09) - Lecture on memory management
 % This file covers: Memory objects in C (Type, Name, Value, Location, Scope, Lifetime)
 
+\begin{highlight}{Understanding Code-Hardware Interactions}\\
+This lecture summarizes known aspects from previous courses and adds microcontroller-specific details. The key motivation is to understand interactions between source code, compilation, and hardware memory layout in embedded systems.
+\end{highlight}
+
 \subsection{Learning Objectives}
 
 At the end of this lesson, you will be able to:
@@ -26,12 +30,6 @@ At the end of this lesson, you will be able to:
     \item Apply the critical take-aways in your own C-code
     \item Allow the reuse of functions by extracting the state from a function
 \end{itemize}
-
-\subsection{Motivation}
-
-\begin{concept}{Understanding Code-Hardware Interactions}\\
-This lecture summarizes known aspects from previous courses and adds microcontroller-specific details. The key motivation is to understand interactions between source code, compilation, and hardware memory layout in embedded systems.
-\end{concept}
 
 \subsection{Memory Objects in C}
 
@@ -68,7 +66,7 @@ float    var4;  // 4 bytes, floating point
 \end{lstlisting}
 \end{theorem}
 
-\begin{corollary}{Platform-dependent pointer sizes}\\
+\begin{corollary}{Platform-dependent pointer sizes}
     \begin{itemize}
         \item \textbf{8051/Keil:} \texttt{char *} has variable size
         \item \textbf{Cortex-M/Keil:} \texttt{void *} is 4 bytes (32-bit)
@@ -89,24 +87,18 @@ string_t name;    // Same as: char *name;
 \end{lstlisting}
 \end{code}
 
-\subsubsection{Name}
+\subsubsection{Definition vs Declaration}
 
-\begin{definition}{Definition vs Declaration}\\
-\textbf{Definition:}
+\mult{2}
+
+\begin{definition}{Definition}
 \begin{itemize}
     \item Introduces name/type \textbf{and} allocates storage space
     \item Includes function bodies for functions
 \end{itemize}
-
-\textbf{Declaration:}
-\begin{itemize}
-    \item Introduces name/type only
-    \item Does \textbf{not} allocate storage space
-    \item Uses \texttt{extern} to specify object is defined elsewhere
-\end{itemize}
 \end{definition}
 
-\begin{examplecode}{Definition vs Declaration}
+\begin{code}{Definition}
 \begin{lstlisting}[language=C, style=base]
 // DEFINITION - allocates memory
 uint8_t var1;
@@ -116,9 +108,17 @@ uint16_t foo(void) {
     // what the function does
 }
 \end{lstlisting}
+\end{code}
 
-\tcblower
+\begin{definition}{Declaration}
+\begin{itemize}
+    \item Introduces name/type only
+    \item Does \textbf{not} allocate storage space
+    \item \texttt{extern} to specify object is defined elsewhere
+\end{itemize}
+\end{definition}
 
+\begin{code}{Declaration}
 \begin{lstlisting}[language=C, style=base]
 // DECLARATION - no memory allocation
 extern uint8_t var1;
@@ -126,9 +126,13 @@ extern uint8_t var1;
 // DECLARATION - no function body
 extern uint16_t foo(void);
 \end{lstlisting}
+\end{code}
 
+\begin{remark}
 The \texttt{extern} keyword specifies that the declared object is defined elsewhere (i.e., in another module). This is optional for functions but required for variables.
-\end{examplecode}
+\end{remark}
+
+\multend
 
 % TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 12]
 % Description: Visual comparison of definition vs declaration
@@ -147,7 +151,7 @@ Header files contain:
     \item No other \texttt{\#include} statements (except for required typedefs)
 \end{itemize}
 
-\textbf{Key principle:} Interface $\rightarrow$ header file
+\important{Key principle:} Interface $\rightarrow$ header file
 \end{concept}
 
 \begin{concept}{Implementation Files (.c files)}\\
@@ -159,7 +163,7 @@ Implementation files provide:
     \item Private (static) module variables
 \end{itemize}
 
-\textbf{Key principle:} Implementation $\rightarrow$ .c file
+\important{Key principle:} Implementation $\rightarrow$ .c file
 \end{concept}
 
 \multend
@@ -168,10 +172,11 @@ Implementation files provide:
 % Description: Diagram showing relationship between foo.c, bar.h, and bar.c with interface/implementation distinction
 % \includegraphics[width=\linewidth]{lecture01_interface_implementation.png}
 
+\paragraph{Module Interface and Implementation Example}
 
-\begin{examplecode}{Module Interface Example}\\
-Example of a properly structured module interface (bar.h):
+\mult{2}
 
+\begin{examplecode}{Header File (bar.h)}
 \begin{lstlisting}[language=C, style=base]
 // bar.h - Header file contains only declarations
 typedef enum {
@@ -186,11 +191,9 @@ void bar_set(colors_t color);
 /* global --> very bad style */
 extern uint32_t bar_x;
 \end{lstlisting}
+\end{examplecode}
 
-\tcblower
-
-Implementation file (bar.c):
-
+\begin{examplecode}{Implementation file (bar.c)}
 \begin{lstlisting}[language=C, style=base]
 // bar.c - Implementation file
 #include "bar.h"
@@ -201,9 +204,9 @@ void bar_set(colors_t color) {
 
 uint32_t bar_x;  // Definition of the extern variable
 \end{lstlisting}
+\end{examplecode}
 
-Usage in another file (foo.c):
-
+\begin{examplecode}{Usage in another file (foo.c)}
 \begin{lstlisting}[language=C, style=base]
 #include "bar.h"
 
@@ -214,6 +217,11 @@ void foo_ex(void) {
 }
 \end{lstlisting}
 \end{examplecode}
+
+\multend
+
+\raggedcolumns
+\columnbreak
 
 \subsection{Location - Memory Sections}
 
@@ -237,16 +245,16 @@ These sections are managed by the linker/loader and have different memory charac
 % \includegraphics[width=\linewidth]{lecture01_memory_sections.png}
 
 \begin{concept}{Linker and Loader Process}\\
-% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 21]
-% Description: Diagram showing compilation process from source files to memory sections
-% \includegraphics[width=\linewidth]{lecture01_linker_loader_process.png}
-
 \textbf{Compilation process:}
 \begin{enumerate}
     \item Each .c source file produces a combination of CODE RO and DATA (RO, ZI, RW)
     \item Linker/Loader combines object files and allocates actual memory addresses
     \item Final memory layout has distinct sections in Flash and RAM
 \end{enumerate}
+
+% TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 21]
+% Description: Diagram showing compilation process from source files to memory sections
+% \includegraphics[width=\linewidth]{lecture01_linker_loader_process.png}
 \end{concept}
 
 \begin{examplecode}{Memory Allocation by Section}\\
@@ -276,9 +284,8 @@ void foo(void) {
     free(p);
 }
 \end{lstlisting}
-\end{examplecode}
 
-\begin{example2}{Memory Allocation by Section} Solution
+\tcbsubtitle{Explanation:}
 \begin{itemize}
     \item Produced object code $\rightarrow$ CODE RO / .text
     \item Global uninitialized variables $\rightarrow$ DATA ZI / .bss
@@ -288,13 +295,18 @@ void foo(void) {
     \item \texttt{static} local variables $\rightarrow$ DATA ZI or DATA RW
     \item \texttt{malloc()} allocated memory $\rightarrow$ HEAP
 \end{itemize}
+\end{examplecode}
 
+\begin{remark}
 \textbf{Note:} Requires \texttt{\#include <stdlib.h>} for \texttt{malloc()} and \texttt{free()}. Compiler optimizations may place stack objects in registers. Depending on the compiler, \texttt{const} local variables might be placed on the stack instead of DATA RO.
-\end{example2}
+\end{remark}
 
 % TODO: Add image from [MC1_T01_understanding_memory_and_IO.pdf, Slide 23]
 % Description: Color-coded diagram showing memory sections in ARM Keil
 % \includegraphics[width=\linewidth]{lecture01_memory_sections_example.png}
+
+\raggedcolumns
+\columnbreak
 
 \subsection{Scope}
 
@@ -335,6 +347,8 @@ void foo(void) {
 
 \subsection{Lifetime}
 
+\mult{2}
+
 \begin{definition}{Lifetime}\\
 Lifetime is the duration of a memory object's existence. It defines:
 \begin{itemize}
@@ -352,6 +366,8 @@ C has three distinct types of memory objects based on lifetime:
     \item \textbf{Dynamic} - Heap-allocated memory
 \end{enumerate}
 \end{concept}
+
+\multend
 
 \subsubsection{Automatic Variables}
 
