@@ -1,1 +1,936 @@
- 
+ \section{FPGA Memory Configurations and Modes}
+
+\subsection{Learning Objectives}
+
+\begin{concept}{Course Goals}\\
+Students will be able to:
+\begin{itemize}
+    \item List and identify several modes of operation of block memories in FPGA
+    \item Explain how to use block memories for clock domain crossing
+    \item Calculate signal widths for memories with different data bus widths
+    \item Understand how a block memory can be defined in VHDL code
+    \item Configure a block memory using the toolchain
+\end{itemize}
+\end{concept}
+
+\subsection{Recap: FPGA Memory Basics}
+
+\begin{remark}
+\textbf{Key Topics from Previous Lecture:}
+\begin{itemize}
+    \item Applications of FPGA memory
+    \item Architecture of SRAM cells
+    \item Memory cells organization
+    \item Timing diagrams of read/write accesses
+    \item Registered vs unregistered output modes
+\end{itemize}
+\end{remark}
+
+\subsection{Memory Block Configurations}
+
+\begin{definition}{4K-Bit Memory Block Configurations}\\
+Hard macros (silicon) of RAM blocks support various word sizes from 1 to 32 bits.
+
+\textbf{Key Characteristics:}
+\begin{itemize}
+    \item Toolchain combines RAM blocks to build desired word size and memory capacity
+    \item Even larger than 32 bits possible through block combination
+    \item Maximum performance: ~250 MHz
+    \item Total RAM bits per M4K block (including parity): 4,608 bits
+\end{itemize}
+
+\textbf{Supported Configurations:}
+\begin{itemize}
+    \item 4K $\times$ 1 bit
+    \item 2K $\times$ 2 bits
+    \item 1K $\times$ 4 bits
+    \item 512 $\times$ 8 bits
+    \item 512 $\times$ 9 bits (with parity)
+    \item 256 $\times$ 16 bits
+    \item 256 $\times$ 18 bits (with parity)
+    \item 128 $\times$ 32 bits (not available in true dual-port mode)
+    \item 128 $\times$ 36 bits (not available in true dual-port mode, with parity)
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 5
+% Description: Table of memory configurations
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_memory_configurations.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_memory_configurations.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Memory Operation Modes}
+
+\subsubsection{ROM Mode}
+
+\begin{definition}{Read-Only Memory (ROM) in FPGA}\\
+ROM blocks provide non-volatile storage initialized at configuration time.
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Memory contents loaded from external HEX file to configuration file
+    \item Contents programmed during FPGA configuration
+    \item Memory cannot be modified at runtime
+    \item Block type: AUTO (toolchain selects optimal implementation)
+\end{itemize}
+
+\textbf{Interface:}
+\begin{itemize}
+    \item \textbf{address:} Read address input
+    \item \textbf{read\_data:} Data output
+    \item \textbf{clock:} Synchronous clock (for registered output)
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 6
+% Description: ROM block diagram with configuration interface
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_rom_mode.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_rom_mode.png}
+\\
+
+\begin{definition}{Intel HEX Format}\\
+Intel HEX is a file format for representing binary data in ASCII text format.
+
+\textbf{Record Structure:}
+$$\text{:LLAAAATTDD...DDCC}$$
+
+Where:
+\begin{itemize}
+    \item \textbf{::} Start code (1 character)
+    \item \textbf{LL:} Byte count (2 hex digits) - number of data bytes
+    \item \textbf{AAAA:} Address (4 hex digits) - 16-bit address
+    \item \textbf{TT:} Record type (2 hex digits):
+    \begin{itemize}
+        \item 00 = Data record
+        \item 01 = End of file record
+        \item 02 = Extended segment address
+        \item 04 = Extended linear address
+    \end{itemize}
+    \item \textbf{DD...DD:} Data bytes (2n hex digits)
+    \item \textbf{CC:} Checksum (2 hex digits)
+\end{itemize}
+
+\textbf{Example Records:}
+\begin{verbatim}
+:040000100FFFF0000C   (Address 0x0000: 0xFF, 0xFF, 0x00, 0x00)
+:0400020000FFFF002F   (Address 0x0002: 0x00, 0xFF, 0xFF, 0x00)
+\end{verbatim}
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 7
+% Description: Intel HEX format structure diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_intel_hex_format.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_intel_hex_format.png}
+\\
+
+\subsubsection{Single Port RAM Mode}
+
+\begin{definition}{Single Port RAM}\\
+Single port RAM provides one port for both read and write operations.
+
+\textbf{Interface Signals:}
+\begin{itemize}
+    \item \textbf{write\_data:} Input data bus
+    \item \textbf{read\_data:} Output data bus
+    \item \textbf{write\_enable:} Write control signal
+    \item \textbf{address:} Memory address
+    \item \textbf{clock:} Synchronous clock
+\end{itemize}
+
+\textbf{Features:}
+\begin{itemize}
+    \item Memory contents may be preset using a HEX file
+    \item Contents initialized during configuration
+    \item Random access during operation
+    \item Read and write through same port (not simultaneous)
+\end{itemize}
+
+\textbf{Example Configuration:}
+\begin{itemize}
+    \item Data width: 8 bits
+    \item Address width: 5 bits
+    \item Capacity: $2^5 = 32$ words
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 8
+% Description: Single port RAM block diagram
+% Priority: CRITICAL
+% Suggested filename: lecture02a_single_port_ram.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_single_port_ram.png}
+\\
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 9
+% Description: Chip Planner view of single port RAM
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture02a_chip_planner_single_port.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_chip_planner_single_port.png}
+\\
+
+\subsubsection{Simple Dual Port Mode}
+
+\begin{definition}{Simple Dual Port RAM}\\
+Simple dual port mode provides separate ports for reading and writing.
+
+\textbf{Port Characteristics:}
+\begin{itemize}
+    \item \textbf{Port A:} Write-only
+    \item \textbf{Port B:} Read-only
+\end{itemize}
+
+\textbf{Interface Signals:}
+\begin{itemize}
+    \item \textbf{Write\_data:} Input data for writing
+    \item \textbf{Write\_address:} Address for write operations
+    \item \textbf{Write\_enable:} Write control signal
+    \item \textbf{Read\_data:} Output data from reading
+    \item \textbf{Read\_address:} Address for read operations
+    \item \textbf{clock:} Single clock for both ports
+\end{itemize}
+
+\textbf{Important Limitations:}
+\begin{itemize}
+    \item Port B does not know if there is any data written
+    \item Port A does not know if the data has been read
+    \item No handshaking mechanism between ports
+\end{itemize}
+
+\textbf{Configuration Options:}
+\begin{itemize}
+    \item Simple Dual Port
+    \item Synchronous inputs/outputs
+    \item One clock or dual clock operation
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 10
+% Description: Simple dual port RAM block diagram
+% Priority: CRITICAL
+% Suggested filename: lecture02a_simple_dual_port.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_simple_dual_port.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{True Dual Port Mode}
+
+\begin{definition}{True Dual Port RAM}\\
+True dual port mode allows both ports to read and write independently.
+
+\textbf{Port Capabilities:}
+\begin{itemize}
+    \item \textbf{Both Port A and Port B:} Can read AND write
+    \item Independent operation on both ports
+    \item Simultaneous access possible
+\end{itemize}
+
+\textbf{Interface Signals (per port):}
+\begin{itemize}
+    \item \textbf{address:} Memory address
+    \item \textbf{write\_data:} Input data for writing
+    \item \textbf{write\_enable:} Write control signal
+    \item \textbf{read\_data:} Output data from reading
+    \item \textbf{clock:} Synchronous clock (can be different for each port)
+\end{itemize}
+
+\textbf{Configuration:}
+\begin{itemize}
+    \item True Dual Port mode
+    \item Synchronous inputs/outputs
+    \item One clock or dual clock operation
+    \item Capacity: e.g., 32 words RAM
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 11
+% Description: True dual port RAM block diagram
+% Priority: CRITICAL
+% Suggested filename: lecture02a_true_dual_port.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_true_dual_port.png}
+\\
+
+\begin{remark}
+\textbf{Potential Issues in True Dual Port Mode:}
+
+What could go wrong?
+\begin{itemize}
+    \item \textbf{Write Conflict:} Both ports writing to same address simultaneously
+    \item \textbf{Read-During-Write:} Port B reading from address Port A is writing to
+    \item \textbf{No Port Coordination:} No port knows what the other is doing
+    \item \textbf{No Data Validation:} No checking mechanisms to ensure data being read has been written
+\end{itemize}
+
+\important{Careful design and handshaking protocols are required to avoid data corruption in true dual port configurations.}
+\end{remark}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 12
+% Description: True dual port potential problems diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_dual_port_problems.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_dual_port_problems.png}
+\\
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 13
+% Description: True dual port problem scenarios explained
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_dual_port_scenarios.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_dual_port_scenarios.png}
+\\
+
+\subsubsection{Triple Port Mode}
+
+\begin{concept}{Triple Port Memory}\\
+Triple port memory provides one write port and two independent read ports.
+
+\textbf{Port Configuration:}
+\begin{itemize}
+    \item \textbf{Write Port:} Single write address and data input
+    \item \textbf{Read Port A:} Independent read address and data output
+    \item \textbf{Read Port B:} Independent read address and data output
+\end{itemize}
+
+\textbf{Implementation:}
+The synthesis tool implements triple port memory using two dual-port RAM blocks:
+\begin{itemize}
+    \item Both blocks receive same write data
+    \item Each read port connects to separate RAM block
+    \item Ensures data consistency across read ports
+\end{itemize}
+
+\textbf{Synthesis Result:}
+\begin{itemize}
+    \item \texttt{altdpram:altdpram\_component1} - First dual-port RAM
+    \item \texttt{altdpram:altdpram\_component2} - Second dual-port RAM
+    \item Shared write interface
+    \item Independent read interfaces
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 14
+% Description: Triple port memory block diagram and synthesis result
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_triple_port.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_triple_port.png}
+\\
+
+\subsection{Different Bus Widths}
+
+\begin{concept}{Utilizing Different Bus Widths}\\
+FPGA memory blocks support different data widths on read and write ports.
+
+\textbf{Key Principle:}
+Both sides must cover the full memory space:
+$$\text{Number of words} \times \text{Word size} = \text{Capacity}$$
+
+\textbf{Relationship:}
+\begin{itemize}
+    \item \textbf{Larger word size} $\Rightarrow$ Smaller address width
+    \item \textbf{Smaller word size} $\Rightarrow$ Larger address width
+\end{itemize}
+
+\textbf{Example Configuration:}
+\begin{itemize}
+    \item \textbf{Write Port:} 8-bit data width
+    \item \textbf{Read Port:} 32-bit data width
+    \item Ratio: 1:4 (read width is 4× write width)
+    \item Read address is 2 bits narrower than write address
+\end{itemize}
+
+\textbf{Use Case:}
+Useful when FPGA logic needs word size larger than bus width of processor.
+\end{concept}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 16
+% Description: Different bus width configuration diagram
+% Priority: CRITICAL
+% Suggested filename: lecture02a_different_bus_widths.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_different_bus_widths.png}
+\\
+
+\begin{example2}{Exercise: Different Word Widths}\\
+\textbf{Given:} Simple dual-port memory with different input and output word widths.
+
+\textbf{Task:} Calculate the width of both read and write address signals.
+
+\textbf{Specifications:}
+\begin{itemize}
+    \item \textbf{Capacity:} 16,384 bits = 16 Kbit
+    \item \textbf{Write data width:} 16 bits
+    \item \textbf{Read data width:} 256 bits
+\end{itemize}
+
+\tcblower
+
+\textbf{Solution:}
+
+\textbf{Write Side:}
+\begin{align*}
+\text{Number of words} &= \frac{16,384 \text{ bits}}{16 \text{ bits/word}} = 1,024 \text{ words} \\
+\text{Address bits} &= \log_2(1,024) = 10 \text{ bits}
+\end{align*}
+
+\textbf{Read Side:}
+\begin{align*}
+\text{Number of words} &= \frac{16,384 \text{ bits}}{256 \text{ bits/word}} = 64 \text{ words} \\
+\text{Address bits} &= \log_2(64) = 6 \text{ bits}
+\end{align*}
+
+\textbf{Answer:}
+\begin{itemize}
+    \item Write address: \texttt{address[9..0]} (10 bits)
+    \item Read address: \texttt{rdaddress[5..0]} (6 bits)
+\end{itemize}
+\end{example2}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 21
+% Description: Exercise problem diagram
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture02a_exercise_problem.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_exercise_problem.png}
+\\
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 22
+% Description: Exercise solution diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_exercise_solution.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_exercise_solution.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Clock Domain Crossing}
+
+\begin{concept}{Separated Clock Domains}\\
+Memory blocks can operate with different clock domains on input and output.
+
+\textbf{Configuration Options:}
+
+\textbf{Option 1: Input/Output Clock Separation}
+\begin{itemize}
+    \item Inputs controlled by \texttt{inclock}
+    \item Outputs controlled by \texttt{outclock}
+    \item Data written in one domain, consumed in another
+    \item Both clocks can be related or independent
+\end{itemize}
+
+\textbf{Option 2: Write/Read Clock Separation}
+\begin{itemize}
+    \item Writing controlled by \texttt{wrclock}
+    \item Reading controlled by \texttt{rdclock}
+    \item Completely independent writer and reader
+    \item Asynchronous operation between domains
+\end{itemize}
+
+\important{Clock domain crossing requires careful design to avoid metastability and data corruption.}
+\end{concept}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 17
+% Description: Clock domain separation configurations
+% Priority: CRITICAL
+% Suggested filename: lecture02a_clock_domains.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_clock_domains.png}
+\\
+
+\begin{example2}{Clock Crossing Bridge Using FIFO}\\
+\textbf{Application:} Audio data buffering with clock domain crossing
+
+\textbf{Configuration:}
+\begin{itemize}
+    \item \textbf{Write Clock (WR\_CLK):} 12.288 MHz (I2S audio clock)
+    \item \textbf{Read Clock (RD\_CLK):} 50 MHz (system clock)
+    \item \textbf{FIFO Depth:} 256 words
+    \item \textbf{Write Enable:} Controlled by I2S protocol
+    \item \textbf{Data Path:} Serial audio data input via I2S
+\end{itemize}
+
+\tcblower
+
+\textbf{Operation:}
+\begin{itemize}
+    \item Input on fast clock, but sparse writing events (every 256 cycles)
+    \item Output on slow clock, consuming data every cycle
+    \item Control logic provided by FIFO soft IP block or custom developer logic
+    \item Some delay introduced by FIFO (typically a few clock cycles)
+\end{itemize}
+
+\textbf{Benefits:}
+\begin{itemize}
+    \item Safe data transfer between clock domains
+    \item Rate buffering and flow control
+    \item Prevents data loss due to clock frequency mismatch
+\end{itemize}
+\end{example2}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 18
+% Description: FIFO clock crossing bridge diagram with I2S
+% Priority: CRITICAL
+% Suggested filename: lecture02a_fifo_clock_crossing.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_fifo_clock_crossing.png}
+\\
+
+\subsection{Byte Enable Feature}
+
+\begin{definition}{Byte Enable}\\
+Byte enable allows writing individual bytes of wider data inputs.
+
+\textbf{Signal:} \texttt{byteena[3..0]} for 32-bit data
+
+\textbf{Functionality:}
+\begin{itemize}
+    \item Each bit in \texttt{byteena} controls one byte of data
+    \item \texttt{byteena[0] = '1'} enables writing of data[7..0]
+    \item \texttt{byteena[1] = '1'} enables writing of data[15..8]
+    \item \texttt{byteena[2] = '1'} enables writing of data[23..16]
+    \item \texttt{byteena[3] = '1'} enables writing of data[31..24]
+\end{itemize}
+
+\textbf{Use Cases:}
+\begin{itemize}
+    \item Partial word updates
+    \item Byte-addressable memory emulation
+    \item Efficient memory usage in mixed-width systems
+\end{itemize}
+
+\textbf{Alternative:} Multiple write operations with address manipulation
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 19
+% Description: Byte enable feature question
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture02a_byte_enable_intro.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_byte_enable_intro.png}
+\\
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 20
+% Description: Byte enable configuration in IP
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_byte_enable_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_byte_enable_config.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{VHDL Implementation}
+
+\begin{concept}{Why Use VHDL for RAM Blocks?}\\
+Advantages of describing RAM blocks in VHDL:
+\begin{itemize}
+    \item \textbf{Platform Independence:} Code portable across FPGA families
+    \item \textbf{Easier Customization:} Modify parameters without GUI
+    \item \textbf{Reusability:} Parameterized designs for multiple uses
+    \item \textbf{Scriptable:} Automate generation and configuration
+    \item \textbf{Simulation:} Easier to simulate and verify behavior
+\end{itemize}
+\end{concept}
+
+\begin{definition}{VHDL Array Type}\\
+Arrays in VHDL allow defining memory structures.
+
+\textbf{Syntax:}
+\begin{lstlisting}[language=VHDL, style=base]
+type <type_name> is array (<low> to <high>) of <data_type>;
+\end{lstlisting}
+
+\textbf{Example:}
+\begin{lstlisting}[language=VHDL, style=base]
+type 64b_ram is array(0 to 7) of std_logic_vector(7 downto 0);
+\end{lstlisting}
+
+This defines an array of 8 elements, each 8 bits wide, creating a 64-bit RAM structure.
+
+\textbf{Memory Layout:}
+\begin{itemize}
+    \item Index 0: \texttt{00000000}
+    \item Index 1: \texttt{00010001}
+    \item Index 2: \texttt{00100010}
+    \item Index 3: \texttt{00110011}
+    \item Index 4: \texttt{01000100}
+    \item Index 5: \texttt{01010101}
+    \item Index 6: \texttt{01100110}
+    \item Index 7: \texttt{01110111}
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 25
+% Description: VHDL array type memory layout visualization
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_vhdl_array.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_vhdl_array.png}
+\\
+
+\begin{code}{Generic RAM in VHDL}\\
+Complete VHDL code for a parameterized RAM block:
+
+\begin{lstlisting}[language=VHDL, style=basesmol]
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use work.all;
+
+entity ram_generic is
+  generic (
+    RAM_WIDTH : natural := 10;  -- Port width
+    RAM_DEPTH : natural := 12); -- Address width
+  port (
+    clock   : in  std_logic;
+    address : in  std_logic_vector(RAM_DEPTH-1 downto 0);
+    wren    : in  std_logic;
+    data    : in  std_logic_vector(RAM_WIDTH-1 downto 0);
+    q       : out std_logic_vector(RAM_WIDTH-1 downto 0));
+end ram_generic;
+
+architecture rtl of ram_generic is
+  -- Define memory type: array of words
+  type mem is array(0 to (2**RAM_DEPTH)-1) of 
+    std_logic_vector(RAM_WIDTH-1 downto 0);
+  signal ram_block : mem;
+begin
+  process(all)
+  begin
+    if rising_edge(clock) then
+      if (wren = '1') then
+        -- Write operation
+        ram_block(to_integer(unsigned(address))) <= data;
+      end if;
+      -- Read operation (synchronous)
+      q <= ram_block(to_integer(unsigned(address)));
+    end if;
+  end process;
+end rtl;
+\end{lstlisting}
+
+\textbf{Key Features:}
+\begin{itemize}
+    \item Generic parameters for width and depth
+    \item Synchronous read and write
+    \item Type conversion: \texttt{to\_integer(unsigned(address))}
+    \item Infers block RAM in synthesis
+\end{itemize}
+\end{code}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 26
+% Description: Complete VHDL RAM code
+% Priority: CRITICAL
+% Suggested filename: lecture02a_vhdl_ram_code.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_vhdl_ram_code.png}
+\\
+
+\begin{example}
+\textbf{Synthesis Result in Cyclone IV:}
+
+The VHDL code synthesizes to:
+\begin{itemize}
+    \item \textbf{SYNC\_RAM block:} Inferred synchronous RAM
+    \item \textbf{Output registers:} \texttt{q[0]\textasciitilde reg[9..0]}
+    \item \textbf{Inputs:} clock, data[9..0], address[11..0], wren
+\end{itemize}
+
+The synthesizer recognizes the RAM pattern and maps it to dedicated hardware blocks.
+\end{example}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 27
+% Description: Synthesis result schematic
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_synthesis_result.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_synthesis_result.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{IP Catalog Configuration}
+
+\begin{KR}{Configuring Memory Using IP Catalog}\\
+\textbf{Step 1: Open IP Catalog}
+\begin{itemize}
+    \item In Quartus, navigate to Tools $\rightarrow$ IP Catalog
+    \item Select device family: Cyclone V (E/GX/GT/SX/SE/ST)
+\end{itemize}
+
+\textbf{Step 2: Select Memory Type}
+\begin{itemize}
+    \item Navigate to: Library $\rightarrow$ Basic Functions $\rightarrow$ On Chip Memory
+    \item Choose from available options:
+    \begin{itemize}
+        \item FIFO
+        \item RAM Initializer
+        \item RAM: 1-PORT
+        \item RAM: 2-PORT
+        \item ROM: 1-PORT
+        \item ROM: 2-PORT
+        \item Shift register (RAM-based)
+    \end{itemize}
+\end{itemize}
+
+\textbf{Step 3: Configure Memory Parameters}
+See detailed configuration options below.
+\end{KR}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 29
+% Description: IP Catalog navigation screenshot
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_ip_catalog.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_ip_catalog.png}
+\\
+
+\subsubsection{Data Bus Width and Depth Configuration}
+
+\begin{KR}{Configuring Width and Depth}\\
+\textbf{Configuration Parameters:}
+
+\textbf{Width Configuration:}
+\begin{itemize}
+    \item Question: "How wide should the 'q' output bus be?"
+    \item Example: 16 bits
+    \item Arbitrary values allowed
+\end{itemize}
+
+\textbf{Depth Configuration:}
+\begin{itemize}
+    \item Question: "How many 16-bit words of memory?"
+    \item Example: 65,536 words
+    \item Results in: 96 bits + 128 M10K + 3 registers
+\end{itemize}
+
+\textbf{Memory Block Type:}
+\begin{itemize}
+    \item \textbf{Auto:} Let toolchain decide optimal implementation
+    \item \textbf{MLAB:} Force use of Memory LAB (small distributed RAM)
+    \item \textbf{M10K:} Force use of M10K blocks
+\end{itemize}
+
+\textbf{Maximum Block Depth:}
+\begin{itemize}
+    \item Set to Auto for optimal packing
+    \item Can specify manual limit if needed
+\end{itemize}
+
+\textbf{Clocking Method:}
+\begin{itemize}
+    \item \textbf{Single clock:} One clock for all operations
+    \item \textbf{Dual clock:} Separate input and output clocks
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 30
+% Description: Width and depth configuration screen
+% Priority: CRITICAL
+% Suggested filename: lecture02a_width_depth_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_width_depth_config.png}
+\\
+
+\subsubsection{Port and Enable Configuration}
+
+\begin{KR}{Configuring Ports and Enables}\\
+\textbf{Registered Ports:}
+\begin{itemize}
+    \item $\square$ 'data' and 'wren' input ports
+    \item $\square$ 'address' input port
+    \item $\square$ 'q' output port (recommended for high performance)
+\end{itemize}
+
+\textbf{Clock Enable:}
+\begin{itemize}
+    \item $\square$ Create one clock enable signal for each clock
+    \item All registered ports controlled by enable signal
+\end{itemize}
+
+\textbf{Byte Enable:}
+\begin{itemize}
+    \item $\square$ Create byte enable for port A
+    \item Specify byte width (typically 8 bits)
+\end{itemize}
+
+\textbf{Asynchronous Clear:}
+\begin{itemize}
+    \item $\square$ Create 'aclr' asynchronous clear for registered ports
+\end{itemize}
+
+\textbf{Read Enable:}
+\begin{itemize}
+    \item $\square$ Create 'rden' read enable signal (optional)
+\end{itemize}
+
+\important{Registering the 'q' output improves timing performance but adds one cycle latency.}
+\end{KR}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 31
+% Description: Port configuration screen
+% Priority: CRITICAL
+% Suggested filename: lecture02a_port_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_port_config.png}
+\\
+
+\subsubsection{Read-During-Write Configuration}
+
+\begin{definition}{Read-During-Write Behavior}\\
+Defines output behavior when reading from a location being written to.
+
+\textbf{Options:}
+\begin{itemize}
+    \item \textbf{New Data:} Output shows newly written data
+    \item \textbf{Old Data:} Output shows data before write
+    \item \textbf{Don't Care:} Output is undefined (X in simulation)
+\end{itemize}
+
+\textbf{Byte Enable Interaction:}
+\begin{itemize}
+    \item $\square$ Get X's for write-masked bytes instead of old data
+    \item Applies when byte enable is used
+    \item Helps identify unintended read-during-write conditions
+\end{itemize}
+
+\important{Read-during-write behavior is crucial for avoiding data hazards in memory access patterns.}
+\end{definition}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 32
+% Description: Read-during-write configuration
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_read_during_write.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_read_during_write.png}
+\\
+
+\subsubsection{Memory Initialization}
+
+\begin{KR}{Initializing Memory Contents}\\
+\textbf{Question:} "Do you want to specify the initial content of the memory?"
+
+\textbf{Options:}
+
+\textbf{Option 1: Blank Memory}
+\begin{itemize}
+    \item $\circ$ No, leave it blank
+    \item Memory contains undefined values at power-up
+\end{itemize}
+
+\textbf{Option 2: Simulation-Only Init}
+\begin{itemize}
+    \item $\circ$ Yes, but leave it blank in simulation
+    \item Initialize for hardware, but not in simulation
+\end{itemize}
+
+\textbf{Option 3: File-Based Init}
+\begin{itemize}
+    \item $\circ$ Yes, use this file for memory content data
+    \item File formats:
+    \begin{itemize}
+        \item Hexadecimal (Intel-format) File [.hex]
+        \item Memory Initialization File [.mif]
+    \end{itemize}
+    \item Specify filename and path
+    \item Select which port's dimensions to match (Port A or Port B)
+\end{itemize}
+
+\textbf{Advanced Feature:}
+\begin{itemize}
+    \item $\square$ Use Memory Content Editor
+    \item Capture and update content independently of system clock
+    \item Requires Instance ID assignment
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 33
+% Description: Memory initialization configuration
+% Priority: IMPORTANT
+% Suggested filename: lecture02a_memory_init.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_memory_init.png}
+\\
+
+\subsubsection{Synthesis and Simulation Support}
+
+\begin{remark}
+\textbf{Simulation Libraries:}
+
+To properly simulate the generated design, the following simulation model files are needed:
+\begin{itemize}
+    \item \textbf{altera\_mf:} Altera megafunction simulation library
+\end{itemize}
+
+\textbf{Timing and Resource Estimation:}
+\begin{itemize}
+    \item $\square$ Generate netlist for timing and resource estimation
+    \item Enables better design optimization in third-party synthesis tools
+    \item Check with tool vendor for support information
+    \item Note: Netlist generation can be time-intensive
+    \item Process time depends on design size and system speed
+\end{itemize}
+
+\important{Not all third-party synthesis tools support netlist-based estimation. Verify compatibility before enabling this feature.}
+\end{remark}
+
+% TODO: Add image from SCD_2a_Memory_2.pdf, Page 34
+% Description: Synthesis and simulation configuration
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture02a_synthesis_sim.png
+\\
+% \includegraphics[width=\linewidth]{lecture02a_synthesis_sim.png}
+\\
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 24
+% CRITICAL priority: 8
+% IMPORTANT priority: 12
+% SUPPLEMENTARY priority: 4
+%
+% Quick extraction checklist:
+% [ ] [SCD_2a_Memory_2.pdf, Page 5] - Memory configurations table (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 6] - ROM mode block diagram (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 7] - Intel HEX format structure (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 8] - Single port RAM diagram (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 9] - Chip Planner single port view (SUPPLEMENTARY)
+% [ ] [SCD_2a_Memory_2.pdf, Page 10] - Simple dual port diagram (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 11] - True dual port diagram (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 12] - Dual port problems (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 13] - Dual port scenarios (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 14] - Triple port memory (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 16] - Different bus widths (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 17] - Clock domain separation (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 18] - FIFO clock crossing (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 19] - Byte enable intro (SUPPLEMENTARY)
+% [ ] [SCD_2a_Memory_2.pdf, Page 20] - Byte enable config (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 21] - Exercise problem (SUPPLEMENTARY)
+% [ ] [SCD_2a_Memory_2.pdf, Page 22] - Exercise solution (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 25] - VHDL array visualization (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 26] - VHDL RAM code (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 27] - Synthesis result (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 29] - IP Catalog navigation (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 30] - Width/depth config (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 31] - Port configuration (CRITICAL)
+% [ ] [SCD_2a_Memory_2.pdf, Page 32] - Read-during-write (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 33] - Memory initialization (IMPORTANT)
+% [ ] [SCD_2a_Memory_2.pdf, Page 34] - Synthesis/simulation (SUPPLEMENTARY)
+% =====================

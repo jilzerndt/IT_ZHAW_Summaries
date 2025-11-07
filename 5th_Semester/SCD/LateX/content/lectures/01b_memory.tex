@@ -1,0 +1,743 @@
+\section{FPGA Block Memory}
+
+\subsection{Introduction to FPGA Block Memory}
+
+\begin{definition}{FPGA Block Memory}\\
+FPGA block memory consists of small blocks of random access memory integrated into the FPGA fabric.
+
+\textbf{Key Characteristics:}
+\begin{itemize}
+    \item Used instead of thousands of flip-flops for data storage
+    \item Multiple applications in digital design
+    \item Dual-port capability for simultaneous access
+    \item Configurable data widths and addressing modes
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 2
+% Description: FPGA block memory symbol showing ports and parameters
+% Priority: CRITICAL
+% Suggested filename: lecture01b_block_memory_symbol.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_block_memory_symbol.png}
+\\
+
+\begin{remark}
+FPGA fabric contains not only logic cells but also dedicated SRAM blocks and DSP blocks for efficient implementation of memory and arithmetic operations.
+\end{remark}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 3
+% Description: FPGA fabric diagram showing SRAM and DSP blocks
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_fpga_fabric_blocks.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_fpga_fabric_blocks.png}
+\\
+
+\subsection{Learning Objectives}
+
+\begin{concept}{Course Learning Goals}\\
+After this lecture and lab exercise, students will be able to:
+\begin{itemize}
+    \item Understand the architecture of FPGA block memory
+    \item Explain the difference between registered and unregistered output from a memory block
+    \item Understand the consequences of either configuration choice
+    \item Sketch and interpret timing diagrams of memory accesses
+    \item List at least four applications of FPGA block memory
+\end{itemize}
+\end{concept}
+
+\subsection{Applications of FPGA Block Memory}
+
+\begin{example}
+\textbf{Common Applications:}
+\begin{itemize}
+    \item \textbf{Look-Up Tables (LUT):} e.g., Synthesizer sine wave generation
+    \item \textbf{ROM/RAM/Cache:} In SoC processors or softcore processors
+    \item \textbf{Configuration/Status Register Bank:}
+    \begin{itemize}
+        \item Port A: Processor access
+        \item Port B: Logic access
+    \end{itemize}
+    \item \textbf{Cache for Flash Memory:} Speed up access to slow external flash
+    \item \textbf{FIFOs:}
+    \begin{itemize}
+        \item Receive/transmit buffers
+        \item Clock crossing bridges
+    \end{itemize}
+\end{itemize}
+\end{example}
+
+\subsubsection{Direct Digital Synthesis (DDS)}
+
+\begin{concept}{LUT in Direct Digital Synthesis}\\
+In DDS, a lookup table stores pre-calculated values of a sine wave period.
+
+\textbf{Process:}
+\begin{enumerate}
+    \item Phase accumulator generates address (phase index)
+    \item LUT outputs corresponding sine value
+    \item Low-pass filter smooths the output
+    \item Result: Clean sinusoidal waveform
+\end{enumerate}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Fast generation of complex waveforms
+    \item Precise frequency control
+    \item Low resource usage
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 8
+% Description: DDS block diagram with LUT, accumulator, and low-pass filter
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_dds_diagram.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_dds_diagram.png}
+\\
+
+\subsubsection{FIFO Buffers}
+
+\begin{definition}{FIFO (First-In-First-Out) Buffer}\\
+A FIFO is a data structure where the first element added is the first one to be removed.
+
+\textbf{Key Operations:}
+\begin{itemize}
+    \item \textbf{Enqueue:} Add element to back of queue
+    \item \textbf{Dequeue:} Remove element from front of queue
+\end{itemize}
+
+\textbf{Use Cases:}
+\begin{itemize}
+    \item Buffering data between different clock domains
+    \item Rate matching between fast and slow interfaces
+    \item Packet buffering in communication systems
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 9
+% Description: FIFO buffer illustration showing enqueue and dequeue operations
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_fifo_buffer.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_fifo_buffer.png}
+\\
+
+\subsubsection{Clock Crossing Bridge}
+
+\begin{example2}{Using Block Memory for Clock Domain Crossing}\\
+\textbf{Application:} Decoupling clock frequencies in audio systems
+
+\textbf{Example Configuration:}
+\begin{itemize}
+    \item Write Clock (WR\_CLK): 12.288 MHz (I2S audio clock)
+    \item Read Clock (RD\_CLK): 50 MHz (system clock)
+    \item FIFO depth: 256 words
+    \item Serial audio data input via I2S protocol
+\end{itemize}
+
+\tcblower
+
+\textbf{Benefits:}
+\begin{itemize}
+    \item Safely transfers data between clock domains
+    \item Prevents metastability issues
+    \item Allows for rate buffering
+    \item Provides elastic buffer for timing variations
+\end{itemize}
+\end{example2}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 10
+% Description: Clock crossing bridge using FIFO with different clock domains
+% Priority: CRITICAL
+% Suggested filename: lecture01b_clock_crossing_fifo.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_clock_crossing_fifo.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{Cache for Flash Memory}
+
+\begin{concept}{Memory Hierarchy}\\
+Memory systems follow a general principle: \textbf{larger = slower = cheaper}
+
+\textbf{Hierarchy (fast to slow):}
+\begin{enumerate}
+    \item Registers (fastest, smallest, most expensive per bit)
+    \item Cache (FPGA Block RAM)
+    \item Main Memory (external DRAM)
+    \item Flash Memory (non-volatile, slowest)
+\end{enumerate}
+
+Block RAM can serve as cache to speed up access to slow external flash memory.
+\end{concept}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 11
+% Description: Memory hierarchy diagram showing flash and block RAM
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_memory_hierarchy.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_memory_hierarchy.png}
+\\
+
+\subsubsection{Character-Based Graphics Controller}
+
+\begin{example2}{Video Controller with Character Memory}\\
+\textbf{System Overview:}
+\begin{itemize}
+    \item \textbf{Character Set:} 64 unique characters
+    \item \textbf{Screen Buffer:} 3072 character positions
+    \item Uses block RAM to store character and color data
+\end{itemize}
+
+\tcblower
+
+\textbf{Architecture Components:}
+\begin{itemize}
+    \item \textbf{Character RAM:} Stores which character at each position
+    \item \textbf{Color RAM:} Stores color attributes for each position
+    \item \textbf{Graphic RAM:} Stores pixel patterns for characters
+    \item \textbf{Video Counter:} Generates timing signals
+    \item \textbf{Color Multiplexer:} Selects output colors
+\end{itemize}
+\end{example2}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 12
+% Description: Character-based graphics display example
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture01b_character_graphics.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_character_graphics.png}
+\\
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 13
+% Description: Block diagram of video controller showing all RAM blocks and data paths
+% Priority: CRITICAL
+% Suggested filename: lecture01b_video_controller_diagram.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_video_controller_diagram.png}
+\\
+
+\subsection{SRAM Cell Architecture}
+
+\begin{definition}{Volatile CMOS Memory Cell}\\
+SRAM (Static Random Access Memory) uses a cross-coupled inverter pair to store one bit.
+
+\textbf{Components:}
+\begin{itemize}
+    \item \textbf{Two Cross-Coupled Inverters:} Form a bistable latch
+    \item \textbf{Two Access Transistors:} Connect cell to bit lines
+    \item \textbf{Word Line:} Activates access transistors for read/write
+    \item \textbf{Bit Lines (true and complement):} Transfer data in/out
+\end{itemize}
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Volatile: Data lost when power removed
+    \item Static: No refresh needed (unlike DRAM)
+    \item Fast: Single-cycle access possible
+    \item Large: 6 transistors per bit
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 15
+% Description: CMOS SRAM cell circuit diagram
+% Priority: CRITICAL
+% Suggested filename: lecture01b_sram_cell_circuit.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_sram_cell_circuit.png}
+\\
+
+\begin{concept}{Organization of Memory Cells}\\
+In a discrete SRAM chip, memory cells are organized in a matrix:
+\begin{itemize}
+    \item \textbf{Word Lines:} Select rows of cells
+    \item \textbf{Bit Lines:} Transfer data from/to selected cells
+    \item \textbf{Address Decoder:} Activates appropriate word line
+    \item \textbf{Sense Amplifiers:} Detect small voltage changes during read
+    \item \textbf{Write Drivers:} Drive bit lines during write operations
+    \item \textbf{RD/WR\# Control:} Selects read or write operation
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 16
+% Description: SRAM organization showing word lines, bit lines, and decoder
+% Priority: CRITICAL
+% Suggested filename: lecture01b_sram_organization.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_sram_organization.png}
+\\
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 17
+% Description: Die photo of SRAM chip showing physical layout
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture01b_sram_die_photo.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_sram_die_photo.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{FPGA RAM Block Architecture}
+
+\begin{definition}{Cyclone V Memory Blocks}\\
+Cyclone V FPGAs contain two types of RAM blocks:
+
+\begin{itemize}
+    \item \textbf{M10K Block:} 10 Kbit capacity
+    \begin{itemize}
+        \item Larger memory blocks for bulk storage
+        \item Can be configured in various width/depth combinations
+    \end{itemize}
+    \item \textbf{MLAB (Memory Logic Array Block):} 640 bit capacity
+    \begin{itemize}
+        \item Smaller, distributed memory
+        \item Can be used as small FIFOs or shift registers
+    \end{itemize}
+\end{itemize}
+
+\textbf{Key Feature:} Address decoder and control logic are integrated, enabling fast clock speeds.
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 18
+% Description: FPGA RAM block structure
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_fpga_ram_block.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_fpga_ram_block.png}
+\\
+
+\begin{concept}{Multiport RAM Architecture}\\
+FPGA RAM blocks feature dual-port architecture:
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item \textbf{Two Sides:} Port A and Port B
+    \item \textbf{Independent Clocks:} Each port can have different clock
+    \item \textbf{Different Data Widths:} Port A and B can have different widths
+    \item \textbf{Mixed-Port Data Flow:} Write on one port, read on other
+    \item \textbf{Same-Port Data Flow:} Read and write on same port
+\end{itemize}
+
+\textbf{Example Application:}
+\begin{itemize}
+    \item Port A: HPS (Hard Processor System) access
+    \item Port B: FPGA logic access
+    \item Result: Clock-independent shared memory between CPU and FPGA
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 19
+% Description: Dual-port RAM block diagram showing Port A and Port B
+% Priority: CRITICAL
+% Suggested filename: lecture01b_dual_port_ram.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_dual_port_ram.png}
+\\
+
+\subsection{Memory Timing}
+
+\subsubsection{SRAM Read Cycle}
+
+\begin{definition}{SRAM Read Timing Parameters}\\
+\textbf{Key Timing Parameters:}
+\begin{itemize}
+    \item \textbf{$t_{RC}$ (Read Cycle Time):} Minimum time the address must be applied (typical: 10 ns)
+    \item \textbf{$t_{AA}$ (Address Access Time):} Time from address stable until data valid (typical: 10 ns)
+    \item \textbf{$t_{OHA}$ (Output Hold Time):} Time data remains valid after address change (typical: 2 ns)
+\end{itemize}
+
+\textbf{Read Sequence:}
+\begin{enumerate}
+    \item Apply stable address
+    \item Wait for $t_{AA}$
+    \item Data becomes valid at output
+    \item Data remains valid for $t_{OHA}$ after address changes
+\end{enumerate}
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 20
+% Description: SRAM read cycle timing diagram
+% Priority: CRITICAL
+% Suggested filename: lecture01b_sram_read_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_sram_read_timing.png}
+\\
+
+\subsubsection{SRAM Write Cycle}
+
+\begin{definition}{SRAM Write Timing Parameters}\\
+\textbf{Key Timing Parameters:}
+\begin{itemize}
+    \item \textbf{$t_{WC}$ (Write Cycle):} Minimum time an address must be valid
+    \item \textbf{$t_{SA}$ (Address Setup Time):} Minimum time address must be applied before WE active (typical: 0 ns)
+    \item \textbf{$t_{PWE}$ (Write Pulse Width):} Minimal width of write pulse (typical: 8 ns)
+    \item \textbf{$t_{HA}$ (Address Hold):} Minimum time address may go unstable after rising edge of WE (typical: 0 ns)
+    \item \textbf{$t_{SD}$ (Data Setup Time):} Minimum time data must be stable before rising edge of WE (typical: 7 ns)
+    \item \textbf{$t_{HD}$ (Data Hold Time):} Minimum time data must remain stable after rising edge of WE (typical: 0 ns)
+\end{itemize}
+
+\textbf{Write Sequence:}
+\begin{enumerate}
+    \item Apply address ($t_{SA}$ before WE)
+    \item Apply data ($t_{SD}$ before WE rising edge)
+    \item Assert WE (write enable) for at least $t_{PWE}$
+    \item Hold address for $t_{HA}$ after WE
+    \item Hold data for $t_{HD}$ after WE
+\end{enumerate}
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 21
+% Description: SRAM write cycle timing diagram
+% Priority: CRITICAL
+% Suggested filename: lecture01b_sram_write_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_sram_write_timing.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{FPGA Memory Read and Write Operations}
+
+\subsubsection{Write Operation}
+
+\begin{definition}{FPGA Memory Write Timing}\\
+Writing to FPGA block memory is synchronous (clock-driven).
+
+\textbf{Signals:}
+\begin{itemize}
+    \item \textbf{CLK:} Clock signal
+    \item \textbf{WREN:} Write enable (active high)
+    \item \textbf{ADDRESS:} Memory address
+    \item \textbf{DATA\_IN:} Data to be written
+\end{itemize}
+
+\textbf{Write Process:}
+\begin{enumerate}
+    \item On rising edge of CLK:
+    \begin{itemize}
+        \item If WREN = 1: DATA\_IN is written to ADDRESS
+        \item If WREN = 0: No write occurs
+    \end{itemize}
+    \item Data is stored in memory cell
+    \item Write completes in one clock cycle
+\end{enumerate}
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 22
+% Description: FPGA memory write block diagram and timing
+% Priority: CRITICAL
+% Suggested filename: lecture01b_fpga_write_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_fpga_write_timing.png}
+\\
+
+\begin{example}
+\textbf{Sequential Writing:}
+Writing to consecutive memory addresses:
+\begin{itemize}
+    \item Clock cycle 1: Write to address a0
+    \item Clock cycle 2: Write to address a1
+    \item Clock cycle 3: Write to address a2
+    \item Each write occurs on the rising edge of CLK when WREN is high
+\end{itemize}
+\end{example}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 23
+% Description: Sequential write timing diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_sequential_write.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_sequential_write.png}
+\\
+
+\subsubsection{Read Operation - Asynchronous Mode}
+
+\begin{definition}{Asynchronous Read Mode}\\
+In asynchronous (unregistered) read mode, data appears at the output after internal memory access delay.
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item \textbf{No output register:} Data comes directly from memory array
+    \item \textbf{Faster initial access:} Data available within same clock cycle
+    \item \textbf{Combinatorial path:} Creates longer critical path
+    \item \textbf{Lower $f_{max}$:} Reduces maximum achievable clock frequency
+\end{itemize}
+
+\textbf{Read Enable:} Optional signal (rden) can gate the output
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 24
+% Description: FPGA memory read block diagram (asynchronous)
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_fpga_read_async.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_fpga_read_async.png}
+\\
+
+\subsubsection{Read Operation - Synchronous Mode}
+
+\begin{definition}{Synchronous Read Mode}\\
+In synchronous (registered) read mode, data is latched in an output register.
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item \textbf{Output register:} Data latched on clock edge
+    \item \textbf{One cycle latency:} Data available one clock cycle after address
+    \item \textbf{Registered path:} Breaks combinatorial path
+    \item \textbf{Higher $f_{max}$:} Enables higher clock frequencies
+\end{itemize}
+
+\textbf{Timing:}
+\begin{itemize}
+    \item Clock cycle $n$: Address applied
+    \item Clock cycle $n+1$: Data available at output
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 25
+% Description: FPGA memory read block diagram (synchronous)
+% Priority: CRITICAL
+% Suggested filename: lecture01b_fpga_read_sync.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_fpga_read_sync.png}
+\\
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 26
+% Description: Synchronous read timing diagram showing one-cycle delay
+% Priority: CRITICAL
+% Suggested filename: lecture01b_sync_read_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_sync_read_timing.png}
+\\
+
+\subsection{Comparison of Read Modes}
+
+\begin{highlight}{Asynchronous vs Synchronous Read}\\
+\textbf{Path Delay Analysis:}
+
+\textbf{Asynchronous Mode:}
+$$\text{Path delay} = t_{clk\rightarrow q} + t_{mem} + t_{rout} + t_{su} = 0.5 + 2.5 + 1.5 + 0.5 = 5.0 \text{ ns}$$
+$$f_{max} = 200 \text{ MHz}$$
+
+\textbf{Synchronous Mode:}
+\begin{itemize}
+    \item Memory to register: $t_{mem} = 2.5$ ns
+    \item Register to logic cell: Standard registered path
+    \item $f_{max} = 286$ MHz (from memory)
+    \item $f_{max} = 400$ MHz (M10K block capability)
+\end{itemize}
+
+\important{Synchronous mode enables higher clock frequencies by breaking the combinatorial path, at the cost of one cycle latency.}
+\end{highlight}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 27
+% Description: Path delay comparison diagram for async vs sync modes
+% Priority: CRITICAL
+% Suggested filename: lecture01b_read_mode_comparison.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_read_mode_comparison.png}
+\\
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 28
+% Description: Timing diagram comparing async and sync read
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_async_vs_sync_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_async_vs_sync_timing.png}
+\\
+
+\begin{remark}
+\textbf{Trade-offs:}
+
+\textbf{Asynchronous Mode (no output FF):}
+\begin{itemize}
+    \item[+] Data available after one clock cycle
+    \item[-] Combinatorial path is longer (slower clock possible)
+\end{itemize}
+
+\textbf{Synchronous Mode (with output FF):}
+\begin{itemize}
+    \item[+] Higher maximum clock frequency
+    \item[+] Better timing closure
+    \item[-] One additional cycle latency
+\end{itemize}
+\end{remark}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Performance Specifications}
+
+\begin{highlight}{Speed of Embedded Memory in Cyclone V}\\
+\textbf{Performance by Configuration:}
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Memory Mode} & \textbf{ALUTs} & \textbf{Memory} & \textbf{Speed} & \textbf{Unit} \\
+\hline
+\multicolumn{5}{|c|}{\textbf{Asynchronous Read (No Output Register)}} \\
+\hline
+Single port & 0 & 1 & 450/380/330 & MHz \\
+Simple dual-port & 0 & 1 & 450/380/330 & MHz \\
+ROM & 0 & 1 & 450/380/330 & MHz \\
+\hline
+\multicolumn{5}{|c|}{\textbf{Synchronous Read (With Output Register)}} \\
+\hline
+Single port & 0 & 1 & 315/275/240 & MHz \\
+Simple dual-port & 0 & 1 & 315/275/240 & MHz \\
+Simple dual-port (old data) & 0 & 1 & 275/240/180 & MHz \\
+True dual-port & 0 & 1 & 315/275/240 & MHz \\
+ROM & 0 & 1 & 315/275/240 & MHz \\
+\hline
+\multicolumn{5}{|c|}{\textbf{Clock Timing Constraints}} \\
+\hline
+Min pulse width (high) & - & - & 1450/1550/1650 & ps \\
+Min pulse width (low) & - & - & 1000/1200/1350 & ps \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Notes:}
+\begin{itemize}
+    \item Speed grades shown as: C6 / C7 / C8 (fastest to slowest)
+    \item To achieve maximum performance, use global clock routing from on-chip PLL
+    \item Set PLL to 50\% output duty cycle
+    \item No $f_{max}$ degradation when using CRC error detection
+\end{itemize}
+\end{highlight}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 29
+% Description: Full performance table from datasheet
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_performance_table.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_performance_table.png}
+\\
+
+\subsection{Memory Block Port Configuration}
+
+\begin{definition}{Dual-Port Memory Interface}\\
+FPGA memory blocks provide two independent ports (A and B) with the following signals:
+
+\textbf{Port A Signals:}
+\begin{itemize}
+    \item \textbf{DATA\_IN\_A:} Input data
+    \item \textbf{ADRESSEN\_A:} Address bus
+    \item \textbf{WREN\_A:} Write enable
+    \item \textbf{RDEN\_A:} Read enable (optional)
+    \item \textbf{BYTEEN\_A:} Byte enable for partial writes
+    \item \textbf{DATA\_OUT\_A:} Output data
+\end{itemize}
+
+\textbf{Port B Signals:}
+\begin{itemize}
+    \item \textbf{DATA\_IN\_B:} Input data
+    \item \textbf{ADRESSEN\_B:} Address bus
+    \item \textbf{WREN\_B:} Write enable
+    \item \textbf{RDEN\_B:} Read enable (optional)
+    \item \textbf{BYTEEN\_B:} Byte enable for partial writes
+    \item \textbf{DATA\_OUT\_B:} Output data
+\end{itemize}
+
+Both ports can operate independently with different clocks, addresses, and data widths.
+\end{definition}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 30
+% Description: Conceptual drawing of Altera memory block with dual ports
+% Priority: CRITICAL
+% Suggested filename: lecture01b_dual_port_concept.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_dual_port_concept.png}
+\\
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 32
+% Description: Physical layout of M10K rows in FPGA
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture01b_m10k_layout.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_m10k_layout.png}
+\\
+
+\subsection{Memory Resources Summary}
+
+\begin{highlight}{Memory Resources in Cyclone V}\\
+\textbf{Cyclone V Device Family Resources:}
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Resource} & \textbf{5CEA2} & \textbf{5CEA4} & \textbf{5CEA5} & \textbf{5CEA9} \\
+\hline
+Logic Elements & 25K & 49K & 85K & 150K \\
+M10K Blocks & 125 & 200 & 300 & 500 \\
+Memory (Kbit) & 1,250 & 2,000 & 3,000 & 5,000 \\
+\hline
+Variable-precision DSP & & & & \\
+18×19 Multiplier & 36 & 84 & 144 & 234 \\
+\hline
+Hard Floating-point & Yes & Yes & Yes & Yes \\
+Fractional Synthesis & 2 & 4 & 4 & 6 \\
+\hline
+12.5 Gbps Transceiver & - & - & 4 & 6 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Key Points:}
+\begin{itemize}
+    \item Larger devices have proportionally more memory blocks
+    \item M10K blocks provide flexible memory implementation
+    \item DSP blocks complement memory for signal processing
+    \item High-speed transceivers available in larger devices
+\end{itemize}
+\end{highlight}
+
+% TODO: Add image from SCD_1b_Memory_1.pdf, Page 33
+% Description: Memory resources table for Cyclone V family
+% Priority: IMPORTANT
+% Suggested filename: lecture01b_cyclone_resources.png
+\\
+% \includegraphics[width=\linewidth]{lecture01b_cyclone_resources.png}
+\\
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 23
+% CRITICAL priority: 11
+% IMPORTANT priority: 9
+% SUPPLEMENTARY priority: 3
+%
+% Quick extraction checklist:
+% [ ] [SCD_1b_Memory_1.pdf, Page 2] - Block memory symbol with ports (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 3] - FPGA fabric with SRAM and DSP blocks (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 8] - DDS block diagram (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 9] - FIFO buffer illustration (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 10] - Clock crossing FIFO diagram (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 11] - Memory hierarchy diagram (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 12] - Character graphics example (SUPPLEMENTARY)
+% [ ] [SCD_1b_Memory_1.pdf, Page 13] - Video controller block diagram (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 15] - SRAM cell circuit (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 16] - SRAM organization (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 17] - SRAM die photo (SUPPLEMENTARY)
+% [ ] [SCD_1b_Memory_1.pdf, Page 18] - FPGA RAM block structure (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 19] - Dual-port RAM diagram (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 20] - SRAM read timing diagram (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 21] - SRAM write timing diagram (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 22] - FPGA write timing (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 23] - Sequential write timing (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 24] - FPGA read async diagram (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 25] - FPGA read sync diagram (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 26] - Sync read timing diagram (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 27] - Read mode comparison (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 28] - Async vs sync timing (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 29] - Performance table (IMPORTANT)
+% [ ] [SCD_1b_Memory_1.pdf, Page 30] - Dual-port concept drawing (CRITICAL)
+% [ ] [SCD_1b_Memory_1.pdf, Page 32] - M10K physical layout (SUPPLEMENTARY)
+% [ ] [SCD_1b_Memory_1.pdf, Page 33] - Cyclone V resources table (IMPORTANT)
+% =====================

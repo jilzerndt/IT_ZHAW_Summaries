@@ -1,0 +1,154 @@
+\section{VHDL Testbench and Simulation}
+
+\subsection{Learning Objectives}
+
+\begin{concept}{Course Goals}\\
+Students will be able to:
+\begin{itemize}
+    \item Name at least four advantages of simulation versus hardware testing
+    \item Describe the operation of a testbench
+    \item Implement a procedure-based testbench for their designs
+\end{itemize}
+\end{concept}
+
+\subsection{Testbench Architecture}
+
+\begin{definition}{Testbench Components}\\
+A testbench is a VHDL construct that provides automated testing for a design.
+
+\textbf{Key Components:}
+\begin{itemize}
+    \item \textbf{Device Under Test (DUT):} The design being tested
+    \item \textbf{Stimulus Generator:} Creates input signals for DUT
+    \item \textbf{Expected Results:} Known correct outputs
+    \item \textbf{Comparison Logic:} Compares actual vs expected outputs
+    \item \textbf{Infrastructure:} Clock generation, file I/O, reporting
+\end{itemize}
+
+\textbf{Important Characteristic:}
+\begin{itemize}
+    \item Testbench entity has \textbf{no ports} (no external I/O)
+    \item All signals are internal to simulation
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_2b_Testbench.pdf, Page 3
+% Description: Testbench architecture block diagram
+% Priority: CRITICAL
+% Suggested filename: lecture02b_testbench_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture02b_testbench_architecture.png}
+\\
+
+\begin{code}{Testbench Entity Structure}\\
+\begin{lstlisting}[language=VHDL, style=base]
+-- Testbench file: block_top_tb.vhd
+
+ENTITY block_top_tb IS
+  -- Entity has no ports since no I/Os
+END block_top_tb;
+
+ARCHITECTURE behavior OF block_top_tb IS
+  -- Component declarations
+  -- Signal declarations
+  -- Constants
+BEGIN
+  -- DUT instantiation
+  -- Stimulus generation
+  -- Response checking
+END behavior;
+\end{lstlisting}
+
+\important{The testbench has no ports because it is the top-level entity in simulation.}
+\end{code}
+
+% TODO: Add image from SCD_2b_Testbench.pdf, Page 4
+% Description: Testbench structure showing entity without ports
+% Priority: CRITICAL
+% Suggested filename: lecture02b_testbench_structure.png
+\\
+% \includegraphics[width=\linewidth]{lecture02b_testbench_structure.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Purpose of Simulation}
+
+\begin{concept}{Why Simulate?}\\
+Simulation provides significant advantages over hardware-only testing:
+
+\textbf{Accessibility Benefits:}
+\begin{itemize}
+    \item Testing and debugging in SoC is difficult:
+    \begin{itemize}
+        \item Pins buried under device
+        \item Internal signals not accessible from outside
+        \item Many parallel processes occurring simultaneously
+    \end{itemize}
+    \item Simulation allows tracking of \textbf{every signal at every point in time}
+    \item All internal states visible and traceable
+\end{itemize}
+
+\textbf{Verification Benefits:}
+\begin{itemize}
+    \item \textbf{Automated verification:} Comparison of output with expected results
+    \item \textbf{Regression testing:} Test every block automatically
+    \item \textbf{Better test coverage:} Easily provoke edge cases and corner conditions
+\end{itemize}
+
+\textbf{Development Efficiency:}
+\begin{itemize}
+    \item \textbf{Faster iterations:} DUT can be recompiled in seconds vs synthesized in minutes
+    \item \textbf{Reduced risk:} ASIC fabrication takes months and costs \$100,000+ depending on process
+    \item \textbf{Lower testing effort:} Simulation can reduce overall testing time
+    \item \textbf{Automation:} Can be automated even for large designs
+\end{itemize}
+\end{concept}
+
+\subsection{Questasim/ModelSim Tool Flow}
+
+\begin{concept}{VHDL Compilation and Simulation Flow}\\
+The simulation process involves two main phases:
+
+\textbf{Phase 1: Compilation}
+\begin{enumerate}
+    \item User VHDL files are written (design + testbench)
+    \item Questasim compiler processes all VHDL files
+    \item Compiled objects stored in libraries (typically \texttt{work})
+    \item Standard libraries automatically included
+\end{enumerate}
+
+\textbf{Phase 2: Simulation}
+\begin{enumerate}
+    \item Simulator loads compiled libraries
+    \item Testbench procedures generate stimuli
+    \item DUT responds to stimuli
+    \item Results captured as waveforms and text output
+\end{enumerate}
+\end{concept}
+
+\subsection{Procedure-Based Testbench}
+
+\begin{concept}{Why Procedure-Based?}\\
+Advantages of using procedures:
+\begin{itemize}
+    \item Simple writing and expansion of test cases
+    \item Supports scripting approach
+    \item Easy to maintain and modify
+    \item Input format: \texttt{command [arg\_0 arg\_1 ... arg\_n]}
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Test Script Structure}\\
+Format: \texttt{command arg1 arg2 arg3 arg4}
+
+Each argument is one byte (2 hex digits), MSB = arg1, LSB = arg4
+\end{definition}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 16
+% CRITICAL priority: 9
+% IMPORTANT priority: 6
+% SUPPLEMENTARY priority: 1
+% =====================

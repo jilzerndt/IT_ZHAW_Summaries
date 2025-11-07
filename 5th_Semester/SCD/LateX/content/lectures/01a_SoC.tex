@@ -1,0 +1,697 @@
+\section{Introduction to System on Chip Design}
+
+\subsection{Course Information}
+
+\begin{remark}
+\textbf{Course:} System on Chip Design (SCD)
+
+\textbf{Institution:} Zürcher Hochschule für Angewandte Wissenschaften (ZHAW)
+
+\textbf{Instructors:}
+\begin{itemize}
+    \item Tobias Welti (welo@zhaw.ch, +41 58 934 67 30)
+    \item Dominique Cachin (cacd@zhaw.ch, +41 79 45559 01)
+\end{itemize}
+\end{remark}
+
+\begin{definition}{Course Materials and Schedule}
+\begin{itemize}
+    \item \textbf{Platform:} Moodle - https://moodle.zhaw.ch/course/view.php?id=25948
+    \item \textbf{Script:} Available on Moodle (scd\_script.pdf)
+    \item \textbf{Lab Instructions:} https://github.zhaw.ch/pages/hpmm/scd-labs/index.html
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 4
+% Description: Course schedule table showing lecture topics and lab assignments
+% Priority: IMPORTANT
+% Suggested filename: lecture01a_course_schedule.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_course_schedule.png}
+\\
+
+\subsection{Assessment and Grading}
+
+\begin{definition}{Grading Components}
+\begin{itemize}
+    \item \textbf{Electronic Quiz:} 15\% (November 11, 2025, Moodle test)
+    \item \textbf{Lab Exercises:} 15\% (6 labs during semester, graded by lecturer)
+    \item \textbf{Written Exam:} 70\% (January 2026, Moodle test)
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Lab Grading System}\\
+Seven labs (four lessons each) contribute to the lab grade.
+
+\textbf{Credits per Lab:}
+\begin{itemize}
+    \item Not done: 0 points
+    \item Required tasks done with small errors: 1 point
+    \item Required tasks done without errors: 2 points
+\end{itemize}
+
+\textbf{Lab Grade Formula:}
+$$\text{Lab Grade} = \frac{\text{Sum of Points}}{12} \times 5 + 1$$
+\end{definition}
+
+\begin{remark}
+\textbf{Exam Guidelines:}
+\begin{itemize}
+    \item Open book: lecture and lab notes, personal notes, books allowed
+    \item No generative AI such as ChatGPT
+    \item Calculators allowed
+\end{itemize}
+\end{remark}
+
+\subsection{Course Objectives}
+
+\begin{concept}{Target Audience}\\
+This course is designed for engineers who want to:
+\begin{itemize}
+    \item Design high-performance digital circuits with SoC-FPGAs, beyond writing VHDL code
+    \item Gain in-depth background knowledge of SoC and FPGA (for software engineers)
+    \item Design systems with Linux on SoC-FPGA
+    \item Obtain introduction and basic knowledge of Integrated Circuit design
+    \item Design general high-speed digital systems with complex peripherals (DDRAM)
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Learning Goals}\\
+By the end of this course, students will be able to:
+\begin{itemize}
+    \item Work with FPGA block memory
+    \item Configure a FPGA-SoC with ARM hardcore processor
+    \item Configure the I/O and computer peripherals (DRAM) of a FPGA
+    \item Port Yocto Linux to SoC-FPGA
+    \item Configure and analyse timing to drive synthesis
+    \item Configure clock generators in FPGA and route clocks on PCB
+    \item Check signal integrity of clock and data lines on PCB
+    \item Explain differences between different signaling standards
+    \item Connect high-speed FPGA peripherals with differential signals
+    \item Realize a project with video and audio output (Pacman game)
+\end{itemize}
+\end{concept}
+
+\subsection{Lab Setup}
+
+\begin{definition}{Laboratory Environment}\\
+\textbf{Location:} Lab TE 519
+
+\textbf{Equipment:}
+\begin{itemize}
+    \item Lab PCs with required software setup running on Linux
+    \item DE1-SoC Development Board with Intel Cyclone V SoC FPGA
+    \item Hardware only available in lab (not distributed to students)
+\end{itemize}
+
+\textbf{Work Organization:}
+\begin{itemize}
+    \item Students work in teams of two
+    \item Lab instructions available on GitHub
+\end{itemize}
+\end{definition}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Fundamentals of Sequential Digital Circuits}
+
+\begin{concept}{General Representation of Sequential Circuits}\\
+Sequential circuits consist of two main components:
+\begin{itemize}
+    \item \textbf{D-Flip-Flops:} Storage elements that hold state
+    \item \textbf{Combinatorial Logic:} Logic circuits that compute next state and outputs
+    \item \textbf{Common Clock:} Synchronizes all flip-flops
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 10
+% Description: Block diagram showing sequential circuit with D-flip-flops and combinatorial logic
+% Priority: CRITICAL
+% Suggested filename: lecture01a_sequential_circuit_diagram.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_sequential_circuit_diagram.png}
+\\
+
+\subsection{FPGA Architecture}
+
+\begin{definition}{SRAM-based FPGAs}\\
+SRAM-based FPGAs use \textbf{Lookup Tables (LUTs)} to generate logic functions.
+
+\textbf{Key Concept:} A LUT is essentially a small RAM (e.g., 4x1 RAM) that can implement any Boolean function of its inputs.
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 11
+% Description: Diagram showing 4x1 RAM as lookup table
+% Priority: CRITICAL
+% Suggested filename: lecture01a_lut_structure.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_lut_structure.png}
+\\
+
+\begin{definition}{Logic Cells (ALM)}\\
+\textbf{ALM:} Adaptive Logic Module (Altera/Intel terminology)
+
+Different FPGA manufacturers use different names:
+\begin{itemize}
+    \item \textbf{Altera (Intel):} Adaptive Logic Module (ALM)
+    \item \textbf{Xilinx:} Configurable Logic Block (CLB) or Slice
+\end{itemize}
+
+Each logic cell typically contains:
+\begin{itemize}
+    \item Lookup tables (LUTs)
+    \item Flip-flops
+    \item Multiplexers
+    \item Carry logic
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 12
+% Description: Comparison of logic cell structures from Altera and Xilinx
+% Priority: IMPORTANT
+% Suggested filename: lecture01a_logic_cells_comparison.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_logic_cells_comparison.png}
+\\
+
+\begin{concept}{Classic FPGA Architecture}\\
+A traditional FPGA consists of:
+\begin{itemize}
+    \item \textbf{FPGA Fabric:} Array of configurable logic cells
+    \item \textbf{Interconnection Network:} Programmable routing between logic cells
+    \item \textbf{Logic Cells:} Containing lookup tables and flip-flops
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 13
+% Description: Classic FPGA fabric architecture showing interconnections
+% Priority: CRITICAL
+% Suggested filename: lecture01a_classic_fpga_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_classic_fpga_architecture.png}
+\\
+
+\begin{definition}{Additional FPGA Resources}\\
+Modern FPGA fabric may also contain:
+\begin{itemize}
+    \item \textbf{SRAM Blocks:} Embedded memory blocks for data storage
+    \item \textbf{DSP Blocks:} Dedicated hardware for digital signal processing
+    \item \textbf{Hard IP Blocks:} Pre-designed functional blocks (e.g., PCIe, memory controllers)
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 14
+% Description: FPGA fabric showing SRAM and DSP blocks
+% Priority: IMPORTANT
+% Suggested filename: lecture01a_fpga_additional_blocks.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_fpga_additional_blocks.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{FPGA Applications}
+
+\begin{example}
+\textbf{Home Electronics:} FPGAs are used in consumer devices for video processing, display controllers, and smart home automation.
+\end{example}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 16
+% Description: Home electronics applications
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture01a_home_electronics.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_home_electronics.png}
+\\
+
+\begin{example}
+\textbf{Medical Diagnostics:} FPGAs provide real-time signal processing for medical imaging equipment and diagnostic devices.
+\end{example}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 17
+% Description: Medical diagnostics equipment
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture01a_medical_diagnostics.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_medical_diagnostics.png}
+\\
+
+\begin{example}
+\textbf{Industrial Automation:} FPGAs enable precise control and monitoring in industrial systems.
+\end{example}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 18
+% Description: Industrial automation applications
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture01a_automation.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_automation.png}
+\\
+
+\begin{example}
+\textbf{Studio Equipment:} Professional audio and video equipment uses FPGAs for real-time processing and effects.
+\end{example}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 19
+% Description: Professional studio equipment
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture01a_studio_equipment.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_studio_equipment.png}
+\\
+
+\begin{remark}
+\textbf{Products where FPGAs are NOT ideal:}
+\begin{itemize}
+    \item Battery-operated mobile devices (high power consumption)
+    \item Very high-volume products like mobile phones (cost per unit too high)
+    \item Trivial control applications (washing machine, bike computer - overkill)
+    \item Automotive applications (reliability and certification requirements)
+    \item Some aerospace applications (radiation hardness requirements)
+\end{itemize}
+\end{remark}
+
+\subsection{Evolution from FPGA to SoC}
+
+\begin{concept}{System on Chip (SoC) FPGA}\\
+Modern SoC FPGAs combine:
+\begin{itemize}
+    \item \textbf{Hard Processor System (HPS):} Fixed CPU subsystem
+    \item \textbf{FPGA Fabric:} Programmable logic
+    \item \textbf{Bridges:} Connections between processor and FPGA
+\end{itemize}
+
+This integration enables software and hardware co-design on a single chip.
+\end{concept}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 22
+% Description: SoC FPGA architecture showing CPU portion and FPGA portion with Chip Planner view
+% Priority: CRITICAL
+% Suggested filename: lecture01a_soc_fpga_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_soc_fpga_architecture.png}
+\\
+
+\begin{definition}{SoC FPGA Components}\\
+\textbf{CPU Portion (Hard Processor System):}
+\begin{itemize}
+    \item Cortex-A9 CPU Subsystem
+    \item Flash Controllers
+    \item SDRAM Controller Subsystem
+    \item On-Chip Memories
+    \item Support Peripherals
+    \item PLLs (Phase-Locked Loops)
+    \item Debug Interface
+    \item Peripherals Control Block
+\end{itemize}
+
+\textbf{FPGA Portion:}
+\begin{itemize}
+    \item User I/O
+    \item FPGA Fabric (LUTs, RAMs, Multipliers \& Routing)
+    \item HSSI Transceivers (High-Speed Serial Interface)
+    \item PLLs
+    \item Hard PCIe
+    \item Hard Memory Controllers
+\end{itemize}
+
+\textbf{Processor-FPGA Bridges:} Enable communication between CPU and FPGA fabric
+\end{definition}
+
+\subsection{Topics Covered in SCD Course}
+
+\begin{highlight}{Course Topics Overview}\\
+The following topics will be discussed throughout the course:
+\begin{enumerate}
+    \item Bringing Linux to SoC
+    \item FPGA System Builder (Platform Designer)
+    \item Bootloader for Linux
+    \item RAM and FPGA on-chip Memory
+    \item DRAM (Dynamic Random Access Memory)
+    \item JTAG (Joint Test Action Group)
+    \item Timing Analysis and Synthesis
+    \item Clock Distribution and PLL
+    \item High-Speed I/O Interfaces
+    \item FPGA Configuration
+\end{enumerate}
+\end{highlight}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 21
+% Description: Overview slide showing all subjects discussed in SCD
+% Priority: IMPORTANT
+% Suggested filename: lecture01a_subjects_overview.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_subjects_overview.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Bringing Linux to SoC-FPGA}
+
+\begin{concept}{Linux on SoC-FPGA}\\
+Running Linux on SoC-FPGA enables:
+\begin{itemize}
+    \item High-level software development using familiar tools
+    \item Access to vast ecosystem of Linux software
+    \item Network connectivity and modern protocols
+    \item File systems and standard I/O
+    \item Dynamic hardware reconfiguration from software
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 23
+% Description: Linux on SoC concept illustration
+% Priority: IMPORTANT
+% Suggested filename: lecture01a_linux_on_soc.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_linux_on_soc.png}
+\\
+
+\subsection{FPGA System Builder}
+
+\begin{definition}{Platform Designer}\\
+\textbf{Platform Designer} (formerly known as Qsys) is Intel's system integration tool for SoC FPGAs.
+
+\textbf{Functions:}
+\begin{itemize}
+    \item Graphical system design interface
+    \item Integration of IP cores
+    \item Automatic interconnect generation
+    \item System-level simulation
+    \item Export to Quartus for compilation
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 24
+% Description: Platform Designer system description and Chip Planner in Quartus
+% Priority: CRITICAL
+% Suggested filename: lecture01a_platform_designer.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_platform_designer.png}
+\\
+
+\subsection{Bootloader for Linux}
+
+\begin{concept}{Boot Process}\\
+The bootloader is responsible for:
+\begin{itemize}
+    \item Initializing hardware (CPU, memory, peripherals)
+    \item Loading the Linux kernel into memory
+    \item Passing boot parameters to the kernel
+    \item Transferring control to the operating system
+\end{itemize}
+
+\textbf{Common bootloaders:} U-Boot, GRUB
+\end{concept}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 25
+% Description: Bootloader process diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture01a_bootloader.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_bootloader.png}
+\\
+
+\subsection{Memory Systems}
+
+\begin{definition}{RAM and FPGA On-Chip Memory}\\
+\textbf{On-Chip Memory Types:}
+\begin{itemize}
+    \item \textbf{Block RAM (BRAM):} Embedded memory blocks in FPGA fabric
+    \item \textbf{Distributed RAM:} Memory implemented using LUTs
+    \item \textbf{On-Chip RAM in HPS:} Fast memory integrated in processor system
+\end{itemize}
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Very fast access (single cycle or few cycles)
+    \item Limited size (kilobytes to few megabytes)
+    \item No refresh needed (SRAM-based)
+    \item Higher cost per bit than external memory
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 26
+% Description: RAM and FPGA on-chip memory architecture
+% Priority: CRITICAL
+% Suggested filename: lecture01a_onchip_memory.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_onchip_memory.png}
+\\
+
+\begin{definition}{Dynamic RAM (DRAM)}\\
+\textbf{Inventor:} Robert H. Dennard (invented at IBM in 1967)
+
+\textbf{Key Characteristics:}
+\begin{itemize}
+    \item \textbf{Storage Mechanism:} Stores data as charge in capacitors
+    \item \textbf{Refresh Required:} Must be periodically refreshed (capacitors leak)
+    \item \textbf{High Density:} Much higher storage density than SRAM
+    \item \textbf{Lower Cost:} Cheaper per bit than SRAM
+    \item \textbf{Slower Access:} Requires complex timing protocols
+\end{itemize}
+
+\textbf{Common Types:}
+\begin{itemize}
+    \item DDR3, DDR4, DDR5: Double Data Rate SDRAM
+    \item LPDDR: Low Power DDR for mobile devices
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 27
+% Description: DRAM technology and Robert H. Dennard
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture01a_dram.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_dram.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{JTAG (Joint Test Action Group)}
+
+\begin{definition}{JTAG Interface}\\
+\textbf{JTAG} is a standard for testing and debugging electronic systems.
+
+\textbf{Primary Uses:}
+\begin{itemize}
+    \item Boundary scan testing of PCBs
+    \item Programming FPGAs and flash memory
+    \item Debugging processors (via debug interface)
+    \item In-system programming
+\end{itemize}
+
+\textbf{Signal Lines:}
+\begin{itemize}
+    \item \textbf{TDI:} Test Data In
+    \item \textbf{TDO:} Test Data Out
+    \item \textbf{TCK:} Test Clock
+    \item \textbf{TMS:} Test Mode Select
+    \item \textbf{TRST:} Test Reset (optional)
+\end{itemize}
+\end{definition}
+
+\begin{definition}{JTAG State Machine}\\
+The JTAG interface operates through a state machine with the following main states:
+\begin{itemize}
+    \item \textbf{Test-Logic-Reset:} Initial state
+    \item \textbf{Run-Test/Idle:} Idle state
+    \item \textbf{Select-DR-Scan:} Select data register scan
+    \item \textbf{Select-IR-Scan:} Select instruction register scan
+    \item \textbf{Capture-DR/IR:} Capture data or instruction
+    \item \textbf{Shift-DR/IR:} Shift data or instruction
+    \item \textbf{Update-DR/IR:} Update data or instruction register
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 28
+% Description: JTAG state machine diagram
+% Priority: CRITICAL
+% Suggested filename: lecture01a_jtag_state_machine.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_jtag_state_machine.png}
+\\
+
+\subsection{Timing Analysis and Synthesis}
+
+\begin{concept}{Static Timing Analysis}\\
+Static timing analysis verifies that a digital circuit meets all timing constraints without requiring simulation of the circuit's operation.
+
+\textbf{Key Concepts:}
+\begin{itemize}
+    \item \textbf{Setup Time ($t_{su}$):} Minimum time data must be stable before clock edge
+    \item \textbf{Hold Time ($t_h$):} Minimum time data must remain stable after clock edge
+    \item \textbf{Clock-to-Q Delay ($t_{co}$):} Time for data to appear at flip-flop output after clock
+    \item \textbf{Propagation Delay:} Time for signals to travel through logic and routing
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Timing Paths and Slack}\\
+\textbf{Data Arrival Time} is composed of:
+\begin{enumerate}
+    \item Clock network delay from clock node to launch D-FF: 3.00 ns
+    \item Clock-to-Q delay from launch D-FF: 2.00 ns
+    \item Logic delay (cells, I/O pins, routing): 5.00 ns
+\end{enumerate}
+\textbf{Total Data Arrival Time:} 10.00 ns
+
+\textbf{Data Required Time} is determined by:
+\begin{enumerate}
+    \item Clock period: 40.00 ns
+    \item Clock network delay to latch D-FF: 2.00 ns
+    \item Setup time of latch D-FF: -0.50 ns
+\end{enumerate}
+\textbf{Total Required Time:} 41.50 ns
+
+\textbf{Setup Slack} = Required Time - Arrival Time = 41.50 ns - 10.00 ns = 31.50 ns
+
+\important{Positive slack indicates timing is met. Negative slack indicates timing violation.}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 29
+% Description: Timing analysis diagram showing arrival and required times
+% Priority: CRITICAL
+% Suggested filename: lecture01a_timing_analysis.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_timing_analysis.png}
+\\
+
+\subsection{Clock Distribution and PLL}
+
+\begin{definition}{Phase-Locked Loop (PLL)}\\
+A \textbf{PLL} is a control system that generates an output signal whose phase is related to the phase of an input signal.
+
+\textbf{Key Functions:}
+\begin{itemize}
+    \item \textbf{Frequency Multiplication:} Generate higher frequency clocks
+    \item \textbf{Frequency Division:} Generate lower frequency clocks
+    \item \textbf{Phase Alignment:} Align clock phases
+    \item \textbf{Jitter Reduction:} Clean up noisy clock signals
+    \item \textbf{Clock Deskew:} Compensate for clock distribution delays
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Clock Distribution Network}\\
+FPGAs have dedicated clock distribution networks:
+\begin{itemize}
+    \item \textbf{Global Clock Networks (GCLK):} Low-skew distribution across entire device
+    \item \textbf{Regional Clock Networks:} Lower skew within regions
+    \item \textbf{Dual-Purpose Clock Networks (DPCLK):} Flexible routing
+    \item \textbf{Clock Control Blocks (CDPCLK):} Gating and multiplexing
+\end{itemize}
+
+\important{Proper clock distribution is critical for achieving timing closure in high-speed designs.}
+\end{concept}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 30
+% Description: Clock distribution network diagram showing GCLK, DPCLK, and CDPCLK
+% Priority: CRITICAL
+% Suggested filename: lecture01a_clock_distribution.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_clock_distribution.png}
+\\
+
+\subsection{High-Speed I/O Interfaces}
+
+\begin{concept}{Differential Signaling}\\
+High-speed interfaces use \textbf{differential signaling} where information is transmitted using two complementary signals.
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Better noise immunity (common-mode noise rejection)
+    \item Higher data rates possible
+    \item Lower EMI emissions
+    \item Better signal integrity over long distances
+\end{itemize}
+
+\textbf{Common Standards:}
+\begin{itemize}
+    \item LVDS (Low-Voltage Differential Signaling)
+    \item TMDS (Transition-Minimized Differential Signaling)
+    \item SerDes (Serializer/Deserializer)
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 31
+% Description: High-speed I/O interface with output buffer
+% Priority: IMPORTANT
+% Suggested filename: lecture01a_highspeed_io.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_highspeed_io.png}
+\\
+
+\subsection{FPGA Configuration}
+
+\begin{definition}{FPGA Configuration Process}\\
+FPGAs are volatile devices that must be configured at power-up.
+
+\textbf{Configuration Sources:}
+\begin{itemize}
+    \item \textbf{Configuration Flash:} Non-volatile memory storing bitstream
+    \item \textbf{JTAG:} Programming via debugger (Byte Blaster)
+    \item \textbf{Serial Configuration:} Via SPI or similar interface
+    \item \textbf{Parallel Configuration:} Faster configuration method
+\end{itemize}
+
+\textbf{Configuration Modes:}
+\begin{itemize}
+    \item \textbf{Active Serial (AS):} FPGA controls configuration process
+    \item \textbf{Passive Serial (PS):} External controller drives configuration
+    \item \textbf{JTAG Mode:} For development and debugging
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_1a_what_is_SoC.pdf, Page 32
+% Description: FPGA configuration circuit with flash memory and JTAG
+% Priority: CRITICAL
+% Suggested filename: lecture01a_fpga_configuration.png
+\\
+% \includegraphics[width=\linewidth]{lecture01a_fpga_configuration.png}
+\\
+
+\begin{remark}
+\textbf{Configuration Pins:}
+\begin{itemize}
+    \item \textbf{nCE:} Active-low chip enable
+    \item \textbf{nCONFIG:} Configuration control
+    \item \textbf{CONF\_DONE:} Configuration complete signal
+    \item \textbf{DATA:} Configuration data lines
+\end{itemize}
+
+Typical pull-up/pull-down resistors: 10k$\Omega$
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 21
+% CRITICAL priority: 10
+% IMPORTANT priority: 7
+% SUPPLEMENTARY priority: 4
+%
+% Quick extraction checklist:
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 4] - Course schedule table (IMPORTANT)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 10] - Sequential circuit block diagram (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 11] - LUT structure with 4x1 RAM (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 12] - Logic cells comparison Altera vs Xilinx (IMPORTANT)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 13] - Classic FPGA architecture (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 14] - FPGA fabric with SRAM and DSP blocks (IMPORTANT)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 16] - Home electronics applications (SUPPLEMENTARY)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 17] - Medical diagnostics equipment (SUPPLEMENTARY)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 18] - Industrial automation (SUPPLEMENTARY)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 19] - Studio equipment (SUPPLEMENTARY)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 21] - Subjects discussed in SCD overview (IMPORTANT)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 22] - SoC FPGA architecture diagram (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 23] - Linux on SoC illustration (IMPORTANT)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 24] - Platform Designer interface (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 25] - Bootloader process diagram (IMPORTANT)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 26] - On-chip memory architecture (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 27] - DRAM and Robert Dennard (SUPPLEMENTARY)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 28] - JTAG state machine (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 29] - Timing analysis diagram (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 30] - Clock distribution network (CRITICAL)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 31] - High-speed I/O interface (IMPORTANT)
+% [ ] [SCD_1a_what_is_SoC.pdf, Page 32] - FPGA configuration circuit (CRITICAL)
+% =====================
