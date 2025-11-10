@@ -1,0 +1,402 @@
+# PROMPT: PHASE 3 - QUALITY VALIDATION
+
+Use this prompt to systematically check LaTeX files for formatting errors, style consistency, and content completeness before compilation.
+
+---
+
+## FULL PROMPT
+
+```
+Perform comprehensive quality check on [FILENAME.tex] to ensure compliance with layout_and_colours.sty.
+
+---
+
+VALIDATION CHECKLIST:
+
+1. SYNTAX VALIDATION
+
+Environment Integrity:
+- [ ] All \begin{environment} have matching \end{environment}
+- [ ] No unclosed braces { or brackets [
+- [ ] No orphaned \tcblower (must be inside tcolorbox)
+- [ ] All \mult{n} have corresponding \multend
+- [ ] All \begin{lstlisting} have matching \end{lstlisting}
+
+Line Break Compliance:
+- [ ] \\ present after all tcolorbox titles
+- [ ] NO \\ before \begin{itemize} or \begin{enumerate}
+- [ ] \\ present before and after \includegraphics (or commented version)
+- [ ] No double \\ (should be single line break only)
+
+Special Characters:
+- [ ] All special chars properly escaped: \$ \& \% \_ \{ \}
+- [ ] lstlisting blocks use ae/oe/ue instead of ä/ö/ü
+- [ ] Math symbols inside $ $ or $$ $$
+- [ ] No unescaped # outside of command definitions
+
+Code Block Formatting:
+- [ ] All lstlisting blocks specify: [language=X, style=base]
+- [ ] lstlisting blocks are inside tcolorbox environments
+- [ ] No syntax highlighting artifacts or broken code
+- [ ] Proper indentation preserved in code blocks
+
+---
+
+2. STYLE CONSISTENCY
+
+Environment Usage:
+Check that appropriate environments are used:
+
+definition{} → Formal term definitions
+concept{} → Important overarching concepts
+theorem{} → Mathematical theorems
+corollary{} → Consequences of theorems
+lemma{} → Supporting proven facts
+KR{} → Step-by-step procedures (NOT definition{})
+formula{} → Formula overviews
+code{} → Conceptual code explanations
+example → Simple examples (no title)
+example2{} → Complex examples (with title)
+examplecode{} → Code-focused examples
+remark → Additional notes (no title)
+
+Anti-patterns to Flag:
+- [ ] Using definition{} for procedures (should be KR{})
+- [ ] Using theorem{} for non-mathematical content
+- [ ] Multiple tcolorbox blocks with identical titles
+- [ ] Empty or near-empty blocks (<2 lines of content)
+
+Structure Review:
+- [ ] Section hierarchy logical: \section → \subsection → \subsubsection → \paragraph
+- [ ] No redundant subsections (e.g., one subsection with one definition)
+- [ ] Related concepts grouped appropriately
+- [ ] Logical flow: theory → application → examples
+
+Layout Optimization:
+- [ ] Short related blocks use \mult{2}...\multend
+- [ ] Long examples/KRs remain single-column
+- [ ] Tables and wide content not in multi-column regions
+- [ ] Consistent spacing between blocks
+
+---
+
+3. CONTENT COMPLETENESS
+
+Required Elements:
+- [ ] Each major topic has at least one definition/concept block
+- [ ] Practical skills have corresponding KR blocks
+- [ ] Examples present for complex concepts
+- [ ] Images referenced with complete TODO comments
+- [ ] All mathematical notation properly formatted
+
+KR Quality Check:
+For each KR block, verify:
+- [ ] Steps are numbered and actionable
+- [ ] Decision points clearly marked ("If X, then Y; else Z")
+- [ ] Common mistakes section included
+- [ ] References to relevant formulas/definitions
+
+Example Quality Check:
+For each example block, verify:
+- [ ] Problem statement is clear
+- [ ] Solution is complete and correct
+- [ ] Important insights highlighted using \important{}
+- [ ] If using example2{}, includes \tcblower separator
+
+Image Documentation Check:
+- [ ] Every visual element has a TODO comment
+- [ ] TODO comments include: source file, page/slide number, description, priority
+- [ ] ALL \includegraphics lines are COMMENTED OUT (%)
+- [ ] Suggested filenames follow pattern: XX_topic_type.png
+- [ ] Special notes included where needed (text transcription, critical colors)
+- [ ] Image summary section present at end of file
+
+Cross-Reference Integrity:
+- [ ] All \ref{} commands have valid targets
+- [ ] All image TODO comments complete
+- [ ] All mentions of "see section X" are accurate
+
+---
+
+4. MATHEMATICAL CONTENT
+
+Notation Standards:
+- [ ] Inline math uses $ $
+- [ ] Display math uses $$ $$ or \[ \]
+- [ ] Important equations use \begin{iequation} or \mathhighlight{}
+- [ ] Set notation: \N, \Z, \Q, \R, \C (use defined commands)
+- [ ] Proper spacing in equations: \, \quad \qquad where needed
+
+Symbol Consistency:
+- [ ] Greek letters: \alpha \beta \theta etc.
+- [ ] Operators: \sum \prod \int \lim with proper limits
+- [ ] Logic symbols: \forall \exists \Rightarrow \Leftrightarrow
+- [ ] Relations: \leq \geq \neq \approx \sim
+- [ ] Functions: \sin \cos \log \ln (upright, not italic)
+
+---
+
+5. COMPILATION READINESS
+
+File Structure:
+- [ ] No \documentclass (should be in main.tex only)
+- [ ] No preamble (should be in main.tex only)
+- [ ] File starts with \section{} command
+- [ ] File ends cleanly (no hanging environments)
+- [ ] Filename matches pattern: XX_topic_name.tex
+- [ ] Only one major topic per file
+
+Image Dependencies:
+- [ ] All images referenced have TODO comments OR actual files exist
+- [ ] All \includegraphics lines COMMENTED OUT for now
+- [ ] Image paths follow project structure
+- [ ] Image formats supported: .png, .jpg, .pdf
+- [ ] Width specifications reasonable: \linewidth, 0.8\linewidth, etc.
+
+Package Compatibility:
+- [ ] No commands requiring packages not in layout_and_colours.sty
+- [ ] No custom color definitions (use predefined colors)
+- [ ] No font changes outside of code blocks
+- [ ] Tikz/pgfplots code syntactically correct (if present)
+
+---
+
+OUTPUT FORMAT:
+
+Provide validation report in this structure:
+
+# VALIDATION REPORT: [FILENAME.tex]
+
+## SUMMARY
+✅ Issues found: [number]
+✅ Critical errors: [number]
+✅ Style violations: [number]
+✅ Warnings: [number]
+
+## CRITICAL ERRORS (Must Fix - Prevents Compilation)
+[List any syntax errors that prevent compilation]
+
+1. Line XX: Unclosed \begin{definition} environment
+2. Line YY: Missing \end{lstlisting}
+...
+
+## STYLE VIOLATIONS (Should Fix - Deviates from Style Guide)
+[List deviations from layout_and_colours.sty guidelines]
+
+1. Line XX: Missing \\ after environment title
+2. Line YY: Using ä in lstlisting block (change to ae)
+3. Line ZZ: Uncommented \includegraphics (must be commented)
+...
+
+## WARNINGS (Consider Fixing - Minor Issues)
+[List minor issues or suggestions]
+
+1. Line XX: Redundant subsection - could merge with previous
+2. Line YY: Example block quite long - consider splitting
+...
+
+## COMPLIANCE STATUS
+
+Syntax: [✅ PASS | ❌ FAIL]
+- Environment integrity: [✅/❌]
+- Line breaks: [✅/❌]
+- Special characters: [✅/❌]
+- Code blocks: [✅/❌]
+
+Style: [✅ PASS | ⚠️ NEEDS IMPROVEMENT | ❌ FAIL]
+- Environment usage: [✅/❌]
+- Structure: [✅/❌]
+- Layout: [✅/❌]
+
+Content: [✅ COMPLETE | ⚠️ MISSING ELEMENTS | ❌ INCOMPLETE]
+- Required blocks: [✅/❌]
+- KR quality: [✅/❌]
+- Example quality: [✅/❌]
+- Image documentation: [✅/❌]
+
+Overall: [✅ READY TO COMPILE | ⚠️ NEEDS MINOR FIXES | ❌ NEEDS MAJOR FIXES]
+
+## RECOMMENDED FIXES
+
+[If issues found, provide corrected code snippets]
+
+### Fix 1: [Description]
+**Original (Line XX-YY):**
+```latex
+[problematic code]
+```
+
+**Corrected:**
+```latex
+[fixed code]
+```
+
+### Fix 2: [Description]
+**Original (Line XX-YY):**
+```latex
+[problematic code]
+```
+
+**Corrected:**
+```latex
+[fixed code]
+```
+
+## ADDITIONAL RECOMMENDATIONS
+
+[Suggestions for improvement that aren't strict violations]
+
+1. Consider adding a KR for [topic X] since it involves a procedure
+2. The example on line XX could be clarified by adding intermediate steps
+3. Sections 2.3 and 2.4 could potentially be merged for better flow
+...
+
+---
+
+PRIORITY LEVELS FOR FIXES:
+
+Priority 1 (CRITICAL - prevents compilation):
+- Syntax errors (unclosed environments, missing brackets)
+- Uncommented \includegraphics lines
+
+Priority 2 (HIGH - violates style guide):
+- Missing \\ after titles
+- Wrong environment usage (procedures in definition{} not KR{})
+- Character encoding in lstlisting (ä/ö/ü)
+- Missing [language, style] in lstlisting
+
+Priority 3 (MEDIUM - affects quality):
+- Redundant structures
+- Suboptimal layout
+- Missing KRs for procedures
+
+Priority 4 (LOW - nice to have):
+- Style inconsistencies
+- Minor formatting improvements
+- Readability enhancements
+
+---
+
+AUTOMATIC FIX REQUEST:
+
+If you want me to fix errors automatically, specify:
+
+Fix Priority 1 and 2 automatically.
+For Priority 3 and 4: provide suggestions but keep original unless clearly problematic.
+
+Provide corrected sections as code blocks.
+```
+
+---
+
+## VALIDATION MODES
+
+### Full Validation (Before Final Compilation)
+
+Use the complete checklist when:
+- Processing a chapter for the first time after Phase 2
+- After significant manual edits
+- Before creating final PDF for exam prep
+
+### Quick Validation (During Iteration)
+
+```
+Focus validation on:
+- Syntax only (sections 1-2 of checklist)
+- Critical compilation errors
+- New content added since last check
+```
+
+### Targeted Validation (Specific Concerns)
+
+```
+Focus validation on specific aspect:
+- Mathematical notation consistency
+- KR block completeness and quality
+- Image reference accuracy and TODO completeness
+- Code block formatting
+[specify area of concern]
+```
+
+---
+
+## SPECIAL VALIDATION REQUESTS
+
+### Image Extraction Checklist Generation
+
+```
+Generate image extraction table from [FILE.tex]:
+
+Parse all TODO comments and create formatted table:
+
+| Priority | Source File | Page/Slide | Description | Filename |
+|----------|-------------|------------|-------------|----------|
+| CRITICAL | Lec03.pdf | 15 | Normalization diagram | 03_norm_diagram.png |
+| IMPORTANT | Lec03.pdf | 23 | Dependency example | 03_dependency.png |
+...
+
+Format for easy batch processing.
+```
+
+### Cross-File Consistency Check
+
+```
+Check consistency across multiple files:
+- [01_intro.tex, 02_basics.tex, 03_advanced.tex]
+
+Verify:
+- Notation used consistently
+- No duplicate content
+- Cross-references valid
+- Image filename conflicts
+```
+
+---
+
+## COMMON ISSUES & FIXES
+
+**Most Frequent Errors:**
+
+1. **Missing \\ after titles (30% of errors)**
+   - Detection: Title directly followed by content line
+   - Fix: Add `\\` after title
+   ```latex
+   % Wrong
+   \begin{definition}{Title}
+   Content here
+   
+   % Correct
+   \begin{definition}{Title}\\
+   Content here
+   ```
+
+2. **Umlauts in lstlisting (25% of errors)**
+   - Detection: ä/ö/ü characters in lstlisting blocks
+   - Fix: Replace ä→ae, ö→oe, ü→ue
+   ```latex
+   % Wrong
+   print("Hallö Welt")
+   
+   % Correct
+   print("Hallo Welt")  % ae, oe, ue
+   ```
+
+3. **Unclosed environments (20% of errors)**
+   - Detection: Count \begin vs \end for each type
+   - Fix: Add missing \end{environment}
+
+4. **Uncommented \includegraphics (15% of errors)**
+   - Detection: \includegraphics without % prefix
+   - Fix: Add % at line start
+   ```latex
+   % Wrong
+   \includegraphics[width=\linewidth]{image.png}
+   
+   % Correct
+   % \includegraphics[width=\linewidth]{image.png}
+   ```
+
+5. **Wrong environment type (10% of errors)**
+   - Detection: Procedures in definition{}, not KR{}
+   - Fix: Change environment name
+

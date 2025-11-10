@@ -1,0 +1,1380 @@
+\section{Booting and Device Tree}
+
+\subsection{Learning Objectives}
+
+\begin{concept}{Course Goals}\\
+After this lecture and lab exercise, students will be able to:
+\begin{itemize}
+    \item Sketch the resources that need to be configured during boot
+    \item Explain the boot sequence of an SoC
+    \item Configure and build a bootloader program for their SoC
+    \item Understand the basic concept of a device tree
+    \item Modify the device tree
+\end{itemize}
+\end{concept}
+
+\subsection{SoC FPGA Architecture Overview}
+
+\begin{definition}{SoC FPGA Boot Components}\\
+The Cyclone V SoC FPGA architecture includes:
+
+\textbf{Hard Processor System (HPS):}
+\begin{itemize}
+    \item Dual ARM Cortex-A9 cores with NEON/FPU
+    \item L1 Cache (instruction and data)
+    \item L2 Cache (shared)
+    \item Dedicated MPU pins
+    \item Dedicated DDR pins for external SDRAM
+\end{itemize}
+
+\textbf{Interconnect:}
+\begin{itemize}
+    \item L3 Interconnect fabric
+    \item SDRAM Controller Subsystem
+    \item Bridges between HPS and FPGA
+\end{itemize}
+
+\textbf{FPGA Fabric:}
+\begin{itemize}
+    \item Programmable logic
+    \item FPGA pins for custom I/O
+    \item Connection to HPS via bridges
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 5
+% Description: SoC FPGA architecture block diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03b_soc_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_soc_architecture.png}
+\\
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 6
+% Description: Dedicated HPS I/O pins and DDR connection
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_hps_io_pins.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_hps_io_pins.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Boot Sequence Overview}
+
+\begin{concept}{Boot Process}\\
+Booting a processor involves bringing it from reset to a running application through multiple steps.
+
+\textbf{Boot Stages:}
+$$\text{Reset} \rightarrow \text{Boot ROM} \rightarrow \text{Preloader (SPL)} \rightarrow \text{Bootloader (U-Boot)} \rightarrow \text{Operating System} \rightarrow \text{Application}$$
+
+\textbf{Key Characteristics:}
+\begin{itemize}
+    \item Each step executed by hard or software
+    \item Not all steps always required
+    \item User software (everything after Boot ROM) can be modified
+    \item Progressive initialization of system resources
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 8
+% Description: Complete boot sequence diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03b_boot_sequence.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_boot_sequence.png}
+\\
+
+\subsubsection{Stage 1: Reset}
+
+\begin{definition}{Reset Stage}\\
+Reset brings the HPS to a defined default state.
+
+\textbf{When Reset Occurs:}
+\begin{itemize}
+    \item At power-on
+    \item On user request (button or input signal on dedicated pin)
+    \item Triggered by debugger
+    \item Triggered by watchdog timer
+    \item Triggered from FPGA fabric
+\end{itemize}
+
+\textbf{Reset Process:}
+\begin{itemize}
+    \item Controlled by hardware reset controller block
+    \item Controls sequence of resetting modules
+    \item Resets clocks
+    \item Resets CPU cores
+    \item Reaches defined default state for critical resources
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 9
+% Description: Reset stage in boot sequence
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_reset_stage.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_reset_stage.png}
+\\
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 10
+% Description: Reset stage details (2)
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture03b_reset_details.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_reset_details.png}
+\\
+
+\subsubsection{Stage 2: Boot ROM}
+
+\begin{definition}{Boot ROM Stage}\\
+The Boot ROM is the first code executed after reset.
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item 64 KB of code in on-chip ROM
+    \item Located at reset exception address
+    \item Cannot be modified (hard-coded in silicon)
+\end{itemize}
+
+\textbf{Boot ROM Functions:}
+\begin{enumerate}
+    \item Determine boot source (read BSEL pins)
+    \item Initialize HPS core systems:
+    \begin{itemize}
+        \item Set up watchdog timer
+        \item Configure clocking (PLL)
+        \item Initialize flash controller
+    \end{itemize}
+    \item Copy preloader program from selected boot source to on-chip RAM
+    \item Jump execution to preloader program
+\end{enumerate}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 11
+% Description: Boot ROM stage diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03b_boot_rom_stage.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_boot_rom_stage.png}
+\\
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 12
+% Description: Boot ROM stage details (2)
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture03b_boot_rom_details.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_boot_rom_details.png}
+\\
+
+\begin{definition}{Boot Source Selection (BSEL)}\\
+BSEL is a group of input pins that tell Boot ROM which device to boot from.
+
+\textbf{BSEL Pin Configuration:}
+
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{BSEL[2..0]} & \textbf{Flash Device} \\
+\hline
+0x0 & Reserved \\
+0x1 & FPGA (HPS-to-FPGA bridge) \\
+0x2 & 1.8V NAND flash memory \\
+0x3 & 3.3V NAND flash memory \\
+0x4 & 1.8V SD/MMC flash memory \\
+0x5 & 3.3V SD/MMC flash memory \\
+0x6 & 1.8V quad SPI flash memory \\
+0x7 & 3.3V quad SPI flash memory \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Hardware Configuration:}
+\begin{itemize}
+    \item BSEL pins set by DIP switches or resistors on PCB
+    \item Configuration must match physical boot device
+    \item Determines which flash memory Boot ROM will access
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 13
+% Description: Boot source selection table and configuration
+% Priority: CRITICAL
+% Suggested filename: lecture03b_bsel_configuration.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_bsel_configuration.png}
+\\
+
+\begin{example2}{SD Card Boot Structure}\\
+\textbf{Boot from SD Card:}
+
+When BSEL is configured for SD card boot, the Boot ROM looks for the preloader on the SD card.
+
+\textbf{SD Card Partition Structure:}
+\begin{itemize}
+    \item \textbf{Master Boot Record (MBR):} 512 bytes
+    \begin{itemize}
+        \item Stores partition table
+        \item Located at beginning of SD card
+    \end{itemize}
+    \item \textbf{RAW Partition (Type A2):} 64 KB × 4 = 256 KB
+    \begin{itemize}
+        \item Contains four copies of preloader image
+        \item Redundancy for reliability
+        \item No filesystem (raw binary data)
+    \end{itemize}
+\end{itemize}
+
+\tcblower
+
+\textbf{Boot Process:}
+\begin{enumerate}
+    \item Boot ROM reads MBR to find partition table
+    \item Locates RAW partition (type A2)
+    \item Copies preloader image to on-chip memory
+    \item Jumps to preloader entry point
+\end{enumerate}
+
+\important{The preloader partition has no filesystem - it contains raw executable code.}
+\end{example2}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 14
+% Description: SD card partition structure for booting
+% Priority: CRITICAL
+% Suggested filename: lecture03b_sd_card_structure.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_sd_card_structure.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{Stage 3: Preloader (SPL)}
+
+\begin{definition}{Preloader/SPL (Second Program Loader)}\\
+The preloader is user-defined code that initializes critical hardware.
+
+\textbf{Key Responsibilities:}
+\begin{itemize}
+    \item \textbf{Clock Reconfiguration:} Set up system clocks for optimal performance
+    \item \textbf{SDRAM Initialization:} Initialize SDRAM interface and check RAM size
+    \item \textbf{I/O Pin Configuration:} Configure I/O pins of HPS
+    \item \textbf{Peripheral Initialization:} Initialize peripheral interfaces needed to load U-Boot
+    \item \textbf{Load U-Boot:} Copy U-Boot bootloader to SDRAM
+    \item \textbf{Jump to U-Boot:} Transfer execution to bootloader
+\end{itemize}
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Executes from on-chip RAM (fast, limited size)
+    \item User-defined and customizable
+    \item Must be small to fit in on-chip RAM
+    \item Critical for system initialization
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 15
+% Description: Preloader stage diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03b_preloader_stage.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_preloader_stage.png}
+\\
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 16
+% Description: Preloader stage details (2)
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture03b_preloader_details.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_preloader_details.png}
+\\
+
+\subsubsection{Stage 4: Bootloader (U-Boot)}
+
+\begin{definition}{U-Boot Bootloader}\\
+U-Boot is a versatile, feature-rich bootloader program.
+
+\textbf{Primary Functions:}
+\begin{itemize}
+    \item \textbf{Hardware Tests:} Verify system functionality
+    \item \textbf{FPGA Configuration:} Load bitstream to FPGA fabric
+    \item \textbf{Load Linux Kernel:} Copy kernel image to memory
+    \item \textbf{Load Device Tree:} Provide hardware description to kernel
+\end{itemize}
+
+\textbf{Open Source:}
+\begin{itemize}
+    \item Available at: https://docs.u-boot.org/en/latest/
+    \item Highly configurable
+    \item Active community support
+    \item Board-specific configurations available
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 17
+% Description: Bootloader stage diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03b_bootloader_stage.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_bootloader_stage.png}
+\\
+
+\begin{concept}{U-Boot Capabilities}\\
+U-Boot is the earliest point of developer interaction during boot.
+
+\textbf{Testing and Access:}
+\begin{itemize}
+    \item Access and test SDRAM
+    \item Test FPGA fabric
+    \item Test on-chip peripherals
+    \item Access flash memory
+    \item Access USB devices
+    \item Access network interfaces
+\end{itemize}
+
+\textbf{User Interface:}
+\begin{itemize}
+    \item Interactive shell for user commands
+    \item Scripting support
+    \item Environment variable configuration
+    \item Boot menu system
+\end{itemize}
+
+\textbf{System Configuration:}
+\begin{itemize}
+    \item Configure FPGA fabric
+    \item Set boot parameters
+    \item Load and execute operating system kernel
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 18
+% Description: U-Boot capabilities and interface
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_uboot_capabilities.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_uboot_capabilities.png}
+\\
+
+\subsubsection{Stage 5: Operating System}
+
+\begin{definition}{Operating System Boot}\\
+The OS is loaded and initialized by the bootloader.
+
+\textbf{OS Choices:}
+\begin{itemize}
+    \item \textbf{RTOS:} Real-Time Operating System
+    \item \textbf{Embedded Linux:} Lightweight Linux distribution
+    \item \textbf{Desktop Linux:} Full-featured Linux distribution
+\end{itemize}
+
+\textbf{Hardware Description Requirement:}
+The OS needs a device tree to know what hardware is present:
+\begin{itemize}
+    \item In the HPS (Hard Processor System)
+    \item In FPGA fabric (custom IP blocks)
+    \item On the PCB (external peripherals)
+\end{itemize}
+
+\important{Without a device tree, Linux cannot discover and utilize the hardware automatically.}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 19
+% Description: Operating system stage diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_os_stage.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_os_stage.png}
+\\
+
+\subsubsection{Stage 6: Application}
+
+\begin{definition}{User Application}\\
+The final stage is the user application running under the OS.
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Started in its own process context by the OS
+    \item OS provides resource management
+    \item OS controls access to FPGA and peripherals
+    \item OS provides device drivers
+    \item Application runs in user space (protected mode)
+\end{itemize}
+
+\textbf{Resource Access:}
+\begin{itemize}
+    \item Access to hardware through OS drivers
+    \item Memory mapping for FPGA peripherals
+    \item Standard Linux APIs available
+    \item Multi-process support
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 20
+% Description: Application stage diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_application_stage.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_application_stage.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Boot Sequence Options}
+
+\begin{concept}{Customization Possibilities}\\
+Everything marked "User Software" can be modified by the developer:
+
+\textbf{Modifiable Components:}
+\begin{itemize}
+    \item Preloader (SPL)
+    \item Bootloader (U-Boot)
+    \item Operating System
+    \item Applications
+\end{itemize}
+
+\textbf{Developer Actions:}
+\begin{itemize}
+    \item Optimize performance
+    \item Add capabilities
+    \item Remove unnecessary features
+    \item Contribute to open source projects
+\end{itemize}
+\end{concept}
+
+\begin{remark}
+\textbf{Alternative Boot Path:}
+
+An RTOS can be loaded directly by the Boot ROM by replacing the Preloader image.
+
+\textbf{Questions to Consider:}
+\begin{itemize}
+    \item Why would you do this?
+    \item What are the advantages?
+    \item What problems might arise?
+\end{itemize}
+
+\textbf{Analysis:}
+\begin{itemize}
+    \item \textbf{Advantage:} Faster boot time (fewer stages)
+    \item \textbf{Advantage:} Simpler system (less software)
+    \item \textbf{Problem:} Limited initialization (Boot ROM constraints)
+    \item \textbf{Problem:} Size constraints (must fit in space allocated for preloader)
+\end{itemize}
+\end{remark}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 21
+% Description: Boot sequence options and customization
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_boot_options.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_boot_options.png}
+\\
+
+\subsection{Device Tree}
+
+\begin{definition}{Device Tree Concept}\\
+A device tree is a data structure that describes hardware to the operating system.
+
+\textbf{Why Needed:}
+\begin{itemize}
+    \item Embedded Linux cannot automatically discover hardware
+    \item Hardware configuration varies between designs
+    \item FPGA fabric contains custom IP blocks
+    \item PCB layout differs between boards
+\end{itemize}
+
+\textbf{Loading Process:}
+\begin{itemize}
+    \item Bootloader must load Device Tree Blob (DTB) to memory
+    \item DTB loaded before kernel boot
+    \item Kernel reads DTB to discover hardware
+\end{itemize}
+
+\textbf{Information Provided:}
+\begin{itemize}
+    \item Device address ranges
+    \item Type of device
+    \item Compatible drivers
+    \item Register maps
+    \item Clock configurations
+    \item Interrupt assignments
+    \item Other device properties
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 24
+% Description: Device tree concept and purpose
+% Priority: CRITICAL
+% Suggested filename: lecture03b_device_tree_concept.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_device_tree_concept.png}
+\\
+
+\begin{concept}{Device Tree Functions}\\
+The device tree serves multiple purposes:
+
+\textbf{Memory Map Description:}
+\begin{itemize}
+    \item Describes complete system memory map
+    \item Translates between memory maps of subregions
+    \item Maps HPS memory space
+    \item Maps FPGA peripheral space
+    \item Maps external peripheral space
+\end{itemize}
+
+\textbf{Peripheral Details:}
+\begin{itemize}
+    \item Peripheral base addresses
+    \item Address ranges and sizes
+    \item Interrupt connections
+    \item Clock sources
+    \item Driver compatibility information
+\end{itemize}
+
+\textbf{Bridge Configuration:}
+\begin{itemize}
+    \item HPS-FPGA bridge specifications
+    \item Data bus width
+    \item Address translation
+    \item Memory-mapped block types
+    \item Associated drivers
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 25
+% Description: Device tree memory map translation
+% Priority: CRITICAL
+% Suggested filename: lecture03b_device_tree_memory_map.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_device_tree_memory_map.png}
+\\
+
+\begin{concept}{Device Tree Exploration in Linux}\\
+The device tree can be explored in the running Linux file system:
+
+\textbf{File System Locations:}
+\begin{itemize}
+    \item \texttt{/sys/class} - Device classes
+    \item \texttt{/sys/devices/platform/sopc@0} - Platform devices
+\end{itemize}
+
+\textbf{Description Contents:}
+\begin{itemize}
+    \item Hierarchy of hardware components
+    \item Peripheral addresses and clocks
+    \item Compatible driver information
+    \item Device status (enabled/disabled)
+    \item HPS-FPGA bridge configuration
+    \item Memory map details
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 26
+% Description: Device tree in Linux file system
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_device_tree_filesystem.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_device_tree_filesystem.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Device Tree Structure}
+
+\begin{definition}{Device Tree Hierarchy}\\
+The device tree is organized as a hierarchical structure:
+
+\textbf{Root Node: /}
+\begin{itemize}
+    \item \texttt{\#size-cells}: Number of cells for size values
+    \item \texttt{\#address-cells}: Number of cells for address values
+    \item \texttt{compatible}: Device compatibility string
+\end{itemize}
+
+\textbf{Major Child Nodes:}
+\begin{itemize}
+    \item \texttt{cpus\{\}}: CPU configuration
+    \begin{itemize}
+        \item Bus frequency
+        \item CPU cores and their properties
+    \end{itemize}
+    \item \texttt{memory\{\}}: Physical memory description
+    \item \texttt{clocks\{\}}: Clock sources and configurations
+    \item \texttt{sopc@0}: SoC peripheral controller
+    \begin{itemize}
+        \item \texttt{bridge@0xc0000000}: HPS-FPGA bridge
+        \item Memory map definitions
+        \item \texttt{jtag\_uart\_0: serial@0x...}: JTAG UART peripheral
+        \item Additional peripheral nodes
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 27
+% Description: Device tree hierarchy structure
+% Priority: CRITICAL
+% Suggested filename: lecture03b_device_tree_hierarchy.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_device_tree_hierarchy.png}
+\\
+
+\begin{definition}{Device Tree Nodes}\\
+Devices are described as nodes in the device tree.
+
+\textbf{Node Structure:}
+$$\texttt{label: name@unit\_address}$$
+
+\textbf{Node Contents:}
+\begin{itemize}
+    \item \textbf{Properties:} Key-value pairs describing the device
+    \item \textbf{Child Nodes:} Nested devices or sub-components
+\end{itemize}
+
+\textbf{Example Node:}
+\begin{lstlisting}[language=C, style=base]
+cpu@0x1 {
+    device_type = "cpu";
+    compatible = "arm,cortex-a9";
+    reg = <0x00000001>;
+    next-level-cache = <&hps_0_L2>;
+    enable-method = "psci";
+};
+\end{lstlisting}
+
+\textbf{Node Components:}
+\begin{itemize}
+    \item \texttt{cpu@0x1}: Node name with unit address
+    \item \texttt{device\_type}: Type of device
+    \item \texttt{compatible}: Compatible driver string
+    \item \texttt{reg}: Register address
+    \item \texttt{next-level-cache}: Reference to cache (phandle)
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 28
+% Description: Device tree node structure
+% Priority: CRITICAL
+% Suggested filename: lecture03b_node_structure.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_node_structure.png}
+\\
+
+\begin{definition}{Node Structure Components}\\
+A typical peripheral node contains several key properties:
+
+\textbf{Example: JTAG UART Node}
+\begin{lstlisting}[language=C, style=base]
+serial@0x100020000 {
+    compatible = "altr,juart-16.0", "altr,juart-1.0";
+    reg = <0x00000001 0x00020000 0x00000008>;
+    interrupt-parent = <&hps_0_arm_gic_0>;
+    interrupts = <0 42 4>;
+    clocks = <&clk_0>;
+};
+\end{lstlisting}
+
+\textbf{Property Descriptions:}
+\begin{itemize}
+    \item \textbf{Label:} \texttt{serial@0x100020000}
+    \item \textbf{Properties:} Device characteristics and configuration
+    \item \textbf{Values:} Specific settings for this instance
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 29
+% Description: Complete node structure example
+% Priority: CRITICAL
+% Suggested filename: lecture03b_complete_node.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_complete_node.png}
+\\
+
+\subsection{Node Properties}
+
+\begin{definition}{Common Node Properties}\\
+Standard properties found in device tree nodes:
+
+\textbf{compatible}
+\begin{itemize}
+    \item Defines programming model
+    \item Identifies compatible driver
+    \item Can list multiple compatible strings (fallback options)
+    \item Example: \texttt{"altr,juart-16.0", "altr,juart-1.0"}
+\end{itemize}
+
+\textbf{reg}
+\begin{itemize}
+    \item Address and length of memory region
+    \item Format: \texttt{<base\_address length>}
+    \item Can use multiple address cells for extended addressing
+    \item Example: \texttt{<0x00000001 0x00020000 0x00000008>}
+    \begin{itemize}
+        \item Address: 0x1'0002'0000 (35-bit ARM physical address)
+        \item Length: 0x08 bytes
+    \end{itemize}
+\end{itemize}
+
+\textbf{interrupt-parent}
+\begin{itemize}
+    \item Phandle to interrupt controller
+    \item Specifies which controller handles interrupts
+    \item Example: \texttt{<\&hps\_0\_arm\_gic\_0>}
+\end{itemize}
+
+\textbf{interrupts}
+\begin{itemize}
+    \item Interrupt number(s) and configuration
+    \item Format depends on interrupt controller
+    \item Example: \texttt{<0 42 4>}
+\end{itemize}
+
+\textbf{clocks}
+\begin{itemize}
+    \item Clock reference (phandle)
+    \item Links to clock provider node
+    \item Example: \texttt{<\&clk\_0>}
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+\textbf{35-bit ARM Physical Address:}
+
+The ARM Cortex-A9 in Cyclone V uses a 35-bit physical address space.
+
+\textbf{Address Ranges:}
+\begin{itemize}
+    \item HPS internal: 0x0'0000'0000 - 0x0'FFFF'FFFF
+    \item LW (Lightweight) Bridge: 0x1'0000'0000 - 0x1'FFFF'FFFF
+    \item HPS-to-FPGA Bridge: Higher addresses
+\end{itemize}
+
+Everything on the Lightweight bridge uses addresses starting at 0x1'0000'0000.
+\end{remark}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 30
+% Description: Node properties detailed explanation
+% Priority: CRITICAL
+% Suggested filename: lecture03b_node_properties.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_node_properties.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Bus Properties}
+
+\begin{definition}{Bus Node Properties}\\
+Bus nodes define address spaces and translation between parent and child buses.
+
+\textbf{Example: HPS-FPGA Bridge}
+\begin{lstlisting}[language=C, style=base]
+bridge@0xc0000000 {
+    compatible = "altr,bridge-16.0", "simple-bus";
+    reg = <0xc0000000 0x20000000>,  // HPS-FPGA bridge
+          <0xff200000 0x00200000>;  // Lightweight bridge
+    reg-names = "axi_h2f", "axi_h2f_lw";
+    clocks = <&clk_0 &clk_0>;
+    clock-names = "h2f_axi_clock", "h2f_lw_axi_clock";
+    #address-cells = <2>;
+    #size-cells = <1>;
+    ranges = <0x00000000 0x00000000 0xc0000000 0x00010000>,
+             <0x00000001 0x00021000 0xff221000 0x00000020>,
+             ...
+};
+\end{lstlisting}
+
+\textbf{Key Properties:}
+\begin{itemize}
+    \item \textbf{reg:} Base address and range of bridge regions
+    \item \textbf{\#address-cells:} Number of 32-bit cells for base address (2 = 64-bit)
+    \item \textbf{\#size-cells:} Number of 32-bit cells for size (1 = 32-bit)
+    \item \textbf{ranges:} Address translation table
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 31
+% Description: Bus properties and address translation
+% Priority: CRITICAL
+% Suggested filename: lecture03b_bus_properties.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_bus_properties.png}
+\\
+
+\begin{definition}{Memory Ranges and Address Translation}\\
+The \texttt{ranges} property defines address translation between buses.
+
+\textbf{Format:}
+$$\texttt{<child\_address parent\_address size>}$$
+
+\textbf{Example:}
+\begin{lstlisting}[language=C, style=base]
+ranges = <0x00000000 0x00000000 0xc0000000 0x00010000>,
+         <0x00000001 0x00021000 0xff221000 0x00000020>,
+         <0x00000001 0x00021020 0xff221020 0x00000020>,
+         <0x00000001 0x00020000 0xff220000 0x00000008>;
+\end{lstlisting}
+
+\textbf{Translation Components:}
+\begin{itemize}
+    \item \textbf{Child address:} Address on the child bus (from device perspective)
+    \item \textbf{Parent address:} Address on parent bus (from CPU/Linux perspective)
+    \item \textbf{Size:} Size of the mapped region
+\end{itemize}
+
+\textbf{Usage:}
+\begin{itemize}
+    \item Linux programs use parent address
+    \item Hardware uses child address
+    \item Device tree provides translation
+\end{itemize}
+
+\textbf{Example Device Reference:}
+\begin{lstlisting}[language=C, style=base]
+jtag_uart: serial@0x100020000 {
+    reg = <0x00000001 0x00020000 0x00000008>;
+    ...
+};
+\end{lstlisting}
+
+Child address 0x1'0002'0000 translates to parent address 0xff220000 for Linux access.
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 32
+% Description: Memory ranges and address translation
+% Priority: CRITICAL
+% Suggested filename: lecture03b_memory_ranges.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_memory_ranges.png}
+\\
+
+\subsection{Building the Device Tree}
+
+\begin{KR}{Device Tree Build Process}\\
+\textbf{Step 1: Extract System Information}
+
+The system description in \texttt{*.sopcinfo} contains the memory map in XML format.
+
+\begin{lstlisting}[language=bash, style=base]
+# Convert .sopcinfo into human-readable header file
+sopc-create-header-files pacman_soc.sopcinfo
+# Generates: system.h
+\end{lstlisting}
+
+\textbf{Step 2: Add Device Nodes}
+
+Add custom nodes to device tree template using vendor documentation.
+
+\textbf{Example: GPIO Node}
+\begin{lstlisting}[language=C, style=base]
+gpio_altr: gpio@ff200000 {
+    compatible = "altr,pio-1.0";
+    reg = <0xff200000 0x10>;
+    interrupts = <0 45 4>;
+    altr,ngpio = <32>;
+    altr,interrupt-type = <IRQ_TYPE_EDGE_RISING>;
+    #gpio-cells = <2>;
+    gpio-controller;
+    #interrupt-cells = <2>;
+    interrupt-controller;
+};
+\end{lstlisting}
+
+\textbf{Step 3: Compile Device Tree}
+
+Use device tree compiler (\texttt{dtc}) to compile source to binary blob.
+
+\important{Refer to vendor documentation for specific property requirements and values.}
+\end{KR}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 33
+% Description: Device tree building process example
+% Priority: CRITICAL
+% Suggested filename: lecture03b_device_tree_build.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_device_tree_build.png}
+\\
+
+\begin{concept}{Device Tree Compilation Flow}\\
+The complete compilation flow:
+
+\textbf{Input Files:}
+\begin{enumerate}
+    \item \textbf{.sopcinfo:} Platform Designer system description
+    \item \textbf{system.h:} Generated header with memory map
+    \item \textbf{*.dtsi:} Device tree include file with custom nodes
+    \item \textbf{*.dts:} Main device tree source file
+\end{enumerate}
+
+\textbf{Tools:}
+\begin{enumerate}
+    \item \texttt{sopc-create-header-files}: Convert .sopcinfo to .h
+    \item \texttt{dtc} (Device Tree Compiler): Compile .dts to .dtb
+\end{enumerate}
+
+\textbf{Output:}
+\begin{itemize}
+    \item \textbf{.dtb:} Device Tree Blob (binary format)
+    \item Loaded by bootloader
+    \item Passed to Linux kernel
+\end{itemize}
+
+\textbf{File Locations:}
+\begin{itemize}
+    \item Base template: \texttt{socfpga\_cyclone5\_de1soc.dtsi}
+    \item Custom additions: Your \texttt{*.dtsi} file
+    \item Final blob: \texttt{socfpga.dtb}
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 34
+% Description: Complete device tree compilation flow diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03b_dt_compilation_flow.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_dt_compilation_flow.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Booting the Kernel}
+
+\begin{definition}{U-Boot Configuration File}\\
+U-Boot uses a configuration file to locate kernel and device tree.
+
+\textbf{File: extlinux.conf}
+\begin{itemize}
+    \item Located in BOOT partition of SD card
+    \item Text file with boot configuration
+\end{itemize}
+
+\textbf{Configuration Parameters:}
+\begin{lstlisting}[language=bash, style=base]
+KERNEL: "zImage"         # Kernel image filename
+FDT: "socfpga.dtb"      # Device Tree Blob filename
+APPEND: root=/dev/mmcblk0p2  # Boot options (root filesystem)
+\end{lstlisting}
+
+\textbf{Boot Process:}
+\begin{enumerate}
+    \item U-Boot reads \texttt{extlinux.conf}
+    \item Locates kernel image file
+    \item Locates device tree blob file
+    \item Loads both to memory
+    \item Passes control to kernel with device tree pointer
+\end{enumerate}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 35
+% Description: extlinux.conf configuration
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_extlinux_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_extlinux_config.png}
+\\
+
+\begin{example}
+\textbf{U-Boot Loader Output During Boot:}
+
+\begin{enumerate}
+    \item Read \texttt{extlinux.conf} configuration
+    \item Load kernel image into memory
+    \item Load Device Tree Blob into memory
+    \item Start kernel execution
+\end{enumerate}
+
+The console output shows each step with memory addresses and file sizes, providing visibility into the boot process.
+\end{example}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 36
+% Description: U-Boot console output during kernel boot
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_uboot_output.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_uboot_output.png}
+\\
+
+\subsection{U-Boot Build Process}
+
+\begin{concept}{U-Boot Build Flow}\\
+Building U-Boot requires cross-compilation and configuration.
+
+\textbf{Prerequisites:}
+\begin{itemize}
+    \item Cross-compiler toolchain for ARM
+    \item U-Boot source code
+    \item Board-specific configuration
+    \item Generated handoff files from Quartus
+\end{itemize}
+
+\textbf{Build Flow:}
+\begin{enumerate}
+    \item Configure HPS in Platform Designer
+    \item Compile design in Quartus
+    \item Generate handoff folder
+    \item Build preloader (SPL)
+    \item Configure U-Boot for board
+    \item Compile U-Boot
+    \item Combine SPL and U-Boot into single image
+    \item Copy to SD card
+\end{enumerate}
+\end{concept}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 38
+% Description: U-Boot build flow diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03b_uboot_build_flow.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_uboot_build_flow.png}
+\\
+
+\subsection{Platform Designer Configuration}
+
+\begin{KR}{Building SoC System in Platform Designer}\\
+\textbf{Step 1: Configure HPS Block}
+\begin{itemize}
+    \item Configure HPS block settings
+    \item Set up clocks and PLLs
+    \item Configure SDRAM controller
+    \item Enable peripherals
+    \item Configure FPGA-HPS bridges
+\end{itemize}
+
+\textbf{Step 2: Add FPGA IP Blocks}
+\begin{itemize}
+    \item Add custom IP blocks to FPGA fabric
+    \item Connect via bridges to HPS
+    \item Configure IP block parameters
+\end{itemize}
+
+\textbf{Step 3: Assign Addresses}
+\begin{itemize}
+    \item Assign base addresses to all peripherals
+    \item Create memory map
+    \item Verify no address conflicts
+    \item Document address assignments
+\end{itemize}
+
+\textbf{Example System Components:}
+\begin{itemize}
+    \item \textbf{hps\_0:} Hard Processor System block
+    \item \textbf{sysid\_qsys\_0:} System ID peripheral
+    \item \textbf{jtag\_uart\_0:} JTAG UART for debug
+    \item \textbf{pio\_0:} Parallel I/O block
+    \item Clock and reset connections
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 39
+% Description: Platform Designer system configuration
+% Priority: CRITICAL
+% Suggested filename: lecture03b_platform_designer.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_platform_designer.png}
+\\
+
+\subsection{SOPCINFO File}
+
+\begin{definition}{.sopcinfo File}\\
+The \texttt{.sopcinfo} file is generated by Platform Designer and contains the complete system description.
+
+\textbf{Contents:}
+\begin{itemize}
+    \item Description of HPS, including all configuration settings
+    \item Description of IP blocks and their parameters
+    \item Interconnect topology (connections between blocks)
+    \item Memory addresses and address maps
+    \item Clock and reset connections
+    \item Interrupt assignments
+\end{itemize}
+
+\textbf{Format:}
+\begin{itemize}
+    \item XML-based format
+    \item Machine-readable
+    \item Contains embedded C macros for software
+\end{itemize}
+
+\textbf{Example Content:}
+\begin{lstlisting}[language=XML, style=base]
+<kind>embeddedsw.CMacro.BIT_CLEARING_EDGE_REGISTER</kind>
+<version>0</version>
+<name>embeddedsw.CMacro.BIT_MODIFYING_OUTPUT_REGISTER</name>
+<name>embeddedsw.CMacro.CAPTURE</name>
+\end{lstlisting}
+
+\textbf{Usage:}
+\begin{itemize}
+    \item Input to \texttt{sopc-create-header-files}
+    \item Generates \texttt{system.h} header file
+    \item Used for building bootloader
+    \item Used for building device tree
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 40
+% Description: .sopcinfo file structure and content
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_sopcinfo_file.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_sopcinfo_file.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Quartus Handoff Folder}
+
+\begin{definition}{Handoff Folder}\\
+Quartus compiler creates a handoff folder containing configuration information required to build the preloader and bootloader.
+
+\textbf{Generated Files:}
+\begin{itemize}
+    \item \texttt{alt\_types.h} - Type definitions
+    \item \texttt{emif.xml} - EMIF configuration
+    \item \texttt{hps.xml} - HPS configuration
+    \item \texttt{pacman\_soc\_hps\_0.hiof} - HPS I/O configuration
+    \item \texttt{sdram\_io.h} - SDRAM I/O settings
+    \item \texttt{sequencer.c/.h} - Memory sequencer code
+    \item \texttt{sequencer\_auto*.c/.h} - Auto-generated sequencer files
+    \item \texttt{sequencer\_defines.h} - Sequencer definitions
+    \item \texttt{system.h} - System memory map
+    \item \texttt{tclrpt.c/.h} - TCL report files
+\end{itemize}
+
+\textbf{Configuration Information:}
+\begin{itemize}
+    \item Pin configuration (pinmux)
+    \item Enabled peripherals
+    \item Clock configuration
+    \item SDRAM timing and configuration
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 41
+% Description: Handoff folder contents
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_handoff_folder.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_handoff_folder.png}
+\\
+
+\begin{definition}{hps.xml Configuration File}\\
+The \texttt{hps.xml} file contains HPS peripheral and clock configuration.
+
+\textbf{Example Contents:}
+\begin{lstlisting}[language=XML, style=base]
+<name>EMAC</name> <choice>value</choice>
+<name>USB</name> <choice>value</choice>
+<name>SPI</name> <choice>value</choice>
+<name>I2C</name> <choice>value</choice>
+<name>SDMMC</name> <choice>value</choice>
+<name>UART</name> <choice>value</choice>
+<name>CAN</name> <choice>value</choice>
+<name>PLL_CLK</name> <value>...</value>
+<name>SDRAM_CLK</name> <value>...</value>
+\end{lstlisting}
+
+\textbf{Configuration Categories:}
+\begin{itemize}
+    \item Peripheral enable/disable settings
+    \item Clock frequency settings
+    \item Pin multiplexing choices
+    \item I/O standard selections
+\end{itemize}
+
+\important{The handoff folder contains minimal but essential configuration information.}
+\end{definition}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 42
+% Description: hps.xml file structure
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_hps_xml.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_hps_xml.png}
+\\
+
+\subsection{BSP Generator}
+
+\begin{KR}{Creating Bootloader BSP (Board Support Package)}\\
+\textbf{Tool: bsp-create-settings}
+
+The BSP generator converts the handoff folder to header files for bootloader compilation.
+
+\textbf{Command:}
+\begin{lstlisting}[language=bash, style=base]
+cd $PROJECT/
+mkdir -p software/bootloader
+
+bsp-create-settings \
+  --type spl \
+  --bsp-dir software/bootloader \
+  --preloader-settings-dir "hps_isw_handoff/pacman_soc_hps_0" \
+  --settings software/bootloader/settings.bsp
+\end{lstlisting}
+
+\textbf{Generated Files:}
+\begin{itemize}
+    \item Header files in \texttt{generated/} directory
+    \item Pin multiplexing configuration
+    \item PLL configuration
+    \item Reset manager configuration
+    \item SDRAM initialization sequences
+\end{itemize}
+
+\textbf{Output Directory:}
+\begin{itemize}
+    \item \texttt{software/bootloader/generated/}
+    \item Contains all necessary headers
+    \item Ready for preloader compilation
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 43
+% Description: BSP generator command and process
+% Priority: CRITICAL
+% Suggested filename: lecture03b_bsp_generator.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_bsp_generator.png}
+\\
+
+\subsection{U-Boot Compilation}
+
+\begin{KR}{Cross-Compiling U-Boot}\\
+\textbf{Prerequisites:}
+\begin{itemize}
+    \item ARM cross-compiler toolchain installed
+    \item U-Boot source code (e.g., socfpga\_v2020.04 branch)
+    \item Modified source code for your board (if needed)
+\end{itemize}
+
+\textbf{Step 1: Configure for Target Board}
+\begin{lstlisting}[language=bash, style=base]
+cd ~/de1soc/
+# Select default configuration for Cyclone V
+make socfpga_cyclone5_defconfig
+# Output: configuration written to .config
+\end{lstlisting}
+
+\textbf{Step 2: Compile}
+\begin{lstlisting}[language=bash, style=base]
+make
+# Compiles all components:
+# - scripts/basic/fixdep
+# - scripts/kconfig/conf.o
+# - SPL (preloader)
+# - U-Boot proper
+# Output: u-boot-with-spl.sfp
+\end{lstlisting}
+
+\textbf{Build Output Files:}
+\begin{itemize}
+    \item \texttt{u-boot-with-spl.sfp} - Combined preloader + U-Boot image
+    \item Ready to copy to SD card
+\end{itemize}
+
+\textbf{Customization:}
+\begin{itemize}
+    \item Modify source code as needed for custom boards
+    \item Adjust board-specific settings
+    \item Add custom commands or features
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 44
+% Description: U-Boot compilation process and output
+% Priority: CRITICAL
+% Suggested filename: lecture03b_uboot_compilation.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_uboot_compilation.png}
+\\
+
+\subsection{Copying to SD Card}
+
+\begin{KR}{Writing Bootloader to SD Card}\\
+\textbf{Important Note:} The preloader partition has no filesystem - it contains raw binary data.
+
+\textbf{Command:}
+\begin{lstlisting}[language=bash, style=base]
+# Copy bootloader image to raw partition (type A2)
+dd if=u-boot-with-spl.sfp of=/dev/sdx3 bs=1M
+sync
+\end{lstlisting}
+
+\textbf{Parameters:}
+\begin{itemize}
+    \item \texttt{if=}: Input file (bootloader image)
+    \item \texttt{of=}: Output device (\texttt{/dev/sdx3} where x is SD card device letter)
+    \item \texttt{bs=1M}: Block size of 1 megabyte
+    \item \texttt{sync}: Ensure data is written to disk
+\end{itemize}
+
+\textbf{Important:}
+\begin{itemize}
+    \item The bootloader image contains 4 copies of the preloader
+    \item Correctly formatted for raw partition
+    \item No filesystem needed
+    \item Direct binary copy to partition
+\end{itemize}
+
+\important{Always verify the correct device name (sdx) before running dd command to avoid overwriting wrong disk!}
+\end{KR}
+
+% TODO: Add image from SCD_3b_Booting_and_Device_Tree.pdf, Page 45
+% Description: SD card write command
+% Priority: IMPORTANT
+% Suggested filename: lecture03b_sd_card_write.png
+\\
+% \includegraphics[width=\linewidth]{lecture03b_sd_card_write.png}
+\\
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 37
+% CRITICAL priority: 20
+% IMPORTANT priority: 14
+% SUPPLEMENTARY priority: 3
+%
+% Quick extraction checklist:
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 5] - SoC architecture diagram (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 6] - HPS I/O pins (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 8] - Boot sequence overview (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 9] - Reset stage (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 10] - Reset details (SUPPLEMENTARY)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 11] - Boot ROM stage (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 12] - Boot ROM details (SUPPLEMENTARY)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 13] - BSEL configuration (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 14] - SD card structure (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 15] - Preloader stage (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 16] - Preloader details (SUPPLEMENTARY)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 17] - Bootloader stage (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 18] - U-Boot capabilities (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 19] - OS stage (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 20] - Application stage (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 21] - Boot options (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 24] - Device tree concept (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 25] - Device tree memory map (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 26] - Device tree in filesystem (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 27] - Device tree hierarchy (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 28] - Node structure (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 29] - Complete node example (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 30] - Node properties (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 31] - Bus properties (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 32] - Memory ranges (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 33] - Device tree build (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 34] - DT compilation flow (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 35] - extlinux config (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 36] - U-Boot output (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 38] - U-Boot build flow (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 39] - Platform Designer (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 40] - sopcinfo file (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 41] - Handoff folder (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 42] - hps.xml file (IMPORTANT)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 43] - BSP generator (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 44] - U-Boot compilation (CRITICAL)
+% [ ] [SCD_3b_Booting_and_Device_Tree.pdf, Page 45] - SD card write (IMPORTANT)
+% =====================

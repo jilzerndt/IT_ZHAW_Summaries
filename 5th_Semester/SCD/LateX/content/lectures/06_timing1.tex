@@ -1,0 +1,219 @@
+\section{Timing Analysis Part 1}
+
+\subsection{Introduction to Timing Analysis}
+
+\begin{concept}{Learning Objectives}\\
+After this lecture, students will be able to:
+\begin{itemize}
+    \item Understand timing constraints in digital systems
+    \item Analyze setup and hold time requirements
+    \item Calculate maximum clock frequency
+    \item Identify timing violations
+    \item Apply timing constraints in FPGA designs
+\end{itemize}
+\end{concept}
+
+% TODO: Add images from SCD_6_timing1.pdf, Pages 1-5
+% Description: Introduction and overview slides
+% Priority: IMPORT ANT
+% Suggested filename: lecture06_intro_XX.png
+
+\subsection{Flip-Flop Timing Parameters}
+
+\begin{definition}{Critical Timing Parameters}\\
+Every flip-flop has characteristic timing requirements:
+
+\textbf{Setup Time ($t_{su}$):}
+\begin{itemize}
+    \item Minimum time data must be stable BEFORE clock edge
+    \item Ensures proper data capture
+    \item Typically 50-200 ps for modern FPGAs
+\end{itemize}
+
+\textbf{Hold Time ($t_h$):}
+\begin{itemize}
+    \item Minimum time data must remain stable AFTER clock edge
+    \item Prevents metastability
+    \item Typically 0-100 ps for modern FPGAs
+\end{itemize}
+
+\textbf{Clock-to-Q Delay ($t_{co}$):}
+\begin{itemize}
+    \item Time from clock edge to output change
+    \item Represents flip-flop propagation delay
+    \item Typically 100-400 ps for modern FPGAs
+\end{itemize}
+\end{definition}
+
+% TODO: Add images from SCD_6_timing1.pdf, Pages 6-12
+% Description: Flip-flop timing diagrams showing setup, hold, and clock-to-Q
+% Priority: CRITICAL
+% Suggested filename: lecture06_ff_timing_XX.png
+
+\begin{iequation}
+T_{clk} \geq t_{co} + t_{logic} + t_{routing} + t_{su}
+\end{iequation}
+
+where:
+\begin{itemize}
+    \item $T_{clk}$ = Clock period
+    \item $t_{co}$ = Clock-to-output delay
+    \item $t_{logic}$ = Combinational logic delay
+    \item $t_{routing}$ = Routing delay
+    \item $t_{su}$ = Setup time
+\end{itemize}
+
+\subsection{Setup Time Analysis}
+
+\begin{definition}{Setup Time Constraint}\\
+The setup time constraint ensures data arrives at the destination flip-flop with sufficient margin before the clock edge.
+
+\textbf{Setup Equation:}
+$$t_{arrival} \leq T_{clk} - t_{su}$$
+
+where $t_{arrival}$ is the time when data reaches the flip-flop input.
+\end{definition}
+
+% TODO: Add images from SCD_6_timing1.pdf, Pages 13-20
+% Description: Setup time analysis diagrams and examples
+% Priority: CRITICAL
+% Suggested filename: lecture06_setup_analysis_XX.png
+
+\begin{example2}{Setup Time Calculation}\\
+\textbf{Given:}
+\begin{itemize}
+    \item Clock frequency: 100 MHz ($T_{clk} = 10$ ns)
+    \item $t_{co} = 0.5$ ns
+    \item $t_{logic} = 4$ ns
+    \item $t_{routing} = 2$ ns
+    \item $t_{su} = 0.3$ ns
+\end{itemize}
+
+\tcblower
+
+\textbf{Solution:}
+
+Data arrival time:
+$$t_{arrival} = t_{co} + t_{logic} + t_{routing} = 0.5 + 4 + 2 = 6.5 \text{ ns}$$
+
+Required time (setup constraint):
+$$t_{required} = T_{clk} - t_{su} = 10 - 0.3 = 9.7 \text{ ns}$$
+
+Setup slack:
+$$\text{Slack} = t_{required} - t_{arrival} = 9.7 - 6.5 = 3.2 \text{ ns}$$
+
+\important{Result:} Setup constraint is MET with 3.2 ns positive slack.
+\end{example2}
+
+\subsection{Hold Time Analysis}
+
+\begin{definition}{Hold Time Constraint}\\
+The hold time constraint ensures data remains stable at the flip-flop input for sufficient time after the clock edge.
+
+\textbf{Hold Equation:}
+$$t_{arrival} \geq t_h$$
+
+\textbf{Critical:} Hold violations cannot be fixed by changing clock frequency!
+\end{definition}
+
+% TODO: Add images from SCD_6_timing1.pdf, Pages 21-28
+% Description: Hold time analysis diagrams and examples
+% Priority: CRITICAL
+% Suggested filename: lecture06_hold_analysis_XX.png
+
+\begin{remark}
+Hold time violations typically occur when:
+\begin{itemize}
+    \item Clock skew is too large
+    \item Fast data path between flip-flops
+    \item Insufficient routing delay
+    \item Clock and data paths are unbalanced
+\end{itemize}
+\end{remark}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Clock Skew}
+
+\begin{definition}{Clock Skew}\\
+Clock skew is the difference in arrival time of the clock signal at different flip-flops.
+
+\textbf{Types:}
+\begin{itemize}
+    \item \textbf{Positive Skew:} Clock arrives later at destination FF
+    \item \textbf{Negative Skew:} Clock arrives earlier at destination FF
+\end{itemize}
+
+\textbf{Effects:}
+\begin{itemize}
+    \item Positive skew: Helps setup, hurts hold
+    \item Negative skew: Hurts setup, helps hold
+\end{itemize}
+\end{definition}
+
+% TODO: Add images from SCD_6_timing1.pdf, Pages 29-35
+% Description: Clock skew diagrams and impact analysis
+% Priority: CRITICAL
+% Suggested filename: lecture06_clock_skew_XX.png
+
+\begin{iequation}
+T_{clk,min} = t_{co} + t_{logic} + t_{routing} + t_{su} - \text{skew}
+\end{iequation}
+
+\subsection{Maximum Clock Frequency}
+
+\begin{KR}{Determining Maximum Clock Frequency}\\
+\textbf{Step 1: Identify Critical Path}
+\begin{itemize}
+    \item Find path with longest delay
+    \item Sum all delays: $t_{co} + t_{logic} + t_{routing}$
+\end{itemize}
+
+\textbf{Step 2: Apply Setup Constraint}
+$$T_{clk,min} = t_{critical\_path} + t_{su}$$
+
+\textbf{Step 3: Calculate Maximum Frequency}
+$$f_{max} = \frac{1}{T_{clk,min}}$$
+
+\textbf{Step 4: Verify Hold Constraints}
+\begin{itemize}
+    \item Check shortest path
+    \item Ensure $t_{co,min} + t_{logic,min} + t_{routing,min} \geq t_h$
+\end{itemize}
+\end{KR}
+
+% TODO: Add images from SCD_6_timing1.pdf, Pages 36-41
+% Description: Maximum frequency calculation examples and timing reports
+% Priority: CRITICAL
+% Suggested filename: lecture06_fmax_calc_XX.png
+
+\begin{highlight}{Key Timing Concepts}\\
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Concept} & \textbf{Impact} \\
+\hline
+Setup Time & Limits maximum frequency \\
+Hold Time & Independent of frequency \\
+Clock Skew & Affects both setup and hold \\
+Critical Path & Determines $f_{max}$ \\
+Slack & Timing margin (pos/neg) \\
+\hline
+\end{tabular}
+\end{center}
+\end{highlight}
+
+\begin{remark}
+Modern FPGA tools perform static timing analysis (STA) to automatically identify timing violations and report slack for all paths. Always verify timing reports before deploying designs.
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 41
+% CRITICAL priority: 30
+% IMPORTANT priority: 8
+% SUPPLEMENTARY priority: 3
+%
+% Quick extraction checklist:
+% [ ] [SCD_6_timing1.pdf, Pages 1-41] - Complete timing analysis part 1 content
+% =====================

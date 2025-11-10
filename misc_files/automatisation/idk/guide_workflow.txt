@@ -1,0 +1,303 @@
+# COMPLETE WORKFLOW GUIDE
+
+Step-by-step process from course materials to exam-ready PDF.
+
+---
+
+## PREPARATION (One-time per course)
+
+### 1. Analyze Context Files and Prompts
+- Fully Analyze Files to Project Knowledge (listed in the file 'index_all_files.txt')
+
+### 2. Course Materials
+- Quickly analyze provided course materials: lectures, exercises, old exams, quizzes, etc. 
+
+---
+
+## PHASE 0: FOUNDATION FILES
+
+### Create 00_intro.tex
+- Use PROMPT: Phase 0 Part A
+- Include: course materials, course info, exam details, grading, assignments
+
+### Create 00_table_of_contents.tex
+- Use PROMPT: Phase 0 Part B
+- Include: all chapters, structure, planned KRs
+
+### Update 00_table_of_contents.tex
+- Use PROMPT: Phase 0 Part B 
+- Rerun after adding new course materials to update contents of 00_intro.tex
+
+### Create main.tex
+```latex
+\documentclass[a4paper, fontsize = 8pt, landscape]{scrartcl}
+\usepackage{path/to/layout_and_colours}
+
+\makeatletter
+\def\input@path{{content/}}
+\makeatother
+\graphicspath{{content/images/}}
+
+\title{Course Name}
+\author{Your Name}
+\date{Semester}
+
+\createtitlepagestyle
+\createmainpagestyle
+
+\begin{document}
+\begin{multicols}{2}
+    \thispagestyle{TitlePageStyle}
+    \maketitle
+    \sffamily
+    
+    \input{00_intro.tex}
+    \raggedcolumns
+    \pagebreak
+    
+    \input{00_table_of_contents.tex}
+    \raggedcolumns
+    \pagebreak
+    
+    % Add chapters here
+    
+\end{multicols}
+\end{document}
+```
+
+---
+
+## PHASE 1: EXTRACTION
+
+1. Verify relevant course materials available (listed in 00_intro.tex under "Course Materials")
+   - Identify if it is THEORETICAL (Phase 1A) or EXERCISE/EXAM (Phase 1B)
+   - Create new file '00_extraction_checklist.tex' with a list of relevant course materials for each phase (1A and 1B) that can be used to track progress
+   - "Relevant" means it contains content that should be included in the final summary (e.g., lectures, scripts, exercises, old exams) but not administrative documents or unrelated materials
+   - If file already exists, and we are re-running Phase 1, check if all relevant files listed in 00_intro.tex under "Course Materials" are already extracted. If not, add to checklist.
+
+2. **Use PROMPT: Phase 1A**
+   - Go through each file in the checklist for Phase 1A
+   - Input: [SOURCE_FILE.pdf]
+   - Extract content to LaTeX following the instrructions in the prompt
+
+3. **Output: XX_topic_name.tex**
+   - Complete content
+   - All images in TODO comments (commented out)
+   - One LateX file per course material file (split long files as needed)
+
+4. **Quick validation:**
+   - Proper \section{} structure?
+   - lstlisting formatted correctly?
+   - Images commented out?
+
+5. Mark as DONE in checklist
+
+6. Repeat steps 2-5 for all files in Phase 1A checklist
+
+7. **Use PROMPT: Phase 1B**
+   - Go through each file in the checklist for Phase 1B
+   - Input: [SOURCE_FILE.pdf]
+   - Extract content to LaTeX following the instrructions in the prompt
+
+8. **Output: XX_exercises.tex, XX_old_exams.tex, etc**
+   - Complete content
+   - All images in TODO comments (commented out)
+   - One LateX file per course material file (split long files as needed)
+
+9. **Quick validation:**
+   - Proper \section{} structure?
+   - lstlisting formatted correctly?
+   - Images commented out?
+
+10. Mark as DONE in checklist
+
+11. Repeat steps 7-10 for all files in Phase 1B checklist
+
+---
+
+## PHASE 1.5: STRUCTURE PLANNING
+
+### Purpose:
+Analyze all Phase 1 content and propose optimal summary structure BEFORE starting Phase 2 summarization.
+
+### For ALL extracted chapters:
+
+1. **Use PROMPT: Phase 1.5**
+   - Input: All in Phase 1A and Phase 1B generated .tex files
+   - Specify exam format and priorities
+   - Request structure analysis
+
+2. **Output: Structure Proposal**
+   - Proposed chapter reorganization
+   - KR inventory (complete list)
+   - Content reduction analysis
+   - Dependency mapping
+
+3. **YOUR REVIEW (Critical!):**
+   - Does chapter structure make sense?
+   - Are priorities aligned with exam?
+   - Any missing topics/KRs?
+   - Any wrong groupings?
+   - Comfortable with content cuts?
+
+4. **Provide feedback:**
+   - ✅ Approve as-is
+   - 📝 Request specific changes
+   - ❓ Ask clarifications
+
+5. **Claude adjusts if needed**
+
+6. **Final approval**
+
+7. **Create '00_summary_structure.tex'** with final chapter list and titles
+
+8. **proceed to Phase 2**
+
+---
+
+## PHASE 2: SUMMARIZATION
+
+### For each chapter (using approved Phase 1.5 structure):
+
+1. **Use PROMPT: Phase 2**
+   - Input: All in Phase 1A and Phase 1B generated .tex files, '00_summary_structure.tex'
+   - Specify exam format
+   - Note high-priority topics
+
+2. **Output: Condensed file (As short and concise as possible without losing relevant information)**
+   - Only exam-relevant content
+   - KRs for all procedures
+   - 2-3 examples per topic
+
+3. **Check:**
+   - Has KR for every skill?
+   - 2-3 examples per major topic?
+   - Only exam-relevant content?
+   - Image TODOs still intact?
+   - Structure reorganized logically (not just lecture order)?
+
+---
+
+## PHASE 3: VALIDATION
+
+### For each chapter:
+
+1. **Use PROMPT: Phase 3**
+   - Run full validation
+   - Review validation report
+
+2. **Fix errors:**
+   - Priority 1 (critical): MUST fix
+   - Priority 2 (style): SHOULD fix
+   - Request auto-fix if needed
+
+3. **Verify:**
+   - All environments closed?
+   - Images commented out?
+   - No syntax errors?
+
+---
+
+## INTEGRATION
+
+### Add chapters to main.tex
+```latex
+\input{01_intro.tex}
+\raggedcolumns
+\pagebreak
+
+\input{02_basics.tex}
+\raggedcolumns
+\pagebreak
+
+% ... etc
+```
+
+### Test compile each chapter individually
+- Comment out all other chapters
+- Compile to catch errors early
+- Uncomment when working
+
+---
+
+## FINAL COMPILATION
+
+### Full build:
+1. Uncomment all chapters in main.tex
+2. Ensure all critical images added
+3. Compile full document
+4. Review PDF:
+   - Layout correct?
+   - Page breaks sensible?
+   - Images display?
+   - No overflow text?
+
+### If errors:
+- Use Phase 3 troubleshooting
+- Check error line number
+- Verify environment nesting
+- Test compile problem section alone
+
+---
+
+## REFINEMENT PROMPTS
+
+**Content too long:**
+```
+Reduce section [X] by 30%. Cut: background, redundant 
+examples, verbose text. Keep: KRs, 1-2 examples, key definitions.
+```
+
+**Missing KRs:**
+```
+Add KRs for skills: [list]. Include steps, decision points, 
+common mistakes.
+```
+
+**Need better examples:**
+```
+Add exam-style example for [topic]: [difficulty level], 
+complete solution, highlight key technique.
+```
+
+**Style issues:**
+```
+Fix style violations: [list issues]. Provide corrected snippets.
+```
+
+**Image checklist:**
+```
+Generate image extraction table from [file.tex] with all TODO 
+comments in table format for batch processing.
+```
+
+---
+
+## TROUBLESHOOTING
+
+**Compilation fails:**
+```
+Error: [ERROR MESSAGE]
+
+Identify likely cause, check lines around error, suggest fix.
+```
+
+**Images prevent build:**
+```
+Check all \includegraphics are commented out. Find any 
+uncommented lines in [file].
+```
+
+**Missing content:**
+```
+Check page X of [source PDF] - the [topic] section seems missing.
+```
+
+**Format inconsistencies:**
+```
+Review [file] for style consistency: environment usage, spacing, 
+\mult{2} groupings.
+```
+
+---
+

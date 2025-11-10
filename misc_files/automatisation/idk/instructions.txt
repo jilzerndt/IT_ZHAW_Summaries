@@ -1,0 +1,566 @@
+# PROJECT SETUP INSTRUCTIONS
+
+How to set up your Claude Project for optimal LaTeX summary creation.
+
+---
+
+## STEP 1: CREATE PROJECT
+
+1. In Claude, click "Projects" (left sidebar)
+2. Click "Create Project"
+3. Name: "[Course Name] Summary" (e.g., "Database Systems Summary")
+4. Description: "LaTeX summary for [Course] exam preparation"
+
+---
+
+## STEP 2: ADD TO PROJECT KNOWLEDGE
+
+Add these files to Project Knowledge (in this order):
+
+### Required Files:
+
+**1. layout_and_colours.sty**
+- Your custom LaTeX style sheet
+- Contains all environment definitions
+- MUST be present for all prompts to work
+
+**2. This Setup File**
+- The file you're reading now
+- Provides context for Claude
+
+**3. REFERENCE: Style Guide**
+- Quick reference for formatting rules
+- Environment definitions
+- Common patterns
+
+**4. REFERENCE: Quick Guide**
+- One-page essentials
+- Fastest reference during work
+
+### Prompt Files (add all):
+
+**5. PROMPT: Phase 0 - Foundation Files**
+- For creating 00_intro.tex and 00_table_of_contents.tex
+
+**6. PROMPT: Phase 1 - Content Extraction**
+- For converting PDFs to LaTeX
+
+**7. PROMPT: Phase 2 - Summarization**
+- For creating exam-focused summaries
+
+**8. PROMPT: Phase 3 - Validation**
+- For quality checking before compilation
+
+**9. GUIDE: Complete Workflow**
+- Full step-by-step process
+- Troubleshooting guide
+
+### Example Files (if you have them):
+
+**10. 00_basics.tex**
+- Example of properly formatted content
+
+**11. Your previous summaries**
+- Examples of completed work
+- Course-specific templates
+
+---
+
+## STEP 3: PROJECT INSTRUCTIONS
+
+In the Project "Custom Instructions" field, add:
+
+```
+This project creates exam-focused LaTeX summaries following layout_and_colours.sty.
+
+CRITICAL RULES:
+1. Always use appropriate tcolorbox environments (definition, concept, KR, example2, etc.)
+2. Add \\ after environment titles (EXCEPT before itemize/enumerate)
+3. ALWAYS comment out \includegraphics lines (prefix with %)
+4. All lstlisting must have [language=X, style=base]
+5. In lstlisting: use ae/oe/ue NOT ä/ö/ü
+6. Create one .tex file per major section/topic
+
+WORKFLOW:
+- Phase 0: Foundation files (00_intro.tex, 00_table_of_contents.tex)
+- Phase 1: Extract content from sources
+- Phase 2: Summarize and add KRs/examples
+- Phase 3: Validate syntax and style
+
+ALWAYS refer to the prompt files in Project Knowledge for detailed instructions.
+```
+
+---
+
+## STEP 4: ORGANIZE YOUR FILES LOCALLY
+
+Create this folder structure:
+
+```
+/CourseName_Summary/
+  main.tex
+  /content/
+    00_intro.tex
+    00_table_of_contents.tex
+    01_topic.tex
+    02_topic.tex
+    ...
+    /images/
+      /01_intro/
+      /02_basics/
+      ...
+  /misc_files/
+    /LateX/
+      layout_and_colours.sty
+  /source_materials/
+    /lectures/
+      Lecture_01.pdf
+      Lecture_02.pdf
+      ...
+    /exercises/
+      Exercise_Sheet_01.pdf
+      ...
+    syllabus.pdf
+    exam_info.pdf
+```
+
+---
+
+## STEP 5: CREATE MAIN.TEX
+
+Create your main.tex file:
+
+```latex
+\documentclass[a4paper, fontsize = 8pt, landscape]{scrartcl}
+\usepackage{../misc_files/LateX/layout_and_colours}
+
+\makeatletter
+\def\input@path{{content/}}
+\makeatother
+\graphicspath{{content/images/}}
+
+\title{Course Name}
+\subtitle{Exam Summary}
+\author{Your Name}
+\date{Semester Year}
+
+\createtitlepagestyle
+\createmainpagestyle
+
+\begin{document}
+\begin{multicols}{2}
+    \thispagestyle{TitlePageStyle}
+    \maketitleinfo
+    \sffamily
+    
+    % Phase 0 files
+    \input{00_intro.tex}
+    \raggedcolumns
+    \pagebreak
+    
+    \input{00_table_of_contents.tex}
+    \raggedcolumns
+    \pagebreak
+    
+    % Content chapters (add as you create them)
+    % \input{01_introduction.tex}
+    % \raggedcolumns
+    % \pagebreak
+    
+    % \input{02_basics.tex}
+    % \raggedcolumns
+    % \pagebreak
+    
+\end{multicols}
+\end{document}
+```
+
+---
+
+## STEP 6: TEST COMPILATION
+
+Test that everything works:
+
+```bash
+# Compile main.tex
+pdflatex main.tex
+
+# If errors, check:
+# - Path to layout_and_colours.sty correct?
+# - All required packages installed?
+# - No syntax errors in main.tex?
+```
+
+---
+
+## STEP 7: READY TO START
+
+You're now ready to begin! Follow this sequence:
+
+1. **Gather all course materials**
+   - PDFs of lectures, slides, scripts
+   - Exercise sheets
+   - Syllabus and exam information
+   - Past exams if available
+
+2. **Upload to Claude conversation**
+   - You can attach files to individual messages
+   - OR reference files if they're in Project Knowledge
+
+3. **Start with Phase 0**
+   - Create 00_intro.tex (course info)
+   - Create 00_table_of_contents.tex (outline)
+
+4. **Process each chapter**
+   - Phase 1: Extract
+   - Phase 2: Summarize
+   - Phase 3: Validate
+   - Add to main.tex
+
+5. **Extract images as you go or at the end**
+
+6. **Compile final PDF**
+
+---
+
+## USAGE TIPS
+
+### Starting a New Conversation
+
+When you start a new conversation in the project:
+
+```
+I'm working on [Chapter X: Topic] for my [Course Name] summary.
+
+[Attach source PDF or describe what you have]
+
+Please use [PROMPT: Phase 1] to extract the content.
+```
+
+Claude will automatically have access to:
+- All Project Knowledge files
+- The custom instructions
+- The prompt templates
+
+### Switching Between Phases
+
+```
+I've completed Phase 1 for Chapter 3. Here's the file:
+
+[paste content or attach]
+
+Please use [PROMPT: Phase 2] to create an exam-focused summary.
+
+Course context:
+- Exam format: [describe]
+- High-priority topics: [list if known]
+```
+
+### Requesting Validation
+
+```
+Please validate this chapter using [PROMPT: Phase 3]:
+
+[attach or paste file]
+
+Focus especially on [any specific concerns].
+```
+
+### Requesting Refinements
+
+```
+The summary is still too long. Please reduce section [X] by 30% 
+following the guidelines in [PROMPT: Phase 2].
+```
+
+---
+
+## TROUBLESHOOTING SETUP
+
+### Problem: Claude doesn't reference Project Knowledge
+
+**Solution:** Explicitly mention files:
+```
+Please refer to [PROMPT: Phase 1] in Project Knowledge for the 
+extraction guidelines.
+```
+
+### Problem: Style sheet not working
+
+**Check:**
+1. Is layout_and_colours.sty in Project Knowledge?
+2. Does main.tex have correct path to .sty file?
+3. Are all required LaTeX packages installed?
+
+### Problem: Prompts seem incomplete
+
+**Solution:** All prompt files should be in Project Knowledge. Re-upload if needed.
+
+### Problem: Claude uses wrong formatting
+
+**Reminder in conversation:**
+```
+Remember to follow layout_and_colours.sty conventions:
+- \\ after titles (not before lists)
+- Comment out all \includegraphics
+- lstlisting needs [language=X, style=base]
+```
+
+---
+
+## MAINTENANCE
+
+### After Each Course
+
+1. **Archive completed summary:**
+   ```
+   /completed_summaries/
+     /2024-FS-DatabaseSystems/
+       [all files]
+       README.md (notes on what worked)
+   ```
+
+2. **Update Project Knowledge:**
+   - Add successful summary as example
+   - Remove outdated examples
+   - Update course-specific notes
+
+3. **Document lessons learned:**
+   - What prompts worked best?
+   - Any course-specific quirks?
+   - Time estimates accurate?
+
+### Improving Over Time
+
+1. **Build personal library:**
+   ```
+   /templates/
+     /KRs/
+       sorting_algorithms.tex
+       proof_techniques.tex
+     /examples/
+       database_queries.tex
+       algorithm_traces.tex
+   ```
+
+2. **Refine prompts:**
+   - Note which prompt modifications helped
+   - Create course-type specific variants
+   - Share successful patterns
+
+3. **Track metrics:**
+   - Time per chapter
+   - First-compile success rate
+   - Exam performance correlation
+
+---
+
+## BEST PRACTICES
+
+### During the Semester
+
+**Incremental approach:**
+- Create summary as course progresses
+- Week 1: Phase 0 + Chapter 1
+- Week 2: Chapter 2
+- ...
+- Pre-exam: Just review and minor updates
+
+**Benefits:**
+- Spread work over semester
+- Less pre-exam stress
+- Better retention (creating = learning)
+
+### Collaboration
+
+**If working with study group:**
+1. One person sets up Project
+2. Share prompts and conventions
+3. Divide chapters among group
+4. Each person validates their chapters
+5. Combine into single document
+6. Cross-review for consistency
+
+### Quality Over Speed
+
+**Don't rush:**
+- Phase 1: Take time to capture everything
+- Phase 2: Think critically about exam relevance
+- Phase 3: Thorough validation prevents headaches
+
+**Better to spend:**
+- 3 hours on high-quality chapter
+- Than 1 hour + 2 hours debugging later
+
+---
+
+## ADVANCED TIPS
+
+### Custom Prompt Modifications
+
+For specialized courses, modify base prompts:
+
+**Heavy math course:**
+```
+Add to Phase 1 prompt:
+"Use highlight{} blocks for formula collections.
+Include theorem statements but omit proofs unless critical.
+Use align* for multi-step derivations."
+```
+
+**Programming course:**
+```
+Add to Phase 1 prompt:
+"Include Big-O complexity for all algorithms.
+Show execution traces in examples.
+Note common bugs and edge cases."
+```
+
+**Theory-heavy course:**
+```
+Add to Phase 2 prompt:
+"Focus on definitions and distinctions.
+Create KRs for essay structure and argumentation.
+Examples should be comparative analysis."
+```
+
+### Automation Scripts
+
+**Image extraction script:**
+```bash
+#!/bin/bash
+# Extract images from PDF at specific pages
+
+while IFS=',' read -r pdf page filename; do
+    magick convert -density 300 \
+        "$pdf[$page]" \
+        -quality 90 \
+        "content/images/$filename"
+done < image_list.csv
+```
+
+**Compile script:**
+```bash
+#!/bin/bash
+# Quick compile with error handling
+
+pdflatex -interaction=nonstopmode main.tex
+
+if [ $? -eq 0 ]; then
+    echo "✓ Compilation successful"
+    open main.pdf
+else
+    echo "✗ Compilation failed - check errors"
+    grep -A 5 "!" main.log
+fi
+```
+
+### Multi-Course Projects
+
+**Reusing across courses:**
+
+1. Create base Project template
+2. Clone for each new course
+3. Adjust custom instructions per course
+4. Share common KR/example libraries
+
+**Folder structure:**
+```
+/Summaries/
+  /shared/
+    layout_and_colours.sty
+    common_algorithms.tex
+    proof_templates.tex
+  /Course1/
+    [course-specific files]
+  /Course2/
+    [course-specific files]
+```
+
+---
+
+## GETTING HELP
+
+### If Something Doesn't Work
+
+1. **Check Project Knowledge:**
+   - Are all required files present?
+   - Is style sheet uploaded correctly?
+
+2. **Check Custom Instructions:**
+   - Are critical rules listed?
+   - Any typos or outdated info?
+
+3. **Test with Simple Example:**
+   - Try Phase 1 on single lecture slide
+   - Verify output follows format
+   - Debug from there
+
+4. **Ask Claude Explicitly:**
+   ```
+   I'm having issues with [specific problem].
+   
+   According to [PROMPT: Phase X], I should be getting [expected].
+   Instead I'm getting [actual].
+   
+   Please help debug.
+   ```
+
+### Common Setup Mistakes
+
+❌ **Forgot to comment out images:**
+- Files won't compile
+- Fix: Search for `\includegraphics` without `%` prefix
+
+❌ **Wrong environment types:**
+- Procedures in definition{} not KR{}
+- Fix: Review REFERENCE: Style Guide
+
+❌ **Missing language in lstlisting:**
+- Code not highlighted properly
+- Fix: Add [language=X, style=base]
+
+❌ **Multiple topics in one file:**
+- File too long and hard to navigate
+- Fix: Split into separate files
+
+---
+
+## SUCCESS CHECKLIST
+
+Your project is properly set up when:
+
+- [ ] Project created with descriptive name
+- [ ] layout_and_colours.sty in Project Knowledge
+- [ ] All prompt files uploaded
+- [ ] Reference files uploaded
+- [ ] Custom instructions configured
+- [ ] Local folder structure created
+- [ ] main.tex created and compiles
+- [ ] Test run of Phase 0 successful
+
+**Time to setup: 30-60 minutes**
+
+**You only do this once per course!**
+
+After setup, actual summary creation is much faster: 1-3 hours per chapter vs 11-16 hours with old method.
+
+---
+
+## READY TO GO!
+
+You're now ready to create efficient, high-quality LaTeX summaries!
+
+**Start with:**
+1. Gather course materials
+2. Run Phase 0 (foundation files)
+3. Process first chapter
+4. Iterate and improve
+
+**Remember:**
+- Use the prompt files as templates
+- Refer to style guide when uncertain
+- Validate early and often
+- Build incrementally
+
+Good luck with your studies! 📚✨

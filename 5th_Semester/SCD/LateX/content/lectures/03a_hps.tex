@@ -1,0 +1,797 @@
+\section{Hard Processor System (HPS) in SoC FPGA}
+
+\subsection{Learning Objectives}
+
+\begin{concept}{Course Goals}\\
+After this lecture and lab exercise, students will be able to:
+\begin{itemize}
+    \item Explain why it is often required to execute software in a SoC
+    \item Explain the difference between a softcore and a hard processor system
+    \item Name advantages for both softcore and hard processor options
+    \item Configure a HPS and/or a softcore processor
+    \item Apply the principle of bus bridges to access components in different chip parts
+\end{itemize}
+\end{concept}
+
+\subsection{FPGA Applications and Software Requirements}
+
+\begin{concept}{Typical FPGA Applications}\\
+FPGAs excel at tasks requiring deterministic, real-time processing:
+
+\textbf{Data Processing:}
+\begin{itemize}
+    \item Filtering and triggering
+    \item Control loops with precise timing
+    \item Real-time signal processing
+\end{itemize}
+
+\textbf{Video Processing:}
+\begin{itemize}
+    \item Color space transformation
+    \item Compression and decompression
+    \item Filters and effects
+    \item Real-time video manipulation
+\end{itemize}
+
+\textbf{Key Advantage:} Deterministic latency - guaranteed response times
+\end{concept}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 4
+% Description: Typical FPGA applications
+% Priority: IMPORTANT
+% Suggested filename: lecture03a_fpga_applications.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_fpga_applications.png}
+\\
+
+\begin{concept}{Tasks Better Solved in Software}\\
+Many system functions are more efficiently implemented in software:
+
+\textbf{Complex Algorithms:}
+\begin{itemize}
+    \item Video processing filters requiring coefficient calculation over multiple frames
+    \item Complex decision-making algorithms
+    \item Machine learning inference
+\end{itemize}
+
+\textbf{Networking and Communication:}
+\begin{itemize}
+    \item Web server with configuration controls
+    \item Network stack for data transfer via internet
+    \item Protocol implementations (TCP/IP, HTTP, etc.)
+\end{itemize}
+
+\textbf{System Management:}
+\begin{itemize}
+    \item API for easier control of FPGA application
+    \item User interface and configuration management
+    \item File system and data logging
+\end{itemize}
+
+\important{Combining FPGA hardware acceleration with CPU software flexibility provides optimal system performance.}
+\end{concept}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 5
+% Description: Software tasks in SoC systems
+% Priority: IMPORTANT
+% Suggested filename: lecture03a_software_tasks.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_software_tasks.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Evolution from Discrete Systems to SoC}
+
+\begin{concept}{Classic FPGA \& CPU Architecture}\\
+Traditional systems use separate FPGA and CPU chips.
+
+\textbf{System Before (Discrete Architecture):}
+\begin{itemize}
+    \item \textbf{Multiple Devices:} Separate FPGA and CPU chips
+    \item \textbf{Multiple Memories:} Different memory for each device
+    \item \textbf{Limited Bandwidth:} Chip-to-chip communication bottleneck
+    \item \textbf{Complex PCB:} More layers, more routing
+    \item \textbf{Higher Costs:} Multiple chips, complex board
+    \item \textbf{Power Consumption:} Data transfer between chips costs energy
+    \item \textbf{Speed:} Inter-chip communication is slow
+\end{itemize}
+
+\textbf{Layout:}
+One PCB contains discrete FPGA \& CPU as separate components.
+\end{concept}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 6
+% Description: Classic discrete FPGA and CPU architecture
+% Priority: CRITICAL
+% Suggested filename: lecture03a_discrete_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_discrete_architecture.png}
+\\
+
+\begin{definition}{SoC FPGA Integrated Architecture}\\
+Modern SoC FPGAs integrate CPU and FPGA on a single die.
+
+\textbf{System After (SoC FPGA):}
+\begin{itemize}
+    \item \textbf{Single Device:} CPU and FPGA in one chip
+    \item \textbf{Single Memory:} Shared memory system
+    \item \textbf{High Bandwidth:} Internal connections between FPGA and CPU
+    \item \textbf{Simpler PCB:} Fewer layers required
+    \item \textbf{Lower Costs:} Single chip solution
+    \item \textbf{Less Power:} No inter-chip communication overhead
+    \item \textbf{Better Performance:} Fast internal data paths
+\end{itemize}
+
+\important{SoC FPGA architecture provides significant advantages in bandwidth, power, cost, and PCB complexity.}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 10
+% Description: SoC FPGA integrated architecture
+% Priority: CRITICAL
+% Suggested filename: lecture03a_soc_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_soc_architecture.png}
+\\
+
+\subsection{Evolution Stages of SoC FPGA}
+
+\begin{definition}{Stage 1: Pure FPGA}\\
+Original FPGA architecture with basic programmable logic.
+
+\textbf{Components:}
+\begin{itemize}
+    \item \textbf{Programmable Logic:} LUTs and flip-flops
+    \item \textbf{GPIO:} General-purpose I/O pins
+    \item \textbf{On-Chip Memory:} SRAM blocks
+    \item \textbf{Clock Generation:} PLLs for clock management
+    \item \textbf{Multipliers:} Dedicated DSP blocks
+    \item \textbf{Fast Serial I/O:} Gigabit transceivers (SERDES)
+\end{itemize}
+
+\textbf{Capabilities:}
+\begin{itemize}
+    \item Hardware acceleration
+    \item Parallel processing
+    \item Real-time deterministic operation
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 7
+% Description: Pure FPGA architecture
+% Priority: IMPORTANT
+% Suggested filename: lecture03a_pure_fpga.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_pure_fpga.png}
+\\
+
+\begin{definition}{Stage 2: FPGA with Softcore Processor}\\
+Add programmable CPU implemented in FPGA fabric.
+
+\textbf{Softcore Processor Characteristics:}
+\begin{itemize}
+    \item \textbf{Implementation:} IP core in FPGA fabric (e.g., NIOS V, RISC-V)
+    \item \textbf{Software Execution:} Can run software inside FPGA
+    \item \textbf{Clock Speed:} Relatively slow CPU clock (limited by fabric)
+    \item \textbf{Memory:} Small on-chip memory or external memory via I/O pins
+    \item \textbf{Resource Usage:} Consumes FPGA logic resources
+    \item \textbf{Flexibility:} Configurable architecture (instruction set, peripherals)
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item No external CPU required
+    \item Customizable processor architecture
+    \item Tight integration with FPGA logic
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+    \item Uses valuable FPGA resources
+    \item Lower performance than hard CPU
+    \item Limited memory bandwidth
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 8
+% Description: FPGA with softcore processor
+% Priority: CRITICAL
+% Suggested filename: lecture03a_softcore_processor.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_softcore_processor.png}
+\\
+
+\begin{definition}{Stage 3: SoC with Hard Processor Core}\\
+Integrate dedicated hardware CPU with FPGA fabric.
+
+\textbf{Hard Processor System (HPS) Characteristics:}
+\begin{itemize}
+    \item \textbf{Full Integrated Processor:} Dedicated silicon, not programmable fabric
+    \item \textbf{Fast CPU Clock:} Up to 1.0 GHz or higher
+    \item \textbf{Dedicated Peripherals:} Hardware I/O controllers
+    \item \textbf{Dedicated Pins:} Separate pins for CPU peripherals
+    \item \textbf{Memory Controller:} Dedicated SDRAM controller to external memory
+    \item \textbf{High Bandwidth:} Fast data transfers between FPGA and CPU
+    \item \textbf{No FPGA Resources:} Doesn't consume programmable logic
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item High CPU performance
+    \item Full operating system support
+    \item Preserves all FPGA resources
+    \item Professional peripherals (Ethernet, USB, PCIe)
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 9
+% Description: SoC with hard processor core
+% Priority: CRITICAL
+% Suggested filename: lecture03a_hard_processor.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_hard_processor.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{System-Level Benefits of SoC FPGA}
+
+\begin{highlight}{Performance Advantages}\\
+SoC FPGAs provide exceptional computational capabilities:
+
+\textbf{Processing Power:}
+\begin{itemize}
+    \item \textbf{1,600 GMACS:} Multiply-accumulate operations in FPGA
+    \item \textbf{320 GFLOPS:} Floating-point operations in DSP multipliers
+    \item \textbf{125 Gbps:} Interconnect bandwidth between CPU and FPGA
+\end{itemize}
+
+\textbf{Memory Architecture:}
+\begin{itemize}
+    \item \textbf{Cache Coherent Access:} FPGA can access CPU caches
+    \item \textbf{Shared Memory:} Unified memory space
+    \item \textbf{DMA Support:} Direct memory access for high-speed transfers
+\end{itemize}
+
+\textbf{CPU Integration:}
+\begin{itemize}
+    \item \textbf{Custom Instructions:} Hardware accelerators appear as CPU instructions
+    \item \textbf{Tight Coupling:} Minimal latency between CPU and FPGA
+    \item \textbf{Coherent Fabric:} Automatic cache management
+\end{itemize}
+
+\important{The combination of high-speed interconnects and cache coherency enables unprecedented CPU-FPGA cooperation.}
+\end{highlight}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 11
+% Description: System-level performance benefits
+% Priority: CRITICAL
+% Suggested filename: lecture03a_system_benefits.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_system_benefits.png}
+\\
+
+\begin{concept}{Processor-Level Benefits}\\
+The HPS provides full-featured processor capabilities:
+
+\textbf{CPU Features:}
+\begin{itemize}
+    \item \textbf{Fast Multicore:} Up to 1 GHz or higher clock speed
+    \item \textbf{Full OS Support:} Can run Linux, FreeRTOS, etc.
+    \item \textbf{MMU:} Memory Management Unit for virtual memory
+    \item \textbf{Cache Hierarchy:} L1 and L2 caches for performance
+\end{itemize}
+
+\textbf{Peripheral Expansion:}
+\begin{itemize}
+    \item Ability to expand CPU peripherals by placing IP blocks in FPGA
+    \item Add controllers: SD, I$^2$C, CAN, UART, Ethernet, USB
+    \item Custom interface protocols
+    \item Flexible I/O configuration
+\end{itemize}
+
+\textbf{Hardware Acceleration:}
+\begin{itemize}
+    \item \textbf{Custom Accelerators:} Complex calculations offloaded to FPGA
+    \item \textbf{Parallel Execution:} CPU continues other tasks while FPGA computes
+    \item \textbf{Direct Memory Access:} DMA for efficient data transfer
+    \item \textbf{Cache Coherency:} Automatic synchronization between CPU and FPGA
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 12
+% Description: Processor-level benefits
+% Priority: IMPORTANT
+% Suggested filename: lecture03a_processor_benefits.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_processor_benefits.png}
+\\
+
+\subsection{SoC FPGA Block Architecture}
+
+\begin{definition}{SoC FPGA Main Components}\\
+A SoC FPGA consists of three main sections:
+
+\textbf{1. CPU Portion (Hard Processor System):}
+\begin{itemize}
+    \item Cortex-A9 CPU Subsystem (dual-core)
+    \item Flash Controllers
+    \item SDRAM Controller Subsystem
+    \item On-Chip Memories
+    \item Support Peripherals
+    \item PLLs (Phase-Locked Loops)
+    \item Debug Interface
+    \item Peripheral Control Block
+\end{itemize}
+
+\textbf{2. FPGA Portion:}
+\begin{itemize}
+    \item User I/O pins
+    \item FPGA Fabric (LUTs, RAMs, Multipliers, Routing)
+    \item HSSI Transceivers (High-Speed Serial Interface)
+    \item PLLs
+    \item Hard PCIe controller
+    \item Hard Memory Controllers
+\end{itemize}
+
+\textbf{3. Processor-FPGA Bridges:}
+\begin{itemize}
+    \item High-bandwidth connections
+    \item Multiple bridge types for different use cases
+    \item Enable communication between CPU and FPGA
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 14
+% Description: SoC FPGA block diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03a_soc_blocks.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_soc_blocks.png}
+\\
+
+\begin{concept}{SoC FPGA Architecture Details}\\
+\textbf{Key Characteristics:}
+
+\textbf{Three Main Parts:}
+\begin{itemize}
+    \item FPGA fabric
+    \item CPU (Hard Processor System)
+    \item Bridges connecting them
+\end{itemize}
+
+\textbf{FPGA Independence:}
+\begin{itemize}
+    \item FPGA fabric is same as in FPGA-only devices
+    \item FPGA may be used without CPU (some manufacturers)
+    \item CPU can be powered down if not needed
+\end{itemize}
+
+\textbf{CPU Options:}
+\begin{itemize}
+    \item ARM Cortex-A9, -A53, -A78 (dual- to octa-core)
+    \item ARM Cortex-R52 (real-time)
+    \item RISC-V processors also available
+\end{itemize}
+
+\textbf{Interconnect Features:}
+\begin{itemize}
+    \item Multiple bridges provide high bandwidth
+    \item Multiport SDRAM controller handles concurrent accesses
+    \item DMA controller for efficient data movement
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 15
+% Description: SoC FPGA architecture details
+% Priority: IMPORTANT
+% Suggested filename: lecture03a_architecture_details.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_architecture_details.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Detailed SoC FPGA Architecture}
+
+\begin{definition}{ARM Cortex-A9 CPU Subsystem}\\
+The HPS is built around ARM Cortex-A9 processor cores.
+
+\textbf{CPU Features:}
+\begin{itemize}
+    \item \textbf{Dual-Core:} Two ARM Cortex-A9 processors
+    \item \textbf{L1 Cache:} Per-core Level 1 cache (instruction \& data)
+    \item \textbf{L2 Cache:} Shared Level 2 cache for both cores
+    \item \textbf{FPU:} Floating-Point Unit per core
+    \item \textbf{NEON:} SIMD (Single Instruction Multiple Data) instruction set
+\end{itemize}
+
+\textbf{Pin Configuration:}
+\begin{itemize}
+    \item \textbf{Dedicated MPU Pins:} For CPU peripherals
+    \item \textbf{Dedicated DDR Pins:} For external SDRAM
+    \item \textbf{FPGA Pins:} Shared or dedicated for FPGA I/O
+\end{itemize}
+
+\textbf{Interconnect:}
+\begin{itemize}
+    \item System bus: Pipelined network between components
+    \item High-bandwidth internal connections
+    \item Multiport DDR controller for concurrent access
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 16
+% Description: Detailed SoC FPGA architecture diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03a_detailed_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_detailed_architecture.png}
+\\
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 17
+% Description: CPU subsystem architecture with caches
+% Priority: IMPORTANT
+% Suggested filename: lecture03a_cpu_subsystem.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_cpu_subsystem.png}
+\\
+
+\begin{definition}{HPS Peripherals and Controllers}\\
+The HPS includes comprehensive peripheral support:
+
+\textbf{Standard Microcontroller Peripherals:}
+\begin{itemize}
+    \item Timers (watchdog, general-purpose)
+    \item SPI (Serial Peripheral Interface)
+    \item I$^2$C (Inter-Integrated Circuit)
+    \item UART (Universal Asynchronous Receiver-Transmitter)
+    \item GPIO (General-Purpose I/O)
+\end{itemize}
+
+\textbf{High-Speed Interfaces:}
+\begin{itemize}
+    \item \textbf{Gigabit Ethernet:} To external PHY
+    \item \textbf{PCIe:} PCI Express controller
+    \item \textbf{USB:} USB 2.0 OTG controller
+\end{itemize}
+
+\textbf{Memory Interfaces:}
+\begin{itemize}
+    \item \textbf{Static Memory Controller:} For QSPI NAND/NOR Flash, SD-card
+    \item \textbf{Multiport DDR Controller:} For external SDRAM
+\end{itemize}
+
+\textbf{System Components:}
+\begin{itemize}
+    \item \textbf{DMA:} Direct Memory Access controller
+    \item \textbf{Scratch RAM:} Used in boot process, sufficient for FreeRTOS
+    \item \textbf{Boot ROM:} Contains boot code
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 18
+% Description: HPS peripherals and interfaces
+% Priority: IMPORTANT
+% Suggested filename: lecture03a_hps_peripherals.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_hps_peripherals.png}
+\\
+
+\subsection{FPGA-HPS Bridges}
+
+\begin{definition}{Altera FPGA-HPS Bridge Architecture}\\
+Three main communication paths connect FPGA and HPS:
+
+\textbf{1. General Purpose AXI Bridges:}
+\begin{itemize}
+    \item \textbf{H2F (HPS-to-FPGA):} CPU accesses FPGA components
+    \item \textbf{F2H (FPGA-to-HPS):} FPGA accesses HPS memory/peripherals
+    \item \textbf{Width:} Up to 128-bit wide
+    \item \textbf{Modes:} Streaming and memory-mapped
+    \item \textbf{Use:} High-bandwidth data transfers
+\end{itemize}
+
+\textbf{2. Lightweight AXI Bridge:}
+\begin{itemize}
+    \item \textbf{Width:} 32-bit
+    \item \textbf{Mode:} Memory-mapped access only
+    \item \textbf{Use:} Control registers, configuration, status
+    \item \textbf{Latency:} Lower latency than general purpose bridges
+\end{itemize}
+
+\textbf{3. Multiport DDR Controller:}
+\begin{itemize}
+    \item \textbf{Width:} 256-bit
+    \item \textbf{Function:} FPGA direct access to external SDRAM
+    \item \textbf{Feature:} Cache coherent with CPU
+    \item \textbf{Use:} Shared memory between CPU and FPGA
+\end{itemize}
+
+\important{Different bridges are optimized for different use cases: lightweight for control, general purpose for data, DDR for shared memory.}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 19
+% Description: FPGA-HPS bridge architecture diagram
+% Priority: CRITICAL
+% Suggested filename: lecture03a_bridges.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_bridges.png}
+\\
+
+\begin{example2}{Address Mapping Example}\\
+\textbf{Memory Map:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Region Name} & \textbf{Base Address} & \textbf{Size} \\
+\hline
+Peripherals & 0xFC00\_0000 & 62 MB \\
+Lightweight FPGA slaves & 0xFF20\_0000 & 2 MB \\
+\hline
+\end{tabular}
+\end{center}
+
+\tcblower
+
+\textbf{Example: Control Register in FPGA}
+
+\textbf{CPU View (Full Address):}
+$$\text{0xFF22\_0030}$$
+
+This address selects the lightweight bridge (starts with 0xFF20\_xxxx).
+
+\textbf{FPGA View (Local Address):}
+$$\text{0x0002\_0030}$$
+
+The bridge translates the address:
+\begin{itemize}
+    \item Remove base address: 0xFF20\_0000
+    \item Remaining offset: 0x0002\_0030
+    \item This is the address seen by FPGA component
+\end{itemize}
+
+\important{Address translation by bridges allows FPGA components to use simple local addresses while appearing in CPU memory map.}
+\end{example2}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 20
+% Description: Address mapping example with bridge translation
+% Priority: CRITICAL
+% Suggested filename: lecture03a_address_mapping.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_address_mapping.png}
+\\
+
+\raggedcolumns
+\columnbreak
+
+\subsection{SoC FPGA Configuration}
+
+\begin{concept}{Three Types of Components in SoC FPGA}\\
+SoC FPGAs contain different types of configurable components:
+
+\textbf{1. CPU Hard Macros (Silicon):}
+\begin{itemize}
+    \item CPU cores, SDRAM controller
+    \item Processor-FPGA bridges
+    \item Fixed hardware, not reconfigurable
+    \item \textbf{Configuration Method:} Platform Designer
+\end{itemize}
+
+\textbf{2. FPGA Hard Macros (Silicon):}
+\begin{itemize}
+    \item Gigabit transceivers (HSSI)
+    \item PLLs (Phase-Locked Loops)
+    \item PCIe controller
+    \item I/O blocks, multipliers, memory blocks
+    \item \textbf{Configuration Method:} Wizards (generate VHDL or config files)
+\end{itemize}
+
+\textbf{3. Soft Macros (Programmable):}
+\begin{itemize}
+    \item I/O interfaces, PLLs
+    \item Custom logic in FPGA fabric
+    \item IP blocks from library
+    \item \textbf{Configuration Method:} 
+    \begin{itemize}
+        \item Soft IP blocks in Platform Designer
+        \item Custom VHDL code
+    \end{itemize}
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 22
+% Description: Three types of SoC FPGA components
+% Priority: CRITICAL
+% Suggested filename: lecture03a_component_types.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_component_types.png}
+\\
+
+\subsection{Platform Designer HPS Configuration}
+
+\begin{definition}{Platform Designer HPS Block}\\
+Platform Designer provides a graphical interface for configuring the HPS.
+
+\textbf{Available Interfaces:}
+\begin{itemize}
+    \item \textbf{memory:} Memory interface conduit
+    \item \textbf{hps\_io:} HPS I/O conduit
+    \item \textbf{h2f\_reset:} Reset output from HPS
+    \item \textbf{h2f\_axi\_master:} HPS-to-FPGA AXI master
+    \item \textbf{f2h\_axi\_slave:} FPGA-to-HPS AXI slave
+    \item \textbf{h2f\_lw\_axi\_master:} Lightweight HPS-to-FPGA AXI master
+    \item \textbf{f2h\_irq0/1:} Interrupt receivers (32 interrupts each)
+\end{itemize}
+
+\textbf{Clock Inputs:}
+\begin{itemize}
+    \item Separate clocks for each AXI interface
+    \item Allows different clock domains
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 23
+% Description: Platform Designer HPS block interface
+% Priority: CRITICAL
+% Suggested filename: lecture03a_platform_designer_hps.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_platform_designer_hps.png}
+\\
+
+\begin{KR}{Configuring HPS in Platform Designer}\\
+\textbf{Configuration Tabs:}
+
+\textbf{1. FPGA Interfaces:}
+\begin{itemize}
+    \item $\square$ Enable MPU standby and event signals
+    \item $\square$ Enable general purpose signals
+    \item $\square$ Enable Debug APB interface
+    \item $\square$ Enable System Trace Macrocell hardware events
+    \item $\square$ Enable FPGA Cross Trigger interface
+    \item $\square$ Enable FPGA Trace Port Interface Unit
+    \item $\square$ Enable boot from FPGA signals
+    \item $\square$ Enable HLGPI Interface
+\end{itemize}
+
+\textbf{2. AXI Bridges:}
+\begin{itemize}
+    \item \textbf{FPGA-to-HPS width:} 64-bit, 128-bit, or 256-bit
+    \item \textbf{HPS-to-FPGA width:} 32-bit, 64-bit, or 128-bit
+    \item \textbf{Lightweight width:} 32-bit (fixed)
+\end{itemize}
+
+\textbf{3. Peripheral Pins:}
+\begin{itemize}
+    \item Select pin-set for each peripheral
+    \item Enable or disable peripherals
+    \item Configure pin multiplexing
+\end{itemize}
+
+\textbf{4. SDRAM Configuration:}
+\begin{itemize}
+    \item DDR3/DDR2 parameters
+    \item Memory timing configuration
+    \item Port assignments
+\end{itemize}
+
+\textbf{5. HPS Clocks:}
+\begin{itemize}
+    \item Clock source selection
+    \item PLL configuration
+    \item Clock dividers
+\end{itemize}
+\end{KR}
+
+\subsection{Hardware Development Flow}
+
+\begin{concept}{Platform Designer Role}\\
+Platform Designer is Intel's system builder for SoC designs.
+
+\textbf{Configuration Scope:}
+\begin{itemize}
+    \item \textbf{CPU and Peripherals:} Select and configure HPS features
+    \item \textbf{IP Blocks:} Add and configure FPGA IP components
+    \item \textbf{Interconnects:} Automatic generation of bus connections
+\end{itemize}
+
+\textbf{Output Products:}
+\begin{itemize}
+    \item \textbf{Hardware Description:} Memory map, device types
+    \item \textbf{For Software:} Header files with addresses and registers
+    \item \textbf{For FPGA:} VHDL files for interconnects and peripherals
+    \item \textbf{System Configuration:} Stored project settings
+\end{itemize}
+
+\textbf{IP Implementations:}
+\begin{itemize}
+    \item peripheral\_1.vhdl
+    \item peripheral\_n.vhdl
+    \item Interconnect fabric
+    \item Address decoders
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 24
+% Description: Hardware development flow with Platform Designer
+% Priority: CRITICAL
+% Suggested filename: lecture03a_dev_flow.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_dev_flow.png}
+\\
+
+\begin{KR}{Complete Hardware Development Flow}\\
+\textbf{Step 1: System Definition (Platform Designer)}
+\begin{itemize}
+    \item Configure HPS and peripherals
+    \item Add and configure IP blocks
+    \item Define interconnections
+    \item Generate system
+\end{itemize}
+
+\textbf{Step 2: Quartus Compilation}
+\begin{itemize}
+    \item \textbf{Synthesis:} Convert VHDL to gate-level netlist
+    \item \textbf{Optimization:} Minimize logic usage
+    \item \textbf{Mapping:} Map to FPGA resources
+    \item \textbf{Placement:} Place components on chip
+    \item \textbf{Routing:} Route connections between components
+    \item \textbf{Retiming:} Optimize for timing
+    \item \textbf{Fitting:} Final placement optimization
+\end{itemize}
+
+\textbf{Step 3: Timing Verification}
+\begin{itemize}
+    \item Static timing analysis
+    \item Check all timing constraints met
+    \item Identify critical paths
+\end{itemize}
+
+\textbf{Step 4: Bitstream Generation}
+\begin{itemize}
+    \item Generate configuration bitstream
+    \item Include HPS parameters
+    \item Program into device
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from SCD_3a_HPS.pdf, Page 25
+% Description: Quartus compilation flow
+% Priority: IMPORTANT
+% Suggested filename: lecture03a_quartus_flow.png
+\\
+% \includegraphics[width=\linewidth]{lecture03a_quartus_flow.png}
+\\
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 17
+% CRITICAL priority: 10
+% IMPORTANT priority: 7
+% SUPPLEMENTARY priority: 0
+%
+% Quick extraction checklist:
+% [ ] [SCD_3a_HPS.pdf, Page 4] - Typical FPGA applications (IMPORTANT)
+% [ ] [SCD_3a_HPS.pdf, Page 5] - Software tasks in SoC (IMPORTANT)
+% [ ] [SCD_3a_HPS.pdf, Page 6] - Discrete architecture (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 7] - Pure FPGA stage (IMPORTANT)
+% [ ] [SCD_3a_HPS.pdf, Page 8] - Softcore processor stage (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 9] - Hard processor stage (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 10] - SoC integrated architecture (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 11] - System-level benefits (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 12] - Processor-level benefits (IMPORTANT)
+% [ ] [SCD_3a_HPS.pdf, Page 14] - SoC FPGA blocks (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 15] - Architecture details (IMPORTANT)
+% [ ] [SCD_3a_HPS.pdf, Page 16] - Detailed architecture diagram (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 17] - CPU subsystem with caches (IMPORTANT)
+% [ ] [SCD_3a_HPS.pdf, Page 18] - HPS peripherals (IMPORTANT)
+% [ ] [SCD_3a_HPS.pdf, Page 19] - Bridge architecture (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 20] - Address mapping example (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 22] - Component types (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 23] - Platform Designer HPS (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 24] - Development flow (CRITICAL)
+% [ ] [SCD_3a_HPS.pdf, Page 25] - Quartus compilation (IMPORTANT)
+% =====================

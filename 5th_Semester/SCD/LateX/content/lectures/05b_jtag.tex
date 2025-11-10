@@ -1,0 +1,239 @@
+\section{JTAG - Joint Test Action Group}
+
+\subsection{Overview of IC Testing}
+
+\begin{concept}{Agenda}\\
+This lecture covers:
+\begin{itemize}
+    \item Overview of IC testing approaches
+    \item Functional vs Structural testing
+    \item Introduction to JTAG standard
+    \item Core Scan methodology
+    \item Boundary Scan technique
+    \item Boundary Scan Register architecture
+    \item TAP (Test Access Port) Controller
+\end{itemize}
+\end{concept}
+
+\subsection{General Test Procedure}
+
+\begin{definition}{Standard Test Methodology}\\
+Testing integrated circuits follows three fundamental steps:
+\begin{enumerate}
+    \item Set hardware to a defined state
+    \item Execute one or multiple clock cycles
+    \item Read out the resulting state and verify
+\end{enumerate}
+
+\textbf{Critical Questions:}
+\begin{itemize}
+    \item How do we set the hardware to a defined state?
+    \item How can we read out the current state without modifying it?
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_5b_jtag.pdf, Page 3-4
+% Description: General test procedure diagrams
+% Priority: CRITICAL
+% Suggested filename: lecture05B_test_procedure.png
+
+\subsection{Functional Testing Challenges}
+
+\mult{2}
+
+\begin{concept}{Simple Logic IC Testing}\\
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Limited number of flip-flops
+    \item Limited number of states
+    \item All states can be tested
+    \item Functional test is feasible
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Complex IC Testing}\\
+\textbf{Challenges:}
+\begin{itemize}
+    \item Many test cases needed
+    \item Time-consuming execution
+    \item Time-consuming development
+    \item Test coverage problematic
+    \item Debugging support lacking
+\end{itemize}
+\end{concept}
+
+\multend
+
+% TODO: Add image from SCD_5b_jtag.pdf, Page 7
+% Description: Functional test development time trends (1977-1990)
+% Priority: IMPORTANT
+% Suggested filename: lecture05B_test_time_trend.png
+
+\begin{remark}
+As IC complexity increased, functional test development time grew from 3-6 months (1977-1980) to 12-24 months (1987-1990). This trend necessitated alternative testing approaches.
+\end{remark}
+
+\subsection{Shift Register Fundamentals}
+
+% TODO: Add images from SCD_5b_jtag.pdf, Pages 8-9
+% Description: Shift register operation diagrams
+% Priority: IMPORTANT
+% Suggested filename: lecture05B_shift_register.png
+
+\begin{concept}{Shift Register Operation}\\
+A shift register chains flip-flops together, allowing serial data input and parallel state observation:
+\begin{itemize}
+    \item Data shifts through on each clock edge
+    \item Enables serial loading of test patterns
+    \item Allows serial readout of circuit state
+    \item Forms basis for scan chain testing
+\end{itemize}
+\end{concept}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{JTAG Standard Overview}
+
+\begin{definition}{JTAG - Joint Test Action Group}\\
+\textbf{Standardization:}
+\begin{itemize}
+    \item Standardized in 1990
+    \item IEEE 1149.1-1990 standard
+    \item Purpose: Testing of parts and components
+    \item Enables boundary scan testing
+    \item Provides debug access
+\end{itemize}
+
+\textbf{Key Features:}
+\begin{itemize}
+    \item Serial test interface (4-5 pins)
+    \item Standardized test access port
+    \item Boundary scan capability
+    \item Device identification
+    \item Program/debug support
+\end{itemize}
+\end{definition}
+
+% TODO: Add images from SCD_5b_jtag.pdf, Pages 10-15
+% Description: JTAG standard details and architecture
+% Priority: CRITICAL
+% Suggested filename: lecture05B_jtag_standard_XX.png
+
+\subsection{Core Scan Methodology}
+
+% TODO: Add images from SCD_5b_jtag.pdf, Pages 16-20
+% Description: Core scan chain diagrams
+% Priority: CRITICAL
+% Suggested filename: lecture05B_core_scan_XX.png
+
+\begin{concept}{Core Scan Technique}\\
+Core scan converts internal flip-flops into a shift register for testing:
+
+\textbf{Normal Mode:}
+\begin{itemize}
+    \item Flip-flops operate in functional mode
+    \item Data flows through combinational logic
+\end{itemize}
+
+\textbf{Test Mode:}
+\begin{itemize}
+    \item Flip-flops form scan chain
+    \item Test patterns shifted in serially
+    \item Results shifted out serially
+    \item Provides observability and controllability
+\end{itemize}
+\end{concept}
+
+\subsection{Boundary Scan}
+
+% TODO: Add images from SCD_5b_jtag.pdf, Pages 21-28
+% Description: Boundary scan architecture and operation
+% Priority: CRITICAL
+% Suggested filename: lecture05B_boundary_scan_XX.png
+
+\begin{definition}{Boundary Scan Architecture}\\
+Boundary scan places test cells between core logic and I/O pins:
+
+\textbf{Capabilities:}
+\begin{itemize}
+    \item Test interconnections between ICs
+    \item Program internal devices (FPGA configuration)
+    \item Debug embedded systems
+    \item Observe/control I/O pins
+\end{itemize}
+
+\textbf{Boundary Scan Register:}
+\begin{itemize}
+    \item Shift register around IC perimeter
+    \item One cell per I/O pin
+    \item Can capture, shift, and update data
+    \item Provides pin-level access
+\end{itemize}
+\end{definition}
+
+\subsection{TAP Controller}
+
+% TODO: Add images from SCD_5b_jtag.pdf, Pages 29-38
+% Description: TAP controller state machine and signals
+% Priority: CRITICAL
+% Suggested filename: lecture05B_tap_controller_XX.png
+
+\begin{definition}{Test Access Port (TAP)}\\
+\textbf{TAP Signals:}
+\begin{itemize}
+    \item \textbf{TCK:} Test Clock - synchronizes test operations
+    \item \textbf{TMS:} Test Mode Select - controls TAP state machine
+    \item \textbf{TDI:} Test Data In - serial data input
+    \item \textbf{TDO:} Test Data Out - serial data output
+    \item \textbf{TRST:} Test Reset (optional) - asynchronous reset
+\end{itemize}
+\end{definition}
+
+\begin{KR}{JTAG Testing Procedure}\\
+\textbf{Step 1: Access JTAG Interface}
+\begin{itemize}
+    \item Connect to TCK, TMS, TDI, TDO pins
+    \item Initialize TAP controller
+\end{itemize}
+
+\textbf{Step 2: Select Test Operation}
+\begin{enumerate}
+    \item Navigate TAP state machine using TMS
+    \item Select instruction register or data register
+    \item Load instruction (e.g., EXTEST, SAMPLE, BYPASS)
+\end{enumerate}
+
+\textbf{Step 3: Execute Test}
+\begin{enumerate}
+    \item Shift test data through TDI
+    \item Capture internal/boundary scan data
+    \item Shift results out through TDO
+    \item Verify expected vs actual results
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{JTAG Applications}\\
+\textbf{Common Uses:}
+\begin{itemize}
+    \item \textbf{Manufacturing Test:} Verify PCB assembly and interconnects
+    \item \textbf{FPGA Configuration:} Program configuration memory
+    \item \textbf{Firmware Programming:} Flash memory programming
+    \item \textbf{Debug Access:} Access processor debug features
+    \item \textbf{Boundary Scan:} Test IC-to-IC connections
+\end{itemize}
+\end{example2}
+
+\begin{remark}
+JTAG has become the standard interface for device programming, debugging, and testing in modern embedded systems. Its serial nature minimizes pin count while providing comprehensive test access.
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 38
+% CRITICAL priority: 25
+% IMPORTANT priority: 10
+% SUPPLEMENTARY priority: 3
+%
+% Quick extraction checklist:
+% [ ] [SCD_5b_jtag.pdf, Pages 1-38] - Complete JTAG lecture content (CRITICAL for technical diagrams)
+% =====================

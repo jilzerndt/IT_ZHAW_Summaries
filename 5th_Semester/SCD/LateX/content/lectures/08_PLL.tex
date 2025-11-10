@@ -1,0 +1,286 @@
+\section{PLL - Phase Locked Loop}
+
+\subsection{Introduction to Clock Generation}
+
+\begin{concept}{Learning Objectives}\\
+After this lecture, students will be able to:
+\begin{itemize}
+    \item Understand PLL operation principles
+    \item Configure PLLs in Intel/Altera FPGAs
+    \item Generate multiple clock domains
+    \item Implement clock domain crossing safely
+    \item Apply phase shifting techniques
+    \item Calculate PLL parameters
+\end{itemize}
+\end{concept}
+
+% TODO: Add images from SCD_8_PLL.pdf, Pages 1-3
+% Description: Introduction and overview slides
+% Priority: IMPORTANT
+% Suggested filename: lecture08_pll_intro_XX.png
+
+\subsection{Clock Requirements in Digital Systems}
+
+\begin{concept}{Need for Clock Management}\\
+Modern digital systems require sophisticated clock generation:
+
+\textbf{Requirements:}
+\begin{itemize}
+    \item Multiple clock frequencies
+    \item Phase-aligned clocks
+    \item Low jitter and skew
+    \item Programmable frequency division/multiplication
+    \item Clock domain isolation
+    \item Dynamic frequency scaling
+\end{itemize}
+
+\textbf{Challenges:}
+\begin{itemize}
+    \item Input clocks may be non-standard frequencies
+    \item Different IP cores need different clock rates
+    \item External interfaces require specific frequencies
+    \item Power management needs variable frequencies
+\end{itemize}
+\end{concept}
+
+\subsection{PLL Fundamentals}
+
+\begin{definition}{Phase Locked Loop (PLL)}\\
+A PLL is an electronic control system that generates an output signal with a phase related to its input signal.
+
+\textbf{Key Components:}
+\begin{itemize}
+    \item \textbf{Phase Detector (PD):} Compares input and feedback phases
+    \item \textbf{Loop Filter:} Smooths phase detector output
+    \item \textbf{Voltage Controlled Oscillator (VCO):} Generates output clock
+    \item \textbf{Feedback Divider:} Divides VCO output for comparison
+\end{itemize}
+
+\textbf{Operation:}
+\begin{enumerate}
+    \item Phase detector compares input clock to feedback
+    \item Error signal adjusts VCO frequency
+    \item System locks when output phase matches input
+    \item Frequency multiplication/division achieved through dividers
+\end{enumerate}
+\end{definition}
+
+% TODO: Add images from SCD_8_PLL.pdf, Pages 4-10
+% Description: PLL block diagram and operation
+% Priority: CRITICAL
+% Suggested filename: lecture08_pll_diagram_XX.png
+
+\begin{iequation}
+f_{out} = f_{in} \times \frac{M}{N \times C}
+\end{iequation}
+
+where:
+\begin{itemize}
+    \item $f_{in}$ = Input clock frequency
+    \item $M$ = Feedback multiplier (multiply counter)
+    \item $N$ = Input divider (pre-scale counter)
+    \item $C$ = Output divider (post-scale counter)
+\end{itemize}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{PLL Architecture in Intel FPGAs}
+
+% TODO: Add images from SCD_8_PLL.pdf, Pages 11-16
+% Description: Intel FPGA PLL architecture
+% Priority: CRITICAL
+% Suggested filename: lecture08_intel_pll_XX.png
+
+\begin{concept}{Intel FPGA PLL Features}\\
+Intel/Altera FPGAs provide sophisticated PLL IP cores:
+
+\textbf{Capabilities:}
+\begin{itemize}
+    \item Multiple output clocks (typically 5-9 outputs)
+    \item Independent frequency for each output
+    \item Phase shift adjustment (0-360°)
+    \item Duty cycle control
+    \item Clock switchover for redundancy
+    \item Loss-of-lock detection
+    \item Dynamic reconfiguration
+\end{itemize}
+
+\textbf{PLL Types:}
+\begin{itemize}
+    \item \textbf{Integer PLL:} Integer frequency ratios only
+    \item \textbf{Fractional PLL:} Non-integer ratios (higher flexibility)
+    \item \textbf{ATX PLL:} High-performance transceiver clocking
+\end{itemize}
+\end{concept}
+
+\begin{definition}{VCO Operating Range}\\
+The VCO has a specific frequency range:
+\begin{itemize}
+    \item \textbf{$f_{VCO,min}$:} Minimum VCO frequency (typically 600 MHz)
+    \item \textbf{$f_{VCO,max}$:} Maximum VCO frequency (typically 1200-1600 MHz)
+    \item Must satisfy: $f_{VCO,min} \leq f_{VCO} \leq f_{VCO,max}$
+\end{itemize}
+
+$$f_{VCO} = f_{in} \times \frac{M}{N}$$
+\end{definition}
+
+\subsection{PLL Configuration in Platform Designer}
+
+% TODO: Add images from SCD_8_PLL.pdf, Pages 17-22
+% Description: PLL IP core configuration interface
+% Priority: CRITICAL
+% Suggested filename: lecture08_pll_config_XX.png
+
+\begin{KR}{Configuring a PLL}\\
+\textbf{Step 1: Add PLL IP Core}
+\begin{enumerate}
+    \item Open Platform Designer / IP Catalog
+    \item Select "IOPLL Intel FPGA IP" or "ALTPLL"
+    \item Configure number of clocks needed
+\end{enumerate}
+
+\textbf{Step 2: Set Input Clock}
+\begin{itemize}
+    \item Specify input clock frequency
+    \item Set input clock duty cycle (typically 50\%)
+\end{itemize}
+
+\textbf{Step 3: Configure Output Clocks}
+For each output clock:
+\begin{enumerate}
+    \item Set desired frequency
+    \item Adjust phase shift if needed
+    \item Set duty cycle
+    \item Enable/disable output
+\end{enumerate}
+
+\textbf{Step 4: Verify Parameters}
+\begin{itemize}
+    \item Check VCO frequency is in valid range
+    \item Verify all outputs meet requirements
+    \item Review jitter specifications
+\end{itemize}
+
+\textbf{Step 5: Generate and Integrate}
+\begin{enumerate}
+    \item Generate PLL instance
+    \item Instantiate in top-level design
+    \item Connect input clock
+    \item Route output clocks to consumers
+    \item Use generated \texttt{locked} signal
+\end{enumerate}
+\end{KR}
+
+\begin{example2}{PLL Configuration Example}\\
+\textbf{Requirements:}
+\begin{itemize}
+    \item Input clock: 50 MHz
+    \item Output 1: 100 MHz (main system clock)
+    \item Output 2: 25 MHz (slow peripheral clock)
+    \item Output 3: 100 MHz with 90° phase shift
+\end{itemize}
+
+\tcblower
+
+\textbf{Solution:}
+
+Calculate VCO frequency:
+$$f_{VCO} = 50 \text{ MHz} \times \frac{M}{N}$$
+
+Choose $M=24$, $N=1$:
+$$f_{VCO} = 50 \times 24 = 1200 \text{ MHz}$$ ✓ (in valid range)
+
+Output dividers:
+\begin{itemize}
+    \item Output 1: $C_1 = 12$ $\rightarrow$ $1200/12 = 100$ MHz
+    \item Output 2: $C_2 = 48$ $\rightarrow$ $1200/48 = 25$ MHz  
+    \item Output 3: $C_3 = 12$, Phase = 90° $\rightarrow$ 100 MHz shifted
+\end{itemize}
+\end{example2}
+
+\subsection{Using PLL Outputs}
+
+\begin{concept}{Locked Signal}\\
+The PLL provides a \texttt{locked} output signal:
+
+\textbf{Purpose:}
+\begin{itemize}
+    \item Indicates PLL has achieved lock
+    \item Clocks are stable and valid
+    \item Used to release system reset
+\end{itemize}
+
+\textbf{Typical Usage:}
+\begin{lstlisting}[language=VHDL, style=base]
+-- Reset logic using PLL locked signal
+process(clk, pll_locked)
+begin
+    if pll_locked = '0' then
+        system_reset <= '1';
+    elsif rising_edge(clk) then
+        -- Release reset after PLL locks
+        system_reset <= '0';
+    end if;
+end process;
+\end{lstlisting}
+\end{concept}
+
+% TODO: Add images from SCD_8_PLL.pdf, Pages 23-29
+% Description: PLL usage examples and best practices
+% Priority: IMPORTANT
+% Suggested filename: lecture08_pll_usage_XX.png
+
+\subsection{Clock Network Distribution}
+
+\begin{concept}{Global Clock Networks}\\
+FPGAs provide dedicated low-skew clock distribution networks:
+
+\textbf{Features:}
+\begin{itemize}
+    \item Dedicated routing resources
+    \item Minimal skew across device
+    \item Low jitter
+    \item Balanced tree structure
+    \item Direct connection from PLL outputs
+\end{itemize}
+
+\textbf{Best Practices:}
+\begin{itemize}
+    \item Use global clock buffers (GCLK)
+    \item Minimize clock domain crossings
+    \item Route clocks on dedicated networks
+    \item Avoid using clocks as data
+    \item Use clock enable instead of gated clocks
+\end{itemize}
+\end{concept}
+
+\begin{highlight}{PLL Design Guidelines}\\
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Guideline} & \textbf{Reason} \\
+\hline
+Keep VCO in optimal range & Minimize jitter \\
+Use integer ratios when possible & Better phase noise \\
+Minimize output dividers & Reduce jitter accumulation \\
+Use locked signal for reset & Ensure clock stability \\
+Add synchronizers for CDC & Prevent metastability \\
+\hline
+\end{tabular}
+\end{center}
+\end{highlight}
+
+\begin{remark}
+PLLs are essential for clock management in complex FPGA designs. Proper PLL configuration and usage of the locked signal ensure reliable system operation. Always verify that generated clock frequencies meet timing requirements for all clock domains.
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 29
+% CRITICAL priority: 18
+% IMPORTANT priority: 9
+% SUPPLEMENTARY priority: 2
+%
+% Quick extraction checklist:
+% [ ] [SCD_8_PLL.pdf, Pages 1-29] - Complete PLL lecture content
+% =====================
