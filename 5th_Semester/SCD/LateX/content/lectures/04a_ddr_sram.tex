@@ -1,0 +1,1109 @@
+\section{SDRAM - Synchronous Dynamic Random Access Memory}
+
+\subsection{Introduction and Motivation}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 2
+% Description: Motivation image showing computer storage hierarchy context
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture04a_motivation.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_motivation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\begin{definition}{Learning Objectives}
+\begin{itemize}
+    \item List the pros and cons of SDRAM
+    \item Describe the principle of operation of an SDRAM cell
+    \item Calculate the number of banks, words, and bits of an SDRAM device
+    \item Determine the refresh frequency of an SDRAM device
+    \item Extract timing properties from an SDRAM datasheet
+    \item Interpret the read and write accesses in a timing diagram and identify the corresponding timing parameters
+    \item Explain the internal operation of a DDR SDRAM device
+\end{itemize}
+\end{definition}
+
+\subsection{Memory Hierarchy and Storage Types}
+
+\begin{concept}{Computer Storage Hierarchy}\\
+Memory systems are organized hierarchically based on speed, cost, and capacity.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 4
+% Description: Storage hierarchy pyramid showing Primary/Secondary/Tertiary memory
+% Priority: CRITICAL
+% Suggested filename: lecture04a_storage_hierarchy.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture04a_storage_hierarchy.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Hierarchy levels:}
+\begin{itemize}
+    \item \textbf{Fast and expensive:} Primary Memory (SRAM, DRAM)
+    \item \textbf{Medium:} Secondary Memory (Disk)
+    \item \textbf{Slow and cheap:} Tertiary Memory (Tape)
+\end{itemize}
+
+\textbf{Trade-offs:}
+\begin{itemize}
+    \item High capacity $\Rightarrow$ Slower access time
+    \item Fast access $\Rightarrow$ High cost per bit
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Typical Memory System Configuration}\\
+\textbf{System components and timing:}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 5
+% Description: Detailed memory hierarchy diagram with processor, cache levels, and timing
+% Priority: CRITICAL
+% Suggested filename: lecture04a_memory_system.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_memory_system.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\begin{itemize}
+    \item \textbf{1st Level Cache:} Integrated in processor
+    \item \textbf{2nd Level Cache:} SRAM, typical 5 ns access time
+    \item \textbf{Main Memory:} DRAM, typical 50 ns access time (10x slower than cache)
+    \item \textbf{Disk:} Typical 5 ms access time (100,000x slower than DRAM)
+    \item \textbf{Tape:} Typical 5-50 s access time (1,000x slower than disk)
+\end{itemize}
+
+\tcblower
+
+\textbf{Example calculation:}
+
+For a 2 GHz processor (0.5 ns per clock cycle):
+\begin{itemize}
+    \item Disk access time: 5 ms = 10,000,000 clock cycles
+    \item Transfer rate: Typically 1-4 GByte/s between cache levels
+    \item I/O Bus: Typically 100-200 MByte/s
+\end{itemize}
+
+\important{The large speed differences motivate the use of caching and hierarchical memory structures.}
+\end{example2}
+
+\begin{definition}{Types of Semiconductor Memory}
+\begin{itemize}
+    \item \textbf{Volatile Memory:} Data lost when power is removed
+    \begin{itemize}
+        \item SRAM - Static Random Access Memory
+        \item SDRAM - Synchronous Dynamic Random Access Memory (SDR, DDR)
+    \end{itemize}
+    \item \textbf{Non-volatile Memory:} Data retained without power
+    \begin{itemize}
+        \item Mask-programmed ROM
+        \item PROM - Programmable Read Only Memory (OTP)
+        \item EEPROM - Electrically Erasable PROM
+        \item Flash EEPROM (NOR, NAND)
+        \item nvSRAM, FRAM - Non-volatile RAM technologies
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 6
+% Description: Memory types classification tree diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_memory_types.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_memory_types.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\subsection{SRAM vs DRAM Comparison}
+
+\mult{2}
+
+\begin{concept}{Static RAM (SRAM)}\\
+\textbf{Cell structure:}
+\begin{itemize}
+    \item 6 transistors per bit (flip-flop/latch)
+    \item Large cell area
+\end{itemize}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 7
+% Description: SRAM cell circuit diagram with 6 transistors
+% Priority: CRITICAL
+% Suggested filename: lecture04a_sram_cell.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_sram_cell.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Low density, high cost
+    \item Up to 512 Mb per device
+    \item Almost no static power consumption
+    \item Asynchronous interface (no clock)
+    \item Simple bus connection
+    \item All accesses take similar time (approximately 5 ns, 200 MHz)
+    \item Suitable for distributed accesses
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Dynamic RAM (DRAM)}\\
+\textbf{Cell structure:}
+\begin{itemize}
+    \item 1 transistor + 1 capacitor per bit
+    \item Small cell area
+    \item Reduced complexity
+    \item Reduced cost
+\end{itemize}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 9-10
+% Description: DRAM cell circuit diagram showing transistor and capacitor
+% Priority: CRITICAL
+% Suggested filename: lecture04a_dram_cell.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_dram_cell.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item High density, low cost
+    \item Up to 64 Gb per device
+    \item Leakage currents require periodic refresh
+    \item Synchronous interface (clocked)
+    \item Requires dedicated SDRAM controller
+    \item Long latency for first access
+    \item Fast access for burst data
+    \item Large overhead for single byte access
+\end{itemize}
+\end{concept}
+
+\multend
+
+\begin{definition}{DRAM Cell Operation}\\
+\textbf{Storage mechanism:}
+
+Information is stored as electrical charge in a capacitor. The charge represents a binary value (0 or 1).
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 11
+% Description: DRAM cell structure with voltage decay graph showing capacitor discharge
+% Priority: CRITICAL
+% Suggested filename: lecture04a_dram_operation.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_dram_operation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Key features:}
+\begin{itemize}
+    \item Information stored as charge in capacitor
+    \item High integration density allows large memories at low cost
+    \item Leakage current causes loss of charge
+    \item Capacitor holds charge only for a few milliseconds
+    \item Charge must be refreshed periodically $\Rightarrow$ \textit{dynamic}
+    \item Refresh logic usually located on SDRAM device
+\end{itemize}
+
+\textbf{Cell components:}
+\begin{itemize}
+    \item Bit line: used for reading/writing data
+    \item Word line: activates transistor for access
+    \item FET (Field Effect Transistor): controls access to capacitor
+    \item Capacitor (C): stores the charge
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+The reduced cell size (1T+1C vs 6T) allows DRAM to achieve much higher densities than SRAM, making it the preferred technology for main memory despite the need for refresh circuitry.
+\end{remark}
+
+\begin{example2}{Historical Context}\\
+\textbf{Inventor:} Robert H. Dennard
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 18
+% Description: Photo of Robert H. Dennard
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture04a_dennard.png
+\\
+% \includegraphics[width=0.4\linewidth]{lecture04a_dennard.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\begin{itemize}
+    \item Born in 1932
+    \item Invented DRAM at IBM in 1968
+    \item Revolutionary impact on computer memory technology
+\end{itemize}
+
+\tcblower
+
+\textbf{1 Mbit DRAM (1985):}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 19
+% Description: Photo of 1Mbit DRAM chip showing die size
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture04a_1mbit_dram.png
+\\
+% \includegraphics[width=0.6\linewidth]{lecture04a_1mbit_dram.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\begin{itemize}
+    \item Die size: 8.66 mm $\times$ 3.96 mm
+    \item First megabit-scale DRAM
+\end{itemize}
+\end{example2}
+
+\subsection{Memory Architecture and Organization}
+
+\begin{definition}{Basic Memory Architecture}\\
+A memory is organized as an $n \times m$ array:
+\begin{itemize}
+    \item $n$ = number of words
+    \item $m$ = number of data bits per word
+    \item Bit cell stores a single bit ('0' or '1')
+\end{itemize}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 12
+% Description: Generic memory array diagram showing address decoder, word lines, and data lines
+% Priority: CRITICAL
+% Suggested filename: lecture04a_memory_array.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_memory_array.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Components:}
+\begin{itemize}
+    \item $k$ address lines where $n = 2^k$
+    \item Address decoder selects one out of $n$ word lines
+    \item Word lines: one per memory word
+    \item Data lines: $m$ lines for word width
+    \item Address range: 0 (lowest) to $n-1$ (highest)
+\end{itemize}
+\end{definition}
+
+\begin{concept}{SDRAM Memory Devices}\\
+DRAM cells use less area on silicon, allowing more bits per device.
+
+\textbf{Capacity comparison:}
+\begin{itemize}
+    \item \textbf{SRAM:} Up to 512 Mb $\Rightarrow$ $2^{29}$ bits $\Rightarrow$ 26 address lines (byte addressing)
+    \item \textbf{DRAM:} Up to 512 Gb $\Rightarrow$ $2^{39}$ bits $\Rightarrow$ 36 address lines
+    \item \textbf{Largest devices:} Up to 512 Gb organized as 32G$\times$16b or 128G$\times$4b
+    \item 128G words require 38 address lines
+\end{itemize}
+
+\important{Problem:} A very large address decoder with 38 address pins is impractical.
+
+\textbf{Solution:} Address multiplexing
+\begin{itemize}
+    \item Use wider rows with multiple words per row
+    \item Give row address first, then column address
+    \item Only half the number of address pins required
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Address Multiplexing}\\
+Addresses are multiplexed to reduce the number of required pins.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 14
+% Description: Address multiplexing diagram showing row and column address timing
+% Priority: CRITICAL
+% Suggested filename: lecture04a_address_mux.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_address_mux.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Example: 1 Mbit DRAM}
+\begin{itemize}
+    \item Total: 1024 rows $\times$ 1024 columns
+    \item Row address: 10 bits
+    \item Column address: 10 bits
+    \item Address select signal determines whether row or column address is present
+    \item Only 10 address pins needed instead of 20
+\end{itemize}
+
+\textbf{Process:}
+\begin{enumerate}
+    \item Present row address on address lines
+    \item Latch row address with RAS (Row Address Strobe)
+    \item Present column address on same address lines
+    \item Latch column address with CAS (Column Address Strobe)
+\end{enumerate}
+\end{definition}
+
+\begin{concept}{DRAM Architecture}\\
+DRAM is organized in a rectangular structure for optimization.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 15
+% Description: DRAM internal architecture showing row/column organization
+% Priority: CRITICAL
+% Suggested filename: lecture04a_dram_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_dram_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Organization:}
+\begin{itemize}
+    \item \textbf{Rows:} Activated by row address
+    \item \textbf{Columns:} Selected by column address
+    \item \textbf{Controller logic:} Required for multiplexed addresses and refresh cycles
+    \item \textbf{Amplifier per column:} One sense amplifier for each column
+\end{itemize}
+
+\textbf{Example configuration:}
+\begin{itemize}
+    \item Multiple DRAM chips to build a memory system
+    \item One bit per chip (bit-sliced organization)
+    \item 4 bits per row $\Rightarrow$ 2 column address lines
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Refresh Cycles and Amplifiers}\\
+The non-square array structure optimizes refresh and power.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 16
+% Description: Diagram showing row/column ratio optimization
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_refresh_optimization.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_refresh_optimization.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Key relationships:}
+\begin{itemize}
+    \item A DRAM has as many refresh cycles as rows
+    \item The number of refresh cycles determines the time between two refreshes
+    \item A DRAM has as many amplifiers as columns
+    \item The number of amplifiers essentially determines the power dissipation
+    \item Optimization is achieved with a non-square array structure
+\end{itemize}
+
+\textbf{Example: 1 Mbit DRAM}
+\begin{itemize}
+    \item 512 rows $\times$ 2048 columns
+    \item 11-bit addressing (row and column)
+    \item Fewer refresh cycles (512 vs 1024)
+    \item More columns (higher power but acceptable)
+\end{itemize}
+\end{concept}
+
+\subsection{DRAM Timing and Access Cycles}
+
+\begin{definition}{Single Inline Memory Module (SIMM)}\\
+Early memory module standard with asynchronous interface.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 20
+% Description: 30-pin SIMM module pinout diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_simm.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_simm.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item 30-Pin SIMM configuration
+    \item Asynchronous operation (no clock)
+    \item Word size and number of words determined by module configuration
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Read Access Operation}\\
+Reading data from DRAM involves multiple steps with specific timing requirements.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 22
+% Description: Detailed DRAM read access diagram showing internal operation
+% Priority: CRITICAL
+% Suggested filename: lecture04a_read_access.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_read_access.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Read sequence:}
+\begin{enumerate}
+    \item Address placed on address bus
+    \item RAS (Row Address Strobe) activated
+    \item Row address latched and row activated
+    \item CAS (Column Address Strobe) activated
+    \item Column address latched
+    \item Data amplified and output
+    \item Data available on data bus
+\end{enumerate}
+
+\textbf{Internal operations:}
+\begin{itemize}
+    \item Sense amplifiers detect small voltage differences
+    \item Row activation precharges bit lines
+    \item Column multiplexer selects specific word
+    \item Output buffers drive data bus
+\end{itemize}
+\end{concept}
+
+\begin{concept}{Refresh Operation}\\
+DRAM requires periodic refresh to maintain data integrity.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 23
+% Description: DRAM refresh cycle diagram
+% Priority: CRITICAL
+% Suggested filename: lecture04a_refresh.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_refresh.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Refresh process:}
+\begin{itemize}
+    \item One row refreshed per refresh cycle
+    \item Addressing the row automatically refreshes it
+    \item Occurs before potential read/write operations
+    \item All rows must be refreshed within the retention time (typically 64 ms)
+    \item Refresh can be initiated by external controller or internal logic
+\end{itemize}
+
+\important{Refresh operations consume time and power, reducing effective memory bandwidth.}
+\end{concept}
+
+\begin{definition}{Asynchronous Read Cycle Timing}\\
+Key timing parameters for asynchronous DRAM.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 24
+% Description: Timing diagram for asynchronous DRAM read cycle
+% Priority: CRITICAL
+% Suggested filename: lecture04a_async_read_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_async_read_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Timing parameters:}
+\begin{itemize}
+    \item $t_{RAC}$: RAS Access Time (typical 60 ns) - time from RAS to valid data
+    \item $t_{CAC}$: CAS Access Time (typical 30 ns) - time from CAS to valid data
+    \item $t_{RCD}$: RAS to CAS Delay - minimum time between RAS and CAS
+\end{itemize}
+
+The CAS access time is shorter because the row is already activated.
+\end{definition}
+
+\begin{concept}{Page Mode Operation}\\
+Page mode allows faster access to multiple words in the same row.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 25
+% Description: Page mode timing diagram showing multiple CAS cycles
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_page_mode.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_page_mode.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Operation:}
+\begin{itemize}
+    \item Row address given once with RAS
+    \item Multiple column addresses given with CAS
+    \item Each CAS cycle reads one word from the active row
+    \item Significantly faster than full RAS/CAS cycles
+    \item Useful for sequential or burst accesses
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Reduced latency for subsequent accesses
+    \item Better bandwidth utilization
+    \item Lower power consumption per access
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Asynchronous Write Cycle Timing}\\
+Write operations follow a similar but distinct timing pattern.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 26
+% Description: Timing diagram for asynchronous DRAM write cycle
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_async_write_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_async_write_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Write sequence:}
+\begin{itemize}
+    \item RAS activated with row address
+    \item CAS activated with column address
+    \item WE (Write Enable) signal activated
+    \item Data placed on data bus
+    \item Data written to selected cell
+    \item Data bus may go to high impedance after write
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Refresh Cycle Timing}\\
+Dedicated refresh cycles maintain data integrity.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 27
+% Description: Timing diagram showing refresh cycles
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_refresh_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_refresh_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Refresh process:}
+\begin{itemize}
+    \item RAS activated with row address
+    \item CAS activated simultaneously (CAS before RAS refresh)
+    \item One row refreshed per cycle
+    \item No data transfer occurs
+    \item Internal refresh counter can increment automatically
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Fast Page Mode DRAM}\\
+Fast Page Mode (FPM) improves on basic page mode operation.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 28
+% Description: Fast Page Mode timing diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_fpm_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_fpm_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Improvements:}
+\begin{itemize}
+    \item Faster CAS cycle times
+    \item Pipelined access within a page
+    \item Reduced setup and hold times
+    \item Better suited for burst transfers
+\end{itemize}
+\end{concept}
+
+\begin{example2}{Datasheet Exercise: IS41LV16100D}\\
+\textbf{Task:} Extract timing parameters from a 16 Mb DRAM (1M $\times$ 16) datasheet.
+
+\textbf{Find the following parameters:}
+\begin{itemize}
+    \item $t_{RCD}$ = RAS to CAS Delay Time
+    \item $t_{RAC}$ = RAS Access Time
+    \item $t_{CAC}$ = CAS Access Time
+    \item $t_{PC}$ = Page Cycle Time
+\end{itemize}
+
+\tcblower
+
+\textbf{Typical values from datasheet:}
+\begin{itemize}
+    \item These values depend on the speed grade of the device
+    \item Faster speed grades have shorter timing parameters
+    \item Trade-off between speed and cost
+\end{itemize}
+
+\important{Always consult the actual datasheet for precise timing values for your specific device and speed grade.}
+\end{example2}
+
+\begin{concept}{Access Time vs Cycle Time}\\
+Important distinction for memory performance analysis.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 30
+% Description: Timing diagram showing access time and cycle time with precharge
+% Priority: CRITICAL
+% Suggested filename: lecture04a_access_vs_cycle.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_access_vs_cycle.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Key timing parameters:}
+\begin{itemize}
+    \item $t_{RAS}$: RAS Active Time - how long RAS must remain active
+    \item $t_{RC}$: Row Cycle Time - minimum time between successive row accesses
+    \item $t_{RP}$: RAS Precharge Time - time needed to precharge before next RAS
+    \item $t_{RCD}$: RAS to CAS Delay - minimum delay between RAS and CAS
+\end{itemize}
+
+\textbf{Problem:} Long access time for rows because rows, bit lines, and sense amplifiers need to be precharged.
+
+\textbf{Question:} How could we improve the access speed?
+
+\important{The precharge time $t_{RP}$ shown before the next RAS limits performance. This motivates the use of banking and interleaving.}
+\end{concept}
+
+\subsection{Banking and Interleaving}
+
+\begin{concept}{Memory Banks and Interleaved Operation}\\
+Banks allow overlapping of operations to hide latency.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 31
+% Description: Bank interleaving diagram showing overlapped operations
+% Priority: CRITICAL
+% Suggested filename: lecture04a_banking.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_banking.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Concept:}
+\begin{itemize}
+    \item Split memory into multiple independent banks
+    \item Read from one bank while precharging another
+    \item Interleaved operation hides precharge time
+    \item Bank address (BA) selects bank for current command
+\end{itemize}
+
+\textbf{Benefits:}
+\begin{itemize}
+    \item Increased effective bandwidth
+    \item Reduced perceived latency
+    \item Better utilization of memory bus
+\end{itemize}
+
+\textbf{Trade-off:}
+\begin{itemize}
+    \item Controller becomes more complex
+    \item Requires careful scheduling of bank accesses
+    \item Optimal when access pattern has good locality
+\end{itemize}
+\end{concept}
+
+\subsection{DRAM Controller Design}
+
+\begin{concept}{Principle of a DRAM Controller}\\
+The DRAM controller bridges the CPU and DRAM devices.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 32
+% Description: DRAM controller block diagram
+% Priority: CRITICAL
+% Suggested filename: lecture04a_controller.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_controller.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Controller functions:}
+\begin{itemize}
+    \item Generate DRAM control signals (RAS, CAS, WE)
+    \item Multiplex addresses (row and column)
+    \item Manage refresh cycles
+    \item Arbitrate between processor access and refresh
+    \item Convert internal bus signals to DRAM protocol
+\end{itemize}
+
+\textbf{Components:}
+\begin{itemize}
+    \item \textbf{Refresh Logic:} Generates periodic refresh requests
+    \item \textbf{Refresh Counter:} Tracks which row to refresh next
+    \item \textbf{Control Signal Generator:} Creates RAS, CAS, WE timing
+    \item \textbf{Address Multiplexer:} Switches between row and column addresses
+    \item \textbf{Access/Refresh Arbitration:} Prioritizes CPU and refresh requests
+\end{itemize}
+
+\important{The CPU requires a corresponding controller to convert internal bus signals into DRAM-specific signals.}
+\end{concept}
+
+\begin{remark}
+Commercial SDRAM controller IP cores (like Altera SDRAM Controller IP) provide ready-made solutions that handle all timing and control signal generation automatically.
+\end{remark}
+
+\subsection{Synchronous DRAM (SDRAM)}
+
+\begin{concept}{Synchronous Memory Interface}\\
+SDRAM adds a clock signal to synchronize all operations.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 35
+% Description: SDRAM timing diagram with clock
+% Priority: CRITICAL
+% Suggested filename: lecture04a_sdram_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_sdram_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Key characteristics:}
+\begin{itemize}
+    \item All signals synchronized to a common clock
+    \item Address and control signals sampled at clock rising edge
+    \item Predictable timing - all operations take fixed number of clock cycles
+    \item Burst access mode for sequential data
+\end{itemize}
+
+\textbf{Read cycle timing:}
+\begin{itemize}
+    \item Long latency for first data item in a row
+    \item Short access time for subsequent items in same row
+    \item Row address given first, followed by column addresses
+\end{itemize}
+\end{concept}
+
+\begin{definition}{SDRAM Timing Parameters}\\
+Key timing values are specified in clock cycles.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 36
+% Description: Detailed SDRAM read cycle timing with parameter labels
+% Priority: CRITICAL
+% Suggested filename: lecture04a_sdram_parameters.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_sdram_parameters.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Critical parameters:}
+\begin{itemize}
+    \item $t_{RCD}$ = RAS to CAS Delay (in clock cycles)
+    \item $t_{CL}$ = CAS Latency (in clock cycles)
+    \item $t_{RP}$ = RAS Precharge Time (in clock cycles)
+\end{itemize}
+
+\textbf{Typical values:}
+\begin{itemize}
+    \item Access time: 20 to 50 ns
+    \item Clock cycle time: 10 ns at 100 MHz bus (PC100)
+    \item Parameters expressed as number of clock cycles
+\end{itemize}
+\end{definition}
+
+\begin{concept}{Advantages of Synchronous Operation}\\
+Synchronous interface provides several benefits over asynchronous.
+
+\textbf{Benefits:}
+\begin{itemize}
+    \item \textbf{Simplified timing:} Address and control signals sampled at rising clock edge
+    \item \textbf{Glitch immunity:} Glitches on address/control lines do not cause failures
+    \item \textbf{Predictable delays:} RAS-CAS delays are fixed number of clock cycles
+    \item \textbf{Fixed access times:} All operations take deterministic time
+    \item \textbf{Fixed precharge:} RAS precharge time is fixed number of cycles
+\end{itemize}
+
+\important{The DRAM controller must provide signals synchronous to a common clock, but this simplifies overall system design.}
+\end{concept}
+
+\subsection{DDR SDRAM Technology}
+
+\begin{concept}{Double Data Rate (DDR) SDRAM}\\
+DDR transfers data on both clock edges, doubling effective bandwidth.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 38
+% Description: DDR SDRAM timing showing data on both clock edges
+% Priority: CRITICAL
+% Suggested filename: lecture04a_ddr_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_ddr_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Key innovation:}
+\begin{itemize}
+    \item Data transferred on rising AND falling clock edges
+    \item Doubles data rate without increasing clock frequency
+    \item Same $t_{RP}$, $t_{RCD}$, $t_{CL}$ as SDR SDRAM
+    \item Requires differential data strobe signals (DQS)
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Double bandwidth compared to SDR
+    \item Lower power per bit transferred
+    \item Compatible with existing memory architecture
+\end{itemize}
+\end{concept}
+
+\begin{definition}{DDR SDRAM Designation}\\
+DDR memory modules are designated by bandwidth and timing parameters.
+
+\textbf{Naming convention:}
+\begin{itemize}
+    \item PC xxxx a-b-c or DDR yyy a-b-c
+    \item xxxx = Bandwidth in MB/s
+    \item yyy = Transfer rate in MT/s (Mega Transfers per second)
+    \item a = CAS Latency ($t_{CL}$)
+    \item b = RAS-CAS Delay ($t_{RCD}$)
+    \item c = RAS Precharge ($t_{RP}$)
+\end{itemize}
+\end{definition}
+
+\begin{example2}{DDR Memory Designation}\\
+\textbf{Example:} PC 1600 2-3-3 or DDR200 2-3-3
+
+\tcblower
+
+\textbf{Interpretation:}
+\begin{itemize}
+    \item 200 MHz transfer rate (DDR200)
+    \item 1600 MB/s bandwidth (for 64-bit wide DIMM: 200 MT/s $\times$ 8 bytes)
+    \item Access time: 50 ns for first access, then 8 bytes every 5 ns
+    \item Timing: 2-3-3 means $t_{CL}$=2, $t_{RCD}$=3, $t_{RP}$=3 clock cycles
+\end{itemize}
+
+\important{An additional fourth value may specify Row-Active-Time ($t_{RAS}$).}
+\end{example2}
+
+\begin{highlight}{DDR Performance Comparison}\\
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Type} & \textbf{Bus Clock} & \textbf{Transfer Rate} & \textbf{Bandwidth} & \textbf{Timing} \\
+\hline
+PC100 & 100 MHz & 100 MT/s & 800 MB/s & SDR \\
+\hline
+DDR-400 & 200 MHz & 400 MT/s & 3200 MB/s & CL2-2-2-5 \\
+\hline
+DDR2-800 & 400 MHz & 800 MT/s & 6400 MB/s & CL4-4-4-10 \\
+\hline
+DDR3-1600 & 800 MHz & 1600 MT/s & 12800 MB/s & CL9-9-9-21 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Notes:}
+\begin{itemize}
+    \item Bandwidth values are for 64-bit wide DIMM modules
+    \item Transfer rate is double the bus clock (DDR)
+    \item Higher frequencies require longer latencies in clock cycles
+\end{itemize}
+\end{highlight}
+
+\begin{definition}{Timing Parameter Details}\\
+Understanding what the timing numbers mean:
+
+\textbf{Parameter definitions:}
+\begin{itemize}
+    \item \textbf{CAS Latency ($t_{CL}$):} Number of clock cycles waiting time for addressing a non-directly following memory cell within the same row
+    \item \textbf{RAS to CAS Delay ($t_{RCD}$):} Number of clock cycles waiting time between row addressing and column addressing
+    \item \textbf{RAS Precharge Delay ($t_{RP}$):} Number of clock cycles waiting time between two consecutive row addressings
+    \item \textbf{Row-Active-Time ($t_{RAS}$):} Number of clock cycles waiting time between two consecutive row addressings of the same row
+\end{itemize}
+\end{definition}
+
+\begin{example2}{DDR Timing Examples}\\
+\textbf{Different DDR generations with same absolute timing:}
+
+\begin{itemize}
+    \item \textbf{DDR-400 CL2-2-2-5:} 200 MHz bus clock
+    \begin{itemize}
+        \item $t_{CL}$ = 10 ns, $t_{RCD}$ = 10 ns, $t_{RP}$ = 10 ns, $t_{RAS}$ = 25 ns
+    \end{itemize}
+    \item \textbf{DDR2-800 CL4-4-4-10:} 400 MHz bus clock
+    \begin{itemize}
+        \item $t_{CL}$ = 10 ns, $t_{RCD}$ = 10 ns, $t_{RP}$ = 10 ns, $t_{RAS}$ = 25 ns
+    \end{itemize}
+    \item \textbf{DDR3-1600 CL9-9-9-21:} 800 MHz bus clock
+    \begin{itemize}
+        \item $t_{CL}$ = 11.25 ns, $t_{RCD}$ = 11.25 ns, $t_{RP}$ = 11.25 ns, $t_{RAS}$ = 26.25 ns
+    \end{itemize}
+\end{itemize}
+
+\tcblower
+
+\textbf{Observations:}
+\begin{itemize}
+    \item Higher clock frequencies require more clock cycles for same absolute time
+    \item Bandwidth doubles with each generation despite similar absolute timings
+    \item DDR3 shows slightly longer absolute latencies due to technology constraints
+\end{itemize}
+\end{example2}
+
+\begin{example2}{Actual Timing Examples}\\
+\textbf{Different speed grades have different absolute timings:}
+
+\begin{itemize}
+    \item Fast timing: $t_{CL}$ = 10.0 ns
+    \item Medium timing: $t_{CL}$ = 13.5 ns
+    \item Slower timing: $t_{CL}$ = 13.75 ns
+\end{itemize}
+
+\tcblower
+
+\important{Faster timing grades cost more but provide better performance. Always match memory speed to motherboard capabilities.}
+\end{example2}
+
+\begin{concept}{DDR2 SDRAM}\\
+DDR2 doubles the data rate again through internal prefetch.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 42
+% Description: DDR2 architecture diagram showing 4x prefetch
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_ddr2_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_ddr2_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Key features:}
+\begin{itemize}
+    \item 4-bit prefetch (vs 2-bit in DDR)
+    \item Internal clock runs at half the I/O rate
+    \item Example: 100 MHz internal, 200 MHz bus, 400 MBit/s transfer
+    \item Lower operating voltage: 1.8V (vs 2.5V for DDR)
+    \item Improved signal integrity with on-die termination
+\end{itemize}
+\end{concept}
+
+\begin{concept}{DDR3 SDRAM}\\
+DDR3 continues the evolution with even higher speeds.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 43
+% Description: DDR3 architecture diagram showing 8x prefetch
+% Priority: IMPORTANT
+% Suggested filename: lecture04a_ddr3_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_ddr3_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Key features:}
+\begin{itemize}
+    \item 8-bit prefetch (vs 4-bit in DDR2)
+    \item Even lower operating voltage: 1.5V (vs 1.8V for DDR2)
+    \item Higher clock frequencies (400 MHz bus for DDR3-1600)
+    \item Improved power efficiency
+    \item Better signal integrity
+\end{itemize}
+
+\textbf{Common speeds:}
+\begin{itemize}
+    \item DDR3-800 (PC3-6400): 100 MHz core, 400 MHz I/O, 800 MT/s
+    \item DDR3-1066 (PC3-8500): 133 MHz core, 533 MHz I/O, 1066 MT/s
+    \item DDR3-1333 (PC3-10600): 166 MHz core, 666 MHz I/O, 1333 MT/s
+    \item DDR3-1600 (PC3-12800): 200 MHz core, 800 MHz I/O, 1600 MT/s
+\end{itemize}
+\end{concept}
+
+\begin{example2}{DDR3 on DE1-SoC Board}\\
+\textbf{IS42R16320D SDRAM chip:}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 44
+% Description: DE1-SoC board with SDRAM chip highlighted
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture04a_de1soc_sdram.png
+\\
+% \includegraphics[width=0.7\linewidth]{lecture04a_de1soc_sdram.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Determine the following:}
+\begin{itemize}
+    \item Number of words: ?
+    \item Word size: ?
+    \item Number of bits: ?
+    \item Number of address lines: ?
+    \item Number of banks: ?
+\end{itemize}
+
+\tcblower
+
+\textbf{Organization analysis:}
+\begin{itemize}
+    \item Number of rows: ?
+    \item Number of columns: ?
+\end{itemize}
+
+\important{Exercise: Consult the IS42R16320D datasheet to answer these questions.}
+\end{example2}
+
+\begin{example2}{SDRAM Block Diagram Analysis}\\
+\textbf{Analyze the internal block diagram:}
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 46
+% Description: Internal SDRAM block diagram showing banks, row/column decoders
+% Priority: CRITICAL
+% Suggested filename: lecture04a_sdram_block_diagram.png
+\\
+% \includegraphics[width=\linewidth]{lecture04a_sdram_block_diagram.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Determine from the diagram:}
+\begin{itemize}
+    \item Number of banks
+    \item Row address width
+    \item Column address width
+    \item Word width
+    \item Total number of words
+\end{itemize}
+
+\tcblower
+
+\textbf{Analysis approach:}
+\begin{enumerate}
+    \item Count the number of independent memory arrays (banks)
+    \item Determine address bus widths from decoder inputs
+    \item Identify data bus width
+    \item Calculate total capacity from organization
+\end{enumerate}
+\end{example2}
+
+\begin{concept}{Non-volatile SRAM (nvSRAM)}\\
+Combines SRAM speed with non-volatile storage.
+
+% TODO: Add image from SCD_4a_ddr_sdram.pdf, Slide 8
+% Description: nvSRAM architecture diagram
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture04a_nvsram.png
+\\
+% \includegraphics[width=0.7\linewidth]{lecture04a_nvsram.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+\textbf{Key features:}
+\begin{itemize}
+    \item Speed comparable to SRAM
+    \item Data retained without power
+    \item Each SRAM cell has a Flash or other NV cell alongside
+    \item NV contents updated regularly during operation
+    \item Upon power loss, modified SRAM cells stored in NV cells
+    \item Backup powered by capacitor during power-down
+\end{itemize}
+
+\textbf{Applications:}
+\begin{itemize}
+    \item Critical data storage
+    \item Fast access with data persistence
+    \item Replacing battery-backed SRAM
+\end{itemize}
+\end{concept}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 33
+% CRITICAL priority: 21
+% IMPORTANT priority: 9
+% SUPPLEMENTARY priority: 3
+%
+% Quick extraction checklist:
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 2] - Motivation image (SUPPLEMENTARY)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 4] - Storage hierarchy pyramid (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 5] - Memory system with timing (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 6] - Memory types tree (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 7] - SRAM cell circuit (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 9-10] - DRAM cell circuit (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 11] - DRAM operation with decay (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 18] - Robert Dennard photo (SUPPLEMENTARY)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 19] - 1Mbit DRAM chip (SUPPLEMENTARY)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 12] - Memory array diagram (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 14] - Address multiplexing (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 15] - DRAM architecture (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 16] - Refresh optimization (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 20] - SIMM pinout (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 22] - Read access diagram (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 23] - Refresh diagram (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 24] - Async read timing (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 25] - Page mode timing (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 26] - Async write timing (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 27] - Refresh timing (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 28] - Fast page mode (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 30] - Access vs cycle time (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 31] - Banking diagram (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 32] - Controller block diagram (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 35] - SDRAM timing (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 36] - SDRAM parameters (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 38] - DDR timing (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 42] - DDR2 architecture (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 43] - DDR3 architecture (IMPORTANT)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 44] - DE1-SoC SDRAM (SUPPLEMENTARY)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 46] - SDRAM block diagram (CRITICAL)
+% [X] [SCD_4a_ddr_sdram.pdf, Slide 8] - nvSRAM architecture (SUPPLEMENTARY)
+% =====================

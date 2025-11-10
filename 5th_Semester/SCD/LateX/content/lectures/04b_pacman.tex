@@ -1,0 +1,411 @@
+\section{PacMan Project}
+
+\subsection{Introduction to the PacMan Game Architecture}
+
+\begin{concept}{Project Overview}\\
+The PacMan project demonstrates the integration of a processor (HPS) with programmable logic (FPGA) to create a classic arcade game. The project focuses on:
+\begin{itemize}
+    \item Goal definition and system architecture
+    \item Partitioning tasks between processor and FPGA
+    \item Understanding VGA graphics principles
+    \item Character-based graphic generation in FPGA
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 1
+% Description: PacMan Project title slide with introduction topics
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture04B_intro_title.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_intro_title.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\subsection{System Overview}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 2
+% Description: Complete system architecture diagram showing HPS-FPGA integration
+% Priority: CRITICAL
+% Suggested filename: lecture04B_system_overview.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_system_overview.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{definition}{System Architecture}\\
+The PacMan system consists of several interconnected components:
+\begin{itemize}
+    \item Hard Processor System (HPS) running the game logic
+    \item FPGA fabric handling graphics generation
+    \item Video memory for frame buffer storage
+    \item VGA controller for display output
+\end{itemize}
+\end{definition}
+
+\subsection{Software and Programmable Logic Partitioning}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 3
+% Description: Diagram showing pacman_top.vhd and graphic_controller.vhd architecture
+% Priority: CRITICAL
+% Suggested filename: lecture04B_sw_hw_partition.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_sw_hw_partition.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{concept}{Hardware-Software Partitioning}\\
+The system is divided into distinct hardware and software components:
+
+\textbf{FPGA Components:}
+\begin{itemize}
+    \item \texttt{pacman\_top.vhd} - Top-level entity
+    \item \texttt{graphic\_controller.vhd} - VGA timing and display control
+    \item Video Memory - Frame buffer storage
+    \item Clock management (50 MHz input clock)
+\end{itemize}
+
+\textbf{Software Components:}
+\begin{itemize}
+    \item Game logic running on HPS
+    \item Character position management
+    \item Collision detection
+    \item Score tracking
+\end{itemize}
+\end{concept}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{VGA Graphics Principles}
+
+\begin{definition}{VGA Resolution and Timing}\\
+VGA (Video Graphics Array) is a display standard that defines how images are rendered on a screen through synchronized horizontal and vertical scanning.
+
+\textbf{Key Parameters:}
+\begin{itemize}
+    \item Horizontal pixels per line: H pixels/line
+    \item Vertical lines per frame: V lines/frame
+    \item Each pixel is composed of Red, Green, and Blue (RGB) components
+    \item Scanning occurs left-to-right, top-to-bottom
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 4
+% Description: VGA graphics scanning pattern diagram showing H pixels and V lines
+% Priority: CRITICAL
+% Suggested filename: lecture04B_vga_graphics.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_vga_graphics.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\subsubsection{CRT Display Technology}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 5
+% Description: TV tube cross-section showing cathode, deflection coil, shadow mask, and phosphor screen
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_crt_tube.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_crt_tube.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{concept}{CRT (Cathode Ray Tube) Operation}\\
+Traditional CRT displays use electron beams to create images:
+
+\textbf{Components:}
+\begin{itemize}
+    \item \textbf{Cathode:} Separate electron beams for Red, Green, and Blue
+    \item \textbf{Deflection Coil (Yoke):} Magnetically steers beam in left-to-right, top-to-bottom pattern (separate H and V coils)
+    \item \textbf{Shadow Mask:} Ensures R beam only illuminates R pixels, etc.
+    \item \textbf{Phosphor Screen:} Emits light when excited by electron beam
+    \item \textbf{Anode:} Accelerates electrons toward the screen
+\end{itemize}
+
+\textbf{Operation:}
+The intensity of the electron beam determines the brightness of each pixel. The beam is continuously scanned across the screen in a raster pattern.
+\end{concept}
+
+\begin{remark}
+Although modern displays use LCD or LED technology, understanding CRT operation helps explain VGA timing requirements that are still used today.
+\end{remark}
+
+\subsubsection{VGA Scanning Pattern}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 6
+% Description: VGA scanning pattern showing 1024x768 pixels with horizontal and vertical return
+% Priority: CRITICAL
+% Suggested filename: lecture04B_vga_scan_pattern.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_vga_scan_pattern.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{definition}{Raster Scanning}\\
+VGA displays use a raster scanning method:
+\begin{itemize}
+    \item \textbf{Horizontal Scan:} Beam moves left-to-right across 1024 pixels
+    \item \textbf{Horizontal Return:} Beam returns to left edge (blanking period)
+    \item \textbf{Vertical Scan:} After 768 lines, beam returns to top (vertical return)
+    \item \textbf{Frame Rate:} Complete cycle repeats continuously (typically 60 Hz)
+\end{itemize}
+\end{definition}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{VGA Timing Specifications}
+
+\subsubsection{Horizontal Video Timing for 1024 $\times$ 768 Resolution}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 7
+% Description: Horizontal timing diagram showing HSYNC, back porch, visible video, front porch
+% Priority: CRITICAL
+% Suggested filename: lecture04B_h_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_h_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{highlight}{Horizontal Timing Parameters}\\
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Parameter} & \textbf{Time} & \textbf{Pixel Clocks} \\
+\hline
+Pixel Clock & 15.39 ns & 65 MHz \\
+HSYNC Pulse Width ($T_{pw}$) & 2.092 $\mu$s & 136 pixclk \\
+Back Porch ($T_{bp}$) & 369.2 ns & 24 pixclk \\
+Visible Video ($T_{disp}$) & 15.754 $\mu$s & 1024 pixclk \\
+Front Porch ($T_{fp}$) & 2.462 $\mu$s & 160 pixclk \\
+\hline
+\textbf{Total Line Time} & \textbf{20.66 $\mu$s} & \textbf{1344 pixclk} \\
+\hline
+\end{tabular}
+\end{center}
+\end{highlight}
+
+\begin{concept}{Horizontal Sync Signal}\\
+The HSYNC signal controls horizontal beam positioning:
+\begin{itemize}
+    \item \textbf{HSYNC Pulse:} Triggers horizontal retrace (136 clocks)
+    \item \textbf{Back Porch:} Blanking after HSYNC before visible video (24 clocks)
+    \item \textbf{Visible Video:} Active pixel data display (1024 clocks)
+    \item \textbf{Front Porch:} Blanking before next HSYNC (160 clocks)
+\end{itemize}
+\end{concept}
+
+\subsubsection{Vertical Video Timing for 1024 $\times$ 768 Resolution}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 8
+% Description: Vertical timing diagram showing VSYNC and line counts
+% Priority: CRITICAL
+% Suggested filename: lecture04B_v_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_v_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{highlight}{Vertical Timing Parameters}\\
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Parameter} & \textbf{Time} & \textbf{Lines} \\
+\hline
+One Line Period & 20.66 $\mu$s & 1 HSYNC \\
+VSYNC Pulse Width & 124.0 $\mu$s & 6 lines \\
+Back Porch & 599.4 $\mu$s & 29 lines \\
+Visible Video & 15.86 ms & 768 lines \\
+Front Porch & 61.97 $\mu$s & 3 lines \\
+\hline
+\textbf{Total Frame Time} & \textbf{16.66 ms} & \textbf{806 lines} \\
+\hline
+\end{tabular}
+\end{center}
+\end{highlight}
+
+\begin{concept}{Vertical Sync Signal}\\
+The VSYNC signal controls vertical beam positioning:
+\begin{itemize}
+    \item \textbf{VSYNC Pulse:} Triggers vertical retrace (6 lines)
+    \item \textbf{Back Porch:} Blanking after VSYNC (29 lines)
+    \item \textbf{Visible Video:} Active lines containing pixel data (768 lines)
+    \item \textbf{Front Porch:} Blanking before next VSYNC (3 lines)
+    \item \textbf{Frame Rate:} $\frac{1}{16.66 \text{ ms}} \approx 60$ Hz
+\end{itemize}
+\end{concept}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Character-Based Graphics in FPGA}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 9
+% Description: Character-based graphics architecture diagram
+% Priority: CRITICAL
+% Suggested filename: lecture04B_char_graphics.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_char_graphics.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{concept}{Character-Based Display System}\\
+The PacMan project uses character-based graphics for efficient FPGA implementation:
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Reduced memory requirements
+    \item Simplified graphics controller logic
+    \item Easy character animation
+    \item Efficient for tile-based games
+\end{itemize}
+
+\textbf{System Components:}
+\begin{itemize}
+    \item Character ROM - stores character patterns
+    \item Video Memory - stores which character appears at each position
+    \item Display Controller - reads memory and generates video signal
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 10
+% Description: Character memory organization and addressing
+% Priority: CRITICAL
+% Suggested filename: lecture04B_char_memory.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_char_memory.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 11
+% Description: Character pattern ROM structure
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_char_rom.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_char_rom.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 12
+% Description: VGA controller block diagram
+% Priority: CRITICAL
+% Suggested filename: lecture04B_vga_controller.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_vga_controller.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 13
+% Description: Timing generation and synchronization
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_timing_gen.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_timing_gen.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 14
+% Description: Graphics pipeline dataflow
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_graphics_pipeline.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_graphics_pipeline.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 15
+% Description: Memory interface and addressing
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_memory_interface.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_memory_interface.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 16
+% Description: Color palette and RGB generation
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_color_palette.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_color_palette.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 17
+% Description: Character animation and updates
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_char_animation.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_char_animation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 18
+% Description: Game logic integration with graphics
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_game_logic.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_game_logic.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 19
+% Description: HPS-FPGA communication interface
+% Priority: IMPORTANT
+% Suggested filename: lecture04B_hps_fpga_comm.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_hps_fpga_comm.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 20
+% Description: Project implementation details
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture04B_implementation.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_implementation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+% TODO: Add image from SCD_4b_pacman_project.pdf, Page 21
+% Description: Summary and conclusions
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture04B_summary.png
+\\
+% \includegraphics[width=\linewidth]{lecture04B_summary.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{remark}
+The PacMan project demonstrates practical application of VGA timing principles, character-based graphics, and hardware-software partitioning in an FPGA-based system. The modular architecture allows for efficient implementation and easy modification of game elements.
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 21
+% CRITICAL priority: 10
+% IMPORTANT priority: 9
+% SUPPLEMENTARY priority: 2
+%
+% Quick extraction checklist:
+% [ ] [SCD_4b_pacman_project.pdf, Page 1] - PacMan Project title slide (SUPPLEMENTARY)
+% [ ] [SCD_4b_pacman_project.pdf, Page 2] - System overview diagram (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 3] - SW/HW partitioning diagram (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 4] - VGA graphics principle (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 5] - CRT tube structure (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 6] - VGA scanning pattern (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 7] - Horizontal timing diagram (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 8] - Vertical timing diagram (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 9] - Character-based graphics (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 10] - Character memory organization (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 11] - Character pattern ROM (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 12] - VGA controller block diagram (CRITICAL)
+% [ ] [SCD_4b_pacman_project.pdf, Page 13] - Timing generation (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 14] - Graphics pipeline (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 15] - Memory interface (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 16] - Color palette (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 17] - Character animation (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 18] - Game logic integration (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 19] - HPS-FPGA communication (IMPORTANT)
+% [ ] [SCD_4b_pacman_project.pdf, Page 20] - Implementation details (SUPPLEMENTARY)
+% [ ] [SCD_4b_pacman_project.pdf, Page 21] - Summary (SUPPLEMENTARY)
+% =====================

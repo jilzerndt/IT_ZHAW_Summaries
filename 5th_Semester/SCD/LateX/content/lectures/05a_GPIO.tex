@@ -1,0 +1,329 @@
+\section{General Purpose Input/Output (GPIO)}
+
+\subsection{Learning Objectives}
+
+\begin{concept}{Course Goals}\\
+After this lecture and lab exercise, students will be able to:
+\begin{itemize}
+    \item Sketch the logic circuit of GPIO pins
+    \item Explain the function of a configurable GPIO pin
+    \item Configure GPIO pins in an SoC design
+\end{itemize}
+\end{concept}
+
+\subsection{Agenda}
+
+\begin{remark}
+This lecture covers three main topics:
+\begin{itemize}
+    \item Applications and different modes of GPIO pins
+    \item GPIO Internals: schematic and capabilities
+    \item GPIO in a Platform Design
+\end{itemize}
+\end{remark}
+
+\subsection{Typical Applications for GPIO}
+
+% TODO: Add image from SCD_5a_GPIO.pdf, Page 5
+% Description: Typical GPIO applications and use cases
+% Priority: CRITICAL
+% Suggested filename: lecture05A_gpio_applications.png
+\\
+% \includegraphics[width=\linewidth]{lecture05A_gpio_applications.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{concept}{GPIO Applications}\\
+GPIO (General Purpose Input/Output) pins are versatile digital interfaces used for:
+\begin{itemize}
+    \item LED control and status indicators
+    \item Button and switch inputs
+    \item Sensor interfacing
+    \item Simple protocol communication
+    \item External device control
+    \item Interrupt generation
+\end{itemize}
+\end{concept}
+
+\subsection{GPIO Operating Modes}
+
+% TODO: Add image from SCD_5a_GPIO.pdf, Page 6
+% Description: GPIO modes diagram showing output and bidirectional configurations
+% Priority: CRITICAL
+% Suggested filename: lecture05A_gpio_modes.png
+\\
+% \includegraphics[width=\linewidth]{lecture05A_gpio_modes.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{definition}{GPIO Modes}
+\begin{itemize}
+    \item \textbf{Output Mode:} Pin drives signal to external circuit
+    \item \textbf{Input Mode:} Pin reads signal from external circuit
+    \item \textbf{Bidirectional (Tristate):} Pin can switch between input and output modes
+\end{itemize}
+\end{definition}
+
+\subsection{GPIO Internal Architecture}
+
+% TODO: Add image from SCD_5a_GPIO.pdf, Page 7
+% Description: Detailed GPIO internal schematic showing registers, buffers, and control logic
+% Priority: CRITICAL
+% Suggested filename: lecture05A_gpio_internals.png
+\\
+% \includegraphics[width=\linewidth]{lecture05A_gpio_internals.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{concept}{GPIO Hardware Components}\\
+The GPIO pin structure includes several configurable elements:
+
+\textbf{Core Components:}
+\begin{itemize}
+    \item \textbf{Input Buffer:} Conditions incoming signals for the FPGA core
+    \item \textbf{Output Buffer:} Drives signals to external pins with programmable strength
+    \item \textbf{Input Register:} Synchronizes and stores input data
+    \item \textbf{Output Register:} Holds output data to be driven
+    \item \textbf{Output Enable (OE) Register:} Controls direction (input/output)
+\end{itemize}
+
+\textbf{Programmable Features:}
+\begin{itemize}
+    \item Programmable driver strength
+    \item Programmable slew rate control
+    \item On-chip termination
+    \item Internal pull-up resistor
+    \item Bus-hold circuit
+    \item Delay control
+    \item Open-drain output option
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Output Enable Logic}\\
+The Output Enable (OE) signal controls pin direction:
+\begin{itemize}
+    \item \texttt{OE = 1}: Output mode - pin drives signal
+    \item \texttt{OE = 0}: Input mode - pin is high-impedance (tristate)
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+All GPIO features are configurable through the Quartus II/Prime software during FPGA compilation. These settings optimize signal integrity and power consumption for specific applications.
+\end{remark}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{GPIO Hardware Features}
+
+\begin{definition}{Key Hardware Capabilities}
+\begin{itemize}
+    \item \textbf{Input and Output Buffers:} Provide electrical interface with triggers and drivers
+    \item \textbf{Registers:} Synchronize data transfer (Input, Output, and Output Enable registers)
+    \item \textbf{Driver Strength Control:} Adjustable output current capability
+    \item \textbf{Slew Rate Control:} Controls signal transition speed to reduce EMI
+    \item \textbf{On-chip Termination:} Provides impedance matching without external components
+    \item \textbf{Pull-Up Resistor:} Internal weak pull-up for floating inputs
+    \item \textbf{Bus-Hold Circuit:} Maintains last logic level when input is floating
+\end{itemize}
+\end{definition}
+
+\subsection{FPGA vs HPS GPIO Architecture}
+
+% TODO: Add image from SCD_5a_GPIO.pdf, Page 9
+% Description: SoC diagram showing FPGA and HPS I/O column and row placement
+% Priority: CRITICAL
+% Suggested filename: lecture05A_fpga_vs_hps_io.png
+\\
+% \includegraphics[width=\linewidth]{lecture05A_fpga_vs_hps_io.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{concept}{I/O Pin Assignment in SoC Devices}\\
+Pins on an SoC device are dedicated to either FPGA fabric or Hard Processor System (HPS):
+
+\textbf{Physical Organization:}
+\begin{itemize}
+    \item \textbf{FPGA I/O:} Located around FPGA fabric perimeter
+    \item \textbf{HPS Column I/O:} Dedicated vertical columns for HPS
+    \item \textbf{HPS Row I/O:} Dedicated horizontal rows for HPS
+\end{itemize}
+
+\textbf{Boot Requirements:}
+\begin{itemize}
+    \item CPU requires certain pins during boot process $\rightarrow$ fixed assignment
+    \item Some peripheral functions need specific circuitry (e.g., USB only on specific pins)
+    \item HPS peripherals are directly attached to system bus
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_5a_GPIO.pdf, Page 10
+% Description: FPGA vs HPS I/O capabilities and control mechanisms
+% Priority: CRITICAL
+% Suggested filename: lecture05A_io_control.png
+\\
+% \includegraphics[width=\linewidth]{lecture05A_io_control.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\mult{2}
+
+\begin{definition}{FPGA I/O Characteristics}
+\begin{itemize}
+    \item Attached to FPGA fabric
+    \item Controlled after fabric configuration
+    \item Used as GPIO or peripheral pins from FPGA
+    \item Can be controlled by HPS via bridges
+\end{itemize}
+\end{definition}
+
+\begin{definition}{HPS I/O Characteristics}
+\begin{itemize}
+    \item Available before fabric configuration
+    \item Used for HPS peripherals (Ethernet, USB, SD, SPI, CAN)
+    \item Used for GPIO from HPS
+    \item Can be used from FPGA as "Loan I/O"
+\end{itemize}
+\end{definition}
+
+\multend
+
+% TODO: Add image from SCD_5a_GPIO.pdf, Page 11
+% Description: HPS I/O pin configuration tool showing peripheral selection
+% Priority: IMPORTANT
+% Suggested filename: lecture05A_hps_pin_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture05A_hps_pin_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\begin{concept}{HPS Pin Function Selection}\\
+The Platform Designer configuration tool allows selection of HPS pin functions:
+\begin{itemize}
+    \item \textbf{FPGA Interfaces:} Bridges and connections to fabric
+    \item \textbf{Peripheral Pins:} Ethernet, USB, SD, UART, I2C, etc.
+    \item \textbf{HPS Clocks:} System and peripheral clock inputs
+    \item \textbf{SDRAM:} DDR memory interface pins
+\end{itemize}
+
+\important{Note:} Dedicated pin locations limit configuration options. Some functions can only be assigned to specific pins due to internal circuitry requirements.
+\end{concept}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{GPIO in Platform Design}
+
+% TODO: Add images from SCD_5a_GPIO.pdf, Pages 12-30
+% Description: Multiple slides covering GPIO configuration in Platform Designer
+% Priority: CRITICAL for pages 12-20, IMPORTANT for pages 21-30
+% Suggested filenames: lecture05A_platform_XX.png (where XX is page number)
+\\
+% Images showing:
+% - Platform Designer interface
+% - GPIO IP core configuration
+% - Address mapping
+% - Interrupt configuration
+% - Software driver interface
+% - GPIO register access
+% - Example configurations
+\\
+
+\begin{KR}{Configuring GPIO in Platform Designer}\\
+\textbf{Step 1: Add GPIO IP Core}
+\begin{enumerate}
+    \item Open Platform Designer in Quartus
+    \item Add "PIO (Parallel I/O)" IP core from library
+    \item Configure data width (1-32 bits)
+    \item Set direction (input, output, or bidirectional)
+\end{enumerate}
+
+\textbf{Step 2: Configure Parameters}
+\begin{itemize}
+    \item Set data width to match application requirements
+    \item Choose input/output/bidirectional mode
+    \item Enable/disable interrupt generation
+    \item Set edge capture capabilities if needed
+    \item Configure reset value for output pins
+\end{itemize}
+
+\textbf{Step 3: Connect to System}
+\begin{enumerate}
+    \item Connect to system clock and reset
+    \item Connect Avalon-MM slave interface to system interconnect
+    \item Export external connections to top-level
+    \item Assign base address for register access
+\end{enumerate}
+
+\textbf{Step 4: Generate and Integrate}
+\begin{enumerate}
+    \item Generate HDL from Platform Designer
+    \item Instantiate system in top-level VHDL/Verilog
+    \item Assign external pins in Pin Planner
+    \item Compile design
+\end{enumerate}
+\end{KR}
+
+\begin{definition}{GPIO Register Interface}\\
+GPIO cores typically provide these registers:
+\begin{itemize}
+    \item \textbf{Data Register:} Read input values or write output values
+    \item \textbf{Direction Register:} Set pin direction (bidirectional mode only)
+    \item \textbf{Interrupt Mask:} Enable/disable interrupts per pin
+    \item \textbf{Edge Capture:} Record edge events on input pins
+\end{itemize}
+\end{definition}
+
+\begin{example2}{GPIO Software Access}\\
+\textbf{Task:} Control an LED and read a button using GPIO
+
+\textbf{C Code Example:}
+\begin{lstlisting}[language=C, style=base]
+// Define GPIO base addresses
+#define LED_BASE 0xFF200000
+#define BUTTON_BASE 0xFF200010
+
+// LED control
+volatile unsigned int *led_ptr = (unsigned int *)LED_BASE;
+*led_ptr = 0x01;  // Turn on LED 0
+
+// Button reading
+volatile unsigned int *button_ptr = (unsigned int *)BUTTON_BASE;
+unsigned int button_state = *button_ptr & 0x01;  // Read button 0
+\end{lstlisting}
+
+\tcblower
+
+\textbf{Explanation:}
+\begin{itemize}
+    \item Use volatile pointers to prevent compiler optimization
+    \item Access GPIO registers through memory-mapped addresses
+    \item Bitwise operations allow individual pin control
+    \item Base addresses defined in Platform Designer
+\end{itemize}
+\end{example2}
+
+\begin{remark}
+GPIO provides a simple but powerful interface for connecting external devices to an SoC. Proper configuration in Platform Designer and Pin Planner ensures reliable operation and optimal signal integrity.
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 30
+% CRITICAL priority: 12
+% IMPORTANT priority: 15
+% SUPPLEMENTARY priority: 3
+%
+% Quick extraction checklist:
+% [ ] [SCD_5a_GPIO.pdf, Page 1] - Title slide (SUPPLEMENTARY)
+% [ ] [SCD_5a_GPIO.pdf, Page 2] - Learning objectives (SUPPLEMENTARY)
+% [ ] [SCD_5a_GPIO.pdf, Page 3] - Agenda (SUPPLEMENTARY)
+% [ ] [SCD_5a_GPIO.pdf, Page 4] - Section divider (SUPPLEMENTARY)
+% [ ] [SCD_5a_GPIO.pdf, Page 5] - GPIO applications (CRITICAL)
+% [ ] [SCD_5a_GPIO.pdf, Page 6] - GPIO modes (CRITICAL)
+% [ ] [SCD_5a_GPIO.pdf, Page 7] - GPIO internal schematic (CRITICAL)
+% [ ] [SCD_5a_GPIO.pdf, Page 8] - GPIO hardware features (IMPORTANT)
+% [ ] [SCD_5a_GPIO.pdf, Page 9] - FPGA vs HPS I/O physical layout (CRITICAL)
+% [ ] [SCD_5a_GPIO.pdf, Page 10] - FPGA vs HPS I/O control (CRITICAL)
+% [ ] [SCD_5a_GPIO.pdf, Page 11] - HPS pin configuration tool (IMPORTANT)
+% [ ] [SCD_5a_GPIO.pdf, Pages 12-30] - Platform Designer and GPIO configuration (CRITICAL for 12-20, IMPORTANT for 21-30)
+% =====================

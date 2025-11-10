@@ -1,0 +1,266 @@
+\section{Timing Analysis Part 2}
+
+\subsection{Advanced Timing Concepts}
+
+\begin{concept}{Advanced Topics}\\
+This lecture extends timing analysis with:
+\begin{itemize}
+    \item Multi-cycle paths
+    \item False paths
+    \item Clock domain crossing
+    \item Timing exceptions
+    \item Advanced clock constraints
+    \item Timing optimization techniques
+\end{itemize}
+\end{concept}
+
+% TODO: Add images from SCD_7_timing2.pdf, Pages 1-5
+% Description: Introduction to advanced timing concepts
+% Priority: IMPORTANT
+% Suggested filename: lecture07_intro_XX.png
+
+\subsection{Multi-Cycle Paths}
+
+\begin{definition}{Multi-Cycle Path}\\
+A multi-cycle path is a data path that intentionally takes more than one clock cycle to complete.
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Relaxes timing constraints
+    \item Allows slower logic operations
+    \item Requires explicit constraint specification
+    \item Must ensure data stability
+\end{itemize}
+
+\textbf{Constraint:}
+$$T_{path} \leq N \cdot T_{clk} - t_{su}$$
+where $N$ is the number of clock cycles.
+\end{definition}
+
+% TODO: Add images from SCD_7_timing2.pdf, Pages 6-12
+% Description: Multi-cycle path diagrams and examples
+% Priority: CRITICAL
+% Suggested filename: lecture07_multicycle_XX.png
+
+\begin{example2}{Multi-Cycle Path Application}\\
+\textbf{Scenario:} A multiplication operation takes 15 ns to complete
+
+\textbf{Given:}
+\begin{itemize}
+    \item Clock period: $T_{clk} = 10$ ns (100 MHz)
+    \item Multiplication delay: 15 ns
+    \item Single-cycle would require: $f_{max} = 1/15 \text{ ns} = 66.7$ MHz
+\end{itemize}
+
+\tcblower
+
+\textbf{Solution:} Define as 2-cycle path
+\begin{itemize}
+    \item Available time: $2 \times 10 = 20$ ns
+    \item Path delay: 15 ns
+    \item Slack: $20 - 15 = 5$ ns (PASS)
+    \item Maintains 100 MHz clock frequency
+\end{itemize}
+
+\important{Constraint:} Must tell timing analyzer about multi-cycle requirement
+\end{example2}
+
+\subsection{False Paths}
+
+\begin{definition}{False Path}\\
+A false path is a timing path that can never be sensitized in actual circuit operation.
+
+\textbf{Examples:}
+\begin{itemize}
+    \item Asynchronous clock domain crossings (handled separately)
+    \item Test/debug paths not used in normal operation
+    \item Mutually exclusive paths
+    \item Configuration paths
+\end{itemize}
+
+\textbf{Purpose:}
+\begin{itemize}
+    \item Reduce unnecessary optimization effort
+    \item Improve tool runtime
+    \item Avoid over-constraining design
+\end{itemize}
+\end{definition}
+
+% TODO: Add images from SCD_7_timing2.pdf, Pages 13-18
+% Description: False path examples and identification
+% Priority: CRITICAL
+% Suggested filename: lecture07_false_paths_XX.png
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Clock Domain Crossing (CDC)}
+
+\begin{concept}{Clock Domain Crossing Challenges}\\
+When signals cross between different clock domains, special care is required:
+
+\textbf{Problems:}
+\begin{itemize}
+    \item Metastability risk
+    \item Timing analysis complexity
+    \item Data corruption possibility
+    \item Setup/hold violations likely
+\end{itemize}
+
+\textbf{Solutions:}
+\begin{itemize}
+    \item Synchronizer circuits (2-FF synchronizer)
+    \item Handshake protocols
+    \item Asynchronous FIFOs
+    \item Gray code counters
+\end{itemize}
+\end{concept}
+
+% TODO: Add images from SCD_7_timing2.pdf, Pages 19-28
+% Description: CDC problems and solutions
+% Priority: CRITICAL
+% Suggested filename: lecture07_cdc_XX.png
+
+\begin{definition}{Two-Flip-Flop Synchronizer}\\
+The standard solution for single-bit CDC:
+
+\textbf{Structure:}
+\begin{itemize}
+    \item Two flip-flops in series
+    \item Both clocked by destination domain clock
+    \item First FF may go metastable
+    \item Second FF resolves metastability
+\end{itemize}
+
+\textbf{MTBF (Mean Time Between Failures):}
+$$\text{MTBF} = \frac{e^{t_{res}/(τ)}}{f_{clk} \cdot f_{data} \cdot T_0}$$
+
+where:
+\begin{itemize}
+    \item $t_{res}$ = Resolution time available
+    \item $τ$ = FF time constant
+    \item $T_0$ = Window of vulnerability
+\end{itemize}
+\end{definition}
+
+\begin{KR}{Implementing Safe CDC}\\
+\textbf{For Single-Bit Signals:}
+\begin{enumerate}
+    \item Use 2-FF synchronizer in destination domain
+    \item Constrain as false path
+    \item Verify MTBF is acceptable
+    \item Add timing constraints to prevent optimization
+\end{enumerate}
+
+\textbf{For Multi-Bit Signals:}
+\begin{enumerate}
+    \item Use Gray code if counter/state
+    \item Use handshake protocol with ready/acknowledge
+    \item Use asynchronous FIFO for data streams
+    \item Never synchronize multi-bit buses directly!
+\end{enumerate}
+
+\textbf{For Control Signals:}
+\begin{enumerate}
+    \item Pulse stretching in source domain
+    \item Edge detection in destination domain
+    \item Handshake confirmation
+\end{enumerate}
+\end{KR}
+
+% TODO: Add images from SCD_7_timing2.pdf, Pages 29-35
+% Description: CDC implementation techniques
+% Priority: CRITICAL
+% Suggested filename: lecture07_cdc_impl_XX.png
+
+\subsection{Timing Constraints in Quartus}
+
+\begin{concept}{Synopsys Design Constraints (SDC)}\\
+Modern FPGA tools use SDC format for timing constraints:
+
+\textbf{Common Constraints:}
+\begin{itemize}
+    \item \texttt{create\_clock} - Define clock sources
+    \item \texttt{create\_generated\_clock} - Define derived clocks
+    \item \texttt{set\_input\_delay} - Input timing relative to clock
+    \item \texttt{set\_output\_delay} - Output timing relative to clock
+    \item \texttt{set\_false\_path} - Disable timing analysis
+    \item \texttt{set\_multicycle\_path} - Multi-cycle paths
+    \item \texttt{set\_max\_delay} - Maximum delay constraint
+    \item \texttt{set\_min\_delay} - Minimum delay constraint
+\end{itemize}
+\end{concept}
+
+% TODO: Add images from SCD_7_timing2.pdf, Pages 36-41
+% Description: SDC constraint examples and timing reports
+% Priority: CRITICAL
+% Suggested filename: lecture07_sdc_XX.png
+
+\begin{examplecode}{SDC Constraint Examples}\\
+\begin{lstlisting}[language=bash, style=base]
+# Define primary clocks
+create_clock -name clk_50 -period 20.000 [get_ports clk_50]
+create_clock -name clk_100 -period 10.000 [get_ports clk_100]
+
+# Define generated clock (PLL output)
+create_generated_clock -name clk_pll \
+    -source [get_pins pll_inst|inclk[0]] \
+    -multiply_by 2 \
+    [get_pins pll_inst|clk[0]]
+
+# Input delays (relative to external clock)
+set_input_delay -clock clk_50 -max 5.0 [get_ports data_in*]
+set_input_delay -clock clk_50 -min 2.0 [get_ports data_in*]
+
+# Output delays
+set_output_delay -clock clk_50 -max 8.0 [get_ports data_out*]
+set_output_delay -clock clk_50 -min 1.0 [get_ports data_out*]
+
+# False path for asynchronous reset
+set_false_path -from [get_ports rst_n]
+
+# Multi-cycle path (2 cycles for multiply operation)
+set_multicycle_path -from [get_registers mult_stage1*] \
+    -to [get_registers mult_result*] -setup 2
+set_multicycle_path -from [get_registers mult_stage1*] \
+    -to [get_registers mult_result*] -hold 1
+
+# CDC constraints
+set_false_path -from [get_clocks clk_50] \
+    -to [get_clocks clk_100]
+\end{lstlisting}
+\end{examplecode}
+
+\begin{highlight}{Timing Closure Strategy}\\
+\textbf{Iterative Process:}
+\begin{enumerate}
+    \item Apply timing constraints
+    \item Run compilation
+    \item Analyze timing reports
+    \item Identify violations
+    \item Optimize critical paths:
+    \begin{itemize}
+        \item Pipeline long paths
+        \item Reduce logic levels
+        \item Use faster resources
+        \item Add registers
+        \item Optimize placement
+    \end{itemize}
+    \item Re-compile and verify
+    \item Repeat until timing met
+\end{enumerate}
+\end{highlight}
+
+\begin{remark}
+Proper timing constraints are essential for reliable FPGA designs. Always verify that all clocks are constrained and timing reports show positive slack on all paths. Unconstrained paths may work in one compilation but fail in another.
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 41
+% CRITICAL priority: 32
+% IMPORTANT priority: 7
+% SUPPLEMENTARY priority: 2
+%
+% Quick extraction checklist:
+% [ ] [SCD_7_timing2.pdf, Pages 1-41] - Complete timing analysis part 2 content
+% =====================
