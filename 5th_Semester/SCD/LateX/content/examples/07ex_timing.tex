@@ -1,0 +1,978 @@
+\section{Exercise: Timing Constraints}
+
+\begin{remark}
+\textbf{Quiz Format:} Multiple choice
+\textbf{Score:} 5.00 von 5.00 (100\%)
+\textbf{Duration:} 6 Minutes 21 Seconds
+\textbf{Topics Covered:} Temperature effects on timing, clock frequency limitations, setup and hold time analysis, timing diagrams, clock domain crossing
+\end{remark}
+
+\subsection{Temperature Effects on Timing}
+
+\begin{example2}{Multiple Choice - Temperature and Timing Slack}\\
+\textbf{Source:} Exercise Timing Constraints, Question 1 (Page 1)
+
+\textbf{Topics:} Temperature effects, timing slack, setup time, hold time
+
+\textbf{Question:}
+
+% TODO: Add image from 07a_Timing_Constraints.pdf, Page 1
+% Description: Circuit diagram showing Launch FF (D Q with Launch Clock), Logic cloud (Q1), and Latch FF (D Q with Latch Clock), with signals D1, D2, IQ marked. CLK signal shown at bottom.
+% Priority: CRITICAL
+% Suggested filename: exercise07a_launch_latch_circuit.png
+\\
+% \includegraphics[width=0.8\linewidth]{exercise07a_launch_latch_circuit.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Which statement is true for the schematic above? (Several answers may be correct)
+
+Select one or more answers:
+\begin{itemize}
+    \item a. At high temperatures the circuit can be operated at higher clock frequencies
+    \item b. At high temperatures the slack at hold time checks gets larger
+    \item c. At low temperatures the slack at setup checks gets larger
+    \item d. At high temperatures the slack at hold time checks gets smaller
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:} 
+\begin{itemize}
+    \item b. At high temperatures the slack at hold time checks gets larger
+    \item c. At low temperatures the slack at setup checks gets larger
+\end{itemize}
+
+\textbf{Explanation:}
+
+Die richtigen Antworten sind: At high temperatures the slack at hold time checks gets larger, At low temperatures the slack at setup checks gets larger
+
+\textbf{Temperature Effects on Digital Circuits:}
+
+\textbf{General principle:}
+\begin{itemize}
+    \item Higher temperature → Slower transistors → Longer delays
+    \item Lower temperature → Faster transistors → Shorter delays
+    \item This affects both logic delays and flip-flop timing parameters
+\end{itemize}
+
+\textbf{Option a - WRONG: "At high temperatures... higher clock frequencies"}
+\begin{itemize}
+    \item FALSE: Higher temperatures slow down circuits
+    \item Longer delays reduce maximum achievable frequency
+    \item Critical paths take longer to resolve
+    \item Must reduce clock frequency or risk timing violations
+\end{itemize}
+
+\textbf{Option b - CORRECT: "At high temperatures slack at hold time checks gets larger"}
+\begin{itemize}
+    \item TRUE: Hold time checks benefit from slower operation
+    \item Hold time equation: $t_{slack,hold} = t_{arrival} - t_{required}$
+    \item At high temp: Data arrives later (longer logic delay)
+    \item But hold requirement stays constant
+    \item Result: More slack (safer for hold time)
+    \item Data changes more slowly, staying stable longer
+\end{itemize}
+
+\textbf{Option c - CORRECT: "At low temperatures slack at setup checks gets larger"}
+\begin{itemize}
+    \item TRUE: Setup time checks benefit from faster operation
+    \item Setup time equation: $t_{slack,setup} = t_{required} - t_{arrival}$
+    \item At low temp: Data arrives earlier (shorter logic delay)
+    \item Clock period requirement stays the same
+    \item Result: More slack (safer for setup time)
+    \item More time available before clock edge
+\end{itemize}
+
+\textbf{Option d - WRONG: "At high temperatures slack at hold time checks gets smaller"}
+\begin{itemize}
+    \item FALSE: This is opposite of reality
+    \item High temperatures actually increase hold slack
+    \item Slower operation makes hold timing easier, not harder
+\end{itemize}
+
+\textbf{Summary of Temperature Effects:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Condition} & \textbf{Setup Timing} & \textbf{Hold Timing} \\
+\hline
+High Temp (Slow) & Worse (less slack) & Better (more slack) \\
+Low Temp (Fast) & Better (more slack) & Worse (less slack) \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Design implications:}
+\begin{itemize}
+    \item Must check timing across full temperature range
+    \item Setup: Worst at high temperature (slow corner)
+    \item Hold: Worst at low temperature (fast corner)
+    \item Multi-corner timing analysis essential
+    \item Typical corners: Fast/Slow process, High/Low voltage, High/Low temperature
+\end{itemize}
+
+\important{Problem type:} Analysis - Understanding temperature effects on digital timing
+\end{example2}
+
+\subsection{Maximum Clock Frequency Limitations}
+
+\begin{example2}{Multiple Choice - Clock Frequency Failures}\\
+\textbf{Source:} Exercise Timing Constraints, Question 2 (Page 2)
+
+\textbf{Topics:} Clock frequency, timing violations, constraints, resource utilization
+
+\textbf{Question:}
+
+What could be the cause if the maximum clock frequency is not reached?
+
+Select one or more answers:
+\begin{itemize}
+    \item A. The FPGA is operated too cold
+    \item B. Complex Logic, too many logic cells are cascaded
+    \item C. The device is utilized up to 90\% and the maximum clock frequency is constraint to a high value
+    \item D. The logic cells were placed too distand
+    \item E. The operating voltage is at the upper limit
+    \item F. Timing constraints for the particular clock were not assigned
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item B. Complex Logic, too many logic cells are cascaded
+    \item C. The device is utilized up to 90\% and the maximum clock frequency is constraint to a high value
+    \item D. The logic cells were placed too distand
+    \item F. Timing constraints for the particular clock were not assigned
+\end{itemize}
+
+\textbf{Explanation:}
+
+Die richtigen Antworten sind: The device is utilized up to 90\% and the maximum clock frequency is constraint to a high value, Timing constraints for the particular clock were not assigned, Complex Logic, too many logic cells are cascaded, The logic cells were placed too distand
+
+\textbf{Analysis of Each Option:}
+
+\textbf{A - WRONG: "FPGA is operated too cold"}
+\begin{itemize}
+    \item Cold operation makes circuits faster, not slower
+    \item Would actually help achieve higher frequencies
+    \item Not a cause of frequency limitation
+\end{itemize}
+
+\textbf{B - CORRECT: "Complex Logic, too many logic cells are cascaded"}
+\begin{itemize}
+    \item Long combinational paths are primary frequency limiters
+    \item Each LUT adds delay (typically 0.2-1 ns)
+    \item Deep logic trees create critical paths
+    \item Example: 10 cascaded LUTs might add 5-10 ns delay
+    \item Solution: Pipeline the design (add registers)
+\end{itemize}
+
+\textbf{C - CORRECT: "Device utilized up to 90\%... high constraint"}
+\begin{itemize}
+    \item High utilization limits placement options
+    \item Placer cannot optimize for timing effectively
+    \item Aggressive timing constraints may be unachievable
+    \item Congestion increases routing delays
+    \item Trade-off between area and performance
+    \item Solution: Reduce utilization or relax constraints
+\end{itemize}
+
+\textbf{D - CORRECT: "Logic cells were placed too distand" [distant]}
+\begin{itemize}
+    \item Long routing distances add significant delay
+    \item Wire delays dominate in modern FPGAs
+    \item Poor floorplanning increases critical path lengths
+    \item Solution: Better placement constraints, floorplanning
+    \item Use LOC constraints for critical logic
+\end{itemize}
+
+\textbf{E - WRONG: "Operating voltage is at the upper limit"}
+\begin{itemize}
+    \item Higher voltage makes circuits faster
+    \item Increases drive strength and reduces delays
+    \item Would help achieve higher frequency, not hinder
+\end{itemize}
+
+\textbf{F - CORRECT: "Timing constraints... not assigned"}
+\begin{itemize}
+    \item Without constraints, tools don't optimize for timing
+    \item Synthesis/PAR tools prioritize area over speed
+    \item No timing goals means arbitrary placement/routing
+    \item Essential to define clock constraints
+    \item Use: create\_clock, set\_input\_delay, set\_output\_delay
+\end{itemize}
+
+\textbf{Common Causes of Frequency Limitations:}
+
+\begin{enumerate}
+    \item \textbf{Logic depth:} Too many levels of combinational logic
+    \item \textbf{Routing congestion:} High utilization or poor floorplan
+    \item \textbf{Missing constraints:} Tools don't know timing requirements
+    \item \textbf{Inadequate pipelining:} Long paths without registers
+    \item \textbf{Suboptimal synthesis:} Need to tune synthesis settings
+    \item \textbf{Cross-clock-domain paths:} Unconstrained or poorly handled
+\end{enumerate}
+
+\textbf{Solutions:}
+\begin{itemize}
+    \item Add pipeline stages (registers) in critical paths
+    \item Improve floorplanning and placement
+    \item Define proper timing constraints
+    \item Reduce design utilization
+    \item Optimize synthesis settings
+    \item Use timing-driven compilation
+\end{itemize}
+
+\important{Problem type:} Analysis - Identifying causes of timing failures in FPGA designs
+\end{example2}
+
+\subsection{Clock Domain Crossing Behavior}
+
+\begin{example2}{Multiple Choice - CDC Timing Diagram Analysis}\\
+\textbf{Source:} Exercise Timing Constraints, Question 3 (Page 3)
+
+\textbf{Topics:} Clock domain crossing, flip-flop timing, metastability
+
+\textbf{Question:}
+
+% TODO: Add image from 07a_Timing_Constraints.pdf, Page 3
+% Description: Circuit showing FF1 (50MHz Clock) and FF2 (33MHz Clock) with timing diagrams for CLK, waveforms A, B, C showing different signal behaviors (sharp transitions, gradual transitions, oscillations)
+% Priority: CRITICAL
+% Suggested filename: exercise07a_cdc_timing.png
+\\
+% \includegraphics[width=0.9\linewidth]{exercise07a_cdc_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+The following time diagram shows the behavior of the Q output of FF2. Which statement is correct?
+
+Select one or more answers:
+\begin{itemize}
+    \item The circuit probably behaves as in A) when the switch is in position "1"
+    \item When the timing requirements of Flip-Flops are met, slower Flip-Flops behave like B), faster Flip-Flops behave like C)
+    \item If the switch is in position 0, the data is synchronized with the 50 MHz clock
+    \item The circuit probably behaves as in B) or C) if the switch is in position "0"
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item The circuit probably behaves as in B) or C) if the switch is in position "0"
+    \item The circuit probably behaves as in A) when the switch is in position "1"
+\end{itemize}
+
+\textbf{Explanation:}
+
+Die richtigen Antworten sind: The circuit probably behaves as in B) or C) if the switch is in position "0", The circuit probably behaves as in A) when the switch is in position "1"
+
+\textbf{Circuit Analysis:}
+
+\textbf{Configuration:}
+\begin{itemize}
+    \item FF1: Clocked at 50 MHz
+    \item FF2: Clocked at 33 MHz
+    \item Switch selects input to FF2: Position "1" = synchronized, Position "0" = async CDC
+\end{itemize}
+
+\textbf{Position "1" - Synchronized Path:}
+\begin{itemize}
+    \item Data properly synchronized before FF2
+    \item Setup and hold times are met
+    \item Clean clock domain crossing
+    \item Result: Waveform A - clean, deterministic transitions
+    \item No metastability issues
+\end{itemize}
+
+\textbf{Position "0" - Asynchronous CDC:}
+\begin{itemize}
+    \item Direct clock domain crossing (50 MHz → 33 MHz)
+    \item Timing requirements may be violated
+    \item Risk of setup/hold violations
+    \item Can enter metastable state
+\end{itemize}
+
+\textbf{Waveform Analysis:}
+
+\textbf{Waveform A:} Clean transitions
+\begin{itemize}
+    \item Sharp, well-defined edges
+    \item Proper synchronization
+    \item Occurs when switch in position "1"
+    \item Timing requirements satisfied
+\end{itemize}
+
+\textbf{Waveform B:} Slow transition
+\begin{itemize}
+    \item Gradual rise/fall
+    \item Indicates slower settling
+    \item Possible with async CDC (position "0")
+    \item Flip-flop took longer to resolve
+    \item Still eventually settles to valid logic level
+\end{itemize}
+
+\textbf{Waveform C:} Oscillation/ringing
+\begin{itemize}
+    \item Multiple transitions before settling
+    \item Classic metastability behavior
+    \item Can occur with async CDC (position "0")
+    \item Timing violation caused metastable state
+    \item Eventually resolves but with unpredictable delay
+\end{itemize}
+
+\textbf{Metastability Explanation:}
+
+When setup/hold times are violated:
+\begin{enumerate}
+    \item Flip-flop internal nodes enter undefined state
+    \item Output voltage hovers near threshold
+    \item Small noise can push output either direction
+    \item Results in slow resolution or oscillation
+    \item Resolution time is non-deterministic
+    \item Can violate timing in downstream logic
+\end{enumerate}
+
+\textbf{Clock Domain Crossing Best Practices:}
+
+\begin{itemize}
+    \item \textbf{Never cross clocks asynchronously}
+    \item Use synchronizer chains (2+ flip-flops)
+    \item Apply proper constraints (set\_false\_path, set\_max\_delay)
+    \item Use handshaking or FIFOs for data buses
+    \item Accept that first synchronizer can go metastable
+    \item Second synchronizer resolves before downstream logic
+    \item MTBF (Mean Time Between Failures) improves exponentially with sync stages
+\end{itemize}
+
+\textbf{Why the other options are wrong:}
+
+\begin{itemize}
+    \item "Synchronized with 50 MHz clock": FF2 is clocked at 33 MHz, not 50 MHz
+    \item "Slower flip-flops behave like B), faster like C)": Behavior depends on timing violations, not flip-flop speed. Both B and C indicate metastability.
+\end{itemize}
+
+\important{Problem type:} Analysis - Understanding clock domain crossing and metastability effects
+\end{example2}
+
+\subsection{Setup Time Analysis}
+
+\begin{example2}{Multiple Choice - Launch-to-Latch Timing}\\
+\textbf{Source:} Exercise Timing Constraints, Question 4 (Page 4)
+
+\textbf{Topics:} Setup time, launching edge, latching edge, arrival time, required time
+
+\textbf{Question:}
+
+% TODO: Add image from 07a_Timing_Constraints.pdf, Page 4
+% Description: Timing diagram showing Launch Clock with "Launching Edge", Latch Clock with "Latching Edge" and "Clock Period - Latching FF-Setup", Data signal showing transition from n to n+1, with timing markers A (Launching FF CLKQ), B, and C (Clock Period - Latching FF-Setup)
+% Priority: CRITICAL
+% Suggested filename: exercise07a_setup_timing.png
+\\
+% \includegraphics[width=0.9\linewidth]{exercise07a_setup_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Which statements apply to the above drawing?
+
+Select one or more answers:
+\begin{itemize}
+    \item This is a hold time analysis
+    \item This is a setup time analysis
+    \item "C" is the Arrival time
+    \item "C" is the Required time
+    \item "B" is the Slack
+    \item "A" is the Arrival time
+    \item "A" is the Required time
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item This is a setup time analysis
+    \item "B" is the Slack
+    \item "C" is the Required time
+    \item "A" is the Arrival time
+\end{itemize}
+
+\textbf{Explanation:}
+
+Die Antwort ist richtig
+
+Die richtigen Antworten sind: This is a setup time analysis, "B" is the Slack, "C" is the Required time, "A" is the Arrival time
+
+\textbf{Setup Time Analysis Fundamentals:}
+
+\textbf{Definition:}
+\begin{itemize}
+    \item Setup time: Data must be stable BEFORE clock edge
+    \item Checks if data arrives early enough
+    \item Analysis from launching edge to latching edge
+    \item Covers one full clock cycle (or more for multi-cycle paths)
+\end{itemize}
+
+\textbf{This is a SETUP time analysis:}
+\begin{itemize}
+    \item Diagram shows launching edge to latching edge
+    \item Full clock period is considered
+    \item Data must arrive before latch clock edge
+    \item Hold time would analyze same edge or next edge
+\end{itemize}
+
+\textbf{Timing Parameters Identified:}
+
+\textbf{"A" is the Arrival Time:}
+\begin{itemize}
+    \item Starts at launching flip-flop clock edge
+    \item Includes: $t_{CLK→Q}$ + $t_{logic}$ + $t_{routing}$
+    \item When data actually arrives at destination FF
+    \item Measured from launch clock edge
+    \item Example: Launch at 0 ns, data arrives at 4.5 ns → Arrival = 4.5 ns
+\end{itemize}
+
+\textbf{"C" is the Required Time:}
+\begin{itemize}
+    \item Latest time data can arrive and still meet setup
+    \item Calculated as: Clock Period - Setup Time
+    \item Example: 20 ns period, 0.5 ns setup → Required = 19.5 ns
+    \item Data must arrive before this time
+    \item Defines the deadline
+\end{itemize}
+
+\textbf{"B" is the Slack:}
+\begin{itemize}
+    \item Difference between required and arrival
+    \item Slack = Required Time - Arrival Time
+    \item Slack = C - A
+    \item Positive slack: Timing is met (good)
+    \item Negative slack: Timing violation (bad)
+    \item Zero slack: Just barely meets timing
+\end{itemize}
+
+\textbf{Setup Time Equation:}
+
+\[
+t_{slack,setup} = t_{required} - t_{arrival}
+\]
+
+\[
+t_{slack,setup} = (T_{clk} - t_{setup}) - (t_{CLK→Q} + t_{logic} + t_{routing})
+\]
+
+Where:
+\begin{itemize}
+    \item $T_{clk}$: Clock period
+    \item $t_{setup}$: Setup time requirement of latch FF
+    \item $t_{CLK→Q}$: Clock-to-output delay of launch FF
+    \item $t_{logic}$: Combinational logic delay
+    \item $t_{routing}$: Interconnect delay
+\end{itemize}
+
+\textbf{Example Calculation:}
+
+Assume:
+\begin{itemize}
+    \item Clock period = 10 ns (100 MHz)
+    \item Launch FF $t_{CLK→Q}$ = 0.5 ns
+    \item Logic delay = 3.0 ns
+    \item Routing delay = 0.5 ns
+    \item Latch FF setup time = 0.3 ns
+\end{itemize}
+
+\begin{enumerate}
+    \item Arrival Time (A) = 0.5 + 3.0 + 0.5 = 4.0 ns
+    \item Required Time (C) = 10.0 - 0.3 = 9.7 ns
+    \item Slack (B) = 9.7 - 4.0 = 5.7 ns (positive, timing met!)
+\end{enumerate}
+
+\textbf{Why other options are wrong:}
+
+\begin{itemize}
+    \item \textbf{NOT hold time analysis:} Hold checks same edge or immediate next edge, this shows full period
+    \item \textbf{"C" is NOT arrival:} C represents the deadline, not when data arrives
+    \item \textbf{"A" is NOT required:} A represents actual arrival, not the requirement
+\end{itemize}
+
+\important{Problem type:} Analysis - Understanding setup time analysis and timing terminology
+\end{example2}
+
+\subsection{Hold Time Analysis}
+
+\begin{example2}{Multiple Choice - Hold Time Diagram}\\
+\textbf{Source:} Exercise Timing Constraints, Question 5 (Page 5)
+
+\textbf{Topics:} Hold time, timing analysis, arrival time, required time, slack
+
+\textbf{Question:}
+
+% TODO: Add image from 07a_Timing_Constraints.pdf, Page 5
+% Description: Timing diagram showing Launch Clock with "Launching Edge", Latch Clock with "Latching Edge" and "Launching FF CLKQ", Data signal transition from n to n+1, with timing markers A (Latching FF-Hold), B, and C
+% Priority: CRITICAL
+% Suggested filename: exercise07a_hold_timing.png
+\\
+% \includegraphics[width=0.9\linewidth]{exercise07a_hold_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Which statements apply to the above drawing?
+
+Select one or more answers:
+\begin{itemize}
+    \item This is a setup analysis
+    \item This is a hold time analysis
+    \item "A" is the Arrival time
+    \item "B" is the Slack
+    \item "A" is the Required time
+    \item "C" is the Arrival Time
+    \item "B" is the Required Time
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item This is a hold time analysis
+    \item "B" is the Slack
+    \item "A" is the Required time
+    \item "C" is the Arrival Time
+\end{itemize}
+
+\textbf{Explanation:}
+
+Die Antwort ist richtig
+
+Die richtigen Antworten sind: This is a hold time analysis, "B" is the Slack, "C" is the Arrival Time, "A" is the Required time
+
+\textbf{Hold Time Analysis Fundamentals:}
+
+\textbf{Definition:}
+\begin{itemize}
+    \item Hold time: Data must remain stable AFTER clock edge
+    \item Checks if data stays stable long enough
+    \item Analysis from latching edge to data change
+    \item Typically checks same clock edge or very shortly after
+\end{itemize}
+
+\textbf{This is a HOLD time analysis:}
+\begin{itemize}
+    \item Diagram shows latching edge to next data change
+    \item Short time window (not full clock period)
+    \item Focus on data stability after capture
+    \item Labeled "Latching FF-Hold" confirms this
+\end{itemize}
+
+\textbf{Timing Parameters Identified:}
+
+\textbf{"A" is the Required Time (Hold Requirement):}
+\begin{itemize}
+    \item Minimum time data must remain stable
+    \item Hold time requirement of latching flip-flop
+    \item Measured from latching clock edge
+    \item Defines minimum delay needed
+    \item Typically 0-0.5 ns in modern FPGAs
+\end{itemize}
+
+\textbf{"C" is the Arrival Time:}
+\begin{itemize}
+    \item When new data actually arrives
+    \item Includes: $t_{CLK→Q}$ + $t_{logic}$ + $t_{routing}$ of shortest path
+    \item Measured from latching clock edge
+    \item Must be longer than hold requirement
+    \item For hold: Want LONGER paths (opposite of setup!)
+\end{itemize}
+
+\textbf{"B" is the Slack:}
+\begin{itemize}
+    \item Difference between arrival and required
+    \item Slack = Arrival Time - Required Time (note: different from setup!)
+    \item Slack = C - A
+    \item Positive slack: Hold time met
+    \item Negative slack: Hold violation
+\end{itemize}
+
+\textbf{Hold Time Equation:}
+
+\[
+t_{slack,hold} = t_{arrival} - t_{required}
+\]
+
+\[
+t_{slack,hold} = (t_{CLK→Q} + t_{logic} + t_{routing}) - t_{hold}
+\]
+
+Where:
+\begin{itemize}
+    \item $t_{CLK→Q}$: Clock-to-output delay of launch FF
+    \item $t_{logic}$: Combinational logic delay (shortest path!)
+    \item $t_{routing}$: Interconnect delay (shortest path!)
+    \item $t_{hold}$: Hold time requirement of latch FF
+\end{itemize}
+
+\textbf{Key Differences from Setup:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Aspect} & \textbf{Setup} & \textbf{Hold} \\
+\hline
+Time window & Full clock period & Single edge \\
+Slack formula & Required - Arrival & Arrival - Required \\
+Path length & Want shorter & Want longer \\
+Fix with delay & No (makes worse) & Yes (helps) \\
+Temperature effect & Worst at hot & Worst at cold \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Example Calculation:}
+
+Assume:
+\begin{itemize}
+    \item Launch FF $t_{CLK→Q}$ = 0.4 ns
+    \item Logic delay (minimum) = 0.2 ns
+    \item Routing delay (minimum) = 0.1 ns
+    \item Latch FF hold time = 0.3 ns
+\end{itemize}
+
+\begin{enumerate}
+    \item Arrival Time (C) = 0.4 + 0.2 + 0.1 = 0.7 ns
+    \item Required Time (A) = 0.3 ns (hold requirement)
+    \item Slack (B) = 0.7 - 0.3 = 0.4 ns (positive, timing met!)
+\end{enumerate}
+
+\textbf{Hold Violation Fixes:}
+
+If hold time is violated (negative slack):
+\begin{itemize}
+    \item Add delay buffers/cells in data path
+    \item Increase routing delay (opposite of setup fix!)
+    \item Cannot fix by changing clock period
+    \item May need to prevent aggressive optimization
+    \item Use explicit delay constraints
+\end{itemize}
+
+\textbf{Why other options are wrong:}
+
+\begin{itemize}
+    \item \textbf{NOT setup analysis:} Short time window, not full period
+    \item \textbf{"A" is NOT arrival:} A is the requirement (hold time)
+    \item \textbf{"C" is NOT required:} C is when data actually changes
+    \item \textbf{"B" is NOT required:} B is the slack (difference)
+\end{itemize}
+
+\important{Problem type:} Analysis - Understanding hold time analysis and timing parameter relationships
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+% ===== IMAGE SUMMARY =====
+% Images needed for this exercise:
+% 1. exercise07a_launch_latch_circuit.png (Page 1) - CRITICAL - Launch/Latch FF circuit
+% 2. exercise07a_cdc_timing.png (Page 3) - CRITICAL - Clock domain crossing timing with waveforms A, B, C
+% 3. exercise07a_setup_timing.png (Page 4) - CRITICAL - Setup time analysis diagram
+% 4. exercise07a_hold_timing.png (Page 5) - CRITICAL - Hold time analysis diagram
+% =====================
+
+\section{Exercise: Timing Analysis}
+
+\begin{remark}
+\textbf{Quiz Format:} Analysis of timing diagrams and spreadsheets
+\textbf{Score:} 6.00 von 6.00 (100\%)
+\textbf{Topics Covered:} FPGA timing analysis, setup and hold time, timing paths, clock periods, delay calculations
+\end{remark}
+
+\subsection{FPGA Timing Analysis 1}
+
+\begin{example2}{Calculation - Setup Time Analysis from Timing Report}\\
+\textbf{Source:} Exercise Timing Analysis, Question 1 (Pages 1)
+
+\textbf{Topics:} Setup time analysis, timing paths, clock network delay, data path delay
+
+\textbf{Question:}
+
+% TODO: Add image from 07b_Timing_Analysis.pdf, Page 1
+% Description: Complex timing analysis diagram showing FF-Extern, GPIO[30] (PIN_AE20), CLOCK_50 (PIN_Y2) in FPGA-FF block with LEDC, timing diagram with Launch Clock Latent, Latch Clock, Data Arrival, Data Delay, Data Setup, Slack, Data Required, Clock Delay, and Jitter. Below are two data tables: "Data Arrival Path" with columns Total, Incr, RF, Type, Fanout, Location, Element showing launch edge time, clock path, clock network delay, GPIO[30]~input entries; and "Data Required Path" showing latch edge time, clock path, source latency, CLOCK_50, clock network delay entries with various timing values and locations like IOBUF_X95_Y0_N22, LECOMB_X35_Y43_N28, FF_X35_Y43_N29, PIN_Y2, CLKCTRL_G4
+% Priority: CRITICAL  
+% Suggested filename: exercise07b_timing_analysis_1.png
+\\
+% \includegraphics[width=\linewidth]{exercise07b_timing_analysis_1.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Look at the timing analysis spreadsheet and timing diagram to answer the following questions:
+
+\textbf{a)} Does the timing diagram above show a setup or hold-time analysis?
+
+\textbf{b)} What is the clock period in the analysis (ns)?
+
+\textbf{c)} What is the delay contribution of the clock network of the arrival path? (ns)
+
+\textbf{d)} What is the delay contribution between the entry of the input pin AE20 up to the Latch Flip-Flop in the FPGA? (ns)
+
+\textbf{e)} What is the delay contribution of the clock path between the input of the CLOCK\_50 pin up to the clock input of the Latch Flip-Flop in the FPGA? (ns)
+
+\textbf{f)} What is the setup time value of the FPGA Flip-Flop? (ns)
+
+\tcblower
+
+\textbf{Correct Answers:}
+
+\textbf{a)} \textbf{Setup}
+
+This is a setup time analysis because it shows the full clock period and analyzes whether data arrives before the required time at the latching edge.
+
+\textbf{b)} Clock period: \textbf{20 ns}
+
+From the timing diagram and spreadsheet, the clock period (latch edge time) is 20.000 ns.
+
+\textbf{c)} Clock network delay of arrival path: \textbf{0 ns}
+
+The arrival path starts from an external input pin (GPIO[30]), not from a clocked flip-flop. Therefore, there is no clock network delay in the arrival path. The path goes directly from input pin through combinational logic to the destination.
+
+\textbf{d)} Delay from input pin AE20 to Latch FF: \textbf{6.702 ns}
+
+From the Data Arrival Path table:
+\begin{itemize}
+    \item Row 1: Launch edge time = 0.000
+    \item Row 2: Clock path = 0.000  
+    \item Row 3: Clock network delay = 0.000 (R - Rising edge)
+    \item Row 4: GPIO[30]~input = 3.000 ns (from IOBUF to data path)
+    \item Following rows show combinational logic delays
+    \item Total arrival = 6.702 ns (sum of all incremental delays)
+\end{itemize}
+
+\textbf{e)} Clock path delay from CLOCK\_50 pin to Latch FF clock input: \textbf{2.937 ns}
+
+From the Data Required Path table:
+\begin{itemize}
+    \item Row 1: Latch edge time = 20.000
+    \item Row 2: Clock path = 0.000
+    \item Row 3: Source latency = 0.000
+    \item Row 4: CLOCK\_50 entry = 0.000 (PIN\_Y2)
+    \item Row 5: Clock network delay to IOBUF = 0.704 ns
+    \item Row 6: Through CELL to CLKCTRL = 0.704 ns
+    \item Additional delays through clock network
+    \item Clock path delay = 2.937 ns (from pin to FF clock input)
+\end{itemize}
+
+\textbf{f)} Setup time of FPGA Flip-Flop: \textbf{0.018 ns}
+
+From the timing analysis, the setup time requirement is listed in the spreadsheet. Modern FPGA flip-flops typically have very small setup times (10-100 ps range). The value 0.018 ns = 18 ps is typical for advanced FPGA technology.
+
+\textbf{Detailed Timing Analysis Explanation:}
+
+\textbf{Setup Time Check Equation:}
+\[
+Slack = (T_{clk} + t_{clk,dest} - t_{setup}) - (t_{clk,src} + t_{logic} + t_{route})
+\]
+
+For this external input case:
+\begin{itemize}
+    \item Launch edge: 0 ns (external signal, arbitrary reference)
+    \item Data arrival: 6.702 ns (input pin delay + logic delay)
+    \item Latch edge: 20.000 ns (clock period)
+    \item Clock network to latch FF: 2.937 ns
+    \item Setup time: 0.018 ns
+    \item Required time: 20.000 - 2.937 - 0.018 = 17.045 ns (approximately)
+    \item Slack: 17.045 - 6.702 = positive slack (timing met!)
+\end{itemize}
+
+\textbf{Path Components:}
+
+\textbf{Data Arrival Path:}
+\begin{enumerate}
+    \item \textbf{Launch edge:} 0.000 ns (reference point)
+    \item \textbf{GPIO[30] input buffer:} 3.000 ns (IOBUF delay)
+    \item \textbf{Combinational logic:} Multiple LUTs and interconnect
+    \item \textbf{Total arrival:} 6.702 ns at latch FF input
+\end{enumerate}
+
+\textbf{Data Required Path:}
+\begin{enumerate}
+    \item \textbf{Latch edge:} 20.000 ns (clock period)
+    \item \textbf{CLOCK\_50 input:} 0.000 ns (enters at PIN\_Y2)
+    \item \textbf{Clock network:} Routes through CLKCTRL to FF
+    \item \textbf{Clock arrival at FF:} 2.937 ns after clock edge
+    \item \textbf{Setup requirement:} Additional 0.018 ns before clock
+    \item \textbf{Required time:} Must arrive by (20.000 - 2.937 - 0.018) ns
+\end{enumerate}
+
+\textbf{Key Observations:}
+
+\begin{itemize}
+    \item \textbf{External input:} No launching flip-flop, so no $t_{CLK→Q}$ delay
+    \item \textbf{Input delay constraint:} Should be specified with set\_input\_delay
+    \item \textbf{Clock skew:} 2.937 ns difference in clock arrival times
+    \item \textbf{Slack calculation:} Includes all path delays and clock skew
+\end{itemize}
+
+\important{Problem type:} Calculation - Extracting timing parameters from FPGA timing analysis reports
+\end{example2}
+
+\subsection{FPGA Timing Analysis 2}
+
+\begin{example2}{Calculation - Hold Time Analysis from Timing Report}\\
+\textbf{Source:} Exercise Timing Analysis, Question 2 (Page 2)
+
+\textbf{Topics:} Hold time analysis, minimum delays, clock network delays
+
+\textbf{Question:}
+
+% TODO: Add image from 07b_Timing_Analysis.pdf, Page 2
+% Description: Similar timing analysis diagram to previous, showing FPGA circuit with FF-Extern, GPIO[30], CLOCK_50, LEDC components, timing diagram showing Launch Clock Latent, Latch Clock, Data Arrival, Data Delay, Hold Relationship, Slack, Data Required, Clock Delay. Two data tables show Data Arrival Path and Data Required Path with timing values for various components and locations.
+% Priority: CRITICAL
+% Suggested filename: exercise07b_timing_analysis_2.png
+\\
+% \includegraphics[width=\linewidth]{exercise07b_timing_analysis_2.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Look at the timing analysis spreadsheet and timing diagram to answer the following questions:
+
+\textbf{a)} Is this a setup or hold-time analysis?
+
+\textbf{b)} What is the value defined for the "Input Delay" at the data input of the FPGA? (ns)
+
+\textbf{c)} How long is the clock path from the input of the CLOCK\_50 pin to the Latch Flip-Flop of in the FPGA? (ns)
+
+\textbf{d)} How long is the Required Path for FPGA Flip-Flop: (ns)
+
+\textbf{e)} What is the hold time value of the FPGA Flip-Flop? (ns)
+
+\tcblower
+
+\textbf{Correct Answers:}
+
+\textbf{a)} \textbf{Hold}
+
+This is a hold time analysis as indicated by the timing diagram label "Hold Relationship" and the short time window analyzed (not full clock period).
+
+\textbf{b)} Input Delay: \textbf{3 ns}
+
+From the Data Arrival Path table, the GPIO[30] input has an initial delay of 3.000 ns. This represents the set\_input\_delay constraint defining when external data is expected to arrive relative to the clock edge.
+
+\textbf{c)} Clock path from CLOCK\_50 to Latch FF clock input: \textbf{2.762 ns}
+
+From the Data Required Path table, tracing from PIN\_Y2 (CLOCK\_50) through the clock network:
+\begin{itemize}
+    \item CLOCK\_50 entry: 0.000 ns
+    \item Through IOBUF\_X0\_Y36\_N15: incremental delays
+    \item Through CLKCTRL\_G4: clock routing
+    \item Total clock path: 2.762 ns to reach FF clock input
+\end{itemize}
+
+\textbf{d)} Required Path for FPGA Flip-Flop: \textbf{2.933 ns}
+
+The Required Path in hold analysis represents the minimum time data must remain stable. From the spreadsheet:
+\begin{itemize}
+    \item This includes clock path delays
+    \item Plus the hold time requirement
+    \item Total Required Path: 2.933 ns
+\end{itemize}
+
+\textbf{e)} Hold time of FPGA Flip-Flop: \textbf{0.171 ns}
+
+From the timing analysis spreadsheet, the hold time requirement is 0.171 ns = 171 ps. This is the minimum time data must remain stable after the clock edge.
+
+\textbf{Detailed Hold Time Analysis:}
+
+\textbf{Hold Time Check Equation:}
+\[
+Slack = (t_{clk,src} + t_{logic} + t_{route}) - (t_{clk,dest} + t_{hold})
+\]
+
+For this analysis:
+\begin{itemize}
+    \item Data arrival: Minimum path delay from input
+    \item Clock arrival at latch FF: 2.762 ns
+    \item Hold requirement: 0.171 ns
+    \item Required time: 2.762 + 0.171 = 2.933 ns
+    \item Data must not change before this time
+\end{itemize}
+
+\textbf{Hold vs. Setup Analysis Comparison:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Setup (Q1)} & \textbf{Hold (Q2)} \\
+\hline
+Analysis type & Setup & Hold \\
+Clock period considered & Full (20 ns) & Single edge \\
+Path delays & Maximum & Minimum \\
+Timing window & Long & Short \\
+Setup time & 0.018 ns & N/A \\
+Hold time & N/A & 0.171 ns \\
+Clock path & 2.937 ns & 2.762 ns \\
+Input delay & Implicit & 3.000 ns \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Key Observations for Hold Analysis:}
+
+\begin{enumerate}
+    \item \textbf{Input delay:} 3 ns constraint defines when external data can change
+    \item \textbf{Minimum paths:} Hold uses shortest delays (opposite of setup)
+    \item \textbf{Clock skew:} Can help or hurt depending on direction
+    \item \textbf{Hold violations:} Cannot be fixed by changing clock frequency
+    \item \textbf{Typical fixes:} Add delay cells, adjust placement, modify routing
+\end{enumerate}
+
+\textbf{Clock Network Analysis:}
+
+The clock path (2.762 ns) includes:
+\begin{itemize}
+    \item Input buffer delay (IOBUF)
+    \item Global clock buffer (CLKCTRL)
+    \item Clock tree routing to destination FF
+    \item Local clock distribution
+\end{itemize}
+
+\textbf{Input Delay Constraint:}
+
+The 3 ns input delay means:
+\begin{itemize}
+    \item External device has up to 3 ns after its clock edge to provide valid data
+    \item FPGA must account for this in timing analysis
+    \item Specified with: \texttt{set\_input\_delay 3 -clock CLOCK\_50 [get\_ports GPIO[30]]}
+    \item Critical for interfacing with external chips
+\end{itemize}
+
+\textbf{Hold Time Requirements:}
+
+Hold time of 0.171 ns (171 ps) means:
+\begin{itemize}
+    \item Data must remain stable for 171 ps after clock edge
+    \item Relatively large for modern FPGAs (typical: 0-100 ps)
+    \item May include some margin for uncertainty
+    \item Critical for high-speed interfaces
+\end{itemize}
+
+\textbf{Slack Analysis:}
+
+For hold timing:
+\[
+Slack = Arrival - Required = Arrival - (Clock + Hold)
+\]
+
+\begin{itemize}
+    \item Positive slack: Hold constraint met
+    \item Negative slack: Hold violation (data changes too soon)
+    \item Zero slack: Just meets timing (marginal)
+\end{itemize}
+
+\important{Problem type:} Calculation - Analyzing hold time from FPGA timing reports
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+% ===== IMAGE SUMMARY =====
+% Images needed for this exercise:
+% 1. exercise07b_timing_analysis_1.png (Page 1) - CRITICAL - Complete timing analysis with diagram and data tables for setup analysis
+% 2. exercise07b_timing_analysis_2.png (Page 2) - CRITICAL - Complete timing analysis with diagram and data tables for hold analysis
+% =====================

@@ -1,0 +1,911 @@
+\section{Exercise: GPIO Components (Part A)}
+
+\begin{remark}
+\textbf{Quiz Format:} Diagram labeling
+\textbf{Score:} 2.00 von 2.00 (100\%)
+\textbf{Topics Covered:} GPIO components, drivers, registers, delays, termination, pull-up resistors, bus-hold circuits
+\end{remark}
+
+\subsection{GPIO Drivers}
+
+\begin{example2}{Diagram Labeling - Buffer/Driver Identification}\\
+\textbf{Source:} Exercise GPIO Components, Question 1 (Page 1)
+
+\textbf{Topics:} GPIO drivers, buffers, output amplification, input triggering
+
+\textbf{Question:}
+
+To drive an electrical lane to a certain voltage level, you need a buffercircuit. For output, it is basically an amplifier to make sure that the correct voltage level is reached. For input, it is a trigger circuit that checks for a specific voltage level.
+
+The symbol for a buffer looks like this, with the input on the left and the output on the right:
+
+% TODO: Add image from 05a_GPIO.pdf, Page 1 - Buffer symbol (triangle)
+% Description: Simple buffer/amplifier symbol showing triangle with input on left, output on right
+% Priority: SUPPLEMENTARY
+% Suggested filename: exercise05a_buffer_symbol.png
+
+Hint: the connection to the physical pin on the device is shown with the following symbol:
+
+% TODO: Add image from 05a_GPIO.pdf, Page 1 - Pin connection symbol  
+% Description: Diamond-shaped symbol representing physical pin connection
+% Priority: SUPPLEMENTARY
+% Suggested filename: exercise05a_pin_symbol.png
+
+% TODO: Add image from 05a_GPIO.pdf, Page 1 - Complete GPIO schematic
+% Description: Complete GPIO pin schematic showing From Core signals (OE from Core, Write Data from Core, cNout, Read Data to Core), Half Data Rate Blocks, PRN flip-flops, multiplexers, buffers, DDG Logic Block with D5_OCT and Dynamic OCT Control, VCCIO connections, Optional PCI Clamp, Output Buffer, Input Buffer, Open Drain configuration, and external connection with resistor. Multiple X marks indicating where labels should be placed.
+% Priority: CRITICAL
+% Suggested filename: exercise05a_gpio_drivers.png
+\\
+% \includegraphics[width=\linewidth]{exercise05a_gpio_drivers.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+On the following image, place the given labels on the correct buffer. The possible spots are marked with a large red X, make sure the label's crosshair is positioned over the X to allow for correct automatic marking.
+
+\tcblower
+
+\textbf{Solution:}
+
+Your answer is correct.
+
+\textbf{Explanation:}
+
+The GPIO pin structure contains several key buffer/driver components:
+
+\begin{itemize}
+    \item \textbf{Output Buffer:} Amplifies the signal from the FPGA core to drive external loads. Located in the output path before the physical pin. Ensures the signal has sufficient drive strength to reach correct logic levels on the PCB traces and external devices.
+    
+    \item \textbf{Input Buffer:} Trigger circuit that detects and conditions incoming signals from the external pin. Converts potentially noisy or weak external signals into clean internal logic levels. Provides hysteresis to prevent oscillation on slow-rising edges.
+    
+    \item The buffers are strategically placed:
+    \begin{itemize}
+        \item Output buffer: Between internal logic and external pin (drive capability)
+        \item Input buffer: Between external pin and internal logic (noise immunity)
+    \end{itemize}
+\end{itemize}
+
+\important{Problem type:} Application - Understanding GPIO buffer placement and function in I/O architecture
+\end{example2}
+
+\subsection{GPIO Registers}
+
+\begin{example2}{Diagram Labeling - Register Identification}\\
+\textbf{Source:} Exercise GPIO Components, Question 2 (Page 2)
+
+\textbf{Topics:} Registers, data storage, PRN flip-flops, GPIO state
+
+\textbf{Question:}
+
+To store the desired output value, or to keep the input value, registers are added to the GPIO port.
+
+% TODO: Add image from 05a_GPIO.pdf, Page 2 - PRN flip-flop symbol
+% Description: PRN D Q flip-flop symbol with D input, Q output, and clock/preset/reset signals
+% Priority: SUPPLEMENTARY
+% Suggested filename: exercise05a_prn_flipflop.png
+
+% TODO: Add image from 05a_GPIO.pdf, Page 2 - GPIO schematic with registers
+% Description: Complete GPIO schematic similar to previous, but with "Output Enable Register", "Output Register", and "Input Register" labels marked with X's showing where they should be placed in the circuit
+% Priority: CRITICAL
+% Suggested filename: exercise05a_gpio_registers.png
+\\
+% \includegraphics[width=\linewidth]{exercise05a_gpio_registers.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+On the following image, place the given labels on the corresponding register. Use the labels that were left in the schematic to determine the function of the registers.
+
+The possible spots are marked with a large red X, make sure the label's crosshair is positioned over the X to allow for correct automatic marking.
+
+\tcblower
+
+\textbf{Solution:}
+
+Your answer is partially correct.
+
+Sie haben 2 richtig ausgewählt. (You have selected 2 correctly.)
+
+\textbf{Explanation:}
+
+The GPIO port contains three main register types:
+
+\begin{itemize}
+    \item \textbf{Output Enable Register:} Controls whether the pin is configured as an output (tri-state control). When enabled, allows the output buffer to drive the pin. When disabled, the output buffer is in high-impedance state.
+    
+    \item \textbf{Output Register:} Stores the data value to be driven out when the pin is configured as output. This register holds the logic level (0 or 1) that will be amplified by the output buffer.
+    
+    \item \textbf{Input Register:} Captures and stores the current state of the input signal. Provides a stable value to the core logic, synchronized to the system clock. Prevents glitches and metastability.
+\end{itemize}
+
+\textbf{Register locations in the datapath:}
+\begin{itemize}
+    \item Output Enable Register: Controls multiplexer/tri-state logic before output buffer
+    \item Output Register: In the data path to the output buffer
+    \item Input Register: After the input buffer, before data is sent to core
+\end{itemize}
+
+\textbf{Why registers are necessary:}
+\begin{itemize}
+    \item Synchronization with system clock
+    \item Hold stable values between updates
+    \item Prevent glitches from propagating
+    \item Enable pipelined operation
+\end{itemize}
+
+\important{Problem type:} Application - Understanding GPIO register organization and functionality
+\end{example2}
+
+\subsection{GPIO Delays}
+
+\begin{example2}{Diagram Labeling - Delay Block Identification}\\
+\textbf{Source:} Exercise GPIO Components, Question 3 (Page 3)
+
+\textbf{Topics:} Signal delays, timing adjustment, edge alignment
+
+\textbf{Question:}
+
+Output signals and input signals need to change at defined points in time, i.e. the have to relate to a certain clock. To shift the edges when the data actually changes on the pin, there are delay blocks in the GPIO pins.
+
+Delay blocks are drawn as simple rectangles and are usually located between a buffer and a register.
+
+% TODO: Add image from 05a_GPIO.pdf, Page 3 - GPIO schematic with delays
+% Description: Complete GPIO schematic with "Output Delay" and "Input Delay" labels marked with X's showing placement in the signal paths
+% Priority: CRITICAL
+% Suggested filename: exercise05a_gpio_delays.png
+\\
+% \includegraphics[width=\linewidth]{exercise05a_gpio_delays.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+On the following image, place the given labels on the corresponding delay block.
+
+The possible spots are marked with a large red X, make sure the label's crosshair is positioned over the X to allow for correct automatic marking.
+
+\tcblower
+
+\textbf{Solution:}
+
+Your answer is correct.
+
+\textbf{Explanation:}
+
+Delay blocks are crucial for timing alignment in GPIO operations:
+
+\begin{itemize}
+    \item \textbf{Output Delay:} 
+    \begin{itemize}
+        \item Located between the output register and the output buffer
+        \item Shifts the edge timing of outgoing signals
+        \item Compensates for PCB trace delays
+        \item Ensures data meets setup/hold times at receiving device
+        \item Allows precise control of when data transitions occur
+    \end{itemize}
+    
+    \item \textbf{Input Delay:}
+    \begin{itemize}
+        \item Located between the input buffer and the input register
+        \item Shifts when the input signal is sampled
+        \item Compensates for clock skew and PCB delays
+        \item Ensures input data is stable during sampling window
+        \item Helps meet internal setup/hold time requirements
+    \end{itemize}
+\end{itemize}
+
+\textbf{Purpose of delay blocks:}
+\begin{enumerate}
+    \item \textbf{Timing closure:} Adjust signal timing to meet constraints
+    \item \textbf{PCB compensation:} Account for trace delays on the board
+    \item \textbf{Source-synchronous interfaces:} Align data with accompanying clocks
+    \item \textbf{Eye diagram centering:} Sample data in the middle of the valid window
+    \item \textbf{Skew compensation:} Align multiple signals in a bus
+\end{enumerate}
+
+\textbf{Typical delay values:}
+\begin{itemize}
+    \item Modern FPGAs: Adjustable in small increments (e.g., 50-100 ps steps)
+    \item Range: Typically 0-5 ns total adjustment
+    \item Calibrated: Often use DLLs or other circuits for accuracy
+\end{itemize}
+
+\important{Problem type:} Application - Understanding timing adjustment in high-speed I/O
+\end{example2}
+
+\subsection{On-chip Termination and Pull-up Resistor}
+
+\begin{example2}{Diagram Labeling - Termination Components}\\
+\textbf{Source:} Exercise GPIO Components, Question 4 (Page 4)
+
+\textbf{Topics:} Signal termination, pull-up resistors, impedance matching, I/O standards
+
+\textbf{Question:}
+
+Every I/O-standard hase requirements for the signal voltage levels, line impedance and signal termination. Since the GPIO pins have many options for the I/O-standard, termination needs to be configurable to support different termination types.
+
+Termination needs to be placed very close to the pin to be effective, and before any other block in the GPIO. There is no special block symbol for termination, so they are also drawn as a rectangular block.
+
+Some applications require a pull-up resistor, most commonly when your GPIO is connected to a bus. A resistor can be drawn as a zig-zag line.
+
+% TODO: Add image from 05a_GPIO.pdf, Page 4 - GPIO schematic with termination
+% Description: Complete GPIO schematic with "Pull-up Resistor" and "Configurable Termination" labels marked with X's near the physical pin and I/O circuitry
+% Priority: CRITICAL
+% Suggested filename: exercise05a_gpio_termination.png
+\\
+% \includegraphics[width=\linewidth]{exercise05a_gpio_termination.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Place the provided labels in the schematic.
+
+The possible spots are marked with a large red X, make sure the label's crosshair is positioned over the X to allow for correct automatic marking.
+
+\tcblower
+
+\textbf{Solution:}
+
+Your answer is correct.
+
+\textbf{Explanation:}
+
+\textbf{Configurable Termination:}
+
+\begin{itemize}
+    \item \textbf{Purpose:} Matches the impedance of the I/O pin to the transmission line
+    \item \textbf{Location:} Must be very close to the physical pin (before other circuitry)
+    \item \textbf{Types supported:}
+    \begin{itemize}
+        \item Series termination: Resistor in series with driver
+        \item Parallel termination: Resistor to VCC or GND
+        \item OCT (On-Chip Termination): Programmable termination resistance
+        \item Split termination (Thevenin): Resistors to both VCC and GND
+    \end{itemize}
+    \item \textbf{Configurable aspects:}
+    \begin{itemize}
+        \item Resistance value (e.g., 50Ω, 100Ω, 120Ω)
+        \item Termination type (series, parallel, OCT)
+        \item Enable/disable per pin or per bank
+    \end{itemize}
+\end{itemize}
+
+\textbf{Pull-up Resistor:}
+
+\begin{itemize}
+    \item \textbf{Purpose:} Ensures pin has defined logic level when not actively driven
+    \item \textbf{Common applications:}
+    \begin{itemize}
+        \item Open-drain/open-collector buses (I2C, 1-Wire)
+        \item Multi-driver buses where multiple devices share a line
+        \item Preventing floating inputs
+    \end{itemize}
+    \item \textbf{Location:} Connected between pin and VCCIO
+    \item \textbf{Typical values:} 
+    \begin{itemize}
+        \item Weak pull-up: 10kΩ - 100kΩ (internal FPGA pull-ups)
+        \item Strong pull-up: 1kΩ - 10kΩ (bus applications, often external)
+    \end{itemize}
+    \item \textbf{Operation:}
+    \begin{itemize}
+        \item When driver is off (high-Z): Pull-up brings line to logic high
+        \item When driver pulls low: Overrides pull-up (current flows through pull-up)
+        \item Allows wired-AND logic on open-drain buses
+    \end{itemize}
+\end{itemize}
+
+\textbf{Why both are important:}
+
+\begin{enumerate}
+    \item \textbf{Termination:} Prevents reflections, maintains signal integrity, matches impedances
+    \item \textbf{Pull-up:} Defines default state, enables open-drain operation, prevents floating
+    \item \textbf{Not mutually exclusive:} Some I/O standards use both simultaneously
+\end{enumerate}
+
+\textbf{I/O Standard examples:}
+\begin{itemize}
+    \item \textbf{LVDS:} Requires differential termination (100Ω typical)
+    \item \textbf{SSTL, HSTL:} Use parallel termination to V_{REF}
+    \item \textbf{I2C:} Requires external pull-ups (open-drain)
+    \item \textbf{LVCMOS:} May use simple series termination or none
+\end{itemize}
+
+\important{Problem type:} Application - Understanding signal integrity components in GPIO design
+\end{example2}
+
+\subsection{Bus-hold Circuit}
+
+\begin{example2}{Diagram Labeling - Bus-hold Circuit}\\
+\textbf{Source:} Exercise GPIO Components, Question 5 (Page 5)
+
+\textbf{Topics:} Bus-hold circuit, signal retention, tri-state buses
+
+\textbf{Question:}
+
+Sometimes, you want to be able to hold the bus on the signal level when the driving participant stops driving the bus line. This is called a bus-hold circuit. It looks similar to an SRAM cell, it's made up of two inverters and one resistor.
+
+The bus-hold circuit will store the current logic level of the bus while someone is driving the bus. Once the driver stops, the bus-hold circuit will drive the bus to keep it at the same logic level.
+
+% TODO: Add image from 05a_GPIO.pdf, Page 5 - GPIO schematic with bus-hold
+% Description: Complete GPIO schematic with "Bus-hold circuit" label marked with X near the pin, showing weak feedback structure
+% Priority: CRITICAL
+% Suggested filename: exercise05a_gpio_bushold.png
+\\
+% \includegraphics[width=\linewidth]{exercise05a_gpio_bushold.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Place the provided label in the schematic.
+
+The possible spots are marked with a large red X, make sure the label's crosshair is positioned over the X to allow for correct automatic marking.
+
+\tcblower
+
+\textbf{Solution:}
+
+Your answer is correct.
+
+\textbf{Explanation:}
+
+\textbf{Bus-hold Circuit Structure:}
+
+\begin{itemize}
+    \item \textbf{Components:}
+    \begin{itemize}
+        \item Two inverters in a feedback loop (similar to SRAM cell)
+        \item One weak resistor in the feedback path
+        \item Connected directly to the I/O pin
+    \end{itemize}
+    
+    \item \textbf{Operation:}
+    \begin{enumerate}
+        \item When external driver is active: Strong driver overrides weak feedback
+        \item Circuit "remembers" the current logic level through the feedback loop
+        \item When driver goes tri-state (high-Z): Bus-hold takes over
+        \item Weak drivers in feedback maintain the last driven state
+        \item Prevents bus from floating to undefined voltage
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Why bus-hold is useful:}
+
+\begin{itemize}
+    \item \textbf{Prevents floating:} Keeps bus at defined logic level during tri-state periods
+    \item \textbf{Reduces power:} Prevents short-circuit current from undefined voltages
+    \item \textbf{Multi-driver buses:} Useful for buses where control passes between devices
+    \item \textbf{Automatic operation:} No external components or software control needed
+\end{itemize}
+
+\textbf{Bus-hold vs. Pull-up/Pull-down:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Feature} & \textbf{Bus-hold} & \textbf{Pull-up/Pull-down} \\
+\hline
+Default state & Remembers last value & Always pulls to VCC or GND \\
+Power consumption & Very low & Constant static current \\
+Application & Multi-driver buses & Open-drain/collector buses \\
+Strength & Weak (easily overridden) & Weak to strong (configurable) \\
+State retention & Holds last driven value & Forces specific level \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Design considerations:}
+
+\begin{itemize}
+    \item \textbf{Weak drive:} Must be easily overridden by external drivers
+    \item \textbf{Hysteresis:} Inverters typically have hysteresis to prevent oscillation
+    \item \textbf{Not for all standards:} Some I/O standards prohibit bus-hold
+    \item \textbf{Power-up state:} Undefined until first driven (may need initialization)
+\end{itemize}
+
+\textbf{Common use cases:}
+
+\begin{enumerate}
+    \item Processor address/data buses in multi-master systems
+    \item Test/debug interfaces where probes may disconnect
+    \item Any bus where multiple devices take turns driving
+    \item Situations where pull-up/down would cause conflicts
+\end{enumerate}
+
+\textbf{Limitations:}
+
+\begin{itemize}
+    \item Cannot guarantee initial power-up state
+    \item May not work well with very weak external drivers
+    \item Can cause issues if bus voltage is marginal
+    \item Not suitable for high-speed interfaces (adds capacitance)
+\end{itemize}
+
+\important{Problem type:} Application - Understanding bus management circuits in GPIO architecture
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+% ===== IMAGE SUMMARY =====
+% Images needed for this exercise:
+% 1. exercise05a_buffer_symbol.png (Page 1) - SUPPLEMENTARY - Simple buffer symbol
+% 2. exercise05a_pin_symbol.png (Page 1) - SUPPLEMENTARY - Pin connection symbol
+% 3. exercise05a_gpio_drivers.png (Page 1) - CRITICAL - Complete GPIO schematic for driver labeling
+% 4. exercise05a_prn_flipflop.png (Page 2) - SUPPLEMENTARY - PRN flip-flop symbol
+% 5. exercise05a_gpio_registers.png (Page 2) - CRITICAL - GPIO schematic for register labeling
+% 6. exercise05a_gpio_delays.png (Page 3) - CRITICAL - GPIO schematic for delay block labeling
+% 7. exercise05a_gpio_termination.png (Page 4) - CRITICAL - GPIO schematic for termination labeling
+% 8. exercise05a_gpio_bushold.png (Page 5) - CRITICAL - GPIO schematic for bus-hold labeling
+% =====================
+
+\section{Exercise: GPIO (Part B)}
+
+\begin{remark}
+\textbf{Quiz Format:} Mixed (fill-in commands, multiple choice)
+\textbf{Score:} 6.00 von 6.00 (100\%)
+\textbf{Topics Covered:} GPIO programming in Linux, device tree, sysfs interface, GPIO configuration in Quartus/Platform Designer
+\end{remark}
+
+\subsection{Linux GPIO Control via sysfs}
+
+\begin{example2}{Fill-in - GPIO Command Sequence}\\
+\textbf{Source:} Exercise GPIO, Question 1 (Pages 1)
+
+\textbf{Topics:} Linux GPIO, sysfs, command line interface, GPIO export
+
+\textbf{Question:}
+
+You have designed a system with GPIO \textbf{InOut} pins for your SOC, built the device tree and booted to Linux. In the following log, complete the necessary commands in order to provoke the shown results, or provide the expected output.
+
+\begin{lstlisting}[language=bash, style=base]
+1 $ cd /sys/class/gpio
+2 $ ls
+3 export     gpiochip1931    gpiochip1958    gpiochip2010    unexport
+4 $ echo 2012 > export            /* create control directory for pin 2012
+5 $ ls
+6 export   gpio2012   gpiochip1931   gpiochip1958   gpiochip2010 unexport
+7 $ cd gpio2012                     /* enter the control directory
+8 $ ls -l
+9  -rw-r--r--   1 root     root       4096 Mar  9 13:47 active_low
+10 lrwxrwxrwx   1 root     root          0 Mar  9 13:47 device -> ../../gpiochip0
+11 -rw-r--r--   1 root     root       4096 Mar  9 13:47 direction
+12 drwxr-xr-x   2 root     root          0 Mar  9 13:47 power
+13 lrwxrwxrwx   1 root     root          0 Mar  9 13:47 subsystem -> ../../class/gpio
+14 -rw-r--r--   1 root     root       4096 Mar  9 13:46 uevent
+15 -rw-r--r--   1 root     root       4096 Mar  9 13:47 value
+16 $ cat direction                   /* check the direction of the pin
+17 in
+18 $ echo out > direction            /* set the pin direction to out
+19$ cat direction                   /* check the direction of the pin
+20 out
+21 $ echo 2 > value
+22 $ cat value
+23  1                                /* predict the returned value of the pin
+\end{lstlisting}
+
+\tcblower
+
+\textbf{Solutions:}
+
+Line 4: \texttt{echo 2012 > export}
+
+Line 7: \texttt{cd gpio2012}
+
+Line 16: \texttt{cat direction}
+
+Line 18: \texttt{echo out > direction}
+
+Line 19: \texttt{cat direction}
+
+Line 23: \texttt{1}
+
+\textbf{Explanation:}
+
+\begin{enumerate}
+    \item \textbf{change into the virtual directory listing the gpio chips}
+    \begin{itemize}
+        \item \texttt{cd /sys/class/gpio} - Navigate to GPIO sysfs interface
+    \end{itemize}
+    
+    \item \textbf{directory listing}
+    \begin{itemize}
+        \item Shows available GPIO chips and export/unexport files
+    \end{itemize}
+    
+    \item \textbf{export pin "2012" in order for line 6 to list "gpio2012"}
+    \begin{itemize}
+        \item \texttt{echo 2012 > export} - Creates control directory for GPIO pin 2012
+        \item This makes the pin accessible through the sysfs interface
+    \end{itemize}
+    
+    \item \textbf{change into directory gpio2012 to access the virtual files that control pin 2012}
+    \begin{itemize}
+        \item \texttt{cd gpio2012} - Enter the control directory for this specific pin
+    \end{itemize}
+    
+    \item \textbf{list the virtual files for gpio pin 2012}
+    \begin{itemize}
+        \item Shows control files: direction, value, active\_low, etc.
+    \end{itemize}
+    
+    \item \textbf{read the currently configured direction ("in" or "out") of the pin}
+    \begin{itemize}
+        \item \texttt{cat direction} - Shows current direction (initially "in")
+    \end{itemize}
+    
+    \item \textbf{set the direction to "out"}
+    \begin{itemize}
+        \item \texttt{echo out > direction} - Configure pin as output
+    \end{itemize}
+    
+    \item \textbf{verify that the direction has been changed}
+    \begin{itemize}
+        \item \texttt{cat direction} - Confirm direction is now "out"
+    \end{itemize}
+    
+    \item \textbf{set the output value to high (writing any other value than 0 will set output to "high")}
+    \begin{itemize}
+        \item \texttt{echo 2 > value} - Set output high (any non-zero value works)
+    \end{itemize}
+    
+    \item \textbf{check the current output value; answer is "1", because the pin only stores "high" or "low"}
+    \begin{itemize}
+        \item Reading value returns "1" for high, "0" for low
+        \item Even though "2" was written, pin stores binary state as "1"
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Key concepts:}
+\begin{itemize}
+    \item \textbf{GPIO sysfs interface:} User-space access to GPIO pins
+    \item \textbf{Export/Unexport:} Make pins accessible/inaccessible
+    \item \textbf{Direction:} Configure as input ("in") or output ("out")
+    \item \textbf{Value:} Read input or write output (0 or 1)
+    \item \textbf{Active\_low:} Inverts logic level if set
+\end{itemize}
+
+\important{Problem type:} Application - Understanding Linux GPIO sysfs interface and command-line control
+\end{example2}
+
+\subsection{Device Tree Role}
+
+\begin{example2}{Multiple Choice - Device Tree Function}\\
+\textbf{Source:} Exercise GPIO, Question 2 (Page 2)
+
+\textbf{Topics:} Device tree, GPIO configuration, SoC system integration
+
+\textbf{Question:}
+
+What is the role of the device tree (dts file) in configuring GPIO access from the HPS in an SoC?
+
+Select one answer:
+\begin{itemize}
+    \item It sets the voltage level for each GPIO pin
+    \item It defines the base address and properties for GPIO controllers
+    \item It configures the FPGA fabric logic
+    \item It manages the Linux kernel version
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answer:} It defines the base address and properties for GPIO controllers
+
+\textbf{Explanation:}
+
+Die Antwort ist richtig. (The answer is correct.)
+
+Die richtige Antwort ist: It defines the base address and properties for GPIO controllers
+
+\textbf{Device Tree role in GPIO configuration:}
+
+The device tree (DTS/DTB files) provides hardware description to the Linux kernel:
+
+\begin{enumerate}
+    \item \textbf{Base address definition:}
+    \begin{itemize}
+        \item Specifies memory-mapped register address for GPIO controller
+        \item Example: \texttt{reg = <0xFF708000 0x100>;}
+    \end{itemize}
+    
+    \item \textbf{GPIO controller properties:}
+    \begin{itemize}
+        \item Number of GPIO pins
+        \item GPIO chip base number
+        \item Interrupt configuration (if supported)
+        \item Compatible driver string
+    \end{itemize}
+    
+    \item \textbf{Pin multiplexing:}
+    \begin{itemize}
+        \item Defines which pins are GPIOs vs. other functions
+        \item Configures pin muxing for SoC
+    \end{itemize}
+    
+    \item \textbf{Default states:}
+    \begin{itemize}
+        \item Can specify initial direction and values
+        \item Pull-up/pull-down configuration
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Example device tree GPIO node:}
+\begin{lstlisting}[language=bash, style=base]
+gpio0: gpio@ff708000 {
+    compatible = "altr,pio-1.0";
+    reg = <0xff708000 0x100>;
+    interrupts = <0 36 4>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    ngpios = <29>;
+};
+\end{lstlisting}
+
+\textbf{Why the other options are wrong:}
+\begin{itemize}
+    \item \textbf{Voltage level:} Set in Quartus/Platform Designer, not DTS
+    \item \textbf{FPGA fabric:} Configured by bitstream, not device tree
+    \item \textbf{Kernel version:} Not related to device tree
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding device tree role in hardware description
+\end{example2}
+
+\subsection{GPIO Configuration in Quartus}
+
+\begin{example2}{Multiple Choice - Quartus GPIO Settings}\\
+\textbf{Source:} Exercise GPIO, Question 3 (Page 2)
+
+\textbf{Topics:} Quartus, Platform Designer, GPIO electrical characteristics
+
+\textbf{Question:}
+
+When configuring GPIO pins in Quartus or Platform Designer, which setting allows you to adjust the electrical characteristics of the pin?
+
+Select one answer:
+\begin{itemize}
+    \item Memory address mapping
+    \item Interrupt enable
+    \item Pin direction (input/output)
+    \item Drive strength and slew rate
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answer:} Drive strength and slew rate
+
+\textbf{Explanation:}
+
+Die Antwort ist falsch. (The answer given was false.)
+
+Die richtige Antwort ist: Drive strength and slew rate
+
+\textbf{Electrical characteristics configuration in Quartus:}
+
+\textbf{Drive Strength:}
+\begin{itemize}
+    \item Controls output current capability
+    \item Typical values: 2mA, 4mA, 8mA, 12mA, 16mA
+    \item Higher strength: Faster switching, more noise
+    \item Lower strength: Slower switching, less noise, lower power
+    \item Trade-off between performance and signal integrity
+\end{itemize}
+
+\textbf{Slew Rate:}
+\begin{itemize}
+    \item Controls how fast the signal transitions between logic levels
+    \item Fast slew rate: Quick transitions, potential overshoot/ringing
+    \item Slow slew rate: Gradual transitions, reduces EMI and crosstalk
+    \item Configurable per pin or per bank
+\end{itemize}
+
+\textbf{Other electrical settings in Quartus:}
+\begin{itemize}
+    \item I/O standard (LVTTL, LVCMOS, LVDS, etc.)
+    \item Termination (OCT, series, parallel)
+    \item Pull-up/pull-down resistors
+    \item Input threshold levels
+    \item Output voltage levels (VCCIO)
+\end{itemize}
+
+\textbf{Why the other options are different:}
+\begin{itemize}
+    \item \textbf{Memory address mapping:} System integration, not electrical
+    \item \textbf{Interrupt enable:} Functional configuration, not electrical
+    \item \textbf{Pin direction:} Logical function, not electrical characteristic
+\end{itemize}
+
+\textbf{Where to configure in Quartus:}
+\begin{enumerate}
+    \item Pin Planner: Assign pins and set I/O standards
+    \item Assignment Editor: Configure drive strength and slew rate
+    \item Platform Designer: Set up GPIO controller properties
+    \item Pin Editor: Fine-tune individual pin characteristics
+\end{enumerate}
+
+\important{Problem type:} Application - Understanding FPGA I/O configuration options
+\end{example2}
+
+\subsection{GPIO Pin Modes}
+
+\begin{example2}{Multiple Choice - Atypical GPIO Mode}\\
+\textbf{Source:} Exercise GPIO, Question 4 (Page 3)
+
+\textbf{Topics:} GPIO modes, bidirectional operation, analog conversion
+
+\textbf{Question:}
+
+Which of the following is NOT a typical mode for a GPIO pin in a System-on-Chip?
+
+Select one answer:
+\begin{itemize}
+    \item Input
+    \item Bidirectional (tristate)
+    \item Output
+    \item Analog-to-digital conversion
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answer:} Analog-to-digital conversion
+
+\textbf{Explanation:}
+
+Die Antwort ist falsch. (The answer given was false.)
+
+Die richtige Antwort ist: Analog-to-digital conversion
+
+\textbf{Typical GPIO modes:}
+
+\begin{enumerate}
+    \item \textbf{Input mode:}
+    \begin{itemize}
+        \item Pin reads external digital signals
+        \item Output driver is disabled (high-Z)
+        \item Can have pull-up/pull-down enabled
+        \item Can trigger interrupts on edge/level changes
+    \end{itemize}
+    
+    \item \textbf{Output mode:}
+    \begin{itemize}
+        \item Pin drives external loads
+        \item Output driver is enabled
+        \item Can be push-pull or open-drain
+        \item Software controls logic level
+    \end{itemize}
+    
+    \item \textbf{Bidirectional (tristate) mode:}
+    \begin{itemize}
+        \item Can switch between input and output
+        \item Output can be disabled (high-Z)
+        \item Useful for shared buses (I2C, SPI with bidirectional data)
+        \item Requires software or hardware control of direction
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Why Analog-to-digital conversion is NOT a GPIO mode:}
+
+\begin{itemize}
+    \item GPIO = General Purpose \textbf{Digital} Input/Output
+    \item ADC functionality requires:
+    \begin{itemize}
+        \item Analog front-end circuitry
+        \item Sample-and-hold amplifiers
+        \item Comparators and reference voltages
+        \item Conversion logic (SAR, sigma-delta, etc.)
+    \end{itemize}
+    \item ADC uses separate dedicated pins
+    \item Some SoCs have mixed-signal pins that can be either GPIO OR ADC, but not GPIO with ADC as a "mode"
+    \item These are different peripheral types: GPIO vs. ADC
+\end{itemize}
+
+\textbf{Other non-typical "modes":}
+\begin{itemize}
+    \item Analog output (DAC) - also separate peripheral
+    \item PWM generation - often separate timer peripheral
+    \item Special functions - UART, SPI, I2C (pin muxing, not GPIO modes)
+\end{itemize}
+
+\textbf{Typical GPIO features (that are actual modes/options):}
+\begin{itemize}
+    \item Input/Output/Bidirectional
+    \item Push-pull vs. open-drain output
+    \item Pull-up/pull-down resistors
+    \item Interrupt on edge or level
+    \item Schmitt trigger input
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding GPIO vs. other peripheral functions
+\end{example2}
+
+\subsection{Output Enable Register}
+
+\begin{example2}{Multiple Choice - OE Register Purpose}\\
+\textbf{Source:} Exercise GPIO, Question 5 (Page 3)
+
+\textbf{Topics:} Output Enable register, GPIO control, tri-state operation
+
+\textbf{Question:}
+
+What is the main purpose of the Output Enable (OE) register in a GPIO pin circuit?
+
+Select one answer:
+\begin{itemize}
+    \item To set the voltage level of the pin
+    \item To select the pin's I/O standard
+    \item To configure the pin's pull-up resistor
+    \item To control whether the pin drives an output signal
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answer:} To control whether the pin drives an output signal
+
+\textbf{Explanation:}
+
+Die Antwort ist richtig. (The answer is correct.)
+
+Die richtige Antwort ist: To control whether the pin drives an output signal
+
+\textbf{Output Enable (OE) Register function:}
+
+\begin{enumerate}
+    \item \textbf{Tri-state control:}
+    \begin{itemize}
+        \item When OE = 1: Output buffer is enabled, pin drives output
+        \item When OE = 0: Output buffer is disabled (high-Z state)
+        \item Allows bidirectional operation on a single pin
+    \end{itemize}
+    
+    \item \textbf{Direction control:}
+    \begin{itemize}
+        \item Effectively determines if pin is input or output
+        \item OE enabled → Output mode
+        \item OE disabled → Input mode (output driver in high-Z)
+    \end{itemize}
+    
+    \item \textbf{Bus sharing:}
+    \begin{itemize}
+        \item Multiple devices can connect to same line
+        \item Only one device enables output at a time
+        \item Others keep OE disabled to avoid conflicts
+        \item Essential for multi-master buses
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Typical GPIO control registers:}
+\begin{itemize}
+    \item \textbf{Data Output Register:} Value to drive when OE enabled
+    \item \textbf{Output Enable Register:} Controls tri-state (direction)
+    \item \textbf{Data Input Register:} Read current pin state
+    \item \textbf{Configuration Registers:} Pull-ups, drive strength, etc.
+\end{itemize}
+
+\textbf{Operation sequence:}
+\begin{enumerate}
+    \item Write desired value to Output Data Register
+    \item Enable Output Enable Register (OE = 1)
+    \item Pin drives the value from Data Register
+    \item To read: Disable OE (OE = 0), read Input Register
+\end{enumerate}
+
+\textbf{Why the other options are wrong:}
+\begin{itemize}
+    \item \textbf{Voltage level:} Set by Output Data Register, not OE
+    \item \textbf{I/O standard:} Configured in FPGA tools, not runtime register
+    \item \textbf{Pull-up resistor:} Separate configuration register
+\end{itemize}
+
+\textbf{Example use case:}
+\begin{lstlisting}[language=C, style=base]
+// Configure as output
+gpio_output_enable_set(GPIO_PIN_5);  // Set OE = 1
+gpio_output_set(GPIO_PIN_5);         // Drive high
+
+// Change to input
+gpio_output_enable_clear(GPIO_PIN_5); // Set OE = 0 (high-Z)
+value = gpio_input_read(GPIO_PIN_5);  // Read external signal
+\end{lstlisting}
+
+\important{Problem type:} Explanation - Understanding GPIO tri-state control and bidirectional operation
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+% ===== IMAGE SUMMARY =====
+% No images needed for this exercise (text-only command sequences and multiple choice)
+% =====================

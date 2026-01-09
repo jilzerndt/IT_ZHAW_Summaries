@@ -1,0 +1,1324 @@
+\section{In-Memory Compute}
+
+\subsection{Motivation}
+
+\begin{concept}{Computing Bottlenecks}\\
+\textbf{Key Questions:}
+\begin{itemize}
+    \item What are the bottlenecks for data-heavy processing?
+    \item What is the energy aspect of data transfer?
+    \item What are possible concepts to tackle the bottlenecks?
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 2
+% Description: CPU architecture diagram showing registers, ALU, cache hierarchy (L1, L2, L3), and main memory
+% Priority: CRITICAL
+% Suggested filename: lecture12_cpu_architecture.png
+\\
+% \includegraphics[width=0.9\linewidth]{lecture12_cpu_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Learning Goals}
+
+\begin{definition}{Goals}\\
+After this lesson, students should be able to:
+\begin{enumerate}
+    \item List the performance bottlenecks of a common CPU
+    \item Distinguish between in-memory compute and near-memory compute
+    \item List different approaches to solve near-/in-memory computing
+    \item Have a rough idea of where the state of the art might be going
+\end{enumerate}
+\end{definition}
+
+\subsection{Data Movement vs. Data Processing}
+
+\begin{concept}{Code Composition Analysis}\\
+Modern code composition reveals a fundamental imbalance:
+\begin{itemize}
+    \item \textbf{Data movement instructions:} $\approx 60\%$ of modern code
+    \item \textbf{Processing instructions:} $\approx 30\%$ of the code
+    \item \textbf{Control flow:} $\approx 10\%$ remaining
+\end{itemize}
+
+\textbf{Fundamental Issue:} Data needs to be moved to the CPU before it can be processed.
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 4
+% Description: CPU and memory hierarchy diagram illustrating data movement bottleneck
+% Priority: CRITICAL
+% Suggested filename: lecture12_data_movement.png
+\\
+% \includegraphics[width=0.9\linewidth]{lecture12_data_movement.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Performance Bottlenecks}
+
+\subsubsection{Bottleneck 1: Memory Speed}
+
+\begin{definition}{Memory Speed Bottleneck}\\
+\textbf{Problem:}
+\begin{itemize}
+    \item 60\% of instructions are data movement operations
+    \item Memory is significantly slower than CPU
+    \item CPU spends most time waiting for data
+\end{itemize}
+
+\textbf{Existing Approach:} Caches are used to mitigate this bottleneck by keeping frequently accessed data closer to the CPU.
+
+\important{Impact:} Memory speed limits overall system performance despite fast CPU cores.
+\end{definition}
+
+\subsubsection{Bottleneck 2: Cache Size}
+
+\begin{concept}{Cache Capacity Limitations}\\
+\textbf{Fundamental Challenge:} The amount of data to process increases each year, but cache sizes cannot keep pace.
+
+\textbf{Consequences:}
+\begin{itemize}
+    \item Caches will always be too small for large datasets
+    \item Data must be processed in small chunks
+    \item Question: How large should chunks be to fit into cache?
+    \item Question: Is this efficient for the program flow?
+\end{itemize}
+
+\important{Observation:} Cache miss rates increase with dataset size, degrading performance.
+\end{concept}
+
+\subsubsection{Bottleneck 3: Processing Width}
+
+\begin{definition}{Processing Width Limitations}\\
+\textbf{Traditional Architecture:}
+\begin{itemize}
+    \item CPU has limited register width corresponding to ALU width
+    \item Typical widths: 32, 64, or 128 bits
+    \item Loops process only one datum after another (sequential)
+\end{itemize}
+
+\textbf{Vector Instructions Approach:}
+\begin{itemize}
+    \item Vector registers store multiple words simultaneously
+    \item Allow simultaneous data processing
+    \item Requirements:
+    \begin{itemize}
+        \item ALU grows in complexity
+        \item Data path must become wider
+        \item Added hardware complexity
+    \end{itemize}
+\end{itemize}
+
+\important{Trade-off:} Wider processing improves performance but increases hardware complexity and cost.
+\end{definition}
+
+\subsubsection{Bottleneck 4: Energy Consumption}
+
+\begin{concept}{Energy Costs of Data Movement}\\
+\textbf{Energy consumption sources:}
+\begin{itemize}
+    \item Resistance of wires (I$^2$R losses)
+    \item Charging/discharging of memory cells and wires (CV$^2$f)
+\end{itemize}
+
+\textbf{Consequences:}
+\begin{itemize}
+    \item CPU and memory grow hot
+    \item Fast clock speeds exacerbate energy problems
+    \item Heating limits performance
+\end{itemize}
+
+\textbf{Design Goals:}
+\begin{itemize}
+    \item Aim for short data paths
+    \item Consider slower clock speeds with better efficiency
+    \item Optimize for energy per operation
+\end{itemize}
+
+\important{Physical Limit:} Cooling capabilities impose ultimate speed limits.
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 8
+% Description: Energy consumption diagram or graph showing data movement costs
+% Priority: IMPORTANT
+% Suggested filename: lecture12_energy_consumption.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_energy_consumption.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Bottleneck Summary and Solution Direction}
+
+\begin{highlight}{Conclusion: Fundamental Bottlenecks}\\
+\textbf{Core Issues:}
+\begin{enumerate}
+    \item Data can't get to the CPU fast enough
+    \item Long path from memory to CPU and back:
+    \begin{itemize}
+        \item Slows processing down
+        \item Uses significant energy
+        \item Generates heat
+    \end{itemize}
+    \item Cooling has physical limits
+    \item Cooling limits impose speed constraints
+\end{enumerate}
+\end{highlight}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 9
+% Description: Summary diagram showing bottlenecks in CPU-memory architecture
+% Priority: CRITICAL
+% Suggested filename: lecture12_bottleneck_summary.png
+\\
+% \includegraphics[width=0.9\linewidth]{lecture12_bottleneck_summary.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{concept}{Fundamental Idea: Close the Gap}\\
+\textbf{Approach:} Bring processing (ALU) and memory closer together.
+
+\textbf{Challenge:} Fast memory in the CPU is expensive (SRAM).
+
+\textbf{Solution Direction:} Find alternative architectures that minimize data movement.
+\end{concept}
+
+\subsection{Current Solutions for Memory Bottleneck}
+
+\begin{definition}{Modern Approaches}\\
+\paragraph{Apple Silicon Integration:}
+\begin{itemize}
+    \item Brings RAM, NPU, GPU, and CPU closer together
+    \item All components inside the chip
+    \item Allows shorter paths
+    \item Wider data path (no physical pin limitations)
+    \item Sources indicate 512-bit bus between LPDDR5X and CPU
+    \item Compare: Consumer Intel/AMD stay at 128-bit width to external DRAM
+    \item Server CPUs can exceed 512-bit memory bus width
+\end{itemize}
+
+\paragraph{Memory with Compute Capabilities:}
+\begin{itemize}
+    \item Various memory manufacturers developing compute-capable memory
+    \item Process data in memory (simple operations currently)
+    \item Reduces data movement requirements
+\end{itemize}
+
+\paragraph{Adaptive Compute Acceleration Platforms:}
+\begin{itemize}
+    \item Systems on Chip evolve into heterogeneous platforms
+    \item Example: AMD Versal combines:
+    \begin{itemize}
+        \item CPU (scalar processing)
+        \item GPU (parallel graphics/compute)
+        \item FPGA fabric (adaptable hardware)
+        \item Graph compute units (specialized accelerators)
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\subsection{Computing Architecture Classification}
+
+\begin{definition}{Computing Paradigms Overview}\\
+Different approaches to computing based on working set location and processing unit placement:
+
+\paragraph{Early Computers (a):}
+\begin{itemize}
+    \item Core directly connected to DRAM
+    \item No caches
+    \item Simple architecture
+\end{itemize}
+
+\paragraph{Single Core with Embedded Cache (b):}
+\begin{itemize}
+    \item Core with cache hierarchy
+    \item DRAM as main memory
+    \item Traditional von Neumann architecture
+\end{itemize}
+
+\paragraph{Multi/Many Core with Cache Hierarchy (c):}
+\begin{itemize}
+    \item Multiple cores with L1, L2 caches
+    \item Shared L3 cache
+    \item DRAM main memory
+    \item Current mainstream approach
+\end{itemize}
+
+\paragraph{Near-Memory Computing (NMC) (d):}
+\begin{itemize}
+    \item Processing units placed near memory
+    \item 3D-stacked memory architectures
+    \item Reduced data movement
+\end{itemize}
+
+\paragraph{Computation-in-Memory (IMC) (e):}
+\begin{itemize}
+    \item Computation happens inside memory array
+    \item Minimal data movement
+    \item Extreme energy efficiency
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 13
+% Description: Classification diagram showing evolution from early computers to in-memory computing
+% Priority: CRITICAL
+% Suggested filename: lecture12_computing_classification.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_computing_classification.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Cache-Based Computing}
+
+\begin{definition}{Cache Architecture}\\
+\textbf{Principle:} Keep current data and nearest neighbors close to CPU to shorten access time and save energy.
+
+\textbf{Locality Principles:}
+\begin{itemize}
+    \item \textbf{Temporal locality:} Recently accessed data likely to be accessed again
+    \item \textbf{Spatial locality:} Data near recently accessed data likely to be accessed
+\end{itemize}
+
+\textbf{Limitations:}
+\begin{itemize}
+    \item Throughput still limited by loading data into CPU and back to cache
+    \item CPU has complex, expensive ALU with full capabilities
+    \item Limited data path width
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 14
+% Description: Cache-based computing architecture highlighting limitations
+% Priority: IMPORTANT
+% Suggested filename: lecture12_cache_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_cache_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Near-Memory Compute (NMC)}
+
+\subsubsection{NMC Architecture Concept}
+
+\begin{definition}{Near-Memory Computing Principles}\\
+\textbf{Architecture Components:}
+\begin{itemize}
+    \item \textbf{Host Processor:} Runs software program with instructions and synchronization overhead
+    \item \textbf{NMC Subsystem:} Comprises Memory and NMC Cores
+    \item \textbf{NMC Cores:} Can run kernels (small software functions or algorithm steps)
+\end{itemize}
+
+\textbf{Kernels:}
+\begin{itemize}
+    \item Small, focused computational tasks
+    \item Often need to be pipelined
+    \item Require synchronization for correct algorithm execution
+\end{itemize}
+
+\textbf{Goal:} Give kernels extremely fast, short, and collision-free access to memory through 3D-stacked memory technology.
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 15
+% Description: NMC architecture showing host processor, NMC cores, and 3D stacked memory with application flow
+% Priority: CRITICAL
+% Suggested filename: lecture12_nmc_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_nmc_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{3D-Stacked Memory}
+
+\begin{definition}{3D Memory Architecture}\\
+\textbf{Structure:}
+\begin{itemize}
+    \item Multiple layers of DRAM memory connected top-to-bottom
+    \item Through-Silicon Vias (TSVs) enable vertical access to multiple DRAM layers
+    \item \textbf{Bottom Logic Layer:} Provides memory controller for each vault
+    \item Kernels can execute in the logic layer
+\end{itemize}
+
+\textbf{Organization:}
+\begin{itemize}
+    \item Memory organized into partitions
+    \item Multiple partitions form a vault
+    \item Each vault has dedicated controller
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Loading and storing data has extremely short paths
+    \item Memory bandwidth improved (each vault has private system bus)
+    \item Reduced latency
+    \item Lower energy per access
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 16
+% Description: 3D-stacked memory architecture showing DRAM layers, logic layer, partitions, and vaults
+% Priority: CRITICAL
+% Suggested filename: lecture12_3d_stacked_memory.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_3d_stacked_memory.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{3D Memory Technologies}
+
+\begin{definition}{Commercial 3D Memory Products}\\
+\textbf{Hybrid Memory Cube (HMC):}
+\begin{itemize}
+    \item Developed by Samsung and Micron
+    \item Found in current Altera FPGAs and SoCs
+    \item Available as discrete chips
+    \item Standardized interface
+\end{itemize}
+
+\textbf{High Bandwidth Memory (HBM):}
+\begin{itemize}
+    \item Developed by Samsung, AMD, and SK Hynix
+    \item Built into AMD FPGAs and SoCs
+    \item Not available as separate chip
+    \item Only available as silicon integrated into FPGA device
+\end{itemize}
+
+\important{Current Status:} These devices currently only provide memory with improved bandwidth, not yet full compute capabilities.
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 17
+% Description: Side-by-side comparison images of HMC and HBM technologies
+% Priority: IMPORTANT
+% Suggested filename: lecture12_hmc_hbm_comparison.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_hmc_hbm_comparison.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{highlight}{HMC Performance Specifications}\\
+\textbf{Capacity and Speed:}
+\begin{itemize}
+    \item One HMC chip offers 4 GB capacity
+    \item Bandwidth per line: 15 Gbit/s
+    \item Available configurations: 32 or 64 lines
+    \item Theoretical limit: 240 Gbit/s per chip
+    \item Actual limit (DRAM speed): 160 Gbit/s per chip
+\end{itemize}
+
+\textbf{Energy Efficiency:}
+\begin{itemize}
+    \item Shorter data paths
+    \item Reduced J/bit (energy per bit transferred)
+    \item Lower power consumption for given bandwidth
+\end{itemize}
+\end{highlight}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 18
+% Description: HMC performance specifications and energy efficiency data
+% Priority: IMPORTANT
+% Suggested filename: lecture12_hmc_performance.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_hmc_performance.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{NMC Example: GPU Architecture}
+
+\begin{concept}{GPU as Near-Memory Compute}\\
+\textbf{GPU applies many NMC ideas:}
+\begin{itemize}
+    \item Distributed memory close to compute units
+    \item Many parallel processing elements
+    \item Shared memory hierarchies
+    \item High bandwidth internal paths
+\end{itemize}
+
+\textbf{Why GPU is not typically advertised as NMC:}
+\begin{enumerate}
+    \item NMC usually understood as shifting compute into high-density (3D-stacked) memory device
+    \item GPU brings standard memory closer to compute in distributed manner
+    \item GPU still heavily depends on external (off-chip) DRAM over long path
+    \item Architecture focus different from true NMC
+\end{enumerate}
+
+\important{Classification:} GPU represents an intermediate approach between traditional computing and true NMC.
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 19-20
+% Description: GPU architecture diagram showing memory hierarchy and compute units
+% Priority: IMPORTANT
+% Suggested filename: lecture12_gpu_nmc.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_gpu_nmc.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{NMC Example: AMD Versal Platform}
+
+\begin{definition}{AMD Versal Heterogeneous Architecture}\\
+Versal combines multiple forms of compute in a single device:
+
+\paragraph{Scalar Engines (APU, RPU):}
+\begin{itemize}
+    \item Application Processor Unit (APU)
+    \item Real-time Processor Unit (RPU)
+    \item Normal software execution
+    \item Traditional CPU functionality
+\end{itemize}
+
+\paragraph{Adaptable Engines (FPGA Fabric):}
+\begin{itemize}
+    \item Programmable logic (LUTs)
+    \item DSP engines for math operations
+    \item Block RAM and UltraRAM
+    \item Ultimately NMC with on-chip memory and programmable logic/routing
+    \item Custom hardware acceleration
+\end{itemize}
+
+\paragraph{AI Engine Array (NMC):}
+\begin{itemize}
+    \item Small compute units interleaved with on-chip memory
+    \item Optimized for vector operations
+    \item Up to 5$\times$ higher compute density for vector-based algorithms
+    \item Specialized for AI/ML workloads
+\end{itemize}
+
+\paragraph{Foundational Engines:}
+\begin{itemize}
+    \item PCIe interfaces
+    \item DDR memory controllers
+    \item High-speed I/O (GT transceivers)
+    \item Analog Mixed Signal (AMS)
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 21
+% Description: AMD Versal heterogeneous compute architecture showing all engine types
+% Priority: CRITICAL
+% Suggested filename: lecture12_versal_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_versal_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{Network-on-Chip (NoC) Architecture}\\
+Versal uses a Network-on-Chip for high-bandwidth interconnect:
+
+\textbf{NoC Components:}
+\begin{itemize}
+    \item \textbf{VNoC:} Vertical NoC connecting to programmable logic (PL)
+    \item \textbf{HNoC:} Horizontal NoC connecting major components
+    \item \textbf{NMU:} NoC Master Unit (initiates transactions)
+    \item \textbf{NSU:} NoC Slave Unit (responds to transactions)
+    \item \textbf{BLI:} Boundary Logic Interface (connects different domains)
+\end{itemize}
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Multiple parallel bus connections
+    \item Bus widths: up to 512 bits
+    \item Switched fabric for uncongested throughput
+    \item Quality of Service (QoS) support via Virtual Channels
+    \item Connects processor system, AI engines, PL, and DDR controllers
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 22
+% Description: Network-on-Chip block diagram showing HNoC, VNoC, NMU, NSU, and connections
+% Priority: CRITICAL
+% Suggested filename: lecture12_noc_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_noc_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{concept}{AI Engine Array Configuration}\\
+AMD Adaptive Compute Accelerator Platform (ACAP) Versal series features:
+
+\textbf{Configurable Array:}
+\begin{itemize}
+    \item AI Engine tiles with compute and local memory
+    \item Data Movement (DM) blocks for efficient transfers
+    \item Memory tiles for intermediate storage
+\end{itemize}
+
+\textbf{Data Path Configuration:}
+\begin{itemize}
+    \item Algorithm data path is configured
+    \item AI Engines send results directly to next processing step
+    \item Eliminates unnecessary memory transfers
+    \item Pipelined processing
+\end{itemize}
+
+\textbf{Memory Organization:}
+\begin{itemize}
+    \item Local Memory Tiles provide storage for:
+    \begin{itemize}
+        \item Input data
+        \item Intermediate results
+        \item Output data
+    \end{itemize}
+\end{itemize}
+
+\textbf{Flexible Interconnect:}
+\begin{itemize}
+    \item NoC provides high-bandwidth data transfer
+    \item Connects accelerator array, processor, and FPGA fabric
+    \item Programmable routing
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 23
+% Description: AI Engine array interface showing AIE-ML tiles, DM blocks, and memory tiles
+% Priority: CRITICAL
+% Suggested filename: lecture12_ai_engine_array.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_ai_engine_array.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\begin{definition}{AI Engine Tile Architecture}\\
+Each AI Engine Tile combines compute with local memory:
+
+\textbf{Compute Units:}
+\begin{itemize}
+    \item 32-bit Scalar RISC Unit for control
+    \item 512-bit SIMD Vector Unit (Fixed Point)
+    \item 512-bit SIMD Vector Unit (Floating Point)
+    \item Accumulator for MAC operations
+\end{itemize}
+
+\textbf{Memory:}
+\begin{itemize}
+    \item Program Memory: 16 kB
+    \item Data Memory: 32 kB
+    \item Vector Register Files
+    \item Scalar Register Files
+\end{itemize}
+
+\textbf{Interconnect:}
+\begin{itemize}
+    \item AXIS (AXI Stream) interfaces: North, South, East, West
+    \item Cascade Stream for direct tile-to-tile communication
+    \item DMA engines: Memory-to-Stream (MM2S) and Stream-to-Memory (S2MM)
+    \item AXIM Switch for memory interface
+\end{itemize}
+
+\textbf{Control:}
+\begin{itemize}
+    \item Instruction Fetch and Decode Unit
+    \item Load/Store Address Generation Unit
+    \item Control, Debug, and Trace
+    \item Stall Handler
+\end{itemize}
+
+\important{Integration:} Each tile is interconnected with stream connections, ideal for pipelined processing.
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 24
+% Description: Detailed AI Engine tile internal architecture diagram
+% Priority: CRITICAL
+% Suggested filename: lecture12_ai_engine_tile.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_ai_engine_tile.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{concept}{Compute Graph Mapping}\\
+A compute graph maps the data flow through steps of an algorithm:
+
+\textbf{Neural Network Example:}
+\begin{itemize}
+    \item Each layer of a neural network is a compute step
+    \item Convolutional layers (CNN)
+    \item Fully connected layers (FC)
+    \item Activation functions
+\end{itemize}
+
+\textbf{Mapping to AI Engine Tiles:}
+\begin{itemize}
+    \item Each tile contains both compute and memory
+    \item Tiles process one layer or sub-layer
+    \item Stream interfaces connect tiles in pipeline
+    \item Data flows naturally through the array
+\end{itemize}
+
+\textbf{Applications:}
+\begin{itemize}
+    \item Ideal for compute graphs
+    \item Neural network inference and training
+    \item Signal processing pipelines
+    \item Graph-based algorithms
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 25-26
+% Description: Compute graph example showing CNN/FC layers mapped to AI Engine array
+% Priority: IMPORTANT
+% Suggested filename: lecture12_compute_graph.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_compute_graph.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{NMC Example: Flow Computing}
+
+\begin{definition}{Flow Computing Architecture}\\
+Flow Computing proposes a complex architecture with specialized processor types:
+
+\textbf{Processor Types:}
+\begin{itemize}
+    \item \textbf{Frontends (FE):} Controlling processors
+    \begin{itemize}
+        \item Manage execution flow
+        \item Schedule tasks
+        \item Coordinate backends
+    \end{itemize}
+    \item \textbf{Backends (BE):} Executing processors
+    \begin{itemize}
+        \item Perform actual computations
+        \item Specialized for different operations
+        \item Work in parallel
+    \end{itemize}
+\end{itemize}
+
+\textbf{Interconnect:}
+\begin{itemize}
+    \item Very high-performance multi-mesh network
+    \item Provides sufficient bandwidth between components
+    \item Dedicated caches at various levels
+    \item Internal memories
+    \item Second multi-mesh network connects to main memory
+\end{itemize}
+
+\textbf{Advantages over Multicore SMP/NUMA:}
+\begin{itemize}
+    \item Low synchronization cost (1/Tb vs. $>100$ cycles)
+    \item No coherency issues
+    \item Latency hiding for dependent operations (LLP)
+    \item Primitives supported
+    \item Fiber switch cost = 0 (vs. thread switch $>100$ cycles)
+    \item Low congestion probability
+    \item Scalable latency hiding
+    \item Low probability of insufficient bandwidth
+    \item No need for partitioning
+\end{itemize}
+
+\textbf{Challenges:}
+\begin{itemize}
+    \item Software must exploit capabilities
+    \item Compiler needs to find potential for flow computing in algorithms
+    \item New programming paradigms required
+    \item Complex system management
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 27
+% Description: Flow Computing architecture showing frontends, backends, and multi-mesh network
+% Priority: IMPORTANT
+% Suggested filename: lecture12_flow_computing.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_flow_computing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Near-Memory Compute Summary}
+
+\begin{highlight}{NMC Conclusions}\\
+\textbf{Key Benefits:}
+\begin{itemize}
+    \item Short data paths and higher bandwidth
+    \item Highly parallelized memory controllers
+    \item Multiple computation steps in parallel in many compute units (CUs)
+    \item Executing same step in many CUs $\rightarrow$ vectorization
+    \item Executing different steps in each CU $\rightarrow$ pipelining and graph computing
+    \item Memory-internal data transfers possible
+\end{itemize}
+
+\textbf{Energy and Performance:}
+\begin{itemize}
+    \item Reduced energy consumption for data transfers
+    \item Allows higher performance with same cooling capacity
+    \item Better performance per watt
+\end{itemize}
+
+\important{Paradigm Shift:} NMC moves from CPU-centric to memory-centric computing.
+\end{highlight}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{In-Memory Compute (IMC)}
+
+\subsubsection{IMC Motivation}
+
+\begin{concept}{Beyond Near-Memory Computing}\\
+\textbf{Remaining Challenges in NMC:}
+\begin{itemize}
+    \item Still significant data transfer between memory and compute units
+    \item Limited computing capability per memory access
+\end{itemize}
+
+\textbf{Radical Question:} Can we use the memory itself to compute?
+
+\textbf{Goal:} Eliminate data movement entirely by computing where data is stored.
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 29
+% Description: Conceptual diagram questioning in-memory compute possibility
+% Priority: IMPORTANT
+% Suggested filename: lecture12_imc_motivation.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_imc_motivation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{IMC General Concept}
+
+\begin{definition}{In-Memory Compute Architecture}\\
+\textbf{Core Principle:} Place an ALU-like device into memory. Instead of transferring data to CPU for processing, send instructions to memory to execute.
+
+\textbf{Architecture Evolution:}
+\begin{itemize}
+    \item Traditional: Data moves to CPU (computation-centric)
+    \item NMC: Compute units near memory (memory-aware)
+    \item IMC: Computation happens in memory array (memory-centric)
+\end{itemize}
+
+\textbf{Paradigm Shift:}
+\begin{itemize}
+    \item Data stays in memory
+    \item Operations execute on data in-place
+    \item Results can stay in memory or be read out
+    \item Minimal data movement
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 30
+% Description: Computing architecture classification showing IMC as computation-in-memory
+% Priority: CRITICAL
+% Suggested filename: lecture12_imc_concept.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_imc_concept.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{IMC Tiled Architecture}
+
+\begin{definition}{Tiled IMC Design}\\
+\textbf{Design Principles:}
+\begin{itemize}
+    \item Adding compute capability increases complexity
+    \item Reduces memory density
+    \item Tiled design balances complexity, granularity, and density
+\end{itemize}
+
+\textbf{Tile Organization:}
+\begin{itemize}
+    \item One tile performs same operation on whole memory content
+    \item Hierarchical H-tree interconnect
+    \item External I/O via routers
+    \item Instruction buffers and control logic per tile
+\end{itemize}
+
+\textbf{Processing Unit (PU) per Tile:}
+\begin{itemize}
+    \item ReRAM (Resistive RAM) array forms memory and PU
+    \item Sample and Hold (S+H) circuits
+    \item DAC (Digital-to-Analog Converter) for inputs
+    \item ADC (Analog-to-Digital Converter) for outputs
+    \item Crossbar (XB) interconnect
+    \item Register file for intermediate values
+\end{itemize}
+
+\important{Key Innovation:} Processing directly in memory array, no separate ALU!
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 31
+% Description: Tiled IMC architecture showing hierarchical structure and tile components
+% Priority: CRITICAL
+% Suggested filename: lecture12_imc_tiled_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_imc_tiled_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{IMC Storage Cell Computing}
+
+\begin{concept}{In-Memory Logic Operations}\\
+\textbf{Principle:} Storage cells are given the capability to compute.
+
+\textbf{Operations:}
+\begin{itemize}
+    \item \textbf{Logic operations:} Easy to implement (single bits involved)
+    \item \textbf{Arithmetic operations:} More complex (carry over to adjacent bits)
+\end{itemize}
+
+\textbf{Row Selection Mechanism:}
+\begin{itemize}
+    \item Select multiple rows simultaneously
+    \item Combined access performs operations
+    \item Bit-line aggregates results
+\end{itemize}
+
+\important{Challenge:} Need mechanism to select multiple memory rows for operand selection.
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 32
+% Description: Storage cell architecture showing compute capability
+% Priority: CRITICAL
+% Suggested filename: lecture12_imc_storage_cells.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_imc_storage_cells.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{example2}{In-Memory NOR Operation}\\
+\textbf{Operation:} NOR operation on multiple memory rows
+
+\textbf{Mechanism:}
+\begin{enumerate}
+    \item Select multiple memory rows simultaneously
+    \item All selected rows output their memory content onto the bit-line
+    \item Sensing amplifier (SA) detects if any cell outputs '1'
+    \item Result is inverted to produce NOR function
+\end{enumerate}
+
+\textbf{Mathematical Expression:}
+$$\text{NOR}(A, B, C) = \overline{A + B + C}$$
+
+If any input is '1', the OR is '1', and NOR produces '0'. Only if all inputs are '0' does NOR produce '1'.
+
+\important{Advantage:} Operation happens in memory array without data movement to separate ALU.
+\end{example2}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 33
+% Description: In-memory NOR operation circuit diagram showing row selection and sensing
+% Priority: CRITICAL
+% Suggested filename: lecture12_imc_nor_operation.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_imc_nor_operation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{IMC Analog Solutions}
+
+\begin{concept}{Analog In-Memory Computing}\\
+\textbf{Motivation:}
+\begin{itemize}
+    \item Some applications don't need digital precision
+    \item Can tolerate analog noise
+    \item AI/ML applications are prime examples
+\end{itemize}
+
+\textbf{Research Status:}
+\begin{itemize}
+    \item Analog data processing actively investigated
+    \item Many architectural proposals
+    \item Various technologies being tested
+    \item Prototypes and demonstrations available
+\end{itemize}
+
+\textbf{Potential Benefits:}
+\begin{itemize}
+    \item Higher energy efficiency
+    \item Increased compute density
+    \item Natural match for neural network operations
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 34
+% Description: Analog IMC concept or architecture overview
+% Priority: IMPORTANT
+% Suggested filename: lecture12_analog_imc.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_analog_imc.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Analog IMC with Resistive RAM}
+
+\begin{definition}{RRAM-Based Analog IMC}\\
+\textbf{Resistive RAM (RRAM) Properties:}
+\begin{itemize}
+    \item Can change resistance of each storage cell
+    \item Programmable resistance used for arithmetic
+    \item Analog values represented by resistance
+\end{itemize}
+
+\textbf{Matrix Multiplication Procedure:}
+\begin{enumerate}
+    \item Program analog coefficients of a matrix into storage cells (set resistances)
+    \item Apply coefficients of second matrix or vector to inputs using DACs
+    \item Read out result of matrix multiplication using ADCs
+    \item Result is computed by Ohm's law and Kirchhoff's current law
+\end{enumerate}
+
+\textbf{Physical Principle:}
+\begin{itemize}
+    \item Voltage applied to word line
+    \item Current flows through resistor (RRAM cell)
+    \item Current proportional to voltage and conductance: $I = G \cdot V$
+    \item Multiple currents sum on bit line (Kirchhoff's law)
+    \item Sum represents dot product
+\end{itemize}
+
+\textbf{Challenges:}
+\begin{itemize}
+    \item Accuracy limitations from analog noise
+    \item DACs must be fast and accurate
+    \item ADCs must have sufficient resolution
+    \item DACs and ADCs use significant energy
+    \item Speed constrained by analog settling times
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 35
+% Description: RRAM array structure showing DACs, ADCs, and processing units
+% Priority: CRITICAL
+% Suggested filename: lecture12_rram_imc.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_rram_imc.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{Analog IMC Arithmetic Operations}\\
+\textbf{Addition:}
+\begin{itemize}
+    \item Apply input values to two word-lines
+    \item Read output on bit-line
+    \item Currents sum naturally (Kirchhoff)
+\end{itemize}
+
+\textbf{Matrix Multiplication (Dot Product):}
+\begin{itemize}
+    \item Use multiple bit-lines for output
+    \item Matrix coefficients programmed into resistors
+    \item Input vector applied to word-lines via DACs
+    \item Output vector read from bit-lines via ADCs
+    \item Operation: $\vec{Y} = W \cdot \vec{X}$ where $W$ is weight matrix
+\end{itemize}
+
+\textbf{Subtraction:}
+\begin{itemize}
+    \item Apply negative input value (inverted DAC output)
+    \item Read output on bit-line
+    \item Difference computed by current subtraction
+\end{itemize}
+
+\important{Advantage:} All operations computed in $O(1)$ time regardless of matrix size, limited only by analog settling time.
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 36
+% Description: Analog arithmetic operations diagrams (addition, multiplication, subtraction)
+% Priority: CRITICAL
+% Suggested filename: lecture12_analog_arithmetic.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_analog_arithmetic.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{IMC Commercial Examples}
+
+\paragraph{Samsung PIM-HBM}
+
+\begin{definition}{Processing-In-Memory HBM}\\
+Samsung's PIM-HBM places processing units into memory device, interleaved with RAM fabric.
+
+\textbf{Architecture:}
+\begin{itemize}
+    \item (a) HBM die organization with PIM units
+    \item (b) Memory banks contain SIMD FPU
+    \item (c) PIM unit data path
+    \item Vectorized processing of integer and floating-point data
+\end{itemize}
+
+\textbf{Key Features:}
+\begin{itemize}
+    \item Own Instruction Set Architecture (ISA)
+    \item Requires programming model and software stack
+    \item Software stack translates existing applications
+    \item Generates PIM-HBM device code for execution
+    \item No extra compiler or programming language needed
+    \item Seamless integration with existing systems
+\end{itemize}
+
+\textbf{Integration:}
+\begin{itemize}
+    \item Does not disrupt conventional DRAM structure
+    \item Sub-arrays and banks remain standard
+    \item Works with contemporary DRAM controllers
+    \item Managed via standard DRAM interfaces
+    \item JEDEC-compliant
+    \item Drop-in replacement possible
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 37
+% Description: Samsung PIM-HBM architecture showing die organization, bank structure, and PIM unit
+% Priority: CRITICAL
+% Suggested filename: lecture12_samsung_pim_hbm.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_samsung_pim_hbm.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\paragraph{Samsung-Facebook AxDIMM}
+
+\begin{definition}{Accelerator DIMM (AxDIMM)}\\
+AxDIMM places PIM-HBM in two ranks on a DIMM module with FPGA control.
+
+\textbf{Architecture:}
+\begin{itemize}
+    \item Two ranks of PIM-HBM memory
+    \item FPGA as controlling unit
+    \item Standard DIMM form factor
+\end{itemize}
+
+\textbf{FPGA Functions:}
+\begin{itemize}
+    \item Maps computations to selected rank
+    \item Starts execution
+    \item Reads back results
+    \item Manages synchronization
+\end{itemize}
+
+\textbf{Processing Units:}
+\begin{itemize}
+    \item Vector-input MACs (Multiply-Accumulate)
+    \item Optimized for matrix operations
+    \item Inside memory banks
+\end{itemize}
+
+\textbf{Software Stack:}
+\begin{itemize}
+    \item Complete software stack
+    \item Python API available
+    \item Allows programming without changing input code
+    \item Transparent to application
+\end{itemize}
+
+\textbf{Applications:}
+\begin{itemize}
+    \item Demonstrated effectiveness in personalized recommender systems
+    \item Collaboration with Facebook (Meta)
+    \item Data center workloads
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 38
+% Description: AxDIMM hardware module and architecture diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture12_axdimm.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_axdimm.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{IMC Conclusion and Energy Analysis}
+
+\begin{highlight}{In-Memory Compute Summary}\\
+\textbf{Key Advantages:}
+\begin{itemize}
+    \item Extremely energy efficient execution
+    \item Extremely parallel arithmetic operations
+    \item Complex arithmetic possible
+    \item Minimal data movement
+    \item Orders of magnitude better TOPS/W than NMC or conventional computing
+\end{itemize}
+
+\textbf{Challenges:}
+\begin{itemize}
+    \item \textbf{Hardware Complexity:}
+    \begin{itemize}
+        \item Reduces memory density
+        \item Increases costs
+        \item Complex fabrication
+    \end{itemize}
+    \item \textbf{Analog Computing:}
+    \begin{itemize}
+        \item Introduces accuracy problems
+        \item Added complexity
+        \item Can reduce speed of individual operations
+        \item Temperature and voltage sensitivity
+    \end{itemize}
+    \item \textbf{Synchronization:}
+    \begin{itemize}
+        \item Parallelization requires careful coordination
+        \item Graph computing needs synchronization
+        \item Consistency challenges
+    \end{itemize}
+\end{itemize}
+
+\textbf{Research Status:}
+\begin{itemize}
+    \item Heavily researched area
+    \item Many approaches being investigated
+    \item New memory technologies emerging
+    \item Some analog technologies promising
+\end{itemize}
+
+\important{Future Direction:} New memory technologies, including analog approaches, will accelerate compute capabilities.
+\end{highlight}
+
+\begin{concept}{Energy Efficiency Comparison}\\
+\textbf{Performance Metrics:} TOPS/W (Tera Operations Per Second per Watt)
+
+\textbf{Efficiency Rankings:}
+\begin{enumerate}
+    \item \textbf{IMC (In-Memory Processing):} Highest efficiency
+    \begin{itemize}
+        \item Orders of magnitude better than alternatives
+        \item Minimal data movement energy
+    \end{itemize}
+    \item \textbf{NMC (Near-Memory Computing):} Good efficiency
+    \begin{itemize}
+        \item Better than conventional
+        \item Short data paths
+    \end{itemize}
+    \item \textbf{OMP (Outside-Memory Processing):} Conventional computing
+    \begin{itemize}
+        \item Lowest efficiency
+        \item Long data paths
+        \item High movement energy
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Trend:}
+\begin{itemize}
+    \item IMC moving toward smaller datatypes
+    \item INT8, INT4, even binary operations
+    \item Trade precision for energy efficiency
+    \item Sufficient for many AI/ML applications
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 40
+% Description: Energy efficiency comparison graph showing TOPS/W for OMP/NMC/IMC
+% Priority: CRITICAL
+% Suggested filename: lecture12_energy_comparison.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_energy_comparison.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{The Software Challenge}
+
+\begin{concept}{Biggest Challenge: Software Exploitation}\\
+\textbf{Hardware-Software Gap:}
+\begin{itemize}
+    \item Complex hardware requires matching software
+    \item Software must exploit capabilities optimally
+    \item Hardware alone insufficient
+\end{itemize}
+
+\textbf{Developer Challenges:}
+\begin{itemize}
+    \item Software developers not used to hardware-optimized algorithms
+    \item Traditional programming models don't fit
+    \item Need to think about:
+    \begin{itemize}
+        \item Data placement
+        \item Parallelism exploitation
+        \item Memory access patterns
+        \item Synchronization
+    \end{itemize}
+\end{itemize}
+
+\textbf{Solution Approach: Advanced Toolchains}
+\begin{itemize}
+    \item Compilers must optimize algorithms automatically
+    \item Graph analysis and transformation
+    \item Automatic parallelization
+    \item Memory layout optimization
+    \item Scheduling and synchronization
+\end{itemize}
+
+\textbf{Compilation Flow Requirements:}
+\begin{enumerate}
+    \item Application code input
+    \item Graph analysis
+    \item Node merging and optimization
+    \item Instruction buffer expansion
+    \item Data flow compilation
+    \item Backend code generation
+    \item Hardware-specific optimizations
+\end{enumerate}
+
+\important{Critical Success Factor:} Without sophisticated compilers and software tools, the hardware capabilities cannot be fully utilized.
+\end{concept}
+
+% TODO: Add image from SCD_12_inmemory_compute.pdf, Slide 41
+% Description: Compilation flow diagram showing application to hardware mapping
+% Priority: IMPORTANT
+% Suggested filename: lecture12_software_challenge.png
+\\
+% \includegraphics[width=\linewidth]{lecture12_software_challenge.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{remark}
+\textbf{Industry Perspective:} The transition to NMC and IMC architectures requires:
+\begin{itemize}
+    \item New programming paradigms
+    \item Advanced compiler technology
+    \item Developer education and training
+    \item Industry-wide standards
+    \item Mature software ecosystems
+\end{itemize}
+
+The hardware technology is advancing faster than the software tools and methodologies needed to exploit it effectively.
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 28
+% CRITICAL priority: 17
+% IMPORTANT priority: 9
+% SUPPLEMENTARY priority: 2
+%
+% Quick extraction checklist:
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 2] - CPU architecture diagram (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 4] - Data movement illustration (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 8] - Energy consumption diagram (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 9] - Bottleneck summary (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 13] - Computing classification diagram (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 14] - Cache architecture (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 15] - NMC architecture (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 16] - 3D-stacked memory (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 17] - HMC/HBM comparison (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 18] - HMC performance (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 19-20] - GPU NMC (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 21] - Versal architecture (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 22] - NoC architecture (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 23] - AI Engine array (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 24] - AI Engine tile (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 25-26] - Compute graph (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 27] - Flow Computing (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 29] - IMC motivation (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 30] - IMC concept (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 31] - Tiled architecture (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 32] - Storage cells (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 33] - NOR operation (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 34] - Analog IMC (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 35] - RRAM IMC (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 36] - Analog arithmetic (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 37] - Samsung PIM-HBM (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 38] - AxDIMM (IMPORTANT)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 40] - Energy comparison (CRITICAL)
+% [ ] [SCD_12_inmemory_compute.pdf, Slide 41] - Software challenge (IMPORTANT)
+% =====================

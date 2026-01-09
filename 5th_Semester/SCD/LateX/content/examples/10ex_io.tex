@@ -1,0 +1,397 @@
+\section{Exercise: I/O Interfaces}
+
+\begin{remark}
+\textbf{Quiz Format:} Multiple choice
+\textbf{Score:} 1.00 von 1.00 (100\%)
+\textbf{Topics Covered:} LVDS signaling standard, differential signaling advantages, fault tolerance, signal integrity
+\end{remark}
+
+\subsection{LVDS Signaling Standard}
+
+\begin{example2}{Multiple Choice - LVDS Advantages}\\
+\textbf{Source:} Exercise I/O Interfaces, Question 1 (Page 1)
+
+\textbf{Topics:} LVDS, low voltage differential signaling, current-mode drivers
+
+\textbf{Question:}
+
+% TODO: Add image from 10_IO.pdf, Page 1
+% Description: LVDS driver and receiver circuit diagram showing Driver with current source (~3.5mA) and LVDS-001 specification, transmission line, and Receiver with differential amplifier showing ~350mV voltage swing and 100Ω termination resistor
+% Priority: CRITICAL
+% Suggested filename: exercise10_lvds_circuit.png
+\\
+% \includegraphics[width=0.8\linewidth]{exercise10_lvds_circuit.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+What are the Advantages of the Low Voltage Differential (LVDS) Standard
+
+Select one or more answers:
+\begin{itemize}
+    \item Higher data transmission rates since there are only small voltage swings required
+    \item Robust against shortcircuits since transmitter is current limited
+    \item Low power consumption since transmitter limits maximum current
+    \item Available also as single ended standard
+    \item Fault-tolerant in case one line is interrupted, since there are two lines per signal
+    \item Can not be used for clock lines
+    \item Lower cost compared to single ended signaling
+    \item High noise immunity due to compensation on differential lines
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item Higher data transmission rates since there are only small voltage swings required
+    \item Robust against shortcircuits since transmitter is current limited
+    \item Low power consumption since transmitter limits maximum current
+    \item High noise immunity due to compensation on differential lines
+\end{itemize}
+
+\textbf{Explanation:}
+
+Your answer is correct.
+
+Die richtigen Antworten sind:
+\begin{itemize}
+    \item Low power consumption since transmitter limits maximum current
+    \item Higher data transmission rates since there are only small voltage swings required
+    \item Robust against shortcircuits since transmitter is current limited
+    \item High noise immunity due to compensation on differential lines
+\end{itemize}
+
+\textbf{Detailed Analysis of Each Option:}
+
+\textbf{CORRECT: "Higher data transmission rates since there are only small voltage swings required"}
+\begin{itemize}
+    \item LVDS uses ~350 mV differential swing (very small)
+    \item Small voltage swings charge/discharge parasitic capacitances faster
+    \item Lower slew rate requirements
+    \item Can achieve multi-Gbps data rates
+    \item Compare to CMOS: 3.3V or 5V swings much slower
+    \item Typical LVDS: 100 Mbps to several Gbps
+\end{itemize}
+
+\textbf{CORRECT: "Robust against shortcircuits since transmitter is current limited"}
+\begin{itemize}
+    \item Current-mode driver: Fixed ~3.5 mA current source
+    \item Short circuit: Current limited to design value
+    \item No damage to driver even with shorted outputs
+    \item Compare to voltage-mode: Can source excessive current on short
+    \item Built-in protection mechanism
+\end{itemize}
+
+\textbf{CORRECT: "Low power consumption since transmitter limits maximum current"}
+\begin{itemize}
+    \item Fixed 3.5 mA current through 100Ω termination
+    \item Power = $I^2 \times R = (0.0035)^2 \times 100 = 1.2$ mW (approximately)
+    \item Plus some driver overhead: typically 2-5 mW total per channel
+    \item Much lower than CMOS: charging/discharging large voltage swings
+    \item Especially significant for multi-channel interfaces
+\end{itemize}
+
+\textbf{WRONG: "Available also as single ended standard"}
+\begin{itemize}
+    \item FALSE: LVDS is inherently differential
+    \item Requires two lines (+ and -)
+    \item Single-ended alternatives: LVCMOS, LVTTL
+    \item Differential nature is key to LVDS advantages
+\end{itemize}
+
+\textbf{WRONG: "Fault-tolerant in case one line is interrupted"}
+\begin{itemize}
+    \item FALSE: If one line breaks, signal is lost
+    \item Differential signaling requires both lines
+    \item Cannot operate with single line
+    \item Redundancy would require duplicate pairs
+    \item However: resistant to common-mode noise (different concept)
+\end{itemize}
+
+\textbf{WRONG: "Can not be used for clock lines"}
+\begin{itemize}
+    \item FALSE: LVDS is excellent for clock distribution
+    \item Used extensively for high-speed clocks
+    \item Examples: PCIe reference clocks, SATA clocks
+    \item Low jitter characteristics ideal for clocking
+    \item Source-synchronous interfaces use LVDS for data and clock
+\end{itemize}
+
+\textbf{WRONG: "Lower cost compared to single ended signaling"}
+\begin{itemize}
+    \item FALSE: LVDS typically costs more
+    \item Requires two traces per signal (vs. one)
+    \item More complex drivers/receivers
+    \item Controlled impedance requirements
+    \item Termination resistors needed
+    \item Trade-off: Performance vs. cost
+\end{itemize}
+
+\textbf{CORRECT: "High noise immunity due to compensation on differential lines"}
+\begin{itemize}
+    \item Common-mode noise affects both lines equally
+    \item Differential receiver subtracts: $(V_{+}) - (V_{-})$
+    \item Common-mode noise cancels out
+    \item Only differential signal remains
+    \item Excellent rejection of: EMI, ground bounce, crosstalk
+    \item Typical CMRR (Common Mode Rejection Ratio): >20 dB
+\end{itemize}
+
+\textbf{LVDS Technical Specifications:}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Typical Value} \\
+\hline
+Differential voltage swing & 350 mV \\
+Common mode voltage & 1.2 V \\
+Current & 3.5 mA \\
+Termination resistance & 100 Ω \\
+Max data rate & >1 Gbps \\
+Power per channel & 2-5 mW \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{LVDS Operation Principle:}
+
+\begin{enumerate}
+    \item \textbf{Driver:} Current source switches 3.5 mA between + and - lines
+    \item \textbf{Transmission:} Balanced lines carry differential signal
+    \item \textbf{Termination:} 100Ω resistor at receiver end
+    \item \textbf{Voltage developed:} $V = I \times R = 3.5\text{mA} \times 100Ω = 350\text{mV}$
+    \item \textbf{Receiver:} Differential amplifier detects voltage difference
+    \item \textbf{Common-mode:} Noise on both lines cancels out
+\end{enumerate}
+
+\textbf{Comparison with Other Standards:}
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{LVDS} & \textbf{LVCMOS} & \textbf{RS-422} \\
+\hline
+Signaling & Differential & Single-ended & Differential \\
+Voltage swing & 350 mV & 3.3 V & 2-6 V \\
+Max speed & >1 Gbps & ~100 Mbps & ~10 Mbps \\
+Power & Low & Medium & Medium \\
+EMI & Very low & High & Medium \\
+Cost & Higher & Lower & Higher \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Common LVDS Applications:}
+
+\begin{itemize}
+    \item Display interfaces: FPD-Link, LVDS LCD panels
+    \item High-speed serial: SATA, PCIe (variants)
+    \item Camera interfaces: MIPI CSI-2 (physical layer)
+    \item Networking: Gigabit Ethernet (physical layer)
+    \item Test equipment: High-speed data acquisition
+    \item FPGA I/O: High-speed inter-chip communication
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding LVDS advantages and technical characteristics
+\end{example2}
+
+\subsection{LVDS Fault Behavior}
+
+\begin{example2}{Multiple Choice - LVDS Line Interruption}\\
+\textbf{Source:} Exercise I/O Interfaces, Question 2 (Page 2)
+
+\textbf{Topics:} LVDS fault tolerance, differential signaling, line interruption
+
+\textbf{Question:}
+
+% TODO: Add image from 10_IO.pdf, Page 2
+% Description: Same LVDS circuit diagram as previous with Driver, transmission lines, and Receiver showing 100Ω termination and LVDS-001 specification
+% Priority: CRITICAL
+% Suggested filename: exercise10_lvds_fault.png
+\\
+% \includegraphics[width=0.8\linewidth]{exercise10_lvds_fault.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+What happens at LVDS connections with regard to signal transmission if one of the two differential traces is interrupted?
+
+Select one or more answers:
+\begin{itemize}
+    \item Information is transmitted, but with a lower data rate
+    \item Signals are transmitted with the inverted polarity
+    \item There is no current flow, such the receiver can not detect logical zero or one
+    \item No voltage is induced on the termination resistor
+    \item Information is still transmitted because the two lines are redundant
+    \item No Information is transmitted
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item There is no current flow, such the receiver can not detect logical zero or one
+    \item No voltage is induced on the termination resistor
+    \item No Information is transmitted
+\end{itemize}
+
+\textbf{Explanation:}
+
+Your answer is correct.
+
+Die richtigen Antworten sind:
+\begin{itemize}
+    \item No Information is transmitted
+    \item There is no current flow, such the receiver can not detect logical zero or one
+    \item No voltage is induced on the termination resistor
+\end{itemize}
+
+\textbf{Detailed Analysis:}
+
+\textbf{Normal LVDS Operation:}
+\begin{enumerate}
+    \item Current source drives 3.5 mA through differential pair
+    \item Current flows: Driver (+) → Line (+) → Termination resistor → Line (-) → Driver (-)
+    \item Closed current loop required
+    \item Voltage developed across termination: $V = I \times R = 3.5\text{mA} \times 100Ω = 350\text{mV}$
+    \item Receiver detects this differential voltage
+\end{enumerate}
+
+\textbf{When One Line is Interrupted:}
+
+\textbf{Physical consequence:}
+\begin{itemize}
+    \item Current path is broken
+    \item Open circuit prevents current flow
+    \item No current → No voltage across termination resistor
+    \item Current-mode driver cannot function
+\end{itemize}
+
+\textbf{CORRECT: "There is no current flow, such the receiver can not detect logical zero or one"}
+\begin{itemize}
+    \item TRUE: Interruption breaks current loop
+    \item Current source has nowhere to conduct
+    \item Zero current through termination resistor
+    \item Receiver sees no differential voltage
+    \item Cannot distinguish between logic levels
+    \item Result: Communication failure
+\end{itemize}
+
+\textbf{CORRECT: "No voltage is induced on the termination resistor"}
+\begin{itemize}
+    \item TRUE: $V = I \times R$, if $I = 0$ then $V = 0$
+    \item Open circuit means no current
+    \item Termination resistor has no voltage drop
+    \item Receiver cannot detect signal
+    \item May float to unpredictable voltage
+\end{itemize}
+
+\textbf{CORRECT: "No Information is transmitted"}
+\begin{itemize}
+    \item TRUE: Complete communication failure
+    \item Link is non-functional
+    \item Data cannot be recovered
+    \item Error detection/correction cannot help (no signal at all)
+    \item System must detect link failure
+\end{itemize}
+
+\textbf{Why Other Options Are Wrong:}
+
+\textbf{WRONG: "Information is transmitted, but with a lower data rate"}
+\begin{itemize}
+    \item FALSE: No information at all
+    \item Not a matter of data rate
+    \item Physical connection is broken
+    \item Cannot operate at any rate
+\end{itemize}
+
+\textbf{WRONG: "Signals are transmitted with the inverted polarity"}
+\begin{itemize}
+    \item FALSE: No signal is transmitted
+    \item Polarity inversion would require functioning link
+    \item Open circuit prevents any transmission
+    \item Receiver cannot infer polarity from absence of signal
+\end{itemize}
+
+\textbf{WRONG: "Information is still transmitted because the two lines are redundant"}
+\begin{itemize}
+    \item FALSE: Lines are not redundant
+    \item Both lines are essential for differential signaling
+    \item Complementary, not redundant
+    \item Cannot operate with single line
+    \item Would need duplicate LVDS pairs for redundancy
+\end{itemize}
+
+\textbf{Comparison with Single-Ended Signaling:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Failure Mode} & \textbf{LVDS (Differential)} & \textbf{Single-Ended} \\
+\hline
+One line open & Complete failure & May still work (if signal line OK) \\
+Both lines shorted & Protected (current limited) & May damage driver \\
+Ground offset & Works (common-mode rejection) & Can cause errors \\
+EMI noise & High immunity & Susceptible \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Fault Detection:}
+
+In practice, LVDS receivers may include:
+\begin{itemize}
+    \item Loss-of-signal detection
+    \item Can identify open/short conditions
+    \item Alert system to link failure
+    \item Enables fault isolation
+    \item May trigger failover to backup link
+\end{itemize}
+
+\textbf{Receiver Behavior on Open Circuit:}
+
+\begin{itemize}
+    \item \textbf{Differential input:} Sees no voltage difference
+    \item \textbf{Common-mode:} May float or be pulled by receiver input bias
+    \item \textbf{Output state:} Unpredictable or defaults to specific state
+    \item \textbf{Data validity:} None - link is down
+    \item \textbf{Error flags:} Should indicate loss of signal
+\end{itemize}
+
+\textbf{Design Implications:}
+
+For reliable LVDS systems:
+\begin{enumerate}
+    \item Use robust connectors (locking, strain relief)
+    \item Route traces together (matched length, same layer)
+    \item Protect from mechanical damage
+    \item Implement link status monitoring
+    \item Consider redundant links for critical applications
+    \item Use proper shielding for EMI protection
+    \item Test for opens/shorts during manufacturing
+\end{enumerate}
+
+\textbf{Redundancy Strategies:}
+
+For fault-tolerant systems:
+\begin{itemize}
+    \item \textbf{Duplicate links:} Two separate LVDS pairs
+    \item \textbf{Automatic switchover:} Detect failure, switch to backup
+    \item \textbf{Error detection:} CRC, parity, protocol-level checks
+    \item \textbf{Not inherent in LVDS:} Requires system-level design
+\end{itemize}
+
+\textbf{Key Takeaway:}
+
+LVDS differential signaling provides many advantages (speed, noise immunity, low power), but is NOT fault-tolerant against line interruption. Both lines are essential for operation. An open circuit in either line causes complete communication failure.
+
+\important{Problem type:} Analysis - Understanding LVDS fault behavior and limitations
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+% ===== IMAGE SUMMARY =====
+% Images needed for this exercise:
+% 1. exercise10_lvds_circuit.png (Page 1) - CRITICAL - LVDS driver and receiver circuit with current source and differential amplifier
+% 2. exercise10_lvds_fault.png (Page 2) - CRITICAL - Same LVDS circuit for fault analysis question
+% =====================

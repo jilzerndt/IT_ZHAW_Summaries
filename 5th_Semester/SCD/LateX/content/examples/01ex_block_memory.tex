@@ -1,0 +1,293 @@
+\section{Exercise: Block Memory}
+
+\begin{remark}
+\textbf{Quiz Format:} Multiple choice
+\textbf{Duration:} 5 hours 54 minutes
+\textbf{Score:} 7.00 von 8.00 (87.5\%)
+\textbf{Topics Covered:} Block memory, FIFOs, FPGA memory blocks, byte enables, timing constraints
+\end{remark}
+
+\subsection{FIFO Implementation in SRAM-based FPGAs}
+
+\begin{example2}{Multiple Choice - FIFO Implementation}\\
+\textbf{Source:} Exercise Block Memory, Question 1
+
+\textbf{Topics:} Block memory, FIFO design, FPGA memory resources
+
+\textbf{Question:}
+
+How can FIFOs be implemented in SRAM based FPGAs? (Several Answers may be correct)
+
+Select one or more answers:
+\begin{itemize}
+    \item FPGA memory blocks can be used for FIFOs
+    \item The D-Flip-Flops in the Logic Elements may be used for FIFOs
+    \item The Cyclone V SoC FPGA has hard macros exclusively made for FIFOs
+    \item The external confuration flash may be used for FIFOs
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:} 
+\begin{itemize}
+    \item FPGA memory blocks can be used for FIFOs
+    \item The D-Flip-Flops in the Logic Elements may be used for FIFOs
+\end{itemize}
+
+\textbf{Explanation:}
+
+A FIFO can be implemented using flip flops if you only need a small FIFO. As soon as you need more than a few hundred bits of storage, using block memories is more efficient.
+
+The external configuration flash memory is not suitable for FIFO usage as it is slow and has a limited number of write cycles.
+
+There are no hard macros (silicon) that can only be used as a FIFO, since a block memory with some added logic is just as efficient and can also be used for other purposes. This makes more versatile use of the silicon area.
+
+\important{Problem type:} Application - Understanding FPGA memory resources and FIFO implementation options
+\end{example2}
+
+\subsection{Block Memory Circuit Analysis}
+
+\begin{example2}{Multiple Choice - Block Memory Circuit}\\
+\textbf{Source:} Exercise Block Memory, Question 2
+
+\textbf{Topics:} Block memory, signal timing, byte enables, clock domains
+
+\textbf{Question:}
+
+% TODO: Add image from 01_Block_Memory.pdf, Page 2
+% Description: Block memory circuit diagram showing data[31..0], wraddress[4..0], wren, rdaddress[4..0], byteena_a[3..0], clock signals connecting to a 32-Word(s) RAM block with q[31..0] output
+% Priority: CRITICAL
+% Suggested filename: exercise01_block_memory_circuit.png
+\\
+% \includegraphics[width=0.8\linewidth]{exercise01_block_memory_circuit.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Which answers are correct for the circuit shown (several correct answers are possible)?
+
+Select one or more answers:
+\begin{itemize}
+    \item In all cases, all 32 bits of the "data" signal are written to the memory at once.
+    \item Write data, wraddress, rdaddress, wren, q, byteen\_a are in the same clock domain.
+    \item The "data" signal may be in a different clock domain than the output "q".
+    \item It is possible to write individual 8-bit bytes to this 32-bit wide memory.
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item Write data, wraddress, rdaddress, wren, q, byteen\_a are in the same clock domain.
+    \item It is possible to write individual 8-bit bytes to this 32-bit wide memory.
+\end{itemize}
+
+\textbf{Explanation:}
+
+The byte enable signals allow the individual writing of 8-bit bytes to this 32-bit wide memory.
+
+In the schematic shown, all control, address and data ("data" and "q") signals are registered in flip flops that are connected to the same clock signal.
+
+\important{Problem type:} Analysis - Circuit interpretation and signal timing analysis
+\end{example2}
+
+\subsection{M4k Block Memory with Flip-Flop}
+
+\begin{example2}{Multiple Choice - M4k Block Memory Architecture}\\
+\textbf{Source:} Exercise Block Memory, Question 3
+
+\textbf{Topics:} Block memory architecture, flip-flops, timing performance, clock frequency
+
+\textbf{Question:}
+
+% TODO: Add image from 01_Block_Memory.pdf, Page 3
+% Description: M4k Block diagram showing DATA_IN, ADRESSEN, WREN, CLK signals connected to a Speicher Zelle (memory cell) with flip-flops (D Q blocks) and sync_mem, outputting to data_out
+% Priority: CRITICAL
+% Suggested filename: exercise01_m4k_block_diagram.png
+\\
+% \includegraphics[width=0.8\linewidth]{exercise01_m4k_block_diagram.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Which answers are correct for the block memory (M4k) shown (several correct answers are possible)?
+
+Select one or more answers:
+\begin{itemize}
+    \item If the Flip-flop in the data out path is bypassed, the processor may require less wait states
+    \item Engaging the flip-flop of the data out path allows higher clock frequencies compared to when the Flip Flop is bypassed.
+    \item Engaging the Flip-flop of the data out path increases in all cases the performance of the connected processor
+    \item The Flip-flop in the data out path reduces memory access bandwidth
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item Engaging the flip-flop of the data out path allows higher clock frequencies compared to when the Flip Flop is bypassed.
+    \item If the Flip-flop in the data out path is bypassed, the processor may require less wait states
+\end{itemize}
+
+\textbf{Explanation:}
+
+Engaging the flip-flop of the data out path allows higher clock frequencies compared to when the Flip Flop is bypassed. If the Flip-flop in the data out path is bypassed, the processor may require less wait states.
+
+\important{Problem type:} Analysis - Memory architecture trade-offs between latency and clock frequency
+\end{example2}
+
+\subsection{Byte-Enable Functionality}
+
+\begin{example2}{Multiple Choice - Byte Enable}\\
+\textbf{Source:} Exercise Block Memory, Question 4
+
+\textbf{Topics:} Byte enables, memory writes, data width
+
+\textbf{Question:}
+
+What is the purpose of byte enables in block memories?
+
+Select the correct exploration:
+\begin{enumerate}[label=\alph*.]
+    \item Byte enables allow the possibility writing misaligned words in a byte processor system
+    \item Reading memory in burst mode
+    \item If you want to connect an 8-bit page memory with 32-bit soft processor core
+    \item If individual bytes of a 32-bit wide memory should be written individually
+\end{enumerate}
+
+\tcblower
+
+\textbf{Correct Answer:} d
+
+\textbf{Explanation:}
+
+If individual bytes of a 32-bit wide memory should be written individually.
+
+Byte enables allow writing individual bytes to a memory with larger word sizes. For instance, a 32-bit wide memory could write just one of the four 8-bit bytes using byte enables. This allows writing smaller data types to the memory. Without byte enables, it would be necessary to read the memory word, modify the desired byte, and write the entire word back.
+
+\important{Problem type:} Explanation - Understanding byte enable functionality in memory systems
+\end{example2}
+
+\subsection{Memory Width and Write Address}
+
+\begin{example2}{Multiple Choice - Memory Configuration}\\
+\textbf{Source:} Exercise Block Memory, Question 5
+
+\textbf{Topics:} Memory addressing, write width, read width
+
+\textbf{Question:}
+
+Which answers are correct for the block memory shown (several correct answers are possible)?
+
+Select one or more answers:
+\begin{itemize}
+    \item Since the block memory is in the FPGA fabric, it can not be accessed before the fabric is configured.
+    \item The writing width shows how long the output data needs to be stable before the writeenable signal may be asserted.
+    \item The writing address width allows to determine the number of words in the memory
+    \item Since data is read too early, it may not be valid
+    \item If data as real cycle early, the memory needs to provide valid output data
+    \item tRDV (read cycle) defines the maximum time for a real cycle
+    \item The writing width shows remaining path from the writing width
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{itemize}
+    \item Since the block memory is in the FPGA fabric, it can not be accessed before the fabric is configured.
+    \item The writing address width allows to determine the number of words in the memory
+\end{itemize}
+
+\textbf{Explanation:}
+
+The writing address width allows to determine the number of words in the memory: With its writing width of 5 bits, the memory can store 32 bytes.
+
+Since the block memory is in the FPGA fabric, it can not be accessed before the fabric is configured. This prevents the use of block memory as storage for the FPGA bitstream (the configuration).
+
+\important{Problem type:} Calculation - Memory addressing and capacity determination
+\end{example2}
+
+\subsection{Memory Timing Parameters}
+
+\begin{example2}{Multiple Choice - Timing Constraints}\\
+\textbf{Source:} Exercise Block Memory, Question 6
+
+\textbf{Topics:} Memory timing, setup time, hold time, read cycle
+
+\textbf{Question:}
+
+To guarantee correct operation, select the correct exploration:
+
+\begin{enumerate}[label=\alph*.]
+    \item tAS: address setup time, the address signals must be valid and stable for a certain time before the writeenable signal may be asserted.
+    \item tAH: address hold time, the address signals must be kept (held) stable for a certain time after the writeenable signal is deasserted.
+    \item tDS: data setup time, the data signals must be valid and stable for a certain time before the writeenable signal may be asserted.
+    \item tDH: data hold time, the data signals must be kept (held) stable for a certain time after the writeenable signal is deasserted.
+    \item Data will be stored at the rising edge of the writeenable signal
+    \item tRDV: read cycle, defines the maximum time for a read cycle
+\end{enumerate}
+
+\tcblower
+
+\textbf{Correct Answers:}
+\begin{enumerate}[label=\alph*.]
+    \item tAS: address setup time - True
+    \item tAH: address hold time - True
+    \item tDS: data setup time - True
+    \item tDH: data hold time - True
+\end{enumerate}
+
+\textbf{Explanation:}
+
+The right answers are:
+\begin{itemize}
+    \item tAS: The minimum duration the signal must be active to insure data is written properly
+    \item tAH: The time address must be kept after writing the memory
+    \item tDS: The time data must be kept after writing the memory
+    \item tDH: The time address must be stable before writing the memory
+\end{itemize}
+
+tRDV is not the maximum time for a read cycle. If subsequent read cycles follow at too short distances, data outputs are never stable.
+
+By processor clocks data in to early after address is valid, data may be wrong.
+
+If data as real too early, the memory may not have valid output data yet.
+
+\important{Problem type:} Explanation - Memory timing parameter definitions and constraints
+\end{example2}
+
+\subsection{Byte-Enable in 32-bit Processor Systems}
+
+\begin{example2}{Multiple Choice - Byte Enable Application}\\
+\textbf{Source:} Exercise Block Memory, Question 7
+
+\textbf{Topics:} Byte enables, processor integration, combinatorial logic
+
+\textbf{Question:}
+
+What is the purpose of byte enable in 32-bit processor systems?
+
+Select one or more answers:
+\begin{itemize}
+    \item To allow the possibility writing misaligned words in a byte processor system
+    \item Reading memory in burst mode
+    \item If you want to connect an 8-bit page memory with 32-bit soft processor core
+    \item If individual bytes of a 32-bit wide memory should be written individually
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answer:} If individual bytes of a 32-bit wide memory should be written individually
+
+\textbf{Explanation:}
+
+Byte enables allow writing individual bytes to a memory with larger word sizes. For instance, a 32-bit wide memory could write just one of the four 8-bit bytes using byte enables. This allows writing smaller data types to the memory. For implementation of combinatorial logic in FPGA, for implementation of FIFO in FPGA. For implementation of ROM in FPGA.
+
+\important{Problem type:} Application - Practical use of byte enables in processor-memory interfaces
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+% ===== IMAGE SUMMARY =====
+% Images needed for this exercise:
+% 1. exercise01_block_memory_circuit.png (Page 2) - CRITICAL - Circuit diagram showing 32-Word RAM block with byte enables
+% 2. exercise01_m4k_block_diagram.png (Page 3) - CRITICAL - M4k block architecture with flip-flops
+% =====================

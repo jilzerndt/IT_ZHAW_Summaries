@@ -1,0 +1,1498 @@
+\section{FPGA Configuration}
+
+\subsection{Motivation and Learning Objectives}
+
+\begin{concept}{Motivation}\\
+Understanding FPGA configuration is essential for:
+\begin{itemize}
+    \item System bring-up and debugging
+    \item Selecting appropriate configuration strategy
+    \item Designing robust embedded systems
+    \item Optimizing boot time and reliability
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 2
+% Description: Motivation diagram showing FPGA with question marks on various configuration aspects
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture13_motivation.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture13_motivation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{Learning Objectives}\\
+After this lesson, you should be able to:
+\begin{enumerate}
+    \item Explain the operation principle of volatile and non-volatile FPGA technologies
+    \item Identify configuration modes from a schematic of an FPGA and configuration device
+    \item Calculate the necessary size of a configuration device
+    \item Estimate the configuration time for a given FPGA device
+    \item Choose between active and passive configuration according to requirements
+\end{enumerate}
+\end{definition}
+
+\subsection{Configuration Overview}
+
+\subsubsection{Logic Block Configuration}
+
+\begin{definition}{Logic Cell Configuration Parameters}\\
+Each logic cell in the FPGA requires configuration for multiple aspects:
+
+\textbf{LUT Configuration:}
+\begin{itemize}
+    \item LUT truth table contents (function to implement)
+    \item Determines combinational logic behavior
+\end{itemize}
+
+\textbf{Flip-Flop Configuration:}
+\begin{itemize}
+    \item Bypass flip-flop (combinational only)
+    \item Use flip-flop (register output)
+\end{itemize}
+
+\textbf{Input Multiplexer:}
+\begin{itemize}
+    \item Select input sources
+    \item Route signals from interconnect
+\end{itemize}
+
+\textbf{Clock Selection:}
+\begin{itemize}
+    \item Choose clock source
+    \item Clock enable signals
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 6
+% Description: Logic block diagram showing configurable LUT, FF, input MUX, and clock select
+% Priority: CRITICAL
+% Suggested filename: lecture13_logic_block_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_logic_block_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Signal Routing Configuration}
+
+\begin{definition}{Routing Configuration}\\
+The programmable interconnect requires configuration for:
+
+\textbf{Signal Routing:}
+\begin{itemize}
+    \item Connection matrices between logic blocks
+    \item Routing multiplexers
+    \item Wire segment selection
+\end{itemize}
+
+\textbf{LAB Connections:}
+\begin{itemize}
+    \item Connections to adjacent LABs (Logic Array Blocks)
+    \item Register chains between LABs
+    \item Carry chains for arithmetic
+\end{itemize}
+
+\textbf{Clock Region Crossings:}
+\begin{itemize}
+    \item Clock domain boundaries
+    \item Global vs. regional clock routing
+    \item Clock buffer insertion
+\end{itemize}
+
+\important{Complexity:} Routing configuration typically consumes the majority of configuration bits.
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 7
+% Description: Signal routing diagram showing LAB connections and routing configuration
+% Priority: CRITICAL
+% Suggested filename: lecture13_routing_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_routing_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{I/O Configuration}
+
+\begin{definition}{I/O Pin Configuration}\\
+Each I/O pin requires extensive configuration:
+
+\textbf{I/O Routing:}
+\begin{itemize}
+    \item Connection to FPGA fabric
+    \item Direct input/output paths
+\end{itemize}
+
+\textbf{Timing Configuration:}
+\begin{itemize}
+    \item I/O clock selection
+    \item Input and output delays
+    \item Setup and hold adjustments
+\end{itemize}
+
+\textbf{Registers:}
+\begin{itemize}
+    \item Input register enable
+    \item Output register enable
+    \item Output Enable (OE) register
+\end{itemize}
+
+\textbf{Electrical Properties:}
+\begin{itemize}
+    \item Voltage standard (VCCIO)
+    \item Pull-up resistor enable
+    \item Bus hold enable
+    \item Signal polarity (inverting/non-inverting)
+    \item Drive strength (current capability)
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 8
+% Description: I/O configuration diagram showing registers, delays, and electrical settings
+% Priority: CRITICAL
+% Suggested filename: lecture13_io_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_io_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{PLL Configuration}
+
+\begin{definition}{Phase-Locked Loop Configuration}\\
+PLLs require configuration for clock generation and distribution:
+
+\textbf{Multiplexer Configuration:}
+\begin{itemize}
+    \item Input clock source selection
+    \item Output routing selection
+\end{itemize}
+
+\textbf{Frequency Control:}
+\begin{itemize}
+    \item Divider ratios (input and output)
+    \item Multiplication factors
+    \item Feedback path configuration
+\end{itemize}
+
+\textbf{Phase and Timing:}
+\begin{itemize}
+    \item Phase delays for each output
+    \item Duty cycle adjustment
+\end{itemize}
+
+\textbf{Control Signals:}
+\begin{itemize}
+    \item Clock source selection
+    \item Output enable for each clock
+    \item Power-down mode
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 9
+% Description: PLL configuration diagram showing dividers, MUX, and clock source selection
+% Priority: IMPORTANT
+% Suggested filename: lecture13_pll_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_pll_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Block Memory Configuration}
+
+\begin{definition}{Block RAM Configuration}\\
+Embedded memory blocks require configuration for:
+
+\textbf{Output Path:}
+\begin{itemize}
+    \item Output registers enable
+    \item Bypass registers for lower latency
+\end{itemize}
+
+\textbf{Port Configuration:}
+\begin{itemize}
+    \item Port widths (data and address)
+    \item Read/write enable signals
+    \item Byte enable configuration
+\end{itemize}
+
+\textbf{Operating Modes:}
+\begin{itemize}
+    \item Single-port mode
+    \item Dual-port mode (true dual-port or simple dual-port)
+    \item FIFO mode
+    \item Independent clocks for each port
+\end{itemize}
+
+\textbf{Memory Initialization:}
+\begin{itemize}
+    \item Initial memory contents
+    \item ROM functionality
+    \item Lookup tables
+\end{itemize}
+
+\important{Size Impact:} Memory initialization data can significantly increase bitstream size.
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 10
+% Description: Block memory configuration showing output registers, port widths, and modes
+% Priority: IMPORTANT
+% Suggested filename: lecture13_memory_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_memory_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{FPGA Technologies}
+
+\subsubsection{SRAM-Based FPGAs}
+
+\begin{definition}{SRAM Configuration Technology}\\
+\textbf{Manufacturers:} Xilinx, Intel (Altera), Lattice
+
+\textbf{Storage Mechanism:}
+\begin{itemize}
+    \item Uses SRAM cells for configuration storage
+    \item Each configuration bit stored in one SRAM cell
+    \item Standard 6-transistor SRAM cell design
+\end{itemize}
+
+\textbf{SRAM Cell Structure:}
+\begin{itemize}
+    \item Two cross-coupled inverters (bistable latch)
+    \item Two access transistors (word line control)
+    \item Connected to bit line and word line
+    \item Drives configuration item directly
+\end{itemize}
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item \textbf{Volatile storage:} Configuration lost when power removed
+    \item Must be configured every time after power-on
+    \item Fast reconfiguration possible
+    \item Unlimited rewrite cycles
+    \item Requires external non-volatile memory for boot
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Mature technology
+    \item High density
+    \item Fast configuration
+    \item Easy partial reconfiguration
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+    \item Volatile (requires boot memory)
+    \item Susceptible to radiation-induced upsets (SEU)
+    \item More complex boot process
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 12
+% Description: SRAM cell diagram showing transistors, bit line, word line, and connection to config item
+% Priority: CRITICAL
+% Suggested filename: lecture13_sram_cell.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture13_sram_cell.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{Antifuse Technology}
+
+\begin{definition}{Antifuse Configuration Technology}\\
+\textbf{Manufacturers:} QuickLogic, Microsemi (older products)
+
+\textbf{Operating Principle:}
+\begin{itemize}
+    \item Antifuse: opposite of a fuse
+    \item \textbf{Unprogrammed state:} Open circuit (insulation intact)
+    \item \textbf{Programmed state:} Closed circuit (insulation blown)
+\end{itemize}
+
+\textbf{Structure:}
+\begin{itemize}
+    \item Thin insulation layer between two conductors
+    \item High voltage applied to blow insulation
+    \item Creates permanent low-resistance connection
+    \item Transfer gates control programming voltage
+\end{itemize}
+
+\textbf{Programming Process:}
+\begin{enumerate}
+    \item Apply high voltage ($V_{CC} + $ programming voltage)
+    \item Current breaks down insulation layer
+    \item Forms conductive channel
+    \item Leave insulation intact for open connections
+\end{enumerate}
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item \textbf{One-time programmable (OTP):} Process not reversible
+    \item Non-volatile: retains configuration without power
+    \item Very small cell size (high density)
+    \item Immune to radiation upsets
+    \item No boot time required
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Non-volatile (instant-on)
+    \item Small die size
+    \item High security (difficult to reverse-engineer)
+    \item Radiation-hard
+    \item Low power
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+    \item Cannot be reconfigured
+    \item Higher cost per unit
+    \item Limited applications
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 13
+% Description: Antifuse structure showing transfer gate
+% Priority: IMPORTANT
+% Suggested filename: lecture13_antifuse_structure.png
+\\
+% \includegraphics[width=0.7\linewidth]{lecture13_antifuse_structure.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% TODO: Add image from SCD_13_config.pdf, Slide 14
+% Description: Antifuse cross-section showing VCC, insulation layer, and programming
+% Priority: IMPORTANT
+% Suggested filename: lecture13_antifuse_detail.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture13_antifuse_detail.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Flash-Based FPGAs}
+
+\begin{definition}{Flash Configuration Technology}\\
+\textbf{Manufacturers:} Microsemi (Actel), Lattice
+
+\textbf{Storage Mechanism:}
+\begin{itemize}
+    \item Uses flash memory cells
+    \item Floating-gate transistor technology
+    \item Same principle as standard flash memory
+\end{itemize}
+
+\textbf{Flash Cell Structure:}
+\begin{itemize}
+    \item Floating gate isolated by silicon dioxide (SiO$_2$)
+    \item Control gate above floating gate
+    \item Source, drain, and substrate
+\end{itemize}
+
+\textbf{Programming and Erasing:}
+
+\paragraph{Write cell to '0' (ON state):}
+\begin{enumerate}
+    \item Apply high voltage ($U_P$) to control gate
+    \item Electrons tunnel through SiO$_2$ to floating gate
+    \item Charge deposited on floating gate
+    \item Transistor conducts when control gate = '1'
+\end{enumerate}
+
+\paragraph{Erase cell to '1' (OFF state):}
+\begin{enumerate}
+    \item Apply negative voltage ($-U_P$) to control gate
+    \item Electrons tunnel out of floating gate
+    \item Floating gate discharged
+    \item Transistor blocks regardless of control gate value
+\end{enumerate}
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item \textbf{Non-volatile:} Retains configuration without power
+    \item \textbf{Rewritable:} Can be reprogrammed multiple times
+    \item Limited write cycles ($\sim 10^5$ to $10^6$)
+    \item Silicon dioxide (SiO$_2$) is excellent insulator
+    \item Instant-on capability
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Non-volatile (no boot memory needed)
+    \item Reprogrammable (unlike antifuse)
+    \item Single-chip solution
+    \item Low power consumption
+    \item Radiation tolerant
+    \item Secure (difficult to read out)
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+    \item Lower density than SRAM
+    \item Limited write cycles
+    \item Slower programming time
+    \item Higher cost
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 15
+% Description: Flash cell diagram showing floating gate, control gate, and ON/OFF states
+% Priority: CRITICAL
+% Suggested filename: lecture13_flash_cell.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_flash_cell.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{remark}
+\textbf{Technology Comparison Summary:}
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Property} & \textbf{SRAM} & \textbf{Antifuse} & \textbf{Flash} \\
+\hline
+Volatile & Yes & No & No \\
+Reprogrammable & Yes & No & Yes \\
+Density & High & Highest & Medium \\
+Boot time & Required & None & None \\
+Write cycles & Unlimited & 1 & $10^5$-$10^6$ \\
+Cost & Medium & High & High \\
+Security & Medium & High & High \\
+\hline
+\end{tabular}
+\end{center}
+\end{remark}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Active Serial Configuration}
+
+\subsubsection{Active Configuration Concept}
+
+\begin{definition}{Active Serial Configuration Mode}\\
+\textbf{Principle:} FPGA takes active role in configuration process.
+
+\textbf{FPGA Responsibilities:}
+\begin{itemize}
+    \item Drives DCLK (Data Clock) using internal oscillator
+    \item Controls configuration memory via control lines
+    \item Generates addresses for memory reads
+    \item Manages configuration sequence
+\end{itemize}
+
+\textbf{Configuration Memory Role:}
+\begin{itemize}
+    \item Passive device (SPI flash memory)
+    \item Responds to FPGA commands
+    \item Outputs data on request
+\end{itemize}
+
+\textbf{Mode Selection:}
+\begin{itemize}
+    \item Mode select pins determine configuration mode
+    \item Set during board design (pull-up/pull-down)
+    \item Read by FPGA at power-up
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 17
+% Description: Active serial configuration block diagram showing FPGA, config memory, and mode select
+% Priority: CRITICAL
+% Suggested filename: lecture13_active_serial.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_active_serial.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Configuration Controller}
+
+\begin{definition}{FPGA Configuration Controller}\\
+The configuration controller is a dedicated hardware block inside the FPGA:
+
+\textbf{Functions:}
+\begin{enumerate}
+    \item \textbf{Power Detection:}
+    \begin{itemize}
+        \item Detects stable power supply
+        \item Begins configuration sequence when stable
+    \end{itemize}
+    \item \textbf{Configuration Trigger:}
+    \begin{itemize}
+        \item Responds to nConfig input
+        \item Initiates configuration on request
+    \end{itemize}
+    \item \textbf{Power Monitoring:}
+    \begin{itemize}
+        \item Monitors supply voltage
+        \item Flags power interruptions
+        \item Restarts configuration if needed
+    \end{itemize}
+    \item \textbf{Status Indication:}
+    \begin{itemize}
+        \item Indicates configuration complete
+        \item Signals errors if detected
+    \end{itemize}
+    \item \textbf{Clock Generation:}
+    \begin{itemize}
+        \item Generates configuration clock (DCLK)
+        \item Typical frequency: 40 MHz
+        \item Drives external flash memory
+    \end{itemize}
+\end{enumerate}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 18
+% Description: Configuration controller block diagram showing mode select, power detection, and control signals
+% Priority: CRITICAL
+% Suggested filename: lecture13_config_controller.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_config_controller.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Configuration Timing}
+
+\begin{definition}{Active Serial Configuration Signals}\\
+\textbf{Key Signals and Their Functions:}
+
+\paragraph{nConfig (Input):}
+\begin{itemize}
+    \item Active-low configuration trigger
+    \item Assertion starts configuration
+    \item Can be driven externally or pulled high
+\end{itemize}
+
+\paragraph{nStatus (Output):}
+\begin{itemize}
+    \item Indicates configuration in progress
+    \item Low during configuration
+    \item High when idle or complete
+\end{itemize}
+
+\paragraph{nCSO (Output):}
+\begin{itemize}
+    \item Chip Select Output (active-low)
+    \item Selects external configuration flash
+    \item Controls flash memory enable
+\end{itemize}
+
+\paragraph{DCLK (Output):}
+\begin{itemize}
+    \item Data Clock for configuration
+    \item Drives external flash memory clock
+    \item Typical frequency: 40 MHz
+\end{itemize}
+
+\paragraph{ASDO (Output):}
+\begin{itemize}
+    \item Active Serial Data Output
+    \item Serial data from FPGA to flash memory
+    \item Transfers read address to flash memory
+\end{itemize}
+
+\paragraph{DATA0 (Input):}
+\begin{itemize}
+    \item Serial data from flash memory to FPGA
+    \item Transfers configuration bitstream
+    \item Clocked by DCLK
+\end{itemize}
+
+\paragraph{CONF\_DONE (Output):}
+\begin{itemize}
+    \item Indicates configuration finished
+    \item Goes high when complete
+    \item 200 DCLK cycles later, FPGA switches to user mode
+\end{itemize}
+
+\paragraph{INIT\_DONE (Output):}
+\begin{itemize}
+    \item Signals user mode active
+    \item High when FPGA in functional mode
+    \item FPGA design begins execution
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 19
+% Description: Configuration timing diagram showing all signals during configuration sequence
+% Priority: CRITICAL
+% Suggested filename: lecture13_config_timing.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_config_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{KR}{Active Serial Configuration Sequence}\\
+\textbf{Step-by-step process:}
+
+\paragraph{1. Power-Up and Initialization:}
+\begin{itemize}
+    \item Power supplies stabilize
+    \item Configuration controller initializes
+    \item Mode select pins sampled
+\end{itemize}
+
+\paragraph{2. Configuration Start:}
+\begin{itemize}
+    \item nConfig asserted or power-up detected
+    \item nStatus goes low (configuration in progress)
+    \item nCSO asserted (selects flash memory)
+\end{itemize}
+
+\paragraph{3. Data Transfer:}
+\begin{itemize}
+    \item DCLK begins toggling
+    \item ASDO sends read address to flash
+    \item DATA0 receives configuration data
+    \item FPGA loads configuration bits sequentially
+\end{itemize}
+
+\paragraph{4. Configuration Complete:}
+\begin{itemize}
+    \item All configuration bits loaded
+    \item CONF\_DONE goes high
+    \item Wait 200 DCLK cycles
+\end{itemize}
+
+\paragraph{5. User Mode:}
+\begin{itemize}
+    \item FPGA switches to user mode
+    \item INIT\_DONE goes high
+    \item User design begins operation
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 20
+% Description: Detailed timing diagram with annotations explaining each signal transition
+% Priority: IMPORTANT
+% Suggested filename: lecture13_timing_detail.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_timing_detail.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Configuration Data Size}
+
+\begin{concept}{Bitstream Size Determination}\\
+\textbf{Size Factors:}
+\begin{itemize}
+    \item Number of configurable items depends on FPGA fabric size
+    \item Logic elements (LUTs, FFs)
+    \item Routing resources
+    \item Block RAM initialization
+    \item I/O configuration
+    \item PLL settings
+\end{itemize}
+
+\textbf{Finding Bitstream Size:}
+\begin{itemize}
+    \item Datasheet states bitstream size for each device variant
+    \item Varies significantly between device families
+    \item Must select configuration memory accordingly
+\end{itemize}
+
+\textbf{Multiple FPGA Configuration:}
+\begin{itemize}
+    \item Multiple FPGAs can be configured from one memory
+    \item Daisy-chain configuration
+    \item Sum of individual bitstream sizes
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Configuration Memory Selection}\\
+\textbf{Intel/Altera Configuration Devices:}
+\begin{itemize}
+    \item Dedicated configuration memory devices
+    \item Various capacities: EPCS1, EPCS4, EPCS16, EPCS64, EPCS128
+    \item Number indicates capacity in Megabits
+\end{itemize}
+
+\textbf{Selection Criteria:}
+\begin{itemize}
+    \item Select smallest device that can store all necessary data
+    \item Consider:
+    \begin{itemize}
+        \item Bitstream size
+        \item Optional: Bootloader code
+        \item Optional: Operating system
+        \item Optional: Application software
+    \end{itemize}
+\end{itemize}
+
+\textbf{Rule of Thumb:}
+$$\text{Bitstream Size} \approx \text{Number of LUTs} \times 0.2 \text{ Mbit/1k LUTs}$$
+
+\important{Note:} Block memories also influence bitstream size. Always consult datasheet to avoid surprises.
+\end{definition}
+
+\begin{example2}{Configuration Memory Size Calculation}\\
+\textbf{Given:} System with multiple FPGAs:
+\begin{itemize}
+    \item Two Cyclone II EP2C20 FPGAs (one master, one slave, different content)
+    \item One Cyclone II EP2C35 FPGA (slave)
+\end{itemize}
+
+\textbf{Task:} Choose minimal EPCS configuration device.
+
+\tcblower
+
+\textbf{Solution:}
+
+From datasheet, bitstream sizes:
+\begin{itemize}
+    \item EP2C20: 3{,}892{,}496 bits per device
+    \item EP2C35: 6{,}848{,}608 bits per device
+\end{itemize}
+
+Total bitstream size:
+$$\text{Total} = 2 \times 3{,}892{,}496 + 6{,}848{,}608 = 14{,}633{,}600 \text{ bits}$$
+
+Convert to Megabits:
+$$14{,}633{,}600 \text{ bits} = 14.63 \text{ Mbit}$$
+
+\important{Answer:} EPCS16 (16 Mbit) is the smallest sufficient device.
+\end{example2}
+
+\subsection{SPI Flash Memory Interface}
+
+\begin{definition}{SPI Flash Configuration Memory}\\
+\textbf{Memory Type:}
+\begin{itemize}
+    \item Configuration data stored in non-volatile memory
+    \item Usually SPI (Serial Peripheral Interface) flash
+    \item Also: QSPI (Quad SPI) flash for higher speed
+\end{itemize}
+
+\textbf{Standard Interface:}
+\begin{itemize}
+    \item Standard SPI protocol
+    \item Compatible with many flash devices
+    \item Common vendors: Micron, Winbond, Macronix, Cypress
+\end{itemize}
+
+\textbf{Signal Mapping:}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{FPGA Signal} & \textbf{SPI Signal} & \textbf{Function} \\
+\hline
+DATA0 & SO (Serial Out) & Data from flash to FPGA \\
+ASDO & SI (Serial In) & Address/commands to flash \\
+DCLK & SCK (Serial Clock) & Clock signal \\
+nCSO & CS (Chip Select) & Flash enable (active-low) \\
+\hline
+\end{tabular}
+\end{center}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 23
+% Description: FPGA to SPI flash connection diagram showing signal mapping
+% Priority: CRITICAL
+% Suggested filename: lecture13_spi_flash_connection.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_spi_flash_connection.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{SPI Flash Read Protocol}\\
+\textbf{Read Cycle Structure:}
+\begin{enumerate}
+    \item \textbf{8-bit Command Word:}
+    \begin{itemize}
+        \item READ command (typically 0x03)
+        \item Fast READ command (0x0B)
+        \item Other commands for status, ID, etc.
+    \end{itemize}
+    \item \textbf{24-bit Address:}
+    \begin{itemize}
+        \item Specifies memory location
+        \item Allows up to 16 MB addressing
+        \item Sent MSB first
+    \end{itemize}
+    \item \textbf{8-bit Data Words:}
+    \begin{itemize}
+        \item Configuration data
+        \item Sequential reads possible
+        \item Address auto-increments
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Timing:}
+\begin{itemize}
+    \item SCK driven by FPGA DCLK
+    \item SI (ASDO) transmits command and address
+    \item SO (DATA0) returns data bytes
+    \item CS must be low during transaction
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 24
+% Description: SPI flash read cycle timing diagram showing command, address, and data phases
+% Priority: CRITICAL
+% Suggested filename: lecture13_spi_read_cycle.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_spi_read_cycle.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Passive Serial Configuration}
+
+\begin{definition}{Passive Configuration Mode}\\
+\textbf{Principle:} FPGA has passive role in configuration.
+
+\textbf{External Controller:}
+\begin{itemize}
+    \item External device drives clock
+    \item External device drives control lines
+    \item External device provides data
+    \item Could be: Microcontroller, CPLD, another FPGA
+\end{itemize}
+
+\textbf{FPGA Role:}
+\begin{itemize}
+    \item Configuration controller inactive
+    \item Accepts data passively
+    \item Monitors configuration progress
+\end{itemize}
+
+\textbf{Use Cases:}
+\begin{itemize}
+    \item Reconfiguration during runtime
+    \item Custom boot sequences
+    \item Supervised configuration
+    \item Partial reconfiguration applications
+\end{itemize}
+
+\important{Flexibility:} Allows complete control over configuration process by external logic.
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 26
+% Description: Passive serial configuration diagram showing external controller driving FPGA
+% Priority: IMPORTANT
+% Suggested filename: lecture13_passive_serial.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_passive_serial.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Configuration Chains}
+
+\begin{definition}{Multi-FPGA Configuration Chain}\\
+\textbf{Chain Structure:}
+\begin{itemize}
+    \item One Master device (FPGA or external config device)
+    \item One or multiple Slave devices (passive mode)
+    \item Single configuration memory for several FPGAs
+\end{itemize}
+
+\textbf{Operation:}
+\begin{enumerate}
+    \item Master initiates configuration
+    \item Master receives data from memory
+    \item After Master configured, data passes through to first Slave
+    \item Each Slave takes its bitstream from data stream
+    \item Chain continues until all FPGAs configured
+\end{enumerate}
+
+\textbf{Signal Connections:}
+\begin{itemize}
+    \item Master FPGA:
+    \begin{itemize}
+        \item Active mode configuration
+        \item nCE always active (tied low or controlled)
+    \end{itemize}
+    \item Slave FPGAs:
+    \begin{itemize}
+        \item Passive mode configuration
+        \item nCE controlled by previous device in chain
+    \end{itemize}
+    \item Last device:
+    \begin{itemize}
+        \item nCE output left open (no more devices)
+    \end{itemize}
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Single configuration memory
+    \item Reduced board complexity
+    \item Lower cost
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+    \item Sequential configuration (slower)
+    \item Failure in one device affects all
+    \item More complex debugging
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 27
+% Description: Configuration chain diagram showing master and slave FPGAs with nCE connections
+% Priority: CRITICAL
+% Suggested filename: lecture13_config_chain.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_config_chain.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Parallel Configuration}
+
+\begin{concept}{Parallel Configuration Mode}\\
+\textbf{Principle:} Transfer multiple bits simultaneously.
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Faster configuration than serial modes
+    \item Requires more pins (data bus width: 8, 16, or 32 bits)
+    \item Suitable for large devices or fast boot requirements
+\end{itemize}
+
+\textbf{Trade-offs:}
+\begin{itemize}
+    \item \textbf{Advantage:} Significantly faster configuration time
+    \item \textbf{Disadvantage:} Requires many more I/O pins
+    \item \textbf{Disadvantage:} More complex PCB routing
+\end{itemize}
+
+\textbf{Applications:}
+\begin{itemize}
+    \item Large FPGAs with long serial configuration times
+    \item Systems requiring fast boot
+    \item When I/O pins are available
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 28
+% Description: Parallel configuration interface diagram
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture13_parallel_config.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture13_parallel_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{JTAG Configuration}
+
+\subsubsection{Direct JTAG Configuration}
+
+\begin{definition}{JTAG Configuration Mode}\\
+\textbf{Advantages:}
+\begin{itemize}
+    \item Configuration directly through JTAG pins
+    \item No additional dedicated configuration pins required
+    \item Uses existing boundary scan infrastructure
+    \item Standard interface (IEEE 1149.1)
+\end{itemize}
+
+\textbf{JTAG Signals:}
+\begin{itemize}
+    \item TDI (Test Data In)
+    \item TDO (Test Data Out)
+    \item TCK (Test Clock)
+    \item TMS (Test Mode Select)
+\end{itemize}
+
+\textbf{Configuration Process:}
+\begin{enumerate}
+    \item Connect JTAG programmer to FPGA
+    \item Programmer sends bitstream through TDI
+    \item FPGA loads configuration via TAP controller
+    \item Configuration complete, FPGA enters user mode
+\end{enumerate}
+
+\textbf{Use Cases:}
+\begin{itemize}
+    \item Development and debugging
+    \item Prototyping
+    \item Lab testing
+    \item Field updates
+\end{itemize}
+
+\textbf{Limitations:}
+\begin{itemize}
+    \item Volatile (SRAM-based FPGAs only)
+    \item Requires JTAG connection
+    \item Not suitable for production deployment
+    \item Slower than dedicated configuration modes
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 30
+% Description: JTAG configuration showing FPGA fabric, JTAG TAP controller, and connector
+% Priority: IMPORTANT
+% Suggested filename: lecture13_jtag_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_jtag_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Serial Flash Loader with JTAG}
+
+\begin{definition}{Serial Flash Loader (SFL)}\\
+\textbf{Purpose:} Program configuration flash memory through JTAG.
+
+\textbf{Requirements:}
+\begin{itemize}
+    \item Serial Flash Loader (SFL) IP block in design
+    \item JTAG connection
+    \item Configuration flash memory
+\end{itemize}
+
+\textbf{Two-Step Programming Process:}
+
+\paragraph{Step 1: Load SFL via JTAG:}
+\begin{enumerate}
+    \item Connect JTAG programmer
+    \item Configure FPGA with design including SFL IP
+    \item FPGA enters user mode with SFL active
+\end{enumerate}
+
+\paragraph{Step 2: SFL Programs Flash:}
+\begin{enumerate}
+    \item SFL receives bitstream via JTAG
+    \item SFL writes bitstream to configuration flash
+    \item Flash memory now contains permanent configuration
+\end{enumerate}
+
+\textbf{Subsequent Power-Up:}
+\begin{enumerate}
+    \item FPGA reads configuration from flash (active serial mode)
+    \item No JTAG connection needed
+    \item Permanent configuration
+\end{enumerate}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item No need for dedicated flash programmer
+    \item Can program flash through JTAG
+    \item Useful for field updates
+    \item Single connection for development and production
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 31
+% Description: Serial Flash Loader diagram showing two-step process with JTAG and flash
+% Priority: CRITICAL
+% Suggested filename: lecture13_sfl_jtag.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_sfl_jtag.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{EPCS Serial Flash Controller}
+
+\begin{definition}{EPCS Controller IP Peripheral}\\
+\textbf{Purpose:} Access external flash memory from embedded processor.
+
+\textbf{Architecture:}
+\begin{itemize}
+    \item Peripheral block in Platform Designer (Qsys)
+    \item Connected to processor bus (e.g., Nios V, ARM)
+    \item Provides SPI master interface to flash
+\end{itemize}
+
+\textbf{Use Cases:}
+\begin{itemize}
+    \item Store software programs in flash
+    \item Store operating system
+    \item Store data files
+    \item Remote system updates
+\end{itemize}
+
+\textbf{Question:} How can we use external flash memory to store software for embedded processor (e.g., Nios softcore)?
+
+\textbf{Answer:} Remote Upgrade capability through EPCS Controller.
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 32
+% Description: EPCS controller architecture showing Nios V CPU, JTAG, and flash connections
+% Priority: IMPORTANT
+% Suggested filename: lecture13_epcs_controller.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_epcs_controller.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{KR}{EPCS Development Mechanism}\\
+\textbf{Programming Configuration Flash via EPCS Controller:}
+
+\paragraph{Step 1: Configure FPGA via JTAG}
+\begin{itemize}
+    \item Load FPGA configuration including:
+    \begin{itemize}
+        \item EPCS Controller IP
+        \item Nios V Softcore processor
+        \item Memory interfaces
+        \item Other peripherals
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Step 2: Load Data into Flash}
+\begin{itemize}
+    \item Use JTAG interface
+    \item EPCS Controller IP acts as SPI master
+    \item Write bitstream and software to flash memory
+\end{itemize}
+
+\textbf{FPGA Power-Up Sequence (After Programming):}
+
+\paragraph{1. FPGA Configuration from Flash:}
+\begin{itemize}
+    \item FPGA actively configures from flash memory
+    \item Hardware loads bitstream
+\end{itemize}
+
+\paragraph{2. Processor Boot:}
+\begin{itemize}
+    \item Nios V processor starts execution
+    \item Begins from bootloader in ROM
+\end{itemize}
+
+\paragraph{3. Software Loading:}
+\begin{itemize}
+    \item Bootloader copies program/OS from flash
+    \item Destination: Working memory (SDRAM)
+\end{itemize}
+
+\paragraph{4. Exception Vector Setup:}
+\begin{itemize}
+    \item Exception vectors reprogrammed
+    \item Point to SDRAM locations
+\end{itemize}
+
+\paragraph{5. Execution Start:}
+\begin{itemize}
+    \item Reset processor
+    \item Execute from SDRAM
+    \item System operational
+\end{itemize}
+\end{KR}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 33
+% Description: EPCS development mechanism flowchart showing two-step programming and boot sequence
+% Priority: CRITICAL
+% Suggested filename: lecture13_epcs_development.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_epcs_development.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Development Phase Configuration}
+
+\subsubsection{Volatile JTAG Configuration}
+
+\begin{definition}{Development Workflow}\\
+\textbf{JTAG Configuration for Development:}
+\begin{itemize}
+    \item Program .sof file (SRAM Object File) via JTAG port
+    \item Fast iteration cycle
+    \item No need to handle SD cards or reprogram flash
+    \item Immediate design verification
+\end{itemize}
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item \textbf{Volatile:} Configuration lost on power cycle
+    \item \textbf{Fast:} Quick programming time
+    \item \textbf{Convenient:} No external programmer needed
+\end{itemize}
+
+\textbf{Typical Development Cycle:}
+\begin{enumerate}
+    \item Modify HDL code
+    \item Compile design (generate .sof)
+    \item Program FPGA via JTAG
+    \item Test functionality
+    \item Iterate
+\end{enumerate}
+
+\important{Note:} .sof files are for volatile JTAG configuration. .pof files (Programmer Object File) are for non-volatile flash programming.
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 35
+% Description: Volatile JTAG configuration workflow diagram
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture13_volatile_jtag.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture13_volatile_jtag.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Development Board USB Configuration}
+
+\begin{definition}{USB-Based Configuration on Dev Boards}\\
+Many development boards include on-board programming capability:
+
+\textbf{Architecture:}
+\begin{itemize}
+    \item External CPLD acts as configuration device
+    \item USB-to-serial converter (e.g., FTDI chip) interfaces to PC
+    \item Run/Program switch selects configuration mode
+\end{itemize}
+
+\textbf{Program Mode (Serial Interface):}
+\begin{itemize}
+    \item USB exposes serial programming interface
+    \item Program flash memory via USB and CPLD
+    \item Configuration stored on board permanently
+    \item No JTAG adapter needed
+\end{itemize}
+
+\textbf{Run Mode (JTAG Interface):}
+\begin{itemize}
+    \item FPGA configured in active mode from flash
+    \item USB exposes JTAG interface
+    \item PC can reconfigure FPGA via JTAG
+    \item Useful for development iterations
+\end{itemize}
+
+\textbf{Components:}
+\begin{itemize}
+    \item FTDI USB chip (USB-to-serial/JTAG converter)
+    \item Configuration CPLD (manages modes)
+    \item Run/Program switch (mode selection)
+    \item Configuration flash memory
+    \item FPGA device
+\end{itemize}
+
+\important{Convenience:} Single USB connection serves both development (JTAG) and production (flash programming).
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 36
+% Description: Development board USB configuration diagram showing CPLD, FTDI, and mode switching
+% Priority: IMPORTANT
+% Suggested filename: lecture13_devboard_usb.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_devboard_usb.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Flash Memory Programming}
+
+\subsubsection{Byte Blaster Connection}
+
+\begin{definition}{Direct Flash Programming}\\
+\textbf{Byte Blaster Setup:}
+\begin{itemize}
+    \item Direct connection to configuration flash
+    \item FPGA must be disabled during programming
+    \item nCE = 1: disables FPGA configuration interface
+\end{itemize}
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item Connect Byte Blaster to flash memory
+    \item Ensure FPGA nCE = 1 (disabled)
+    \item Load .pof file into programmer software
+    \item Program flash memory
+    \item Remove programmer
+    \item Power cycle or toggle nCE to configure FPGA
+\end{enumerate}
+
+\textbf{File Type:}
+\begin{itemize}
+    \item Use .pof files (Programmer Object File)
+    \item Contains full flash memory image
+    \item Includes bitstream and any additional data
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 37
+% Description: Byte Blaster connection diagram showing flash, nCE control, and connector
+% Priority: IMPORTANT
+% Suggested filename: lecture13_byte_blaster.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_byte_blaster.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{concept}{SPI Flash Programming Protocol}\\
+\textbf{Write Operation:}
+\begin{enumerate}
+    \item Send write command
+    \item Specify starting address (24-bit)
+    \item Send subsequent data bytes
+\end{enumerate}
+
+\textbf{Address Auto-Increment:}
+\begin{itemize}
+    \item When writing to continuous ranges
+    \item Address increments automatically
+    \item Efficient for large transfers
+\end{itemize}
+
+\textbf{Page Programming:}
+\begin{itemize}
+    \item Flash memories have page structure
+    \item Typical page size: 256 bytes
+    \item Must respect page boundaries
+\end{itemize}
+
+\textbf{Erase Operations:}
+\begin{itemize}
+    \item Sector erase (typically 4 KB, 32 KB, or 64 KB)
+    \item Chip erase (entire memory)
+    \item Must erase before programming
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_13_config.pdf, Slide 38
+% Description: SPI flash programming protocol timing diagram
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture13_spi_programming.png
+\\
+% \includegraphics[width=\linewidth]{lecture13_spi_programming.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Exercises}
+
+\begin{example2}{Exercise 1: Configuration Memory Size}\\
+\textbf{Given:} Your board will have:
+\begin{itemize}
+    \item Two Cyclone II EP2C20 FPGAs (one as Master, one as Slave, different content)
+    \item One Cyclone II EP2C35 FPGA (as Slave)
+\end{itemize}
+
+\textbf{Task:} Choose the minimal FPGA configuration device (EPCS).
+\begin{itemize}
+    \item Calculate required configuration memory
+    \item Select matching EPCS device (storage coded into name in Mbit)
+\end{itemize}
+
+\textbf{Rule of Thumb:} 1k LUT requires 0.2 Mbit in bitstream file (plus block memories).
+
+\tcblower
+
+\textbf{Solution:}
+
+From Cyclone II datasheet, bitstream sizes:
+\begin{itemize}
+    \item EP2C20: 3{,}892{,}496 bits per device
+    \item EP2C35: 6{,}848{,}608 bits per device
+\end{itemize}
+
+\textbf{Calculation:}
+\begin{align*}
+\text{Total} &= 2 \times \text{EP2C20} + 1 \times \text{EP2C35} \\
+&= 2 \times 3{,}892{,}496 + 6{,}848{,}608 \\
+&= 7{,}784{,}992 + 6{,}848{,}608 \\
+&= 14{,}633{,}600 \text{ bits}
+\end{align*}
+
+Convert to Megabits:
+$$14{,}633{,}600 \text{ bits} = 14.63 \text{ Mbit}$$
+
+\textbf{EPCS Device Selection:}
+\begin{itemize}
+    \item EPCS4: 4 Mbit (too small)
+    \item EPCS16: 16 Mbit (\checkmark sufficient)
+    \item EPCS64: 64 Mbit (unnecessary)
+\end{itemize}
+
+\important{Answer:} EPCS16 is the minimal sufficient device.
+\end{example2}
+
+\begin{example2}{Exercise 2: Configuration Time}\\
+\textbf{Given:}
+\begin{itemize}
+    \item Two EP2C20 FPGA devices in daisy chain
+    \item One EP2C20 has bitstream of 3.9 Mbit
+    \item Configuration clock (DCLK): 20 MHz
+\end{itemize}
+
+\textbf{Task:} Calculate minimum configuration time for the system.
+
+\tcblower
+
+\textbf{Solution:}
+
+\textbf{Total bitstream size:}
+$$\text{Total} = 2 \times 3.9 \text{ Mbit} = 7.8 \text{ Mbit}$$
+
+\textbf{DCLK period:}
+$$T_{DCLK} = \frac{1}{f_{DCLK}} = \frac{1}{20 \times 10^6 \text{ Hz}} = 50 \text{ ns}$$
+
+\textbf{Configuration time formula:}
+$$t_{config} = \text{Total bitstream size} \times \frac{T_{DCLK}}{1 \text{ bit}}$$
+
+\textbf{Calculation:}
+\begin{align*}
+t_{config} &= 7.8 \times 10^6 \text{ bits} \times 50 \times 10^{-9} \text{ s/bit} \\
+&= 390 \times 10^{-3} \text{ s} \\
+&= 390 \text{ ms}
+\end{align*}
+
+\important{Answer:} Minimum configuration time is \textbf{390 milliseconds}.
+
+\textbf{Additional considerations:}
+\begin{itemize}
+    \item This is theoretical minimum (ideal conditions)
+    \item Actual time includes overhead:
+    \begin{itemize}
+        \item Power-up stabilization
+        \item Flash memory access time
+        \item Internal FPGA initialization
+        \item Transition to user mode
+    \end{itemize}
+    \item Typical actual time: 400-450 ms
+\end{itemize}
+\end{example2}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 28
+% CRITICAL priority: 15
+% IMPORTANT priority: 10
+% SUPPLEMENTARY priority: 3
+%
+% Quick extraction checklist:
+% [X] [SCD_13_config.pdf, Slide 2] - Motivation diagram (SUPPLEMENTARY)
+% [ ] [SCD_13_config.pdf, Slide 6] - Logic block configuration (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 7] - Routing configuration (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 8] - I/O configuration (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 9] - PLL configuration (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 10] - Memory configuration (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 12] - SRAM cell diagram (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 13] - Antifuse structure (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 14] - Antifuse detail (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 15] - Flash cell (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 17] - Active serial overview (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 18] - Configuration controller (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 19] - Configuration timing (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 20] - Timing detail (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 23] - SPI flash connection (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 24] - SPI read cycle (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 26] - Passive serial (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 27] - Configuration chain (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 28] - Parallel configuration (SUPPLEMENTARY)
+% [ ] [SCD_13_config.pdf, Slide 30] - JTAG configuration (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 31] - Serial Flash Loader (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 32] - EPCS controller (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 33] - EPCS development (CRITICAL)
+% [ ] [SCD_13_config.pdf, Slide 35] - Volatile JTAG (SUPPLEMENTARY)
+% [ ] [SCD_13_config.pdf, Slide 36] - Dev board USB (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 37] - Byte Blaster (IMPORTANT)
+% [ ] [SCD_13_config.pdf, Slide 38] - SPI programming (SUPPLEMENTARY)
+% [X] [SCD_13_config.pdf, Slides 40-43] - Exercises (included in text)
+% =====================

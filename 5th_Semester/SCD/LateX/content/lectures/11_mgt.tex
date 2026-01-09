@@ -1,0 +1,954 @@
+\section{Multi-Gigabit Transceivers (MGT)}
+
+\subsection{Introductory Exercises}
+
+\begin{example2}{Exercise 1: Minimum Bitrate Calculation}\\
+\textbf{Given:}
+\begin{itemize}
+    \item System records 24-bit samples
+    \item Sampling rate: $150$ MSa/s (mega samples per second)
+    \item Transfer via serial connection
+\end{itemize}
+
+\textbf{Question:} What is the minimum bitrate of the serial connection to keep up with the sampled data?
+
+\tcblower
+
+\textbf{Solution:}
+
+Raw data rate calculation:
+$$\text{Bitrate} = \text{Sample Rate} \times \text{Bits per Sample}$$
+$$\text{Bitrate} = 150 \times 10^6 \text{ Sa/s} \times 24 \text{ bit/Sa}$$
+$$\text{Bitrate} = 3.6 \times 10^9 \text{ bit/s} = 3.6 \text{ Gbit/s}$$
+
+\important{Answer:} Minimum bitrate = $3.6$ Gbit/s (without line coding overhead)
+\end{example2}
+
+\begin{example2}{Exercise 2: Physical Bit Length}\\
+\textbf{Given:}
+\begin{itemize}
+    \item Copper wire propagation speed: $c = 200{,}000$ km/s
+    \item Serial transmission bitrate: $1$ Gbit/s ($1.00 \times 10^9$ bit/s)
+\end{itemize}
+
+\textbf{Question:} What is the length of a bit in centimeters in this medium?
+
+\tcblower
+
+\textbf{Solution:}
+
+The physical length of one bit is the distance the signal travels during one bit period:
+$$\text{Bit Length} = \frac{\text{Propagation Speed}}{\text{Bitrate}}$$
+$$\text{Bit Length} = \frac{200{,}000 \times 10^3 \text{ m/s}}{1.00 \times 10^9 \text{ bit/s}}$$
+$$\text{Bit Length} = 0.2 \text{ m} = 20 \text{ cm}$$
+
+\important{Answer:} Each bit occupies $20$ cm in the transmission medium.
+\end{example2}
+
+\begin{example2}{Exercise 3: Clock Recovery Overhead}\\
+\textbf{Given:}
+\begin{itemize}
+    \item Serial transmission at $1$ Gbit/s
+    \item Samples from AD converter transmitted end-to-end
+\end{itemize}
+
+\textbf{Question:} By how many percent must you increase the bitrate to allow clock recovery from the serial transmission?
+
+\tcblower
+
+\textbf{Solution:}
+
+This depends on the transmitted data characteristics:
+\begin{itemize}
+    \item If there are enough bit transitions between '0' and '1', the bitrate does not need to be increased
+    \item Additional sync bits can be introduced to ensure a minimum number of transitions
+    \item Adding overhead requires a faster bitrate
+\end{itemize}
+
+\textbf{Line coding examples:}
+\begin{itemize}
+    \item 8b/10b encoding: $+25\%$ overhead
+    \item 64b/66b encoding: $+3.125\%$ overhead
+\end{itemize}
+
+\important{Note:} The answer depends on the chosen line coding scheme.
+\end{example2}
+
+\begin{example2}{Exercise 4: Frame Synchronization}\\
+\textbf{Given:}
+\begin{itemize}
+    \item System records 24-bit samples at $150$ MHz
+    \item Short interruption of service in receiver
+    \item System resumes receiving after unknown time
+\end{itemize}
+
+\textbf{Question:} Design a way to find the start of a 24-bit sample in an ongoing serial transmission.
+
+\tcblower
+
+\textbf{Solution:}
+
+Use a line code with synchronization patterns:
+\begin{itemize}
+    \item \textbf{Comma symbols} (8b/10b): Special control words with unique bit patterns
+    \item \textbf{Sync field} (64b/66b): Header bits that mark frame boundaries
+\end{itemize}
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item Transmitter periodically sends sync patterns
+    \item Receiver scans bitstream for known patterns
+    \item When pattern is found, frame alignment is established
+    \item Subsequent frames can be processed correctly
+\end{enumerate}
+
+\important{Answer:} Use a line code with Commas or a sync field for frame alignment.
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Motivation and Goals}
+
+\begin{concept}{Motivation for MGT Study}\\
+\textbf{Key Questions:}
+\begin{itemize}
+    \item How does a multigigabit transceiver work?
+    \item How can we achieve such fast transmission rates in an FPGA with limited clock speeds?
+    \item Sixteen GTH Transceivers can yield $260.8$ Gbit of data per second. How to handle this amount of data?
+\end{itemize}
+\end{concept}
+
+\begin{definition}{Learning Goals}\\
+After this lesson, students should be able to:
+\begin{enumerate}
+    \item Explain the challenges of fast serial transmission
+    \item Sketch the basic structure of an MGT and name its parts and their functions
+    \item Understand the necessity for a line code
+    \item Explain the properties of different line codes
+    \item Select a line code according to their system's needs
+    \item Calculate the overhead of their line code and the required bitrate
+\end{enumerate}
+\end{definition}
+
+\subsection{Challenges of Serial Transmissions}
+
+\begin{definition}{Serial Transmission Challenges}\\
+High-speed serial transmission faces several technical challenges:
+
+\paragraph{Sampling and Clock Recovery}
+\begin{itemize}
+    \item Clean sampling of the signal at the correct time
+    \item Clock recovery from data stream without separate clock line
+\end{itemize}
+
+\paragraph{Word Alignment}
+\begin{itemize}
+    \item Synchronization to detect the start of words/frames
+    \item Maintaining alignment throughout transmission
+\end{itemize}
+
+\paragraph{Control vs. Data Transmission}
+\begin{itemize}
+    \item Control signals: START, STOP, IDLE, ACK, NACK, SYNC
+    \item Data payload
+    \item Distinguishing between control and data
+\end{itemize}
+
+\paragraph{DC Balance}
+\begin{itemize}
+    \item Transmission medium must not accumulate DC charge
+    \item Equal number of ones and zeros required
+\end{itemize}
+
+\paragraph{Error Detection and Protection}
+\begin{itemize}
+    \item Detecting bit errors in transmission
+    \item Optional error correction capabilities
+\end{itemize}
+\end{definition}
+
+\subsection{Receiver Architecture}
+
+\subsubsection{RX Equalizer}
+
+\begin{concept}{Adaptive Equalization}\\
+\textbf{Bit Error Ratio (BER)} is a function of:
+\begin{itemize}
+    \item The transmitter quality
+    \item The channel medium (signal attenuation, limited bandwidth)
+    \item The receiver performance
+\end{itemize}
+
+The transmission media (channel) is bandwidth-limited, and the signal traveling through it is subjected to attenuation and distortion.
+\end{concept}
+
+\begin{definition}{Adaptive Filtering Modes}\\
+Two types of adaptive filtering are available for GTH receivers:
+
+\textbf{Low-Power Mode (LPM):}
+\begin{itemize}
+    \item Optimized for power efficiency with lower channel loss
+    \item Applies a fixed gain before parallelization (SIPO)
+    \item Suitable for shorter, higher-quality connections
+\end{itemize}
+
+\textbf{Decision Feedback Equalizer (DFE):}
+\begin{itemize}
+    \item For equalizing lossier channels
+    \item Provides closer adjustment of filter parameters
+    \item Discrete-time adaptive high-pass filter
+    \item TAP values are coefficients set by adaptive algorithm
+    \item Cannot remove pre-cursor, only compensates for post-cursors
+\end{itemize}
+
+\important{Note:} A linear equalizer allows both pre-cursor and post-cursor gain, but DFE provides better compensation for high-loss channels.
+\end{definition}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 9
+% Description: RX Equalizer block diagram showing LPM mode with SIPO, Fixed Gain, AGC
+% Priority: CRITICAL
+% Suggested filename: lecture11_rx_equalizer_lpm.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_rx_equalizer_lpm.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Clock Data Recovery (CDR)}
+
+\begin{definition}{Clock Recovery Process}\\
+\textbf{Goal:} Find the perfect sampling point for serial data bits.
+
+\textbf{CDR Components and Steps:}
+\begin{enumerate}
+    \item \textbf{Edge Sampler:} Detects edges in the incoming data stream
+    \item \textbf{CDR FSM:} Finite State Machine detects phase relation to PLL-based clock
+    \item \textbf{Phase Interpolator (PI):} Adjusts the PLL-based clock to align with data
+    \item \textbf{Data Sampling:} Samples data at optimal point
+\end{enumerate}
+
+The RX clock data recovery (CDR) circuit in each GTH transceiver extracts the recovered clock and data from an incoming data stream.
+\end{definition}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 10
+% Description: Detailed CDR architecture showing Linear EQ, DFE, Edge Sampler, CDR FSM, Phase Interpolators, PLL, DEMUX
+% Priority: CRITICAL
+% Suggested filename: lecture11_cdr_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_cdr_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{remark}
+\textbf{DFE:} Decision Feedback Equalizer - compensates for signal distortion by adjusting for previously transmitted bits.
+\end{remark}
+
+\subsubsection{Word Alignment}
+
+\begin{definition}{Word Alignment Process}\\
+\textbf{Goal:} Find the start of transmission frames in the continuous bitstream.
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item Scan bitstream for known patterns (comma symbols or sync fields)
+    \item If the pattern is found, subsequent frames can be processed
+    \item If pattern is not found, shift window by one bit and retry
+    \item Repeat until correct alignment is achieved
+\end{enumerate}
+\end{definition}
+
+\begin{concept}{Comma Alignment}\\
+The alignment process searches for special bit patterns called "commas":
+\begin{itemize}
+    \item Commas are unique bit sequences that cannot appear in normal data
+    \item In 8b/10b encoding: sequences with five consecutive '1's or '0's
+    \item Once found, all subsequent data is aligned to correct byte boundaries
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 11
+% Description: Conceptual view of comma alignment showing unaligned bits, comma detection, and aligned output
+% Priority: CRITICAL
+% Suggested filename: lecture11_word_alignment.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_word_alignment.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{Complete Receiver Block Diagram}
+
+\begin{concept}{GTH Transceiver RX Overview}\\
+The complete receiver contains many functional blocks:
+\begin{itemize}
+    \item Physical Medium Attachment (PMA): analog front-end
+    \item Physical Coding Sublayer (PCS): digital processing
+    \item Equalization (DFE/Linear EQ)
+    \item Clock recovery (CDR)
+    \item Serial-to-Parallel conversion (SIPO)
+    \item Comma detection and alignment
+    \item Elastic buffer for clock domain crossing
+    \item 8B/10B or 128B/130B decoder
+    \item Gearbox for width conversion
+    \item PRBS checker for testing
+    \item Various loopback modes
+\end{itemize}
+
+\important{Note:} Many additional blocks exist for decoding, error detection, synchronization, and protocol interpretation. Complete understanding is not required for exam.
+\end{concept}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 12
+% Description: Complete GTH transceiver RX block diagram showing all components from analog input to digital output
+% Priority: IMPORTANT
+% Suggested filename: lecture11_rx_block_diagram.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_rx_block_diagram.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Line Codes}
+
+\subsubsection{Line Code Requirements}
+
+\begin{definition}{Line Code Goals}\\
+A line code encodes data for transmission over a serial link. The main goals are:
+
+\begin{enumerate}
+    \item \textbf{Clock Recovery:} Guarantee a minimal number of transitions for the receiver to extract clock
+    \item \textbf{DC Balance:} Transmit an equal number of ones and zeros (transmission medium must not be charged)
+    \item \textbf{Error Detection:} Detect bit errors in transmission
+    \item \textbf{Control Words:} Provide a means to distinguish between control and data words
+\end{enumerate}
+\end{definition}
+
+\subsection{8b/10b Encoding}
+
+\subsubsection{Basic Principle}
+
+\begin{definition}{8b/10b Encoding Concept}\\
+\textbf{Idea:} A DC-balanced code that allows clock recovery and provides control words.
+
+\textbf{Solution:} Add 2 bits to every byte ($8$ bits $\rightarrow$ $10$ bits)
+
+\textbf{Combinatorics:}
+\begin{itemize}
+    \item $8$ bits: $2^8 = 256$ combinations (data words needed)
+    \item $10$ bits: $2^{10} = 1024$ combinations (available)
+\end{itemize}
+
+\textbf{DC Balance Constraint:} Minimum 4, maximum 6 'ones' per codeword
+$$\binom{10}{4} + \binom{10}{5} + \binom{10}{6} = 210 + 252 + 210 = 672 \text{ combinations}$$
+
+\textbf{Examples:}
+\begin{itemize}
+    \item Allowed: $0011110011$ or $1101101000$
+    \item Not allowed: $1111100111$ (more than 5 consecutive ones)
+\end{itemize}
+
+\textbf{Clock Recovery:} No more than five consecutive '1's or '0's $\rightarrow$ exclude some words
+
+\important{Result:} Still more than 256 combinations available after constraints.
+\end{definition}
+
+\subsubsection{Running Disparity}
+
+\begin{concept}{Running Disparity (RD)}\\
+\textbf{Idea:} Keep a balanced number of '1's on the transmission line over time.
+
+\textbf{Mechanism:}
+\begin{itemize}
+    \item Keep track of the running disparity (RD)
+    \item RD increases by $+2$ when sending a codeword with 6 '1's
+    \item RD remains unchanged ($0$) when sending a codeword with 5 '1's
+    \item RD decreases by $-2$ when sending a codeword with 4 '1's
+\end{itemize}
+
+\textbf{Selection Rules:}
+\begin{itemize}
+    \item If $RD = +1$: choose codeword with disparity $0$ or $-2$ (5 or 4 '1's)
+    \item If $RD = -1$: choose codeword with disparity $0$ or $+2$ (5 or 6 '1's)
+\end{itemize}
+
+\important{Guarantee:} Running disparity will never exceed the range $[-1, +1]$.
+\end{concept}
+
+\begin{example2}{Running Disparity Example}\\
+\textbf{Initial state:} $RD = -1$
+
+\textbf{Transmission sequence:}
+\begin{enumerate}
+    \item Send codeword with 6 '1's: $RD = -1 + 2 = +1$
+    \item Send codeword with 4 '1's: $RD = +1 - 2 = -1$
+    \item Send codeword with 5 '1's: $RD = -1 + 0 = -1$
+    \item Send codeword with 6 '1's: $RD = -1 + 2 = +1$
+\end{enumerate}
+
+The encoder automatically selects appropriate codewords to maintain balance.
+\end{example2}
+
+\subsubsection{Error Protection}
+
+\begin{definition}{8b/10b Error Detection}\\
+\textbf{Idea:} Use the line code to detect bit errors.
+
+\textbf{Detection Mechanisms:}
+\begin{enumerate}
+    \item \textbf{Invalid Codeword:} Received codeword not in valid set $\rightarrow$ indicates bit error
+    \item \textbf{Invalid Disparity:} Running disparity exceeds $[-1, +1]$ $\rightarrow$ indicates two-bit errors
+\end{enumerate}
+
+\textbf{Error Flags:}
+\begin{itemize}
+    \item "Out-of-table": Invalid codeword detected
+    \item "Invalid disparity": Running disparity violation detected
+\end{itemize}
+
+\important{Limitation:} Error detection only; no error correction capability.
+\end{definition}
+
+\subsubsection{Control Words}
+
+\begin{definition}{8b/10b Control Words}\\
+More than 256 possible combinations allow distinction between data and control words.
+
+\textbf{Structure:}
+\begin{itemize}
+    \item An 8-bit byte is split into 3-bit and 5-bit parts
+    \item Each part is assigned either:
+    \begin{itemize}
+        \item A single, balanced code (6/4 bits)
+        \item Or a pair of unbalanced codes (6/4 bits)
+    \end{itemize}
+    \item Extra combinations are used as control words
+\end{itemize}
+
+\textbf{Naming Convention:}
+\begin{itemize}
+    \item Data words: D.x.y
+    \item Control words: K.x.y
+\end{itemize}
+\end{definition}
+
+\begin{example2}{8b/10b Encoding Examples}\\
+\textbf{Data Word D.00.3:}
+\begin{itemize}
+    \item 8-bit representation: \texttt{01100000}
+    \item 10-bit representation: \texttt{1001110011} or \texttt{0110001100} (depending on RD)
+\end{itemize}
+
+\textbf{Control Word K.28.7:}
+\begin{itemize}
+    \item 8-bit representation: \texttt{11111100}
+    \item 10-bit representation: \texttt{0011111000} or \texttt{1100000111} (depending on RD)
+\end{itemize}
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+\subsubsection{Comma Symbols}
+
+\begin{definition}{Comma Symbols for Word Alignment}\\
+8b/10b encoding defines \textbf{12 control words}. The function of most control words is not defined by the standard, except for special synchronization symbols.
+
+\textbf{Comma Symbols:} K.28.1, K.28.5, K.28.7
+\begin{itemize}
+    \item Used for word border detection
+    \item Contain sequences of five consecutive '1's or '0's
+    \item This pattern cannot occur in normal data or other control words
+\end{itemize}
+
+\textbf{Usage:}
+\begin{enumerate}
+    \item Send commas at the beginning to allow synchronization
+    \item Send commas intermittently to ensure/verify continued synchronization
+    \item Receiver scans for comma pattern to find word boundaries
+\end{enumerate}
+\end{definition}
+
+\begin{example2}{Word Alignment Exercise}\\
+\textbf{Task:} In the following bit stream, draw the word borders:
+
+\texttt{10010011010111001001111100101010010011101101000100001011\\ 10101001001}
+
+\tcblower
+
+\textbf{Solution approach:}
+\begin{enumerate}
+    \item Look for sequences of five consecutive '1's or '0's
+    \item These mark comma positions
+    \item Word boundaries are aligned to commas
+    \item Each word is 10 bits
+\end{enumerate}
+
+Comma pattern appears: \texttt{...11111...} at certain positions.
+\end{example2}
+
+\subsubsection{8b/10b Overhead}
+
+\begin{concept}{Bandwidth Overhead}\\
+8b/10b encoding introduces significant overhead:
+
+\textbf{Calculation:}
+\begin{itemize}
+    \item 2 extra bits added for every 8 data bits
+    \item Overhead percentage: $\frac{2}{8} = 25\%$
+    \item Effective data rate: $\frac{8}{10} = 80\%$ of line rate
+\end{itemize}
+
+\textbf{Example:}
+A $6.4$ Gbit/s data transfer requires an $8$ Gbit/s line rate:
+$$\text{Line Rate} = \frac{\text{Data Rate}}{0.8} = \frac{6.4 \text{ Gbit/s}}{0.8} = 8 \text{ Gbit/s}$$
+
+\important{Trade-off:} 8b/10b encoding is simple to encode and decode, but comes at significant cost in data rate (25\% overhead).
+\end{concept}
+
+\subsection{64b/66b Encoding}
+
+\subsubsection{Basic Principle}
+
+\begin{definition}{64b/66b Encoding Concept}\\
+64b/66b encoding adds 2 bits for every 64 data bits.
+
+\textbf{Goals:}
+\begin{itemize}
+    \item Clock recovery: guaranteed transitions
+    \item Word border detection via sync field
+    \item Control data transmission
+\end{itemize}
+
+\textbf{Not Provided:}
+\begin{itemize}
+    \item No explicit error detection
+    \item No guaranteed DC balance (relies on scrambling)
+\end{itemize}
+
+\textbf{Sync Field:}
+\begin{itemize}
+    \item 2-bit header: can be either '01' or '10'
+    \item '01': payload contains pure data (no control)
+    \item '10': payload contains control data mixed with data
+\end{itemize}
+
+\textbf{Scrambling:}
+\begin{itemize}
+    \item Payload is scrambled to ensure more transitions
+    \item Evens out disparity over time
+    \item Does not guarantee DC balance for every codeword
+\end{itemize}
+\end{definition}
+
+\subsubsection{Control Data Transmission}
+
+\begin{definition}{64b/66b Control Data Format}\\
+When sync field = '10', payload contains control data:
+
+\textbf{Structure:}
+\begin{itemize}
+    \item \textbf{Byte 0:} Type field defines whether each payload byte is control or data
+    \item \textbf{Bytes 1-7:} Mix of control and data bytes as indicated by type field
+\end{itemize}
+
+\textbf{Control Byte Content:}
+\begin{itemize}
+    \item Sync markers
+    \item Commands: start, stop, idle, interrupt
+    \item Application-specific control information
+    \item User-defined control codes
+\end{itemize}
+
+\important{Flexibility:} The protocol can define its own control byte meanings.
+\end{definition}
+
+\subsubsection{Word Border Detection}
+
+\begin{definition}{64b/66b Synchronization}\\
+Sync field ('01' or '10') guarantees a transition every 66 bits.
+
+\textbf{Gearbox Alignment Procedure:}
+\begin{enumerate}
+    \item Choose a pair of bits as potential sync field
+    \item Loop:
+    \begin{itemize}
+        \item If '01' or '10': increment "good" counter
+        \item If '00' or '11': increment "bad" counter
+    \end{itemize}
+    \item If "bad" counter overruns: shift by one bit, retry from step 1
+    \item If "good" counter overruns: sync field found, alignment established
+    \item Gearbox outputs parallel words in configurable width
+\end{enumerate}
+
+\important{Robustness:} Statistical approach ensures synchronization even with occasional errors.
+\end{definition}
+
+\begin{concept}{64b/66b Overhead}\\
+\textbf{Calculation:}
+\begin{itemize}
+    \item 2 extra bits added for every 64 data bits
+    \item Overhead percentage: $\frac{2}{64} = 3.125\%$
+    \item Effective data rate: $\frac{64}{66} \approx 96.97\%$ of line rate
+\end{itemize}
+
+\textbf{Example:}
+A $3.6$ Gbit/s data transfer requires:
+$$\text{Line Rate} = 3.6 \times \frac{66}{64} = 3.7125 \text{ Gbit/s}$$
+
+\important{Advantage:} Much lower overhead than 8b/10b (3.125\% vs. 25\%).
+\end{concept}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{General Transceiver Structure}
+
+\begin{concept}{Transceiver Functions Overview}\\
+Modern multi-gigabit transceivers address all serial transmission challenges:
+\begin{itemize}
+    \item Clock recovery: CDR with phase interpolation
+    \item DC balance: Line coding (8b/10b or 64b/66b)
+    \item Error detection: Line code validation
+    \item Control words: Embedded control channels
+    \item Word alignment: Comma detection or sync fields
+    \item Equalization: Adaptive filtering for signal quality
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 24
+% Description: General transceiver structure overview diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture11_transceiver_overview.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_transceiver_overview.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{GTH Channel Primitive}
+
+\begin{definition}{GTHE3/4\_CHANNEL Structure}\\
+Each GTH channel primitive consists of three main components:
+
+\paragraph{Transmitter (TX):}
+\begin{itemize}
+    \item TX Interface: parallel data input
+    \item 8B/10B or 128B/130B Encoder
+    \item TX Sync/Async Gearbox: width conversion
+    \item Pattern Generator: for testing
+    \item Phase Adjust FIFO: clock domain crossing
+    \item TX Phase Interpolator: timing adjustment
+    \item PISO: Parallel-In Serial-Out converter
+    \item TX Driver: high-speed analog output
+    \item Pre/Post Emphasis: signal conditioning
+\end{itemize}
+
+\paragraph{Receiver (RX):}
+\begin{itemize}
+    \item Equalizer (DFE or Linear EQ)
+    \item Clock Data Recovery (CDR)
+    \item SIPO: Serial-In Parallel-Out converter
+    \item Comma Detect and Align
+    \item 8B/10B or 128B/130B Decoder
+    \item RX Sync/Async Gearbox
+    \item RX Elastic Buffer: clock domain crossing
+    \item PRBS Checker: for testing
+    \item RX Interface: parallel data output
+\end{itemize}
+
+\paragraph{Channel PLL:}
+\begin{itemize}
+    \item Provides high-speed clocks for serialization
+    \item Independent from core FPGA clocking
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 25
+% Description: Detailed GTHE3/4_CHANNEL primitive topology showing all TX and RX blocks
+% Priority: CRITICAL
+% Suggested filename: lecture11_gth_channel_topology.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_gth_channel_topology.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Serialization and Parallelization}
+
+\begin{example2}{Data Width Conversion Example}\\
+\textbf{Scenario:} Converting between parallel FPGA logic and high-speed serial link.
+
+\textbf{Transmitter Path:}
+\begin{itemize}
+    \item FPGA logic: 32-bit data at 100 MHz
+    \item After 8b/10b encoding: 40-bit data at 100 MHz
+    \item Serializer (PISO): Serial data at 4000 MHz (4 GHz)
+\end{itemize}
+
+\textbf{Receiver Path:}
+\begin{itemize}
+    \item Serial data input: 4000 MHz (4 GHz)
+    \item After SIPO: 40-bit data at 100 MHz
+    \item After 8b/10b decoding: 32-bit data at 100 MHz
+    \item To FPGA logic: 32-bit data at 100 MHz
+\end{itemize}
+
+\important{Key Insight:} Serialization allows $40\times$ increase in clock frequency compared to FPGA fabric.
+\end{example2}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 26
+% Description: Data path example showing parallel widths and clock frequencies through transceiver
+% Priority: CRITICAL
+% Suggested filename: lecture11_data_width_example.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_data_width_example.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Transceiver Clocking}
+
+\begin{concept}{High-Speed Clock Generation}\\
+Serializers need high-speed clocks in the GHz range, far exceeding typical FPGA fabric capabilities.
+
+\textbf{Solution:} Dedicated PLLs in transceiver blocks provide GHz clocking:
+\begin{itemize}
+    \item \textbf{QPLL (Quad PLL):} Shared among four channels in a quad
+    \item \textbf{CPLL (Channel PLL):} Dedicated to individual channel
+\end{itemize}
+
+\important{Hard Macro:} Transceivers are hard silicon macros, not FPGA fabric, enabling GHz timing to be met.
+\end{concept}
+
+\begin{definition}{GTH Quad Configuration}\\
+Four GTHE3/4\_CHANNEL primitives plus one GTHE3/4\_COMMON primitive form a Quad:
+
+\textbf{GTHE3/4\_COMMON contains:}
+\begin{itemize}
+    \item QPLL0: First quad PLL
+    \item QPLL1: Second quad PLL
+    \item Reference clock distribution
+\end{itemize}
+
+\textbf{Each GTHE3/4\_CHANNEL contains:}
+\begin{itemize}
+    \item CPLL: Channel-specific PLL
+    \item Transmitter
+    \item Receiver
+\end{itemize}
+
+\textbf{Clock Distribution:}
+\begin{itemize}
+    \item Reference clocks from IBUFDS\_GTE3/4
+    \item Recovered clock routed directly from RX PMA
+    \item Clock sharing between channels possible
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 27
+% Description: GTH transceiver quad configuration showing QPLL, CPLL, and four channels
+% Priority: CRITICAL
+% Suggested filename: lecture11_gth_quad_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_gth_quad_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{remark}
+\textbf{Note:} CPLL and QPLL have different clock rate ranges. Finding a working clocking scheme for specific data rates can be challenging. Consult device datasheets for supported frequency ranges.
+\end{remark}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 28
+% Description: Detailed CPLL and QPLL frequency range specifications table
+% Priority: IMPORTANT
+% Suggested filename: lecture11_pll_frequency_ranges.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_pll_frequency_ranges.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Application Exercises with Solutions}
+
+\begin{example2}{Exercise: Line Code Overhead Calculation}\\
+\textbf{Given:}
+\begin{itemize}
+    \item System records 24-bit samples
+    \item Sampling rate: 150 MHz
+    \item Serial connection for data transfer
+\end{itemize}
+
+\textbf{Questions:}
+\begin{enumerate}
+    \item What is minimum bitrate (raw data, no line code)?
+    \item Calculate minimum bitrate with 8b/10b encoding
+    \item Calculate minimum bitrate with 64b/66b encoding
+\end{enumerate}
+
+\tcblower
+
+\textbf{Solutions:}
+
+\paragraph{1. Raw Data Rate:}
+$$\text{Bitrate} = 150 \times 10^6 \text{ Sa/s} \times 24 \text{ bit/Sa} = 3{,}600{,}000{,}000 \text{ bit/s}$$
+$$\text{Bitrate} = 3.6 \text{ Gbit/s}$$
+
+\paragraph{2. With 8b/10b Encoding:}
+8b/10b adds 25\% overhead:
+$$\text{Bitrate}_{8b/10b} = 3.6 \text{ Gbit/s} \times 1.25 = 4.5 \text{ Gbit/s}$$
+
+\paragraph{3. With 64b/66b Encoding:}
+64b/66b adds $\frac{66}{64}$ factor:
+$$\text{Bitrate}_{64b/66b} = 3.6 \text{ Gbit/s} \times \frac{66}{64} = 3.7125 \text{ Gbit/s}$$
+
+\important{Summary:}
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Encoding} & \textbf{Required Line Rate} \\
+\hline
+No encoding & 3.6 Gbit/s \\
+8b/10b & 4.5 Gbit/s \\
+64b/66b & 3.7125 Gbit/s \\
+\hline
+\end{tabular}
+\end{center}
+\end{example2}
+
+\subsection{Future Hardware Trends}
+
+\subsubsection{Current and Future Transceiver Speeds}
+
+\begin{concept}{Bandwidth Evolution}\\
+Bandwidth requirements continue to grow exponentially:
+
+\textbf{Current State:}
+\begin{itemize}
+    \item Data centers use optical connections with transceivers
+    \item Link speeds: 100 to 800 Gbps per link
+    \item FPGA transceivers: up to 58 or 112 Gbps (manufacturer dependent)
+\end{itemize}
+
+\textbf{Future Direction:}
+\begin{itemize}
+    \item Manufacturers aim to place optical transceivers directly on die
+    \item Technology: Co-Packaged Optics (CPO)
+    \item Brings optical fiber directly into chip package
+\end{itemize}
+
+\important{Trend:} Bandwidth is never enough; continuous push for higher speeds.
+\end{concept}
+
+\subsubsection{Co-Packaged Optics (CPO)}
+
+\begin{definition}{Co-Packaged Optics Technology}\\
+\textbf{Concept:} Optical transceivers (light modulators) are packaged onto the die, bringing the optical fiber directly into the chip package.
+
+\textbf{Architecture:}
+\begin{itemize}
+    \item \textbf{Lasers:} Stay outside chip package (for now)
+    \begin{itemize}
+        \item Difficult to bond to silicon (but not impossible)
+        \item Use non-silicon materials requiring specialized tools
+    \end{itemize}
+    \item \textbf{Modulators:} Integrated on silicon die
+    \begin{itemize}
+        \item Multiple modulators can use a single laser
+        \item Wavelength division multiplexing possible
+    \end{itemize}
+\end{itemize}
+
+\textbf{Performance:}
+\begin{itemize}
+    \item CPOs reach 100 Gb/s per lane
+    \item Small size enables up to 1 Tbps per millimeter of die edge
+    \item Market leaders claim speeds of 32 Tbps on single chiplet using multiple lanes
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Photonic Modulator Technologies}\\
+Two main modulator types are used in CPO:
+
+\paragraph{Microring Modulator:}
+\begin{itemize}
+    \item Uses ring-shaped waveguide
+    \item Filters out specific wavelengths that form standing wave in ring
+    \item Electronic manipulation of refractive index changes filtered wavelength
+    \item Photonic bits formed by filtering or transmitting laser
+    \item More compact design
+\end{itemize}
+
+\paragraph{Mach-Zehnder Modulator:}
+\begin{itemize}
+    \item Splits laser into two lanes
+    \item One lane gets phase-shifted by electric signal
+    \item At junction: destructive or constructive interference occurs
+    \item Creates photonic bits through interference patterns
+    \item Well-established technology
+\end{itemize}
+
+\textbf{Components:}
+\begin{itemize}
+    \item Lasers (external)
+    \item Optical circuits (on-die)
+    \item Digital signal processors (on-die)
+    \item Electronic control circuits
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 37
+% Description: Co-packaged optics architecture diagram
+% Priority: IMPORTANT
+% Suggested filename: lecture11_cpo_architecture.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_cpo_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% TODO: Add image from SCD_11_mgt.pdf, Slide 38
+% Description: Photonic modulator types (Microring and Mach-Zehnder) with operation diagrams
+% Priority: IMPORTANT
+% Suggested filename: lecture11_photonic_modulators.png
+\\
+% \includegraphics[width=\linewidth]{lecture11_photonic_modulators.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{remark}
+\textbf{Industry Trend:} As bandwidth demands continue to increase, the industry is moving toward:
+\begin{itemize}
+    \item Direct optical integration on chip packages
+    \item Eventually, full photonic integration including lasers
+    \item Eliminates electrical bottlenecks at chip I/O
+    \item Enables unprecedented aggregate bandwidths ($>$ 10 Tbps)
+\end{itemize}
+\end{remark}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 15
+% CRITICAL priority: 6
+% IMPORTANT priority: 6
+% SUPPLEMENTARY priority: 3
+%
+% Quick extraction checklist:
+% [X] [SCD_11_mgt.pdf, Slide 1] - Title slide (SUPPLEMENTARY)
+% [X] [SCD_11_mgt.pdf, Slides 2-5] - Exercise slides (included in text)
+% [X] [SCD_11_mgt.pdf, Slide 6] - Motivation text (included in text)
+% [X] [SCD_11_mgt.pdf, Slide 7] - Goals text (included in text)
+% [X] [SCD_11_mgt.pdf, Slide 8] - Challenges text (included in text)
+% [ ] [SCD_11_mgt.pdf, Slide 9] - RX Equalizer LPM mode diagram (CRITICAL)
+% [ ] [SCD_11_mgt.pdf, Slide 10] - CDR architecture detail (CRITICAL)
+% [ ] [SCD_11_mgt.pdf, Slide 11] - Word alignment diagram (CRITICAL)
+% [ ] [SCD_11_mgt.pdf, Slide 12] - Complete RX block diagram (IMPORTANT)
+% [X] [SCD_11_mgt.pdf, Slide 13] - Line code goals (included in text)
+% [X] [SCD_11_mgt.pdf, Slides 14-20] - 8b/10b encoding details (included in text)
+% [X] [SCD_11_mgt.pdf, Slides 21-23] - 64b/66b encoding details (included in text)
+% [ ] [SCD_11_mgt.pdf, Slide 24] - Transceiver overview diagram (IMPORTANT)
+% [ ] [SCD_11_mgt.pdf, Slide 25] - GTH channel topology (CRITICAL)
+% [ ] [SCD_11_mgt.pdf, Slide 26] - Data width example (CRITICAL)
+% [ ] [SCD_11_mgt.pdf, Slide 27] - GTH quad configuration (CRITICAL)
+% [ ] [SCD_11_mgt.pdf, Slide 28] - PLL frequency ranges (IMPORTANT)
+% [X] [SCD_11_mgt.pdf, Slides 29-35] - Exercises with solutions (included in text)
+% [X] [SCD_11_mgt.pdf, Slide 36] - Future hardware intro (included in text)
+% [ ] [SCD_11_mgt.pdf, Slide 37] - CPO architecture (IMPORTANT)
+% [ ] [SCD_11_mgt.pdf, Slide 38] - Photonic modulators (IMPORTANT)
+% =====================

@@ -1,0 +1,895 @@
+\section{Exercise: SDRAM}
+
+\begin{remark}
+\textbf{Quiz Format:} Mixed (calculation, multiple choice, open questions)
+\textbf{Score:} 7.00 von 7.00 (100\%)
+\textbf{Topics Covered:} SDRAM architecture, timing diagrams, burst read, DDR3-1600, signal sampling, access latency, bandwidth calculations, address multiplexing, bank interleaving, dynamic refresh, row/column selection, sense amplifiers, SRAM vs DRAM
+\end{remark}
+
+\subsection{SDRAM Architecture Analysis}
+
+\begin{example2}{Calculation - SDRAM Device Architecture}\\
+\textbf{Source:} Exercise SDRAM, Question 1 (Page 1-2)
+
+\textbf{Topics:} SDRAM architecture, address width, data bus, memory capacity
+
+\textbf{Question:}
+
+% TODO: Add image from 04_SDRAM.pdf, Page 1
+% Description: Functional block diagram of SDRAM device showing CK, CK#, CKE, CS#, RAS#, CAS#, WE# inputs, COMMAND DECODER, CLOCK GENERATOR, Mode Registers, REFRESH CONTROLLER, SELF REFRESH CONTROLLER, REFRESH COUNTER, ROW ADDRESS LATCH, ROW ADDRESS BUFFER, MULTIPLEXER, COLUMN ADDRESS LATCH, BURST COUNTER, COLUMN ADDRESS BUFFER, BANK CONTROL LOGIC, ROW DECODER, MEMORY CELL ARRAY BANK 0, COLUMN DECODER, DATA IN BUFFER, DATA OUT BUFFER with DM0-DM3, I/O 0-31, DQ0-DQS3, VDD/VDDQ, VSS/VSSQ signals
+% Priority: CRITICAL
+% Suggested filename: exercise04_sdram_architecture.png
+\\
+% \includegraphics[width=\linewidth]{exercise04_sdram_architecture.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+The following functional block diagram shows an SDRAM device that could be attached to a Cyclone V SoC. From the diagram, deduct the answers to the questions below.
+
+Answer the following questions about the device's architecture. You are allowed to use a calculator if required.
+
+\textbf{a)} Specify the width of the \textbf{address port A[...]}:
+
+Answer format: A[4:0]
+
+\textbf{b)} Specify the width of the \textbf{bank address port BA[...]}:
+
+Answer format: BA[4:0]
+
+\textbf{c)} How wide is the \textbf{data bus} of this SDRAM device?
+
+\textbf{d)} How many \textbf{rows} does the SDRAM have \textbf{per bank}?
+
+\textbf{e)} How many bits does the column address need?
+
+\textbf{f)} How many \textbf{words} are stored \textbf{per row}?
+
+\textbf{g)} How many \textbf{Megabits} can be stored in the memory device (Keep in mind: 1 Megabit = 1024*1024 bit)?
+
+\tcblower
+
+\textbf{Solutions:}
+
+\textbf{a)} Address port width: A[12:0]
+
+From the diagram, the Row Address Latch shows input of 13 address bits.
+
+\textbf{b)} Bank address port width: BA[1:0]
+
+The diagram shows BANK CONTROL LOGIC managing multiple banks, with 2 bank address bits.
+
+\textbf{c)} Data bus width: 32 bit
+
+The data buffers show 32-bit wide data path (I/O 0-31, with DM0-DM3 for byte enables and DQ0-DQS3 for data strobes).
+
+\textbf{d)} Rows per bank: 8192 rows
+
+With 13 address bits for row addressing: $2^{13} = 8192$ rows per bank.
+
+\textbf{e)} Column address bits: 9
+
+From the Column Address Latch and Buffer shown in the diagram, 9 bits are used for column addressing.
+
+\textbf{f)} Words per row: 512 words
+
+With 9 column address bits: $2^9 = 512$ words per row.
+
+\textbf{g)} Memory capacity: 512 Mbit
+
+Calculation:
+\begin{itemize}
+    \item Address Port width: deduce from width of input signal into Row Address Latch
+    \item Bank Address width: deduce from number of banks, or from signal width into bank control logic
+    \item Data Bus Width: deduce from data in buffer or from "I/O 0-31"
+    \item Rows per Bank: use Address width of Row decoder
+    \item Column Address Width: check input width for column decoder
+    \item Word per row: deduced from column address width
+    \item Capacity in Megabits: Rows * columns * word width * banks / 1024\textasciicircum 2
+\end{itemize}
+
+Total capacity = $8192 \times 512 \times 32 \times 2 / (1024 \times 1024) = 512$ Mbit
+
+\textbf{Explanation hints:}
+\begin{itemize}
+    \item Address Port width: deduce from width of input signal into Row Address Latch
+    \item Bank Address width: deduce from number of banks, or from signal width into bank control logic  
+    \item Data Bus Width: deduce from data in buffer or from "I/O 0-31"
+    \item Rows per Bank: use Address width of Row decoder
+    \item Column Address Width: check input width for column decoder
+    \item Word per row: deduced from column address width
+    \item Capacity in Megabits: Rows * columns * word width * banks / 1024\textasciicircum 2
+\end{itemize}
+
+\important{Problem type:} Calculation - SDRAM architecture analysis from block diagram
+\end{example2}
+
+\subsection{SDRAM Burst Read Timing}
+
+\begin{example2}{Calculation - Burst Read Timing Analysis}\\
+\textbf{Source:} Exercise SDRAM, Question 2 (Pages 3-4)
+
+\textbf{Topics:} Burst read, timing diagrams, CAS latency, setup/hold times
+
+\textbf{Question:}
+
+% TODO: Add image from 04_SDRAM.pdf, Page 3
+% Description: Timing diagram showing CLK, COMMAND (READ, NOP sequences), ADDRESS (BANK, COL n, BANK, COL b), DQ (Dout n, Dout n+1, Dout n+2, Dout n+3, Dout b) signals with CAS Latency = 3 marked, and "DON'T CARE" regions
+% Priority: CRITICAL
+% Suggested filename: exercise04_sdram_burst_timing.png
+\\
+% \includegraphics[width=\linewidth]{exercise04_sdram_burst_timing.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+This is the timing diagram of a burst read access in an \textbf{SDRAM device} (single data rate), depicting a burst read access to a continuous sequence of words.
+
+% TODO: Add image from 04_SDRAM.pdf, Page 4  
+% Description: Timing parameters table showing Symbol, Parameter, Min., Max., Units columns with entries for tCK3, tCK2, tAC3, tAC2, tCH, tCL, tDH3, tDH2, tLZ, tHZ3, tHZ2, tDS, tDH, tAS, tAH, tCKS, tCKH, tCMS, tCMH, tRC, tRAS, tRP, tRCD, tRRD, tDPL, tDAL, tMRD, tDDE, tXSR, tT, tREF
+% Priority: CRITICAL
+% Suggested filename: exercise04_sdram_timing_params.png
+\\
+% \includegraphics[width=0.9\linewidth]{exercise04_sdram_timing_params.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove \%)
+
+Below, you are given some timing parameters from the corresponding data sheet. From the timing diagram and the timing parameters, find the following timings:
+
+\textbf{1.} \textbf{Hold} time for \textbf{command}:
+
+\textbf{2.} \textbf{Setup} time for \textbf{row address}:
+
+\textbf{3.} Minimal time between \textbf{column address} and \textbf{data output}:
+
+Hint: find number of clock cycles and deduce from there.
+
+\tcblower
+
+\textbf{Solutions:}
+
+\textbf{1.} Hold time for command: 0.8 ns
+
+From the timing parameters table, tCMH (Command Hold Time) = 0.8 ns minimum.
+
+\textbf{2.} Setup time for row address: 1.5rf ns
+
+From the timing parameters table, tAS (Address Setup Time) = 1.5 ns minimum.
+
+\textbf{3.} Minimal time between column address and data output: 15 ns
+
+From the timing diagram, CAS Latency = 3 clock cycles. From the parameters, with CAS Latency = 3:
+\begin{itemize}
+    \item tCK3 (Clock Cycle Time for CAS Latency = 3) = 5 ns minimum
+    \item Time = 3 cycles $\times$ 5 ns/cycle = 15 ns
+\end{itemize}
+
+Hint: find number of clock cycles and deduce from there. The timing diagram shows 3 clock cycles from column address to first data output.
+
+\important{Problem type:} Calculation - SDRAM timing parameter extraction from datasheet and timing diagrams
+\end{example2}
+
+\subsection{DDR3-1600 Bus Clock}
+
+\begin{example2}{Multiple Choice - DDR3-1600 Clock Frequency}\\
+\textbf{Source:} Exercise SDRAM, Question 3 (Page 5)
+
+\textbf{Topics:} DDR3-1600, bus clock, data rate
+
+\textbf{Question:}
+
+Typical bus clock for \textbf{DDR3-1600} is:
+
+Select one answer:
+\begin{itemize}
+    \item 1600 MHz
+    \item 3200 MHz
+    \item 800 MHz
+    \item 400 MHz
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answer:} 800 MHz
+
+\textbf{Explanation:}
+
+Die Antwort ist richtig. (The answer is correct.)
+
+Die richtige Antwort ist: 800 MHz
+
+DDR3-1600 naming convention:
+\begin{itemize}
+    \item The "1600" refers to the data rate: 1600 MT/s (MegaTransfers per second)
+    \item DDR (Double Data Rate) transfers data on both rising and falling clock edges
+    \item Therefore, bus clock = 1600 MT/s $\div$ 2 = 800 MHz
+\end{itemize}
+
+The actual I/O bus operates at 1600 MT/s, but the underlying memory array clock is 800 MHz.
+
+\important{Problem type:} Calculation - Understanding DDR data rate nomenclature
+\end{example2}
+
+\subsection{Synchronous DRAM Signal Sampling}
+
+\begin{example2}{Multiple Choice - Signal Sampling in SDRAM}\\
+\textbf{Source:} Exercise SDRAM, Question 4 (Page 5)
+
+\textbf{Topics:} Synchronous DRAM, signal sampling, clock edge
+
+\textbf{Question:}
+
+In synchronous DRAMs, signal sampling occurs:
+
+Select one answer:
+\begin{itemize}
+    \item On the rising edge of the system clock
+    \item Asynchronously based on access request
+    \item On the falling edge of RAS
+    \item On both edges of the system clock
+\end{itemize}
+
+\tcblower
+
+\textbf{Correct Answer:} On the rising edge of the system clock
+
+\textbf{Explanation:}
+
+Die Antwort ist richtig. (The answer is correct.)
+
+Die richtige Antwort ist: On the rising edge of the system clock
+
+Synchronous DRAMs (SDRAM):
+\begin{itemize}
+    \item All command and address inputs are sampled on the rising edge of the clock
+    \item This provides predictable timing and easier integration with modern CPUs
+    \item Clocked control signal and address sampling prevents glitches
+    \item Asynchronous DRAMs rely on control signals without clock synchronization, resulting in slower and less predictable access
+\end{itemize}
+
+Note: DDR SDRAM samples on both edges, but the question refers to standard SDRAM operation where commands are sampled on rising edge only.
+
+\important{Problem type:} Explanation - Understanding synchronous vs. asynchronous memory operation
+\end{example2}
+
+\subsection{Access Latency Calculation}
+
+\begin{example2}{Calculation - DDR3 Access Latency}\\
+\textbf{Source:} Exercise SDRAM, Question 5 (Page 6)
+
+\textbf{Topics:} DDR3-1600, CL9-9-9-21, access latency, row activation
+
+\textbf{Question:}
+
+Given a DDR3-1600 CL9-9-9-21 module, calculate the access latency (in ns) between successive row activations, assuming an 800 MHz clock.
+
+Answer in ns (Nanoseconds)
+
+\tcblower
+
+\textbf{Correct Answer:} 11.25 ns
+
+\textbf{Explanation:}
+
+From CL9-9-9-21, you can extract tRAS = 21 cycles and tRP = 9 cycles.
+
+At 800 MHz, the time for successive row activations is 30 * 1.25 ns = 37.5 ns.
+
+Actually, the question asks for access latency between successive row activations. This is tRC (Row Cycle time).
+
+tRC = tRAS + tRP
+
+From the timing specification CL9-9-9-21:
+\begin{itemize}
+    \item First value (9): CAS Latency (CL)
+    \item Second value (9): tRCD (RAS to CAS Delay)  
+    \item Third value (9): tRP (Row Precharge time)
+    \item Fourth value (21): tRAS (Row Active time)
+\end{itemize}
+
+However, the actual calculation should be:
+\begin{itemize}
+    \item Clock period at 800 MHz = 1/800 MHz = 1.25 ns
+    \item Based on the explanation provided: Time = 30 cycles $\times$ 1.25 ns = 37.5 ns
+\end{itemize}
+
+But the marked correct answer is 11.25 ns, which appears to be:
+\begin{itemize}
+    \item 9 cycles $\times$ 1.25 ns/cycle = 11.25 ns
+\end{itemize}
+
+This may refer to tRCD (RAS to CAS delay) rather than full row cycle time.
+
+\important{Problem type:} Calculation - SDRAM timing parameter calculations
+\end{example2}
+
+\subsection{DDR3 Bandwidth Calculation}
+
+\begin{example2}{Calculation - Theoretical Transfer Rate}\\
+\textbf{Source:} Exercise SDRAM, Question 6 (Page 6)
+
+\textbf{Topics:} DDR3, bandwidth, transfer rate, 64-bit bus
+
+\textbf{Question:}
+
+For a 64-bit DDR3 module operating at 400 MHz, compute the theoretical transfer rate in MB/s.
+
+\textbf{Number of transfers per second:} \underline{\hspace{2cm}} MT/s (MegaTransfers/s)
+
+\textbf{Bytes per transfer:} \underline{\hspace{2cm}} Bytes
+
+\textbf{Bandwidth:} \underline{\hspace{2cm}} MB/s (Megabyte/s)
+
+\tcblower
+
+\textbf{Correct Answers:}
+
+\textbf{Number of transfers per second:} 800 MT/s
+
+DDR transfers data on both edges: $2 \times 400 \text{ MHz} = 800 \text{ MT/s}$
+
+\textbf{Bytes per transfer:} 8 Bytes
+
+64-bit bus = 8 bytes (64 bits $\div$ 8 bits/byte = 8 bytes)
+
+\textbf{Bandwidth:} 6400 MB/s
+
+Bandwidth calculation: $800 \times 10^6 \times 8 = 6.4 \times 10^9 \text{ bytes/s} = 6400 \text{ MB/s}$
+
+\textbf{Explanation:}
+
+\begin{itemize}
+    \item DDR transfers data on both edges: $2 \times 400 \text{ MHz} = 800 \text{ MT/s}$
+    \item Each transfer: 64 bits = 8 bytes
+    \item Bandwidth: $800 \times 10^6 \times 8 = 6.4 \times 10^9 \text{ bytes/s} = 6400 \text{ MB/s}$
+\end{itemize}
+
+This is the theoretical transfer rate. In practice, row precharge times and other factors reduce the effective bandwidth.
+
+\important{Problem type:} Calculation - Memory bandwidth computation
+\end{example2}
+
+\subsection{Synchronous Operation Advantages}
+
+\begin{example2}{Open Question - SDRAM vs. Asynchronous DRAM}\\
+\textbf{Source:} Exercise SDRAM, Question 7 (Page 7)
+
+\textbf{Topics:} Synchronous operation, SDRAM advantages, timing predictability
+
+\textbf{Question:}
+
+What are the main advantages of synchronous operation in SDRAM over asynchronous DRAM?
+
+(This is an open question without automatic checking and grading. You will receive a general feedback with a suggested answer after submitting your test. It is unlikely but not impossible that this question format will be used in a mid-term or end-of-term exam.)
+
+\tcblower
+
+\textbf{Suggested Answer:}
+
+SDRAM synchronizes its operations with the system clock, allowing for predictable timing, higher speeds, and easier integration with modern CPUs. Clocked control signal and address sampling prevents glitches. Asynchronous DRAM relies on control signals without clock synchronization, resulting in slower and less predictable access.
+
+\textbf{Key advantages of synchronous operation:}
+
+\begin{enumerate}
+    \item \textbf{Predictable timing:} All operations occur at defined clock edges, making timing analysis and system integration easier
+    
+    \item \textbf{Higher clock frequencies:} Synchronous operation allows for better pipelining and higher operating frequencies
+    
+    \item \textbf{Easier integration:} Modern CPUs and system buses are synchronous, so SDRAM interfaces directly without complex asynchronous handshaking
+    
+    \item \textbf{Glitch prevention:} Sampling on clock edges filters out signal glitches and noise that could cause errors in asynchronous systems
+    
+    \item \textbf{Burst mode support:} Synchronous operation enables efficient burst transfers where multiple sequential accesses occur without individual addressing
+    
+    \item \textbf{Lower power:} Reduced control signal transitions and more efficient operation sequences
+\end{enumerate}
+
+\textbf{Comparison:}
+\begin{itemize}
+    \item \textbf{Asynchronous DRAM:} Relies on control signal timing (RAS, CAS) without clock reference, slower, less predictable, harder to integrate
+    \item \textbf{Synchronous DRAM:} Clock-synchronized operations, faster, predictable, easier integration with modern systems
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding architectural advantages of synchronous memory
+\end{example2}
+
+\subsection{Address Multiplexing}
+
+\begin{example2}{Open Question - Address Multiplexing in DRAMs}\\
+\textbf{Source:} Exercise SDRAM, Question 8 (Page 8)
+
+\textbf{Topics:} Address multiplexing, pin count, row/column addressing
+
+\textbf{Question:}
+
+Explain the principle of address multiplexing in DRAMs and its impact on pin count.
+
+(This is an open question without automatic checking and grading. You will receive a general feedback with a suggested answer after submitting your test. It is unlikely but not impossible that this question format will be used in a mid-term or end-of-term exam.)
+
+\tcblower
+
+\textbf{Suggested Answer:}
+
+Address multiplexing means the same set of address pins is used to send both row and column addresses in separate steps. This reduces the total number of address pins required, making the chip package smaller and less expensive. Separate pins for the RAS and CAS signals are required.
+
+\textbf{Detailed explanation:}
+
+\textbf{Principle:}
+\begin{itemize}
+    \item DRAM cells are organized in a 2D array (rows and columns)
+    \item Without multiplexing: would need separate pins for row address AND column address
+    \item With multiplexing: the same address pins carry row address first, then column address
+    \item RAS (Row Address Strobe) signal indicates when row address is valid
+    \item CAS (Column Address Strobe) signal indicates when column address is valid
+\end{itemize}
+
+\textbf{Impact on pin count:}
+
+Example: For a memory with 8192 rows and 512 columns:
+\begin{itemize}
+    \item Without multiplexing: 13 pins (row) + 9 pins (column) = 22 address pins
+    \item With multiplexing: max(13, 9) = 13 address pins (reused for both)
+    \item Savings: 22 - 13 = 9 fewer pins needed
+\end{itemize}
+
+\textbf{Trade-offs:}
+\begin{itemize}
+    \item \textbf{Advantage:} Smaller package, lower cost, simpler PCB routing
+    \item \textbf{Disadvantage:} Slower access (must send row address, then column address sequentially)
+    \item \textbf{Advantage:} Enables burst mode (once row selected, can access multiple columns quickly)
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding DRAM addressing architecture
+\end{example2}
+
+\subsection{Bank Interleaving}
+
+\begin{example2}{Open Question - Bank Interleaving Benefits}\\
+\textbf{Source:} Exercise SDRAM, Question 9 (Page 9)
+
+\textbf{Topics:} Bank interleaving, memory bandwidth, parallel operations
+
+\textbf{Question:}
+
+How can bank interleaving improve overall DRAM throughput?
+
+(This is an open question without automatic checking and grading. You will receive a general feedback with a suggested answer after submitting your test. It is unlikely but not impossible that this question format will be used in a mid-term or end-of-term exam.)
+
+\tcblower
+
+\textbf{Suggested Answer:}
+
+Bank interleaving allows simultaneous operations in different banks, so while one bank is busy (e.g., refreshing or precharging), another can be accessed. This increases memory bandwidth and reduces wait times.
+
+\textbf{Detailed explanation:}
+
+\textbf{How bank interleaving works:}
+\begin{enumerate}
+    \item DRAM is divided into multiple independent banks (typically 4 or 8)
+    \item Each bank has its own row buffer and can be in different states
+    \item Controller can activate a row in Bank A while accessing data in Bank B
+    \item Operations overlap, hiding latencies
+\end{enumerate}
+
+\textbf{Performance improvements:}
+
+\begin{itemize}
+    \item \textbf{Overlap row operations:} While Bank A is precharging or refreshing, Bank B can be accessed
+    
+    \item \textbf{Hide tRAS latency:} Row active time in one bank is hidden by accessing another bank
+    
+    \item \textbf{Reduce page misses:} Multiple open rows (one per bank) reduce need to close/open rows
+    
+    \item \textbf{Increase effective bandwidth:} More parallel operations = higher throughput
+\end{itemize}
+
+\textbf{Example scenario:}
+\begin{enumerate}
+    \item CPU requests data from Bank 0 â†' Activate row, CAS latency, read data
+    \item While Bank 0 is still active, CPU requests from Bank 1 â†' Can start immediately
+    \item Bank 0 precharge happens in parallel with Bank 1 access
+    \item Result: Reduced average latency, higher throughput
+\end{enumerate}
+
+\textbf{Typical usage:}
+\begin{itemize}
+    \item Operating systems and memory controllers use bank interleaving automatically
+    \item Sequential addresses are spread across banks
+    \item Maximizes parallel access opportunities
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding memory controller optimization techniques
+\end{example2}
+
+\subsection{Dynamic Memory Property}
+
+\begin{example2}{Open Question - Why DRAM is "Dynamic"}\\
+\textbf{Source:} Exercise SDRAM, Question 10 (Page 10)
+
+\textbf{Topics:} Dynamic memory, charge storage, periodic refresh
+
+\textbf{Question:}
+
+Why is DRAM described as dynamic, and what mechanism compensates for this property?
+
+(This is an open question without automatic checking and grading. You will receive a general feedback with a suggested answer after submitting your test. It is unlikely but not impossible that this question format will be used in a mid-term or end-of-term exam.)
+
+\tcblower
+
+\textbf{Suggested Answer:}
+
+DRAM is called "dynamic" because it stores data as charge in a capacitor, which leaks away over time. To prevent data loss, DRAM requires \textbf{periodic refreshing}—the stored charge is restored at regular intervals (typically every 64 ms).
+
+\textbf{Detailed explanation:}
+
+\textbf{Why "dynamic":}
+\begin{itemize}
+    \item Each bit is stored as electrical charge in a tiny capacitor
+    \item Capacitors naturally leak charge over time (milliseconds)
+    \item Without refresh, data would be lost
+    \item This is different from SRAM, which maintains data as long as power is applied
+\end{itemize}
+
+\textbf{Refresh mechanism:}
+\begin{enumerate}
+    \item \textbf{Refresh controller:} Built into DRAM or memory controller
+    \item \textbf{Refresh cycle:} Periodically reads and rewrites each row
+    \item \textbf{Refresh rate:} Typically every 64 ms (7.8 µs per row for 8192 rows)
+    \item \textbf{Auto-refresh:} DRAM can handle refresh internally
+    \item \textbf{Self-refresh:} Low-power mode for standby
+\end{enumerate}
+
+\textbf{Impact on performance:}
+\begin{itemize}
+    \item \textbf{Refresh overhead:} Temporarily blocks access during refresh
+    \item \textbf{Bandwidth reduction:} ~1-5\% of memory bandwidth used for refresh
+    \item \textbf{Design consideration:} Memory controllers must schedule refresh operations
+\end{itemize}
+
+\textbf{Trade-offs:}
+\begin{itemize}
+    \item \textbf{DRAM advantages:} Higher density, lower cost per bit
+    \item \textbf{DRAM disadvantages:} Slower, requires refresh, more complex controller
+    \item \textbf{SRAM advantages:} Faster, no refresh needed, simpler interface
+    \item \textbf{SRAM disadvantages:} Lower density, much higher cost per bit
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding fundamental DRAM operation principles
+\end{example2}
+
+\subsection{Refresh Cycles and Row Count}
+
+\begin{example2}{Open Question - Refresh Cycles Relationship}\\
+\textbf{Source:} Exercise SDRAM, Question 11 (Page 11)
+
+\textbf{Topics:} Refresh cycles, row count, refresh rate
+
+\textbf{Question:}
+
+What is the purpose of refresh cycles in DRAM and their relation to the number of rows?
+
+(This is an open question without automatic checking and grading. You will receive a general feedback with a suggested answer after submitting your test. It is unlikely but not impossible that this question format will be used in a mid-term or end-of-term exam.)
+
+\tcblower
+
+\textbf{Suggested Answer:}
+
+Refresh cycles restore the charge in each DRAM cell's capacitor to prevent data loss. Each row in the DRAM array must be refreshed periodically, so the number of refresh cycles is directly related to the number of rows.
+
+\textbf{Detailed explanation:}
+
+\textbf{Purpose of refresh cycles:}
+\begin{enumerate}
+    \item Read data from a row (activates sense amplifiers)
+    \item Sense amplifiers detect and amplify weak charge signals
+    \item Write data back to the row (restores full charge)
+    \item This "refreshes" all cells in that row
+\end{enumerate}
+
+\textbf{Relationship to row count:}
+
+\begin{itemize}
+    \item Each row must be refreshed within the retention time (typically 64 ms)
+    \item More rows = more refresh operations required
+    \item Refresh rate = (Number of rows) / (Retention time)
+    \item Example: 8192 rows / 64 ms = 128,000 refreshes per second
+\end{itemize}
+
+\textbf{Refresh modes:}
+
+\begin{itemize}
+    \item \textbf{Auto-refresh (AR):} Memory controller sends refresh command, DRAM's internal counter selects row
+    \item \textbf{Self-refresh (SR):} DRAM manages refresh internally, used in low-power states
+    \item \textbf{Distributed refresh:} Spread refresh operations evenly over time
+    \item \textbf{Burst refresh:} Refresh all rows consecutively (not commonly used)
+\end{itemize}
+
+\textbf{Performance impact:}
+\begin{itemize}
+    \item During refresh: row is unavailable for access
+    \item More rows = higher refresh overhead
+    \item Modern DRAMs hide refresh latency using multiple banks
+    \item Refresh one bank while accessing others
+\end{itemize}
+
+\textbf{Design considerations:}
+\begin{itemize}
+    \item Higher capacity (more rows) = more time spent refreshing
+    \item Trade-off between capacity and refresh overhead
+    \item Modern DRAMs use techniques to reduce refresh power and time
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding DRAM refresh requirements and architecture
+\end{example2}
+
+\subsection{Row Activation vs Column Selection}
+
+\begin{example2}{Open Question - RAS vs CAS Operations}\\
+\textbf{Source:} Exercise SDRAM, Question 12 (Page 12)
+
+\textbf{Topics:} Row activation, column selection, RAS, CAS, timing
+
+\textbf{Question:}
+
+Compare row activation and column selection steps in a DRAM read cycle.
+
+(This is an open question without automatic checking and grading. You will receive a general feedback with a suggested answer after submitting your test. It is unlikely but not impossible that this question format will be used in a mid-term or end-of-term exam.)
+
+\tcblower
+
+\textbf{Suggested Answer:}
+
+\textbf{Row activation} (RAS) opens a specific row and loads its contents into sense amplifiers. \textbf{Column selection} (CAS) then selects the desired column from the activated row for output. Row activation is slower and involves more circuitry, while column selection is faster and accesses data already in the sense amplifiers.
+
+\textbf{Detailed comparison:}
+
+\textbf{Row Activation (RAS - Row Address Strobe):}
+\begin{enumerate}
+    \item Decoder selects the target row
+    \item Wordline activates all cells in the row
+    \item Capacitor charges flow onto bitlines
+    \item Sense amplifiers detect weak signals
+    \item Amplifiers drive bitlines to full logic levels
+    \item Entire row (e.g., 512 words) loaded into row buffer
+\end{enumerate}
+
+\textbf{Timing:} Slow (~15-20 ns typical)
+\begin{itemize}
+    \item Involves large capacitive loads (entire row)
+    \item Requires sensitive analog amplification
+    \item Destructive read (must write back)
+\end{itemize}
+
+\textbf{Column Selection (CAS - Column Address Strobe):}
+\begin{enumerate}
+    \item Column decoder selects specific column(s)
+    \item Multiplexer routes data from row buffer to output
+    \item Data already at full logic levels from sense amplifiers
+    \item Can perform multiple column accesses without new row activation
+\end{enumerate}
+
+\textbf{Timing:} Fast (~5-10 ns typical)
+\begin{itemize}
+    \item Digital multiplexing operation
+    \item Data already amplified and stable
+    \item Enables burst mode (sequential column accesses)
+\end{itemize}
+
+\textbf{Key differences:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Aspect} & \textbf{Row Activation (RAS)} & \textbf{Column Selection (CAS)} \\
+\hline
+Operation & Open entire row & Select specific column \\
+Speed & Slower (15-20 ns) & Faster (5-10 ns) \\
+Circuitry & Analog sensing & Digital muxing \\
+Data location & Memory array & Row buffer \\
+Power & Higher & Lower \\
+Can repeat & No (must precharge first) & Yes (burst mode) \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Performance optimization:}
+\begin{itemize}
+    \item Keep row open for multiple column accesses (page mode)
+    \item Use burst mode for sequential addresses in same row
+    \item Interleave banks to hide row activation latency
+\end{itemize}
+
+\important{Problem type:} Comparison - Understanding DRAM access sequence and timing
+\end{example2}
+
+\subsection{Sense Amplifier Role}
+
+\begin{example2}{Open Question - Sense Amplifier Function}\\
+\textbf{Source:} Exercise SDRAM, Question 13 (Page 13)
+
+\textbf{Topics:} Sense amplifier, charge detection, signal amplification
+
+\textbf{Question:}
+
+What is the role of the sense amplifier in DRAM read operations?
+
+(This is an open question without automatic checking and grading. You will receive a general feedback with a suggested answer after submitting your test. It is unlikely but not impossible that this question format will be used in a mid-term or end-of-term exam.)
+
+\tcblower
+
+\textbf{Suggested Answer:}
+
+The sense amplifier detects and amplifies the tiny charge from a DRAM cell during a read, converting it into a usable logic level for output. It also restores the charge to the cell after reading.
+
+\textbf{Detailed explanation:}
+
+\textbf{Function of sense amplifier:}
+
+\begin{enumerate}
+    \item \textbf{Charge detection:}
+    \begin{itemize}
+        \item When row is activated, tiny charge from storage capacitor flows onto bitline
+        \item Typical signal: only ~50-100 mV voltage swing
+        \item Must distinguish between logic '0' and logic '1'
+    \end{itemize}
+    
+    \item \textbf{Signal amplification:}
+    \begin{itemize}
+        \item Sense amplifier detects small voltage difference
+        \item Amplifies signal to full CMOS logic levels (0V or VDD)
+        \item Provides strong drive capability for column multiplexers
+    \end{itemize}
+    
+    \item \textbf{Charge restoration:}
+    \begin{itemize}
+        \item Reading DRAM is destructive (removes charge from capacitor)
+        \item Sense amplifier writes amplified signal back to cell
+        \item Restores full charge, effectively refreshing that cell
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Design considerations:}
+
+\begin{itemize}
+    \item \textbf{Sensitivity:} Must detect very small charge differences
+    \item \textbf{Speed:} Limits row activation time (tRAS)
+    \item \textbf{Power:} Each sense amplifier consumes power during activation
+    \item \textbf{Stability:} Must be immune to noise and process variations
+\end{itemize}
+
+\textbf{Why needed:}
+\begin{itemize}
+    \item DRAM capacitors are extremely small (femtofarads)
+    \item Charge is too weak to drive bitlines directly to logic levels
+    \item Bitlines have high capacitance (connect to many cells)
+    \item Without amplification, signal would be undetectable by digital logic
+\end{itemize}
+
+\textbf{Comparison to SRAM:}
+\begin{itemize}
+    \item SRAM doesn't need sense amplifiers (uses flip-flops that maintain full logic levels)
+    \item This makes SRAM faster but requires more transistors per cell
+    \item Trade-off: DRAM higher density vs. SRAM higher speed
+\end{itemize}
+
+\important{Problem type:} Explanation - Understanding DRAM analog sensing circuitry
+\end{example2}
+
+\subsection{SRAM vs DRAM Structural Differences}
+
+\begin{example2}{Open Question - SRAM vs DRAM Cells}\\
+\textbf{Source:} Exercise SDRAM, Question 14 (Page 14)
+
+\textbf{Topics:} SRAM cells, DRAM cells, integration density, cost, transistor count
+
+\textbf{Question:}
+
+What are the main structural difference between SRAM and DRAM cells, and what are their effect on integration density and cost?
+
+(This is an open question without automatic checking and grading. You will receive a general feedback with a suggested answer after submitting your test. It is unlikely but not impossible that this question format will be used in a mid-term or end-of-term exam.)
+
+\tcblower
+
+\textbf{Suggested Answer:}
+
+\textbf{SRAM cells} use 4-6 transistors arranged as flip-flops to store each bit, while \textbf{DRAM cells} use just one transistor and one capacitor per bit. This makes DRAM cells much smaller, allowing higher integration density and lower cost per bit. SRAM's complex structure leads to higher manufacturing costs and lower density, making it more expensive.
+
+\textbf{Detailed comparison:}
+
+\textbf{Cell structure:}
+
+\textbf{DRAM (1T1C - One Transistor, One Capacitor):}
+\begin{itemize}
+    \item Access transistor: connects capacitor to bitline
+    \item Storage capacitor: holds charge representing data bit
+    \item Simple structure: minimum silicon area
+    \item Typical cell size: 6-10 F$^2$ (F = feature size)
+\end{itemize}
+
+\textbf{SRAM (6T - Six Transistor):}
+\begin{itemize}
+    \item Two cross-coupled inverters form bistable latch
+    \item Two access transistors for read/write
+    \item Complex structure: much larger area
+    \item Typical cell size: 100-150 F$^2$
+\end{itemize}
+
+\textbf{Effects on integration density:}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Property} & \textbf{DRAM} & \textbf{SRAM} \\
+\hline
+Cell size & Very small (6-10 F$^2$) & Large (100-150 F$^2$) \\
+Density & Very high & Low \\
+Typical capacity & GB range & MB range \\
+Die area for same capacity & Small & Large (10-15$\times$ DRAM) \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Effects on cost:}
+
+\begin{itemize}
+    \item \textbf{DRAM:} 
+    \begin{itemize}
+        \item Smaller die = more chips per wafer = lower cost per bit
+        \item Additional complexity: capacitor fabrication, refresh circuitry
+        \item Typical cost: ~\$5-10 per GB
+    \end{itemize}
+    
+    \item \textbf{SRAM:}
+    \begin{itemize}
+        \item Larger die = fewer chips per wafer = higher cost per bit
+        \item Simpler fabrication (standard CMOS process)
+        \item Typical cost: ~\$100-1000 per GB (10-100$\times$ more expensive)
+    \end{itemize}
+\end{itemize}
+
+\textbf{Performance trade-offs:}
+
+\begin{itemize}
+    \item \textbf{DRAM disadvantages:}
+    \begin{itemize}
+        \item Slower access time (50-70 ns)
+        \item Requires refresh (complexity, power)
+        \item Destructive read (must write back)
+    \end{itemize}
+    
+    \item \textbf{SRAM advantages:}
+    \begin{itemize}
+        \item Much faster access time (1-10 ns)
+        \item No refresh needed
+        \item Non-destructive read
+        \item Lower latency, simpler controller
+    \end{itemize}
+\end{itemize}
+
+\textbf{Typical applications:}
+
+\begin{itemize}
+    \item \textbf{DRAM:} Main memory (where capacity matters most)
+    \item \textbf{SRAM:} CPU caches (where speed matters most)
+\end{itemize}
+
+\textbf{Summary:}
+
+The fundamental trade-off is density/cost vs. speed:
+\begin{itemize}
+    \item DRAM: Higher density, lower cost, requires refresh, slower
+    \item SRAM: Lower density, higher cost, no refresh, much faster
+\end{itemize}
+
+This is why modern systems use a memory hierarchy: SRAM for fast caches, DRAM for main memory, and even slower but cheaper storage (SSD/HDD) for bulk storage.
+
+\important{Problem type:} Comparison - Understanding memory technology trade-offs and applications
+\end{example2}
+
+\raggedcolumns
+\columnbreak
+
+% ===== IMAGE SUMMARY =====
+% Images needed for this exercise:
+% 1. exercise04_sdram_architecture.png (Page 1) - CRITICAL - Complete SDRAM functional block diagram
+% 2. exercise04_sdram_burst_timing.png (Page 3) - CRITICAL - Burst read timing diagram with CAS latency
+% 3. exercise04_sdram_timing_params.png (Page 4) - CRITICAL - Timing parameters table from datasheet
+% =====================

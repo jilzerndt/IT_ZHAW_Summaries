@@ -1,0 +1,1138 @@
+\section{Inputs and Outputs (IO)}
+
+\subsection{Connecting FPGA/SoC to Peripherals}
+
+\begin{remark}
+Key questions when connecting peripherals to FPGAs:
+\begin{itemize}
+    \item How to connect a peripheral (e.g., SDRAM) to FPGA?
+    \item What are the voltage levels and currents?
+    \item Are there standards for interfacing?
+\end{itemize}
+\end{remark}
+
+\subsection{FPGA I/O Overview}
+
+\begin{definition}{FPGA I/O Topics}
+\begin{itemize}
+    \item Single Ended I/Os
+    \item Logic Levels and standards on I/Os
+    \item FPGA I/O Banks
+    \item Differential I/Os
+    \item LVDS (Low Voltage Differential Signaling)
+    \item Open Drain Outputs (I2C)
+    \item Bus Hold
+    \item Configuration of I/Os in FPGA
+\end{itemize}
+\end{definition}
+
+\subsection{Simplified Single Ended CMOS Output/Input Stage}
+
+\begin{concept}{Push-Pull Configuration}\\
+Single-ended CMOS I/O uses a push-pull configuration with two complementary transistors.
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 4
+% Description: Simplified CMOS push-pull output/input stage diagram from CT2
+% Priority: CRITICAL
+% Suggested filename: lecture10_pushpull_basic.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture10_pushpull_basic.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\mult{2}
+
+\begin{definition}{Input Stage}\\
+\textbf{Impedance:} Very high impedance ($> 1$ M$\Omega$)
+
+The input stage presents minimal load to the driving circuit.
+\end{definition}
+
+\begin{definition}{Output Stage}\\
+\textbf{Impedance:} Very low impedance ($< 20$ $\Omega$)
+
+The output stage can source or sink substantial current.
+\end{definition}
+
+\multend
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 5
+% Description: CMOS input/output stage with impedance specifications and transistor details
+% Priority: CRITICAL
+% Suggested filename: lecture10_cmos_io_stage.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_cmos_io_stage.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{MOS-FET Transistor Principles}
+
+\paragraph{P-Channel MOS-FET}
+
+\begin{definition}{P-Channel MOS-FET Transistor}\\
+\textbf{MOS-FET:} Metal Oxide Semiconductor Field Effect Transistor
+
+\textbf{Operation:}
+\begin{itemize}
+    \item Gate-to-Source Voltage ($V_{GS}$) controls Drain-to-Source Current ($I_{DS}$)
+    \item Threshold voltage: $-V_{TP}$ (negative for P-channel)
+    \item Conducts when $V_{GS} < -V_{TP}$
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 6
+% Description: P-Channel MOS-FET transistor diagram with voltage/current characteristics
+% Priority: CRITICAL
+% Suggested filename: lecture10_pchannel_mosfet.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_pchannel_mosfet.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\paragraph{N-Channel MOS-FET}
+
+\begin{definition}{N-Channel MOS-FET Transistor}\\
+\textbf{Operation:}
+\begin{itemize}
+    \item Gate-to-Source Voltage ($V_{GS}$) controls Drain-to-Source Current ($I_{DS}$)
+    \item Threshold voltage: $+V_{TN}$ (positive for N-channel)
+    \item Conducts when $V_{GS} > +V_{TN}$
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 7
+% Description: N-Channel MOS-FET transistor diagram with voltage/current characteristics
+% Priority: CRITICAL
+% Suggested filename: lecture10_nchannel_mosfet.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_nchannel_mosfet.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{remark}
+\textbf{Voltage Nomenclature in MOS-FET Circuits:}
+\begin{itemize}
+    \item $V_{DD}$: Supply voltage at the Drain
+    \item $V_{SS}$: Ground voltage at the Source (sometimes referred to as GND)
+\end{itemize}
+\end{remark}
+
+\subsection{Output Circuit Operation}
+
+\paragraph{N-Channel Transistor Operation}
+
+\begin{concept}{N-Channel Switching Behavior}\\
+When the input exceeds the N-threshold ($V_{TN}$), the N-channel transistor turns ON, pulling the output to GND ($0$V).
+
+\textbf{States:}
+\begin{enumerate}
+    \item Input $< V_{TN}$ $\rightarrow$ N-channel OFF $\rightarrow$ Output HIGH
+    \item Input $> V_{TN}$ $\rightarrow$ N-channel ON $\rightarrow$ Output LOW (GND)
+\end{enumerate}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 9
+% Description: Output circuit showing N-channel transistor operation with timing diagrams
+% Priority: CRITICAL
+% Suggested filename: lecture10_nchannel_operation.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_nchannel_operation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\paragraph{P-Channel Transistor Operation}
+
+\begin{concept}{P-Channel Switching Behavior}\\
+When the input falls below the P-threshold ($V_{DD} - V_{TP}$), the P-channel transistor turns ON, pulling the output to $V_{DD}$.
+
+\textbf{States:}
+\begin{enumerate}
+    \item Input $> V_{DD} - V_{TP}$ $\rightarrow$ P-channel OFF $\rightarrow$ Output LOW
+    \item Input $< V_{DD} - V_{TP}$ $\rightarrow$ P-channel ON $\rightarrow$ Output HIGH ($V_{DD}$)
+\end{enumerate}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 10
+% Description: Output circuit showing P-channel transistor operation with timing diagrams
+% Priority: CRITICAL
+% Suggested filename: lecture10_pchannel_operation.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_pchannel_operation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{concept}{Combined Push-Pull Operation}\\
+Both transistors work complementarily:
+\begin{itemize}
+    \item Low input: P-channel ON, N-channel OFF $\rightarrow$ Output HIGH
+    \item High input: P-channel OFF, N-channel ON $\rightarrow$ Output LOW
+    \item Only one transistor is ON at any time (ideally no short circuit)
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 11
+% Description: Complete push-pull operation showing both transistors with timing diagrams
+% Priority: CRITICAL
+% Suggested filename: lecture10_pushpull_operation.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_pushpull_operation.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{High Performance vs. Low Power Transistors}
+
+\begin{definition}{Semiconductor Process Differences}\\
+\textbf{High Performance Transistor:}
+\begin{itemize}
+    \item Lower threshold voltage ($V_T$)
+    \item Faster switching (steeper edge transitions)
+    \item Higher current consumption
+    \item Thresholds closer together
+\end{itemize}
+
+\textbf{Low Power Transistor:}
+\begin{itemize}
+    \item Higher threshold voltage ($V_T$)
+    \item Slower switching (less steep edge transitions)
+    \item Lower current consumption
+    \item Thresholds further apart
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 12
+% Description: Comparison diagram showing threshold voltages for high performance vs low power transistors
+% Priority: IMPORTANT
+% Suggested filename: lecture10_hp_vs_lp_transistors.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_hp_vs_lp_transistors.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Technology Scaling and Voltage Levels}
+
+\begin{concept}{Transistor Miniaturization}\\
+As transistors become smaller, the threshold voltage decreases. The threshold must be approximately $\frac{1}{2}$ of the supply voltage ($V_{DD}$).
+
+\textbf{Relationship:}
+$$V_T \approx \frac{V_{DD}}{2}$$
+
+Example gate size: $90$ nm
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 13
+% Description: Cross-section of CMOS circuit showing transistor dimensions
+% Priority: IMPORTANT
+% Suggested filename: lecture10_cmos_cross_section.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_cmos_cross_section.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{concept}{Scaling Trend}\\
+With each generation of CMOS process, the supply voltage ($V_{DD}$) decreases because the threshold needs to be approximately half of the supply voltage.
+
+\textbf{Example scaling:}
+\begin{itemize}
+    \item Threshold level $\sim 1.65$ V $\rightarrow$ $V_{DD} = 3.3$ V
+    \item Threshold level $\sim 0.9$ V $\rightarrow$ $V_{CC} = 1.8$ V
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 14
+% Description: Diagram showing relationship between threshold voltage and supply voltage for different process nodes
+% Priority: CRITICAL
+% Suggested filename: lecture10_threshold_scaling.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_threshold_scaling.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{highlight}{Technology Trend Table}\\
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Market Introduction} & \textbf{Process (Gate Size)} & \textbf{$V_{DD}$ (Core Voltage)} \\
+\hline
+1994 & 0.50 $\mu$m & 3.3 V \\
+1998 & 0.25 $\mu$m & 2.5 V \\
+2002 & 0.18 $\mu$m & 1.8 V \\
+2004 & 90 nm & 1.2 V \\
+2006 & 65 nm & 1.2 V \\
+2013 & 28 nm & 1.1 V \\
+2015 & 14 nm & 0.9 V \\
+2019 & 7 nm & 0.8 V \\
+2021 & 5 nm & 0.75 V \\
+2022 & 3 nm & 0.7 V \\
+\hline
+\end{tabular}
+\end{center}
+
+\important{Note:} As process nodes shrink, both gate size and supply voltage decrease continuously.
+\end{highlight}
+
+\subsection{Level Shifters for I/O Pads}
+
+\begin{concept}{Voltage Domain Separation}\\
+Modern FPGAs have different voltage domains:
+\begin{itemize}
+    \item Core logic operates at low voltage (e.g., $V_{DDINT} = 0.7$ V)
+    \item I/O pads operate at higher voltages (e.g., $V_{DDIO} = 1.2, 1.5, 1.8, 2.5, 3.3$ V)
+\end{itemize}
+
+\textbf{Challenge:} How can we drive an I/O with $V_{DD} = 3.3$ V with a core voltage of $0.7$ V?
+
+\textbf{Solution:} Level shifters are required between internal and external signals.
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 16
+% Description: FPGA block diagram showing core logic, level shifter, and I/O pads with voltage levels
+% Priority: CRITICAL
+% Suggested filename: lecture10_level_shifter_overview.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_level_shifter_overview.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 17
+% Description: Detailed level shifter implementation between FPGA core and I/O
+% Priority: IMPORTANT
+% Suggested filename: lecture10_level_shifter_detail.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_level_shifter_detail.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Transmission Standards and Applications}
+
+\begin{highlight}{Common I/O Standards}\\
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Standard} & \textbf{Comment} & \textbf{Application} & \textbf{Comment} \\
+\hline
+LVTTL, LVCMOS & Low Voltage TTL/CMOS & General Purpose & Inter-FPGA connection \\
+\hline
+LVDS, Mini-LVDS & Low Voltage Differential Signaling & SGMII, SFI, SPI & Ethernet MAC to PHY \\
+LVPECL & Low Voltage Pseudo ECL & & \\
+\hline
+LVDS & Low Voltage Differential Signaling & LCD Panels & Display interface \\
+\hline
+SSTL-18 & Stub Series Terminated Logic (1.8V) & DDR2 & DDRAM2 \\
+\hline
+SSTL-15 & Stub Series Terminated Logic (1.5V) & DDR3 & DDRAM3 \\
+\hline
+POD-12 & Pseudo Open Drain (1.2V) & DDR4 & DDRAM4 \\
+\hline
+HSUL-12 & High Speed Unterminated Logic & LPDDR2 & Low Power DDR2 \\
+\hline
+PECL & Pseudo ECL & SDI & Serial Digital Interface (Video) \\
+\hline
+HSTL & High Speed Transceiver Logic & DDR2 & High-speed memory \\
+\hline
+RSDS & Reduced Swing Differential Signaling & SGMII, SFI & Ethernet, Serial Fiber \\
+\hline
+\end{tabular}
+\end{adjustbox}
+\end{center}
+\end{highlight}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 19
+% Description: Comprehensive table of I/O standards supported by FPGAs
+% Priority: IMPORTANT
+% Suggested filename: lecture10_io_standards_table1.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_io_standards_table1.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 20
+% Description: Additional I/O standards table showing voltage levels and specifications
+% Priority: IMPORTANT
+% Suggested filename: lecture10_io_standards_table2.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_io_standards_table2.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{LVCMOS Specifications}
+
+\paragraph{LVCMOS Outputs}
+
+\begin{definition}{LVCMOS 3.3V Output Levels}\\
+For $V_{DD} = 3.3$ V:
+\begin{itemize}
+    \item \textbf{Output Low:} $< 0.2$ V
+    \item \textbf{Output High:} $> 3.1$ V
+\end{itemize}
+
+The output does not go below a minimum voltage at HIGH and does not go above a maximum voltage at LOW.
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 21
+% Description: LVCMOS 3.3V output voltage specifications diagram
+% Priority: CRITICAL
+% Suggested filename: lecture10_lvcmos33_output.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_lvcmos33_output.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{LVCMOS 1.8V Output Levels}\\
+For $V_{DD} = 1.8$ V:
+\begin{itemize}
+    \item \textbf{Output Low:} $< 0.45$ V
+    \item \textbf{Output High:} $> 1.35$ V
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 22
+% Description: LVCMOS 1.8V output voltage specifications diagram
+% Priority: CRITICAL
+% Suggested filename: lecture10_lvcmos18_output.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_lvcmos18_output.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\paragraph{LVCMOS Inputs}
+
+\begin{definition}{LVCMOS Input Levels}\\
+\textbf{For 3.3V LVCMOS:}
+\begin{itemize}
+    \item \textbf{Input Low:} $< 0.8$ V
+    \item \textbf{Input High:} $> 1.7$ V
+\end{itemize}
+
+\textbf{For 1.8V LVCMOS:}
+\begin{itemize}
+    \item \textbf{Input Low:} $< 0.63$ V
+    \item \textbf{Input High:} $> 1.17$ V
+\end{itemize}
+
+Input must be below a maximum voltage to be accepted as LOW signal. Input must be above a minimum voltage to be accepted as HIGH signal.
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 23
+% Description: LVCMOS input voltage specifications for 3.3V and 1.8V
+% Priority: CRITICAL
+% Suggested filename: lecture10_lvcmos_input_levels.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_lvcmos_input_levels.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Signal Margins and Noise Immunity}
+
+\begin{highlight}{LVCMOS Margin Comparison}\\
+\textbf{Margin} means voltages in this range are accepted as low respectively high level (acceptable tolerance).
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{$V_{DD}$/V} & \textbf{Output Low/V} & \textbf{Input Low/V} & \textbf{Margin Low/V} & \textbf{Output High/V} & \textbf{Input High/V} & \textbf{Margin High/V} \\
+\hline
+3.3 & $< 0.2$ & $< 0.8$ & 0.6 & $> 3.1$ & $> 1.7$ & 1.4 \\
+\hline
+1.8 & $< 0.45$ & $< 0.63$ & 0.18 & $> 1.35$ & $> 1.17$ & 0.18 \\
+\hline
+\end{tabular}
+\end{center}
+
+\important{Observation:} 3.3V LVCMOS provides much larger noise margins than 1.8V LVCMOS, resulting in better noise immunity.
+\end{highlight}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 24
+% Description: Visual comparison of noise margins for 3.3V vs 1.8V LVCMOS
+% Priority: CRITICAL
+% Suggested filename: lecture10_lvcmos_margins.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_lvcmos_margins.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{LVCMOS vs. LVTTL}
+
+\begin{concept}{Comparison: LVCMOS vs. LVTTL}\\
+\textbf{CMOS:} Complementary Metal-Oxide-Semiconductor (MOS-FET Transistors)
+
+\textbf{TTL:} Transistor-Transistor-Logic (Bipolar Transistors)
+
+\textbf{3.3V LVCMOS:}
+\begin{itemize}
+    \item Higher margins (Low: $0.6$ V, High: $1.4$ V)
+    \item Lower current consumption
+    \item Higher ESD sensitivity
+\end{itemize}
+
+\textbf{3.3V LVTTL:}
+\begin{itemize}
+    \item Lower margins (Low: $0.35$ V, High: $0.70$ V)
+    \item High current consumption
+    \item Lower ESD sensitivity
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 25
+% Description: Side-by-side comparison of LVCMOS and LVTTL voltage levels and characteristics
+% Priority: IMPORTANT
+% Suggested filename: lecture10_lvcmos_vs_lvttl.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_lvcmos_vs_lvttl.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{I/O Banks and Supply Pins}
+
+\begin{concept}{Multiple Voltage Domains}\\
+\textbf{Question:} How to provide different supply voltages to different outputs?
+
+\textbf{Answer:} FPGAs organize I/O pads into banks, where each bank can have an independent I/O voltage ($V_{CCIO}$).
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 26
+% Description: FPGA diagram showing level shifter and question about different supply voltages
+% Priority: IMPORTANT
+% Suggested filename: lecture10_voltage_domains_question.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_voltage_domains_question.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{I/O Bank Structure}\\
+FPGA I/O pads are organized into banks with separate power supplies:
+\begin{itemize}
+    \item \textbf{$V_{CCINT}$:} Core voltage for internal logic
+    \item \textbf{$V_{CCA\_PLL}$, $V_{CCD\_PLL}$:} PLL analog and digital supplies
+    \item \textbf{$V_{CCIO1}$, $V_{CCIO2}$, etc.:} I/O bank voltages (can be different for each bank)
+    \item \textbf{$V_{REFB5N0}$:} Reference voltages for certain I/O standards
+    \item \textbf{$GND\_PLL$:} Ground pins for PLLs
+\end{itemize}
+
+Each bank can support a different I/O standard and voltage level.
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 27
+% Description: Detailed FPGA I/O bank structure with power supply pins
+% Priority: CRITICAL
+% Suggested filename: lecture10_io_banks.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_io_banks.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Differential I/O}
+
+\subsubsection{Differential Signaling Principles}
+
+\begin{definition}{Differential Signaling}\\
+Differential signaling uses a pair of signal lines for each transmission:
+\begin{itemize}
+    \item Two signals A and B always assume opposite polarity
+    \item The receiver sees $(A - B) =$ double the voltage swing
+    \item Higher voltage swing improves noise margin
+\end{itemize}
+
+\textbf{Key advantages:}
+\begin{enumerate}
+    \item Doubled signal amplitude at receiver
+    \item Excellent noise immunity
+    \item Low electromagnetic interference (EMI)
+    \item High data rates possible
+\end{enumerate}
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 29
+% Description: Differential signaling principle with opposite polarity signals
+% Priority: CRITICAL
+% Suggested filename: lecture10_differential_principle.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_differential_principle.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{concept}{Common Mode Noise Rejection}\\
+Noise induced on the two lines (provided the lines are routed in parallel) is compensated by the differential calculation $(A - B)$.
+
+Since both lines experience similar noise, the differential signal remains clean:
+\begin{itemize}
+    \item Common mode noise affects both lines equally
+    \item Differential receiver subtracts the signals: noise cancels out
+    \item Only the intended signal difference is detected
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 30
+% Description: Illustration of common mode noise rejection in differential signaling
+% Priority: CRITICAL
+% Suggested filename: lecture10_common_mode_rejection.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_common_mode_rejection.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{Differential Voltage Specifications}\\
+The voltage swing on differential lines is specified very small (e.g., $100$ mV). The common voltage ($V_{COMM}$) has a DC offset (e.g., $2$ V).
+
+\textbf{Formulas:}
+$$V_1 = V_{COMM} - \frac{V_{DIFF}}{2}$$
+$$V_2 = V_{COMM} + \frac{V_{DIFF}}{2}$$
+
+where $V_{DIFF}$ is the differential voltage amplitude.
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 31
+% Description: Differential signaling voltage levels with common mode and differential voltages
+% Priority: IMPORTANT
+% Suggested filename: lecture10_differential_voltages.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_differential_voltages.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{concept}{Current Flow Direction}\\
+Current flow direction changes between logic high and logic low. The direction depends on the standard.
+
+\textbf{Example:}
+\begin{itemize}
+    \item \textbf{Logic Low:} $A = 1.95$ V, $B = 2.05$ V $\rightarrow$ $A - B = -0.10$ V
+    \item \textbf{Logic High:} $A = 2.05$ V, $B = 1.95$ V $\rightarrow$ $A - B = +0.10$ V
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 32
+% Description: Current flow direction for differential signaling showing logic levels
+% Priority: IMPORTANT
+% Suggested filename: lecture10_differential_current.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_differential_current.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Signal Quality Measurement}
+
+\begin{concept}{Eye Diagram}\\
+Signal transmission quality is measured using an eye diagram:
+\begin{itemize}
+    \item Overlays many bit periods
+    \item Opening in the center indicates good signal quality
+    \item Closure indicates signal degradation, jitter, or noise
+    \item Larger opening = better signal integrity
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 33
+% Description: Example eye diagram for signal quality measurement
+% Priority: IMPORTANT
+% Suggested filename: lecture10_eye_diagram1.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture10_eye_diagram1.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 34
+% Description: Additional eye diagram example showing signal quality
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture10_eye_diagram2.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture10_eye_diagram2.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Low Voltage Differential Signaling (LVDS)}
+
+\begin{definition}{LVDS Standard}\\
+\textbf{Introduced:} By National Semiconductor and TI in 1994
+
+\textbf{Principle:} Instead of a defined voltage level, a controlled current ($3.5$ mA) is transmitted.
+
+\textbf{Operation:}
+\begin{itemize}
+    \item Current direction depends on signal state (high or low)
+    \item A $100$ $\Omega$ resistor serves as termination
+    \item Voltage drop: $\pm 350$ mV across termination resistor
+    \item Very small voltage fluctuations between low and high ($700$ mV total)
+    \item Polarity detection: $+350$ mV = high, $-350$ mV = low
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 35
+% Description: LVDS logo or introductory diagram
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture10_lvds_intro.png
+\\
+% \includegraphics[width=0.6\linewidth]{lecture10_lvds_intro.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 36
+% Description: Detailed LVDS circuit diagram showing current sources and termination
+% Priority: CRITICAL
+% Suggested filename: lecture10_lvds_circuit.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_lvds_circuit.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{highlight}{LVDS Characteristics}\\
+\textbf{Advantages:}
+\begin{itemize}
+    \item Differential signal transmission for PCB and backplane buses
+    \item High noise immunity due to compensation on differential lines
+    \item Current controlled, limited to $3.5$ mA:
+    \begin{itemize}
+        \item Low energy consumption
+        \item Robust against short-circuits (current is limited)
+    \end{itemize}
+    \item Low electromagnetic radiation
+    \item Very high data transfer rates: up to $1.923$ Gbit/s
+    \item Precision timing (low jitter)
+\end{itemize}
+
+\textbf{Applications:}
+\begin{itemize}
+    \item High resolution displays ($2048 \times 1536$ pixels)
+    \item Physical Ethernet interfaces: 1000BASE-X and SGMII
+    \item Hard drives: Serial ATA, SCSI, Firewire
+\end{itemize}
+\end{highlight}
+
+\begin{remark}
+LVDS requires \textbf{two pins per signal} (Plus and Minus), doubling the pin count compared to single-ended signaling.
+\end{remark}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 38
+% Description: Typical LVDS application showing pin requirements
+% Priority: IMPORTANT
+% Suggested filename: lecture10_lvds_application.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_lvds_application.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{Special Differential I/Os on FPGA}\\
+\textbf{LVDSCLKp, LVDSCLKn:}
+\begin{itemize}
+    \item Differential clock inputs for high clock speeds and low clock jitter
+    \item Number of I/Os depends on the FPGA
+\end{itemize}
+
+\textbf{PLL\_OUTp, PLL\_OUTn:}
+\begin{itemize}
+    \item Differential clock outputs from the PLL
+    \item May only be used differentially
+\end{itemize}
+\end{definition}
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Open Drain Outputs}
+
+\subsubsection{Multi-Device Bus Problem}
+
+\begin{concept}{Problem: Several Devices on the Same Bus}\\
+When multiple devices are connected to the same bus using push-pull outputs, contention can occur:
+\begin{itemize}
+    \item One device drives HIGH
+    \item Another device drives LOW
+    \item Result: Short circuit through both output stages
+    \item High current, potential device damage
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 41
+% Description: Problem diagram showing push-pull outputs creating conflicts
+% Priority: CRITICAL
+% Suggested filename: lecture10_pushpull_problem.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_pushpull_problem.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\mult{2}
+
+\begin{definition}{Push-Pull Output}\\
+Output stage can drive output HIGH or LOW using both P-channel and N-channel transistors.
+
+\textbf{Issue:} Cannot be safely used by multiple drivers on the same net.
+\end{definition}
+
+\begin{definition}{Open-Drain Output}\\
+Output stage can only drive output LOW. The output is pulled HIGH by an external resistor.
+
+\textbf{Advantage:} Multiple devices can share the same bus safely.
+\end{definition}
+
+\multend
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 42
+% Description: Comparison diagram of push-pull vs open-drain output stages
+% Priority: CRITICAL
+% Suggested filename: lecture10_pushpull_vs_opendrain.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_pushpull_vs_opendrain.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Open Drain Solution}
+
+\begin{concept}{Wired-AND Configuration}\\
+Several devices with open drain outputs can be connected together to one bus:
+\begin{itemize}
+    \item External pull-up resistor pulls bus to $V_{DD}$ (HIGH)
+    \item Any device can pull bus to GND (LOW) by turning on N-MOS transistor
+    \item If no device drives LOW, bus remains HIGH
+    \item Multiple devices can drive LOW simultaneously without conflict
+    \item Bus is LOW if \textbf{any} device drives LOW (Wired-AND logic)
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 43
+% Description: Open drain circuit with multiple devices and pull-up resistor
+% Priority: CRITICAL
+% Suggested filename: lecture10_opendrain_circuit.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_opendrain_circuit.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{example2}{I2C Interface}\\
+\textbf{Application:} Open drain outputs are used in the I2C (Inter-Integrated Circuit) bus.
+
+\textbf{Characteristics:}
+\begin{itemize}
+    \item Two-wire interface: SDA (data) and SCL (clock)
+    \item Both lines use open drain with pull-up resistors
+    \item Multiple devices can share the bus
+    \item Bus arbitration prevents conflicts
+\end{itemize}
+\end{example2}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 44
+% Description: I2C interface example showing open drain usage
+% Priority: IMPORTANT
+% Suggested filename: lecture10_i2c_example.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_i2c_example.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{remark}
+\textbf{Disadvantage of Open Drain:} When the transistor is switched on, high current flows through the pull-up resistor, resulting in power consumption.
+
+$$I = \frac{V_{CCIO}}{R_{pullup}}$$
+
+Larger pull-up resistor reduces current but slows down rise time.
+\end{remark}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 45
+% Description: Open drain output with pull-up resistor showing current flow
+% Priority: IMPORTANT
+% Suggested filename: lecture10_opendrain_current.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture10_opendrain_current.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{definition}{Bidirectional Open Drain Bus}\\
+Several open drain outputs connected together form a bidirectional bus (principle of I2C):
+\begin{itemize}
+    \item Bus operates in two directions
+    \item The actual bus driver controls the CMOS transistor
+    \item No short circuit even if multiple CMOS transistors are turned on
+    \item Any device can read the bus state at any time
+\end{itemize}
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 46
+% Description: Bidirectional open drain bus configuration
+% Priority: IMPORTANT
+% Suggested filename: lecture10_opendrain_bidirectional.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_opendrain_bidirectional.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\begin{remark}
+FPGAs often provide programmable internal pull-up transistors, eliminating the need for external pull-up resistors in some applications.
+\end{remark}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 47
+% Description: Programmable pull-up configuration in FPGA
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture10_programmable_pullup.png
+\\
+% \includegraphics[width=0.8\linewidth]{lecture10_programmable_pullup.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\raggedcolumns
+\columnbreak
+
+\subsection{Bus Hold}
+
+\subsubsection{Tristate Bus Challenge}
+
+\begin{concept}{Tristate Output}\\
+A push-pull output with an additional ENABLE input:
+\begin{itemize}
+    \item ENABLE = $1$: Output drives HIGH or LOW (normal operation)
+    \item ENABLE = $0$: Output is high-impedance (floating)
+\end{itemize}
+
+\textbf{Question:} What is the signal level when ENABLE = $0$?
+
+\textbf{Problem:} When all drivers are disabled, the bus line floats at an undefined voltage level, potentially causing:
+\begin{itemize}
+    \item Increased power consumption (inputs in undefined state)
+    \item Unreliable operation
+    \item Noise sensitivity
+\end{itemize}
+\end{concept}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 49
+% Description: Tristate bus diagram showing the floating state problem
+% Priority: IMPORTANT
+% Suggested filename: lecture10_tristate_problem.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_tristate_problem.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Bus Hold Solution}
+
+\begin{definition}{Bus Hold Circuit}\\
+A bus hold circuit keeps the last defined value on the line when all drivers are disabled.
+
+\textbf{Operation:}
+\begin{itemize}
+    \item Weak feedback circuit maintains previous state
+    \item Can be overridden by any active driver
+    \item Prevents floating inputs
+    \item Similar principle to SRAM cell (weak bistable latch)
+\end{itemize}
+
+\textbf{Question:} Where do you know this circuit from?
+
+\textbf{Answer:} It is similar to an SRAM memory cell!
+\end{definition}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 50
+% Description: Bus hold circuit diagram showing weak latch
+% Priority: IMPORTANT
+% Suggested filename: lecture10_bushold_circuit.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_bushold_circuit.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 51
+% Description: Bus hold implementation details
+% Priority: SUPPLEMENTARY
+% Suggested filename: lecture10_bushold_detail.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_bushold_detail.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsection{Configuration of I/Os in FPGA}
+
+\subsubsection{Pin Assignment and I/O Standards}
+
+\begin{KR}{Setting I/O Standards in Quartus}\\
+\textbf{Location:} Assignments $\rightarrow$ Pins
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item Open Quartus project
+    \item Navigate to Assignments menu
+    \item Select Pin Planner or Pins
+    \item For each pin/signal:
+    \begin{itemize}
+        \item Assign physical pin location
+        \item Set I/O standard (e.g., LVCMOS 3.3V, LVDS, etc.)
+        \item Configure direction (input, output, bidirectional)
+    \end{itemize}
+    \item Save and recompile design
+\end{enumerate}
+\end{KR}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 52
+% Description: Pinout data sheet or FPGA pin configuration table
+% Priority: IMPORTANT
+% Suggested filename: lecture10_pinout_datasheet.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_pinout_datasheet.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 53
+% Description: Quartus Pin Planner screenshot showing I/O standard assignment
+% Priority: CRITICAL
+% Suggested filename: lecture10_quartus_pin_assignment.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_quartus_pin_assignment.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Advanced I/O Features}
+
+\begin{KR}{Setting Drive Strength, Pull-Up, and Bus Hold}\\
+\textbf{Location:} Assignments $\rightarrow$ Assignment Editor $\rightarrow$ I/O Features
+
+\textbf{Configurable parameters:}
+\begin{itemize}
+    \item \textbf{Drive Strength:} Controls output current capability
+    \begin{itemize}
+        \item Higher drive strength: faster edges, more EMI
+        \item Lower drive strength: slower edges, less EMI
+    \end{itemize}
+    \item \textbf{Pull-Up/Pull-Down:} Internal weak resistors
+    \begin{itemize}
+        \item Pull-up: brings floating input to HIGH
+        \item Pull-down: brings floating input to LOW
+    \end{itemize}
+    \item \textbf{Bus Hold:} Maintains last driven state
+    \item \textbf{Slew Rate:} Controls edge transition speed
+    \item \textbf{Open Drain:} Enables open drain mode
+\end{itemize}
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item Open Assignment Editor
+    \item Select I/O Features category
+    \item Choose pin or group of pins
+    \item Configure desired features
+    \item Apply and recompile
+\end{enumerate}
+\end{KR}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 54
+% Description: Quartus Assignment Editor showing I/O feature configuration
+% Priority: CRITICAL
+% Suggested filename: lecture10_io_features_config.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_io_features_config.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+\subsubsection{Verification}
+
+\begin{KR}{Checking if Assignments Were Applied}\\
+After configuration and compilation, verify that assignments were correctly applied:
+
+\textbf{Methods:}
+\begin{enumerate}
+    \item Check compilation report:
+    \begin{itemize}
+        \item Look for I/O assignment section
+        \item Verify pin locations and standards
+    \end{itemize}
+    \item Review Pin Planner:
+    \begin{itemize}
+        \item Confirm visual pin placement
+        \item Check I/O standard indicators
+    \end{itemize}
+    \item Examine Assignment Report:
+    \begin{itemize}
+        \item Lists all pin assignments
+        \item Shows actual vs. requested settings
+    \end{itemize}
+    \item Check for warnings/errors:
+    \begin{itemize}
+        \item Incompatible I/O standards in same bank
+        \item Missing reference voltages
+        \item Conflicting drive strengths
+    \end{itemize}
+\end{enumerate}
+\end{KR}
+
+% TODO: Add image from SCD_10_io_1.pdf, Slide 55
+% Description: Quartus compilation report or verification screen
+% Priority: IMPORTANT
+% Suggested filename: lecture10_assignment_verification.png
+\\
+% \includegraphics[width=\linewidth]{lecture10_assignment_verification.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above (remove %)
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 55
+% CRITICAL priority: 28
+% IMPORTANT priority: 19
+% SUPPLEMENTARY priority: 8
+%
+% Quick extraction checklist:
+% [X] [SCD_10_io_1.pdf, Slide 1] - Title slide (SUPPLEMENTARY)
+% [X] [SCD_10_io_1.pdf, Slide 2] - Overview questions (SUPPLEMENTARY)
+% [X] [SCD_10_io_1.pdf, Slide 3] - I/O topics list (SUPPLEMENTARY)
+% [ ] [SCD_10_io_1.pdf, Slide 4] - Simplified CMOS push-pull (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 5] - CMOS I/O impedances (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 6] - P-Channel MOS-FET (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 7] - N-Channel MOS-FET (CRITICAL)
+% [X] [SCD_10_io_1.pdf, Slide 8] - Voltage nomenclature (SUPPLEMENTARY)
+% [ ] [SCD_10_io_1.pdf, Slide 9] - N-Channel operation (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 10] - P-Channel operation (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 11] - Combined operation (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 12] - HP vs LP transistors (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 13] - CMOS cross-section (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 14] - Threshold scaling (CRITICAL)
+% [X] [SCD_10_io_1.pdf, Slide 15] - Technology trend table (included in text)
+% [ ] [SCD_10_io_1.pdf, Slide 16] - Level shifter overview (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 17] - Level shifter detail (IMPORTANT)
+% [X] [SCD_10_io_1.pdf, Slide 18] - I/O standards table (included in text)
+% [ ] [SCD_10_io_1.pdf, Slide 19] - I/O standards supported (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 20] - Additional I/O standards (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 21] - LVCMOS 3.3V output (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 22] - LVCMOS 1.8V output (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 23] - LVCMOS input levels (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 24] - LVCMOS margins (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 25] - LVCMOS vs LVTTL (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 26] - Voltage domains question (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 27] - I/O banks structure (CRITICAL)
+% [X] [SCD_10_io_1.pdf, Slide 28] - Section title (SUPPLEMENTARY)
+% [ ] [SCD_10_io_1.pdf, Slide 29] - Differential principle (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 30] - Common mode rejection (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 31] - Differential voltages (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 32] - Current direction (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 33] - Eye diagram 1 (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 34] - Eye diagram 2 (SUPPLEMENTARY)
+% [ ] [SCD_10_io_1.pdf, Slide 35] - LVDS intro (SUPPLEMENTARY)
+% [ ] [SCD_10_io_1.pdf, Slide 36] - LVDS circuit (CRITICAL)
+% [X] [SCD_10_io_1.pdf, Slide 37] - LVDS characteristics (included in text)
+% [ ] [SCD_10_io_1.pdf, Slide 38] - LVDS application (IMPORTANT)
+% [X] [SCD_10_io_1.pdf, Slide 39] - Special diff I/Os (included in text)
+% [X] [SCD_10_io_1.pdf, Slide 40] - Section title (SUPPLEMENTARY)
+% [ ] [SCD_10_io_1.pdf, Slide 41] - Push-pull problem (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 42] - Push-pull vs open-drain (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 43] - Open drain circuit (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 44] - I2C example (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 45] - Open drain current (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 46] - Bidirectional bus (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 47] - Programmable pull-up (SUPPLEMENTARY)
+% [X] [SCD_10_io_1.pdf, Slide 48] - Section title (SUPPLEMENTARY)
+% [ ] [SCD_10_io_1.pdf, Slide 49] - Tristate problem (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 50] - Bus hold circuit (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 51] - Bus hold detail (SUPPLEMENTARY)
+% [ ] [SCD_10_io_1.pdf, Slide 52] - Pinout datasheet (IMPORTANT)
+% [ ] [SCD_10_io_1.pdf, Slide 53] - Quartus pin assignment (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 54] - I/O features config (CRITICAL)
+% [ ] [SCD_10_io_1.pdf, Slide 55] - Assignment verification (IMPORTANT)
+% =====================
