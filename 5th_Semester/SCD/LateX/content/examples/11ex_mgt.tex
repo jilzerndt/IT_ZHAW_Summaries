@@ -1,0 +1,106 @@
+\section{KR and Exercises: Multi-Gigabit Transceiver}
+
+\subsection{8b10b Encoding}
+
+\begin{example2}{Word Synchronization in 8b10b}
+
+\textbf{Question:} A continuous, serial transmission needs a means of detecting the start of a word. Describe in your own words how 8b10b encoding solves this challenge.
+
+\tcblower
+
+\textbf{Explanation:}
+
+8b/10b encoding detects the start of a word by periodically transmitting special control characters (commas) with unique, illegal-for-data bit patterns. The receiver searches the serial stream for these patterns and, once found, aligns its word boundaries accordingly.
+
+Key points:
+\begin{itemize}
+    \item A comma has a distinctive pattern with five consecutive identical bits (11111 or 00000), which cannot occur in normal data symbols
+    \item Receiver continuously scans the incoming bitstream for this pattern
+    \item When the comma is detected, the receiver knows exactly where a 10-bit symbol boundary is
+    \item From that point on, all following bits can be grouped correctly into 10-bit words → and therefore into the original 8-bit bytes
+\end{itemize}
+
+A special comma symbol with an unambiguous pattern allows the detection of the word border. The line code must guarantee that no combination of two code words leads to a shifted version of the comma pattern.
+
+\important{Problem type:} Explanation - Understanding word synchronization in 8b10b encoding
+
+\textbf{Source:} Moodle Quiz MGT, Question 1
+\end{example2}
+
+\subsection{Line Code Properties}
+
+\begin{example2}{8b10b Encoding Properties}
+
+\textbf{Question:} A line code has several properties that help the successful transmission of data via a serial connection. Below, four possible properties are shown.
+
+Mark for each property whether 8b10b encoding provides this property.
+
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Property} & \textbf{True} & \textbf{False} \\
+\hline
+Maximum number of transitions & & \textcolor{frog}{$\surd$} \\
+\hline
+Word synchronization & \textcolor{frog}{$\surd$} & \\
+\hline
+Clock recovery & \textcolor{frog}{$\surd$} & \\
+\hline
+DC balance & \textcolor{frog}{$\surd$} & \\
+\hline
+\end{tabular}
+\end{center}
+
+\tcblower
+
+\textbf{Explanation:}
+
+Correct answers:
+
+\begin{itemize}
+    \item Maximum number of transitions: False (8b10b does not limit maximum transitions, but ensures minimum transitions)
+    \item Word synchronization: True (provided through comma characters)
+    \item Clock recovery: True (sufficient transitions for CDR)
+    \item DC balance: True (running disparity control ensures DC balance)
+\end{itemize}
+
+\important{Problem type:} Understanding 8b10b line code properties
+
+\textbf{Source:} Moodle Quiz MGT, Question 2
+\end{example2}
+
+\subsection{MGT Transmission Steps}
+
+\begin{example2}{MGT TX Processing Steps}
+
+\textbf{Question:} A Multi-Gigabit Transceiver must perform multiple steps when transmitting (TX) or receiving (RX) data. Below, a few steps are given for TX. Drag the steps into the correct order with the first step at the top.
+
+\textbf{Correct order:}
+\begin{enumerate}
+    \item Parallel Input
+    \item Line Encoding
+    \item Serialization
+    \item Output
+\end{enumerate}
+
+\tcblower
+
+\textbf{Explanation:}
+
+Die Antwort ist richtig.
+
+The MGT transmitter processes data in this sequence:
+\begin{enumerate}
+    \item \textbf{Parallel Input}: Data arrives in parallel form from FPGA fabric
+    \item \textbf{Line Encoding}: Data is encoded (e.g., 8b10b) for transmission
+    \item \textbf{Serialization}: Parallel encoded data is converted to serial bitstream
+    \item \textbf{Output}: Serial data is transmitted via high-speed differential lines
+\end{enumerate}
+
+\important{Problem type:} Understanding MGT transmit data flow
+
+\textbf{Source:} Moodle Quiz MGT, Question 3
+\end{example2}
+
+\raggedcolumns
+\columnbreak

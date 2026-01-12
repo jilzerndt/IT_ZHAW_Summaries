@@ -1,0 +1,217 @@
+\section{Midterm Exam HS24}
+
+\textit{Note: This is a comprehensive midterm exam covering multiple System on Chip Design topics. The exam was taken on Tuesday, 5 November 2024, with a time limit of 45 minutes. Grade: 41.19 out of 52.00 (79.21\%).}
+
+\subsection{Boot Process}
+
+\begin{example2}{Boot Process Configuration}
+
+\textbf{Question 1:} The boot process must enable different sections of the processor in a defined sequence. Choose which step in the boot process enables and configures the following parts of the chip:
+
+\begin{itemize}
+    \item HPS GPIO pins: \underline{Preloader} \textcolor{frog}{$\surd$}
+    \item SD-Controller: \underline{Boot ROM} \textcolor{frog}{$\surd$}
+    \item SDRAM-Controller: \underline{Preloader} \textcolor{frog}{$\surd$}
+    \item Watchdog: \underline{Boot ROM} \textcolor{frog}{$\surd$}
+\end{itemize}
+
+\tcblower
+
+\textbf{Explanation:}
+
+All answers correct.
+
+The boot sequence in SoC FPGA:
+\begin{itemize}
+    \item \textbf{Boot ROM}: Initializes basic hardware (SD-Controller, Watchdog) and loads the preloader
+    \item \textbf{Preloader}: Configures SDRAM controller, GPIO pins, and prepares system for bootloader
+    \item \textbf{Bootloader (U-Boot)}: Loads operating system
+\end{itemize}
+
+\important{Problem type:} Understanding boot sequence and component initialization
+
+\textbf{Source:} Midterm Exam HS24, Question 1
+\end{example2}
+
+\subsection{GPIO Architecture}
+
+\begin{example2}{GPIO Register Circuit Labeling}
+
+\textbf{Question 2:} To store the desired output value, or to keep the input value, registers are added to the GPIO port.
+
+\includegraphics[width=\linewidth]{ex_exam_gpio_registers.png}
+
+On the following image, place the given labels on the corresponding register. Use the labels that were left in the schematic to determine the function of the registers.
+
+The possible spots are marked with a large red X, make sure the label's crosshair is positioned over the X to allow for correct automatic marking.
+
+\textit{Image shows complex GPIO circuit with multiple registers, flip-flops, and control logic including:}
+\begin{itemize}
+    \item Output Enable Register
+    \item Output Register
+    \item Input Register
+    \item Control signals for read/write from core
+    \item PRN (Preset) signals
+    \item DQS Logic Block and Dynamic OCT Control
+\end{itemize}
+
+\tcblower
+
+\textbf{Explanation:}
+
+Correct placement of all register labels based on GPIO circuit architecture.
+
+\important{Problem type:} Circuit analysis - GPIO register identification
+
+\textbf{Source:} Midterm Exam HS24, Question 2
+\end{example2}
+
+\subsection{Block Memory Purpose}
+
+\begin{example2}{FPGA Block RAM Purpose}
+
+\textbf{Question 3:} What is the purpose of the dedicated FPGA Block RAM (M4k, M10k or M20k, not MLABs or LUTs in logic cells):
+
+(Multiple answers are possible)
+
+Select one or more:
+\begin{itemize}
+    \item Implementation of combinatorial logic \textbf{\textcolor{red}{X}}
+    \item For permanent storage of the FPGA configuration \textbf{\textcolor{red}{X}}
+    \item To implement shift-registers \textbf{\textcolor{red}{X}}
+    \item For implementation of ROMs in FPGA \textcolor{frog}{$\surd$}
+    \item For implementation of FIFOs in FPGA \textcolor{frog}{$\surd$}
+    \item To implement triple ported RAMs \textcolor{frog}{$\surd$}
+\end{itemize}
+
+\tcblower
+
+\textbf{Explanation:}
+
+Correct answers: For implementation of ROMs in FPGA, For implementation of FIFOs in FPGA, To implement triple ported RAMs
+
+Block RAM in FPGAs is used for:
+\begin{itemize}
+    \item RAM, ROM, and FIFO implementations
+    \item Dual-port and triple-port memory structures
+    \item Large data storage within FPGA fabric
+\end{itemize}
+
+Block RAM cannot store FPGA configuration (requires non-volatile memory) and is inefficient for combinatorial logic.
+
+\important{Problem type:} Understanding Block RAM applications
+
+\textbf{Source:} Midterm Exam HS24, Question 3
+\end{example2}
+
+\subsection{Block Memory Timing}
+
+\begin{example2}{Memory Timing Diagram Analysis}
+
+\textbf{Question 4:} Select the correct description for the times as shown in the diagram:
+
+\includegraphics[width=\linewidth]{ex_exam_block_memory_timing.png}
+
+\textit{Timing diagram showing asynchronous memory signals with various timing parameters}
+
+\tcblower
+
+\textbf{Explanation:}
+
+Timing parameters for asynchronous memory operations including setup times, hold times, and access delays.
+
+\important{Problem type:} Timing diagram interpretation
+
+\textbf{Source:} Midterm Exam HS24, Question 4
+\end{example2}
+
+\subsection{Block Memory Properties}
+
+\begin{example2}{Block Memory Circuit Analysis}
+
+\textbf{Question 5:} \includegraphics[width=0.8\linewidth]{ex_exam_block_memory_circuit.png}
+
+Which answers are correct for the circuit shown above (several correct answers are possible)?
+
+Select one or more:
+\begin{itemize}
+    \item a. There is one read and one write address bus, they can be different \textcolor{frog}{$\surd$}
+    \item b. Writing with a clock frequency of more than 100MHz is not possible in this design \textbf{\textcolor{red}{X}}
+    \item c. It is possible to read from and write to this RAM in the same clock cycle. \textcolor{frog}{$\surd$}
+    \item d. The memory is 512 bytes deep (total amount of storage) \textcolor{frog}{$\surd$}
+    \item e. 32-bit values can be read at the same time \textbf{\textcolor{red}{X}}
+\end{itemize}
+
+\tcblower
+
+\textbf{Explanation:}
+
+Correct answers: a, c, d
+
+Analysis of the memory circuit shows:
+\begin{itemize}
+    \item Separate read and write address buses (dual-port capability)
+    \item Simultaneous read and write operations possible
+    \item Memory depth calculation based on address width
+\end{itemize}
+
+\important{Problem type:} Block memory architecture analysis
+
+\textbf{Source:} Midterm Exam HS24, Question 5
+\end{example2}
+
+\subsection{Block Memory Architecture with Flip-Flops}
+
+\begin{example2}{M4k Block Memory with Output Register}
+
+\textbf{Question 6:} \includegraphics[width=0.7\linewidth]{ex_exam_m4k_block.png}
+
+With the signal \textit{sync\_mem}, it can be selected whether the memory output is directly led to the signal \textit{data\_out}, or whether the data is registered in Flip-Flops before.
+
+Which answers are correct for the block memory (M4k) shown (several correct answers are possible)?
+
+\textbf{With the Flip-Flops present in the output path ...}
+
+Select one or more:
+\begin{itemize}
+    \item a. ... the maximal clock frequency is higher than without the Flip-Flops present in the path \textcolor{frog}{$\surd$}
+    \item b. ... the maximal clock frequency is lower than without the Flip-Flops present in the path \textbf{\textcolor{red}{X}}
+    \item c. ... data becomes accessible at the output earlier than without the Flip-Flops present in the path \textbf{\textcolor{red}{X}}
+    \item d. ... data becomes accessible at the output later than without the Flip-Flops present in the path \textcolor{frog}{$\surd$}
+\end{itemize}
+
+\tcblower
+
+\textbf{Explanation:}
+
+Correct answers: a, d
+
+The output register (flip-flop):
+\begin{itemize}
+    \item \textbf{Increases maximum clock frequency}: By breaking the combinatorial path from memory to output
+    \item \textbf{Increases latency}: Data appears one clock cycle later
+    \item Trade-off: Higher throughput (f\_max) vs. longer latency
+\end{itemize}
+
+\important{Problem type:} Understanding memory timing trade-offs
+
+\textbf{Source:} Midterm Exam HS24, Question 6
+\end{example2}
+
+\subsection{Additional Exam Questions}
+
+\textit{Note: The midterm exam contains additional questions covering topics including:}
+\begin{itemize}
+    \item SDRAM architecture and timing
+    \item Device Tree configuration
+    \item JTAG boundary scan
+    \item Timing analysis and constraints
+    \item PLL configuration
+    \item Multi-Gigabit Transceivers
+    \item In-Memory Compute concepts
+\end{itemize}
+
+\textit{Due to the extensive length of the exam (15 sections, 52 points total), only the first 6 questions are fully detailed here. The complete exam covers all major SCD topics studied during the semester.}
+
+\raggedcolumns
+\columnbreak
