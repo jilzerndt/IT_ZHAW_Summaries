@@ -67,28 +67,28 @@ You're taking a Database Systems course and need to create a LaTeX exam summary.
   - Coverage: SELECT, WHERE, JOIN types, subqueries, aggregation
   - KRs needed: 3 (complex queries, JOIN selection, GROUP BY)
   - Examples: 3 (easy, medium, hard)
-  - Images: 6 CRITICAL (JOIN diagrams)
+  - Images: 6 (JOIN diagrams)
 
 - **Normalization** (35-40% every exam)
   - Source: Lecture 05 (40 pages), Exercises (6 problems)
   - Coverage: FDs, 1NF/2NF/3NF, decomposition
   - KRs needed: 3 (identify FDs, normalize to 3NF, check BCNF)
   - Examples: 3 (easy, medium, hard)
-  - Images: 4 CRITICAL (dependency diagrams)
+  - Images: 4 (dependency diagrams)
 
 - **E-R Diagrams** (15-25% every exam)
   - Source: Lecture 06 (25 pages), Exercises (4 problems)
   - Coverage: Entities, relationships, cardinality
   - KRs needed: 2 (create E-R, convert to tables)
   - Examples: 2 (medium, hard)
-  - Images: 3 CRITICAL (notation, examples)
+  - Images: 3 (notation, examples)
 
 - **Relational Model** (prerequisite, indirectly tested)
   - Source: Lecture 01-02 (50 pages)
   - Coverage: Relations, keys, relational algebra basics
   - KRs needed: 1 (identify keys)
   - Examples: 1 (key identification)
-  - Images: 2 CRITICAL (structure)
+  - Images: 2 (structure)
 
 **Priority 2 (Should Include - Occasionally Tested)**:
 - **Transactions** (5-10% each exam - brief)
@@ -96,7 +96,7 @@ You're taking a Database Systems course and need to create a LaTeX exam summary.
   - Coverage: ACID properties, isolation levels (basic)
   - KRs needed: 1 (explain ACID/isolation - brief)
   - Examples: 1 (simple scenario)
-  - Images: 1 IMPORTANT (ACID table)
+  - Images: 1 (ACID table)
 
 **Priority 3 (Skip)**:
 - **Database History** (Lecture 01, 20 pages) - never tested
@@ -136,7 +136,7 @@ You're taking a Database Systems course and need to create a LaTeX exam summary.
 
 **KRs**: 10 total
 **Examples**: 11 total
-**Images**: 16 total (CRITICAL + IMPORTANT only)
+**Images**: 16 total
 
 ### User Approval
 
@@ -169,12 +169,7 @@ A single row in a relation, representing one instance or record. Contains values
 \multend
 
 \begin{concept}{Keys}\\
-% TODO: Add image from Lecture_01.pdf, Page 25
-% Description: Diagram showing primary, foreign, candidate keys in example tables
-% Priority: CRITICAL
-\\
-% \includegraphics[width=\linewidth]{01_keys_diagram.png}
-\\
+% TODO: add image from lecture_01.pdf, page 25
 
 \textbf{Primary Key}: Attribute(s) that uniquely identify each tuple. No nulls allowed.
 
@@ -261,12 +256,8 @@ StudentID & Name & Email & Major \\
 \important{Key insight:} Artificial IDs (StudentID) usually best choice for primary key - stable and guaranteed unique by design.
 \end{example2}
 
-% ===== IMAGE SUMMARY =====
-% Images needed: 2 (CRITICAL)
-%
-% Extraction checklist:
-% [ ] [Lecture_01.pdf, Page 25] - Keys diagram (CRITICAL)
-% [ ] [Lecture_01.pdf, Page 30] - Relation structure (CRITICAL)
+% ===== IMAGES =====
+% Total: 2 images
 % =====================
 ```
 
@@ -314,12 +305,7 @@ FULL & All rows both sides & Need complete data \\
 \end{tabular}
 \end{highlight}
 
-% TODO: Add image from Lecture_03.pdf, Slide 15
-% Description: Venn diagram showing all four JOIN types visually
-% Priority: CRITICAL
-\\
-% \includegraphics[width=\linewidth]{03_join_types_venn.png}
-\\
+% TODO: add image from lecture_03.pdf, slide 15
 
 \begin{KR}{How to Write Complex SQL Query}\\
 \textbf{Given:} Multiple tables and data requirements
@@ -402,16 +388,8 @@ ORDER BY s.Name;
 
 [Add 5 more images: JOIN result diagrams, subquery visualization, aggregation examples]
 
-% ===== IMAGE SUMMARY =====
-% Images needed: 6 (CRITICAL)
-%
-% Extraction checklist:
-% [ ] [Lecture_03.pdf, Slide 15] - JOIN types Venn diagram (CRITICAL)
-% [ ] [Lecture_03.pdf, Slide 20] - INNER JOIN result example (CRITICAL)
-% [ ] [Lecture_03.pdf, Slide 25] - LEFT JOIN result example (CRITICAL)
-% [ ] [Lecture_04.pdf, Slide 10] - Subquery execution order (CRITICAL)
-% [ ] [Lecture_04.pdf, Slide 30] - GROUP BY aggregation (CRITICAL)
-% [ ] [Lecture_04.pdf, Slide 35] - HAVING filter visualization (CRITICAL)
+% ===== IMAGES =====
+% Total: 6 images
 % =====================
 ```
 
@@ -444,7 +422,7 @@ misc_files/automatisation/database_summary/
 - **5 chapters**: Organized by exam importance
 - **10 KRs**: Covering all tested problem types
 - **11 examples**: Weighted toward SQL + Normalization
-- **16 images**: CRITICAL + IMPORTANT only (TODO comments)
+- **16 images**: Essential concepts only (TODO comments)
 
 **Coverage**:
 ✅ All learning objectives covered
