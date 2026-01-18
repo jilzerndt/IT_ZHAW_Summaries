@@ -539,21 +539,464 @@ Before considering a file complete:
 
 ## ANTI-PATTERNS (Avoid These!)
 
-❌ Using definition{} for procedures → Use KR{}
+### Content Organization Anti-Patterns
 
-❌ Multiple \\ after title → Use only one
+❌ **Using definition{} for procedures**
+```latex
+% WRONG:
+\begin{definition}{Normalization Procedure}\\
+First ensure 1NF, then 2NF, then 3NF...
+\end{definition}
 
-❌ Uncommented \includegraphics → Comment out
+% CORRECT:
+\begin{KR}{How to Normalize to 3NF}\\
+\textbf{Given:} Relation with FDs...
+\end{KR}
+```
 
-❌ Empty or near-empty blocks → Merge or remove
+❌ **Wrong environment for content type**
+```latex
+% WRONG:
+\begin{theorem}{Git Commands}\\
+git add, git commit, git push
+\end{theorem}
 
-❌ Deeply nested subsections → Simplify hierarchy
+% CORRECT:
+\begin{code}{Git Basic Commands}\\
+\begin{lstlisting}[language=bash, style=base]
+git add .
+git commit -m "message"
+git push origin main
+\end{lstlisting}
+\end{code}
+```
 
-❌ Missing language in lstlisting → Always specify
+❌ **Empty or near-empty blocks**
+```latex
+% WRONG:
+\begin{definition}{Normalization}\\
+Database optimization technique.
+\end{definition}
 
-❌ Umlauts in code blocks → Use ae/oe/ue
+% CORRECT: Merge with related content or expand
+\begin{definition}{Normalization}\\
+Database design technique to minimize redundancy and dependency by organizing fields and tables. Goals: eliminate data anomalies (insertion, update, deletion) and ensure data integrity through proper decomposition.
+\end{definition}
+```
 
-❌ Multiple main topics in one file → Split files
+❌ **Multiple main topics in one file**
+```latex
+% WRONG (in lecture02.tex):
+\section{Arrays}
+[500 lines about arrays]
+\section{Lists}
+[500 lines about lists]
+\section{Trees}
+[600 lines about trees]
+
+% CORRECT: Split into:
+% lecture02A.tex: Arrays and Lists
+% lecture02B.tex: Trees
+```
+
+### Formatting Anti-Patterns
+
+❌ **Multiple \\ after title**
+```latex
+% WRONG:
+\begin{definition}{Binary Tree}\\
+\\
+A tree where each node has at most two children.
+
+% CORRECT:
+\begin{definition}{Binary Tree}\\
+A tree where each node has at most two children.
+```
+
+❌ **Missing \\ after title (except before lists)**
+```latex
+% WRONG:
+\begin{definition}{Properties}
+\begin{itemize}
+    \item Property 1
+\end{itemize}
+
+% CORRECT (no \\  before itemize):
+\begin{definition}{Properties}
+\begin{itemize}
+    \item Property 1
+\end{itemize}
+
+% CORRECT (with \\ for text):
+\begin{definition}{Binary Tree}\\
+A tree structure with these properties:
+\begin{itemize}
+    \item Property 1
+\end{itemize}
+```
+
+❌ **Uncommented \includegraphics**
+```latex
+% WRONG (will break compilation):
+\\
+\includegraphics[width=\linewidth]{diagram.png}
+\\
+
+% CORRECT (commented out):
+% TODO: Add image from Lecture_05.pdf, Slide 12
+% Description: Binary tree structure diagram
+% Priority: CRITICAL
+\\
+% \includegraphics[width=\linewidth]{lecture05_tree_structure.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+```
+
+❌ **Missing language in lstlisting**
+```latex
+% WRONG:
+\begin{lstlisting}
+def hello():
+    return "world"
+\end{lstlisting}
+
+% CORRECT:
+\begin{lstlisting}[language=Python, style=base]
+def hello():
+    return "world"
+\end{lstlisting}
+```
+
+❌ **Umlauts in code blocks**
+```latex
+% WRONG:
+\begin{lstlisting}[language=Python, style=base]
+print("Hallö Welt")  # ö not allowed!
+\end{lstlisting}
+
+% CORRECT:
+\begin{lstlisting}[language=Python, style=base]
+print("Hallo Welt")  # use oe instead of ö
+\end{lstlisting}
+```
+
+### Structure Anti-Patterns
+
+❌ **Deeply nested subsections**
+```latex
+% WRONG:
+\section{Data Structures}
+  \subsection{Linear Structures}
+    \subsubsection{Arrays}
+      \paragraph{Dynamic Arrays}
+        \subparagraph{Implementation}  % TOO DEEP!
+
+% CORRECT:
+\section{Data Structures}
+  \subsection{Arrays}
+    \subsubsection{Dynamic Arrays}
+  \subsection{Linked Lists}
+```
+
+❌ **Single subsection in section**
+```latex
+% WRONG:
+\section{Trees}
+  \subsection{Binary Trees}
+    [All content here]
+
+% CORRECT (remove redundant subsection):
+\section{Binary Trees}
+  [Content directly here]
+```
+
+❌ **Over-nesting without purpose**
+```latex
+% WRONG:
+\section{Chapter}
+  \subsection{Topic}
+    \subsubsection{Concept}
+      \begin{definition}{Thing}\\
+      ...
+      \end{definition}
+
+% CORRECT (simplify):
+\section{Topic}
+  \subsection{Concept}
+    \begin{definition}{Thing}\\
+    ...
+    \end{definition}
+```
+
+### Math & Code Anti-Patterns
+
+❌ **Not using proper math operators**
+```latex
+% WRONG:
+sin(x), cos(x), log(n)  % Rendered as variables
+
+% CORRECT:
+\sin(x), \cos(x), \log(n)  % Rendered as functions (upright)
+```
+
+❌ **Not escaping special characters**
+```latex
+% WRONG (in text):
+The $100 price & 50% discount
+
+% CORRECT:
+The \$100 price \& 50\% discount
+```
+
+❌ **Using \[ \] instead of $$ $$**
+```latex
+% AVOID:
+\[
+E = mc^2
+\]
+
+% PREFERRED (per style guide):
+$$E = mc^2$$
+```
+
+❌ **Special characters in lstlisting**
+```latex
+% WRONG:
+\begin{lstlisting}[language=Python, style=base]
+# Special chars like $, %, &, _ in comments cause errors!
+\end{lstlisting}
+
+% CORRECT:
+\begin{lstlisting}[language=Python, style=base]
+# Keep comments simple without special chars
+# Or use descriptive text without symbols
+\end{lstlisting}
+```
+
+### Image Anti-Patterns
+
+❌ **Missing TODO comment for images**
+```latex
+% WRONG:
+\\
+% \includegraphics[width=\linewidth]{diagram.png}
+\\
+
+% CORRECT:
+% TODO: Add image from Lecture_05.pdf, Slide 12
+% Description: Binary tree traversal diagram showing pre-order sequence
+% Priority: CRITICAL
+% Suggested filename: lecture05_tree_traversal.png
+\\
+% \includegraphics[width=\linewidth]{lecture05_tree_traversal.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+```
+
+❌ **Missing priority or description**
+```latex
+% WRONG:
+% TODO: Add image
+\\
+% \includegraphics[width=\linewidth]{image.png}
+\\
+
+% CORRECT:
+% TODO: Add image from Script.pdf, Page 45
+% Description: Comparison table of sorting algorithms
+% Priority: IMPORTANT
+\\
+% \includegraphics[width=\linewidth]{sorting_comparison_table.png}
+\\
+```
+
+❌ **No image summary section at file end**
+```latex
+% WRONG (file ends without):
+\end{definition}
+% [end of file]
+
+% CORRECT:
+\end{definition}
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: 5
+% Breakdown: CRITICAL: 3, IMPORTANT: 2
+%
+% Extraction checklist:
+% [ ] [Lecture_02.pdf, Slide 10] - Array memory layout (CRITICAL)
+% [ ] [Lecture_02.pdf, Slide 15] - Pointer diagram (CRITICAL)
+% [ ] [Lecture_02.pdf, Slide 20] - Stack vs heap (CRITICAL)
+% [ ] [Lecture_02.pdf, Slide 25] - Dynamic allocation (IMPORTANT)
+% [ ] [Lecture_02.pdf, Slide 30] - Memory leak example (IMPORTANT)
+% =====================
+```
+
+### Multi-Column Anti-Patterns
+
+❌ **Long content in \mult{2}**
+```latex
+% WRONG (KR is too long for multi-column):
+\mult{2}
+\begin{KR}{How to Normalize to 3NF}\\
+[20 lines of procedure]
+\end{KR}
+\multend
+
+% CORRECT (keep long content single-column):
+\begin{KR}{How to Normalize to 3NF}\\
+[20 lines of procedure]
+\end{KR}
+```
+
+❌ **Unbalanced multi-column groups**
+```latex
+% WRONG:
+\mult{2}
+\begin{definition}{Concept A}\\
+[3 lines]
+\end{definition}
+
+\begin{definition}{Concept B}\\
+[20 lines]  % Much longer!
+\end{definition}
+\multend
+
+% CORRECT (group similar-length blocks):
+\mult{2}
+\begin{definition}{Concept A}\\
+[3 lines]
+\end{definition}
+
+\begin{definition}{Concept C}\\
+[3 lines]
+\end{definition}
+\multend
+
+\begin{definition}{Concept B}\\
+[20 lines]  % Keep long one single-column
+\end{definition}
+```
+
+❌ **Missing \multend**
+```latex
+% WRONG:
+\mult{2}
+\begin{definition}{A}\\
+...
+\end{definition}
+% Missing \multend!
+\begin{definition}{B}\\  % This will have issues
+
+% CORRECT:
+\mult{2}
+\begin{definition}{A}\\
+...
+\end{definition}
+\multend
+
+\begin{definition}{B}\\
+...
+```
+
+### Content Quality Anti-Patterns
+
+❌ **Vague KR titles**
+```latex
+% WRONG:
+\begin{KR}{Normalization}\\
+...
+
+% CORRECT:
+\begin{KR}{How to Normalize to 3NF}\\
+...
+```
+
+❌ **KR without common mistakes**
+```latex
+% WRONG:
+\begin{KR}{How to Implement Binary Search}\\
+\textbf{Procedure:}
+[steps]
+\end{KR}
+
+% CORRECT:
+\begin{KR}{How to Implement Binary Search}\\
+\textbf{Procedure:}
+[steps]
+
+\textbf{Common mistakes:}
+\begin{itemize}
+    \item Integer overflow in mid calculation
+    \item Off-by-one errors in boundaries
+    \item Not checking if array sorted
+\end{itemize}
+\end{KR}
+```
+
+❌ **Example without solution**
+```latex
+% WRONG:
+\begin{example2}{Problem}\\
+\textbf{Given:} ...
+\textbf{Find:} ...
+% No solution provided!
+\end{example2}
+
+% CORRECT:
+\begin{example2}{Problem}\\
+\textbf{Given:} ...
+\textbf{Find:} ...
+
+\tcblower
+
+\textbf{Solution:}
+[Complete step-by-step solution]
+\end{example2}
+```
+
+---
+
+### Why These Matter
+
+**Correct formatting**:
+- Ensures compilation without errors
+- Creates consistent, professional appearance
+- Makes content easily scannable
+
+**Proper environment usage**:
+- Helps reader identify content type immediately
+- Applies appropriate visual styling
+- Maintains semantic meaning
+
+**Good structure**:
+- Improves navigation and findability
+- Prevents overwhelming hierarchy
+- Facilitates understanding
+
+**Complete content**:
+- Provides all information needed for exam
+- Includes critical study aids (KRs, examples)
+- Ensures images are documented for later extraction
+
+---
+
+### Quick Anti-Pattern Checklist
+
+Before finishing any file, check:
+- [ ] No procedures in definition{} blocks (use KR{})
+- [ ] Single \\ after environment titles (except before lists)
+- [ ] All \includegraphics commented out with TODO
+- [ ] All lstlisting have [language=X, style=base]
+- [ ] No ä/ö/ü in code blocks
+- [ ] No deeply nested sections (max 3 levels)
+- [ ] Long content NOT in \mult{2}
+- [ ] All \mult{} have matching \multend
+- [ ] KRs have "How to..." titles
+- [ ] Examples have complete solutions
+- [ ] Image summary section at file end
+- [ ] Special characters escaped in text
+- [ ] Math operators use \sin, \cos, etc.
 
 ---
 

@@ -1,0 +1,708 @@
+# EXACT EXTRACTION: PDF → LaTeX (ZERO CONTENT CHANGES)
+
+## CRITICAL RULES - READ FIRST
+
+⚠️ YOU ARE EXTRACTING, NOT SUMMARIZING! ⚠️
+
+This is NOT summarization. This is NOT paraphrasing. This is NOT condensing.
+This is EXACT extraction of ALL content into LaTeX format.
+
+Think of yourself as a PHOTOCOPIER, not an editor.
+Your job is PERFECT FIDELITY, not improvement or optimization.
+
+---
+
+## What "EXACT" Means
+
+✅ Include EVERY sentence, EVERY paragraph, EVERY bullet point
+✅ Preserve EVERY example, EVERY figure reference, EVERY code snippet
+✅ Maintain EXACT terminology and wording from source
+✅ Keep EXACT order of topics as they appear in source
+✅ Extract ALL mathematical derivations with ALL intermediate steps
+✅ Include ALL side notes, remarks, warnings, footnotes
+✅ Extract ALL repetitions, even if redundant
+✅ Include ALL "obvious" explanations
+
+**When in doubt, INCLUDE IT.**
+
+---
+
+## What You MUST NOT Do
+
+❌ Skip "redundant" examples → Extract ALL examples completely
+❌ Combine similar sections → Keep them separate exactly as in source
+❌ Paraphrase for clarity → Use source wording exactly
+❌ Omit background content → Include all context
+❌ Remove "obvious" steps → Include every step shown
+❌ Condense long explanations → Extract in full
+❌ Skip tangential remarks → Include all remarks
+❌ Merge duplicate content → Extract both instances
+❌ Think "I can summarize this as..." → NO. Extract it.
+❌ Think "The reader will know..." → NO. Include it.
+
+**If you catch yourself thinking "I'll skip this because...", STOP. Extract it anyway.**
+
+---
+
+## VERIFICATION SYSTEM
+
+### Chunking Strategy
+
+Process source in SMALL sections (2-3 pages / 1 major topic at a time):
+
+1. **Read chunk** (2-3 pages)
+2. **Extract verbatim** into LaTeX
+3. **Add completion marker**: `% EXTRACTED: [Source.pdf, Pages X-Y] - COMPLETE`
+4. **Count content**: definitions, examples, figures, code blocks
+5. **Self-verify**: "Did I skip anything?" "Did I change any wording?"
+6. **Move to next chunk**
+
+**Why chunking?** Smaller scope = less skipping. Verification per chunk catches errors early.
+
+### Section Markers Template
+
+Use this at start and end of each extracted chunk:
+
+```latex
+% ===== EXTRACTION START: [Source.pdf, Pages X-Y] =====
+
+[extracted content]
+
+% ===== EXTRACTION END: [Source.pdf, Pages X-Y] =====
+% Content blocks extracted:
+%   - [X] definitions
+%   - [Y] theorems/concepts
+%   - [Z] examples
+%   - [W] figures (TODO comments)
+%   - [V] code blocks
+% Self-verification: [ ] Checked against source - nothing skipped, no paraphrasing
+```
+
+**These markers are MANDATORY.** They prove completeness.
+
+---
+
+## CONTENT HANDLING
+
+### For Text Content
+
+**Rule**: Extract ALL paragraphs exactly as written
+
+- Preserve sentence structure word-for-word
+- Use appropriate tcolorbox environments per style guide
+- Include ALL itemized/numbered lists completely
+- Preserve ALL emphasis (bold, italic) from source
+- Keep ALL transitional phrases and conjunctions
+
+**Example - CORRECT:**
+```latex
+\begin{concept}{Database Transactions}\\
+A transaction is a unit of work performed within a database. Transactions must satisfy the ACID properties: Atomicity, Consistency, Isolation, and Durability. These properties ensure data integrity even in case of system failures or concurrent access.
+\end{concept}
+```
+
+**Example - WRONG (paraphrased):**
+```latex
+\begin{concept}{Database Transactions}\\
+Transactions ensure data integrity via ACID properties.
+\end{concept}
+```
+
+### For Mathematical Content
+
+**Rule**: Include ALL derivation steps, ALL intermediate equations
+
+- Extract EVERY equation exactly as shown
+- Include ALL mathematical reasoning/explanations between steps
+- Preserve ALL notation exactly
+- Keep ALL "simplify this to..." intermediate comments
+- Extract formulas even if they repeat or seem obvious
+
+**Example - CORRECT:**
+```latex
+\begin{example2}{Derivative of $x^2$}\\
+\textbf{Find:} $\frac{d}{dx}(x^2)$
+
+\tcblower
+
+\textbf{Solution:}
+Using the definition of derivative:
+$$\frac{d}{dx}(x^2) = \lim_{h \to 0} \frac{(x+h)^2 - x^2}{h}$$
+
+Expand $(x+h)^2$:
+$$= \lim_{h \to 0} \frac{x^2 + 2xh + h^2 - x^2}{h}$$
+
+Simplify numerator:
+$$= \lim_{h \to 0} \frac{2xh + h^2}{h}$$
+
+Factor out $h$:
+$$= \lim_{h \to 0} \frac{h(2x + h)}{h}$$
+
+Cancel $h$:
+$$= \lim_{h \to 0} (2x + h)$$
+
+Take limit:
+$$= 2x$$
+
+\textbf{Answer:} $\frac{d}{dx}(x^2) = 2x$
+\end{example2}
+```
+
+**Example - WRONG (skipped steps):**
+```latex
+\begin{example2}{Derivative of $x^2$}\\
+Using the power rule: $\frac{d}{dx}(x^2) = 2x$
+\end{example2}
+```
+
+### For Examples and Problems
+
+**Rule**: Extract ALL examples from source with COMPLETE solutions
+
+- Include full problem statement exactly as given
+- Extract complete solution with ALL steps
+- Include ALL reasoning/explanation text
+- Extract ALL intermediate results
+- Keep ALL "check your answer" verification steps
+- Use example2{} environment for worked examples
+
+**If source has 5 similar examples, extract ALL 5.**
+
+### For Images/Diagrams/Figures
+
+**Rule**: Create TODO comment for EVERY visual element
+
+For EVERY image, diagram, figure, graph, chart, screenshot:
+
+```latex
+% TODO: Add image from [Exact_Source_File.pdf, Page/Slide X]
+% Description: [Detailed description of what image shows]
+% Priority: CRITICAL/IMPORTANT/SUPPLEMENTARY
+% Suggested filename: lectureXX_topic_type.png
+\\
+% \includegraphics[width=\linewidth]{lectureXX_topic_type.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+```
+
+**Priority Levels**:
+- **CRITICAL**: Essential for understanding concept (key diagrams, crucial flowcharts, fundamental visualizations)
+- **IMPORTANT**: Significantly enhances understanding (helpful examples, supporting visuals)
+- **SUPPLEMENTARY**: Nice-to-have but not necessary (decorative elements, redundant illustrations)
+
+**CRITICAL**: Keep ALL `\includegraphics` lines COMMENTED OUT with `%` prefix!
+**This is non-negotiable** - uncommented lines will break compilation.
+
+**Filename pattern**: lectureXX_topic_type.png or scriptXX_topic_type.png
+Examples: lecture03_normalization_diagram.png, lecture05_btree_structure.png
+
+### For Code Blocks
+
+**Rule**: Extract ALL code examples completely with exact formatting
+
+- Preserve exact indentation (count spaces/tabs)
+- Include ALL comments from original code
+- Extract complete functions/classes, not fragments
+- Use lstlisting with [language=X, style=base]
+- Use ae/oe/ue instead of ä/ö/ü in code blocks
+- Keep all code content in English
+
+**Languages**: Python, Java, JavaScript, C, CPP, SQL, HTML, CSS, bash
+
+```latex
+\begin{examplecode}{Binary Search Implementation}\\
+\begin{lstlisting}[language=Python, style=base]
+def binary_search(arr, target):
+    """
+    Search for target in sorted array using binary search.
+    Returns index if found, -1 otherwise.
+    """
+    left = 0
+    right = len(arr) - 1
+
+    while left <= right:
+        mid = (left + right) // 2
+
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return -1
+\end{lstlisting}
+
+\textbf{Time Complexity:} $O(\log n)$
+\textbf{Space Complexity:} $O(1)$
+\end{examplecode}
+```
+
+**Extract ALL code exactly as shown, including:**
+- Function signatures
+- Docstrings/comments
+- Variable names
+- Logic flow
+- Return statements
+- Edge case handling
+
+---
+
+## FILE ORGANIZATION
+
+### Naming Convention
+
+**Lectures**: lecture01.tex, lecture02.tex, lecture03.tex, ...
+**Long lectures (split)**: lecture02A.tex, lecture02B.tex, lecture02C.tex
+**Scripts/textbooks**: script_chapter01.tex, script_chapter02.tex, ...
+
+Use two-digit padding: lecture01.tex not lecture1.tex
+
+### Splitting Rules
+
+**Split ONLY when**:
+- Content exceeds ~800-1000 lines of LaTeX code
+- Source has natural major topic boundaries (e.g., "Part 1 / Part 2")
+- File becomes difficult to navigate for human editor
+
+**Split at logical breakpoints**:
+- End of major section/chapter in source
+- Natural topic transitions
+- Clear conceptual boundaries
+
+**Do NOT split**:
+- Arbitrarily in middle of topic
+- Within single example or derivation
+- During explanation of single concept
+
+**Example split**:
+```
+Lecture 02 (45 pages covering: Arrays, Lists, Trees)
+→ Split into:
+   lecture02A.tex: Arrays and Lists (pages 1-25)
+   lecture02B.tex: Trees and Tree Operations (pages 26-45)
+```
+
+### File Structure
+
+Each .tex file must have:
+
+```latex
+\section{[Exact Section Title from Source]}
+
+% Brief note about source if helpful
+% Extracted from: Lecture 02 slides, Pages 1-25
+
+\subsection{[First Subtopic]}
+
+[Content with proper environments]
+
+\subsection{[Second Subtopic]}
+
+[Content with proper environments]
+
+% ===== IMAGE SUMMARY =====
+% Total images needed: [X]
+% Breakdown: CRITICAL: [A], IMPORTANT: [B], SUPPLEMENTARY: [C]
+%
+% Quick extraction checklist:
+% [ ] [Source.pdf, Page X] - [description] (CRITICAL)
+% [ ] [Source.pdf, Page Y] - [description] (IMPORTANT)
+% [ ] [Source.pdf, Page Z] - [description] (SUPPLEMENTARY)
+% =====================
+```
+
+**DO NOT include in chapter files**:
+- `\documentclass`
+- `\usepackage`
+- `\begin{document}` / `\end{document}`
+- Preamble commands
+
+Main .tex file handles all that!
+
+---
+
+## FORMATTING STANDARDS
+
+Follow ALL rules from `misc_files/automatisation/reference_style_guide.txt`.
+
+### Critical Formatting Rules
+
+**1. Line Breaks (`\\`)**:
+- Add `\\` AFTER environment titles
+- **EXCEPTION**: NO `\\` before `\begin{itemize}` or `\begin{enumerate}`
+- Add `\\` before AND after `\includegraphics` (commented)
+
+```latex
+✅ CORRECT:
+\begin{definition}{Binary Tree}\\
+A tree where each node has at most two children.
+\end{definition}
+
+❌ WRONG:
+\begin{definition}{Binary Tree}
+A tree where each node has at most two children.
+\end{definition}
+
+✅ CORRECT (exception):
+\begin{definition}{Properties}
+\begin{itemize}
+    \item Property 1
+    \item Property 2
+\end{itemize}
+\end{definition}
+
+❌ WRONG:
+\begin{definition}{Properties}\\
+\begin{itemize}
+    \item Property 1
+\end{itemize}
+\end{definition}
+```
+
+**2. Image Comments**:
+```latex
+✅ CORRECT (commented):
+\\
+% \includegraphics[width=\linewidth]{image.png}
+\\
+
+❌ WRONG (uncommented - will break compilation):
+\\
+\includegraphics[width=\linewidth]{image.png}
+\\
+```
+
+**3. Code Block Language**:
+```latex
+✅ CORRECT:
+\begin{lstlisting}[language=Python, style=base]
+def hello():
+    return "world"
+\end{lstlisting}
+
+❌ WRONG (missing language):
+\begin{lstlisting}
+def hello():
+    return "world"
+\end{lstlisting}
+```
+
+**4. Character Encoding in Code**:
+```latex
+✅ CORRECT:
+\begin{lstlisting}[language=Python, style=base]
+print("Hallo Welt")  # ae, oe, ue
+\end{lstlisting}
+
+❌ WRONG:
+\begin{lstlisting}[language=Python, style=base]
+print("Hallö Welt")  # ö not allowed!
+\end{lstlisting}
+```
+
+**5. Special Characters**:
+Must be escaped outside code/math:
+- `\$` → $
+- `\&` → &
+- `\%` → %
+- `\_` → _
+- `\{` → {
+- `\}` → }
+- `\textbackslash` → \
+- `\textasciitilde` → ~
+- `\textasciicircum` → ^
+
+### Environment Selection Guide
+
+Choose appropriate tcolorbox environment:
+
+- **definition{}**: Formal definitions of terms/concepts
+- **concept{}**: Important overarching concepts
+- **theorem{}**: Mathematical theorems, proven statements
+- **corollary{}**: Consequences/extensions of theorems
+- **lemma{}**: Supporting proven facts
+- **KR{}**: Step-by-step procedures (use sparingly in extraction - mainly for summarization)
+- **formula{}**: Formula collections/overviews
+- **code{}**: Code explaining concepts
+- **examplecode{}**: Code-focused examples
+- **example**: Simple examples (no title needed)
+- **example2{}**: Complex examples with title and solution
+- **remark**: Additional notes, warnings (no title needed)
+- **highlight{}**: Important overview blocks, summary tables
+
+**When in doubt**: Use definition{} for explanatory content, example2{} for worked problems.
+
+---
+
+## VALIDATION CHECKLIST
+
+Before delivery, verify:
+
+### Completeness Check:
+- [ ] Every section from source is extracted (check table of contents)
+- [ ] All examples included - count matches source
+- [ ] All figures have TODO comments with priority and description
+- [ ] All code blocks extracted completely
+- [ ] All mathematical derivations have all steps
+- [ ] No content skipped or paraphrased
+- [ ] All section markers present (EXTRACTION START/END)
+
+### Formatting Check:
+- [ ] All tcolorbox environments properly opened and closed
+- [ ] All `\begin{}` have matching `\end{}`
+- [ ] `\\` after environment titles (except before itemize/enumerate)
+- [ ] ALL `\includegraphics` lines commented out with `%`
+- [ ] All lstlisting blocks have [language=X, style=base]
+- [ ] No ä/ö/ü in lstlisting blocks (use ae/oe/ue instead)
+- [ ] Special characters properly escaped
+- [ ] Math symbols wrapped in $ $ or $$ $$
+
+### Verification Check:
+- [ ] Section markers present for all chunks
+- [ ] Content block counts documented per chunk
+- [ ] Image summary section at file end
+- [ ] Self-check comments completed ("Verified against source...")
+
+### File Organization Check:
+- [ ] Filename follows naming convention (lectureXX.tex)
+- [ ] Long content split appropriately (800-1000 line limit)
+- [ ] No preamble commands in chapter files
+- [ ] Image summary section present
+
+---
+
+## ANTI-PATTERNS TO AVOID
+
+These are COMMON MISTAKES. Do NOT make them:
+
+### ❌ Combining/Merging Content
+**WRONG**: "This section is redundant with section 2, I'll combine them"
+**RIGHT**: Extract both sections separately exactly as in source
+
+### ❌ Paraphrasing
+**WRONG**: "For brevity, I'll summarize this paragraph as: 'Functions map inputs to outputs'"
+**RIGHT**: Extract the full paragraph word-for-word
+
+### ❌ Skipping Similar Examples
+**WRONG**: "This example is similar to the previous one, so I'll skip it"
+**RIGHT**: Extract all examples completely, even if similar
+
+### ❌ Removing Detail
+**WRONG**: "The source goes into unnecessary detail about X, I'll skip those paragraphs"
+**RIGHT**: Extract all paragraphs, including "unnecessary" detail
+
+### ❌ Skipping Images
+**WRONG**: "This figure is just decorative, I won't add a TODO for it"
+**RIGHT**: Add TODO comment for every visual element
+
+### ❌ Condensing Derivations
+**WRONG**: "The derivation has 8 steps, I'll show just the key 3 steps"
+**RIGHT**: Extract all 8 steps exactly as shown
+
+### ❌ Omitting "Obvious" Content
+**WRONG**: "This explanation is obvious to any reader, I'll skip it"
+**RIGHT**: Extract it - what's obvious to you may not be to student
+
+### ❌ Improving Wording
+**WRONG**: "The source wording is awkward, I'll rephrase more clearly"
+**RIGHT**: Use source wording exactly, even if awkward
+
+### ❌ Skipping Repetition
+**WRONG**: "This formula was already shown on page 5, no need to extract it again"
+**RIGHT**: Extract it again - preserve source structure exactly
+
+---
+
+## SELF-CHECK QUESTIONS
+
+Before delivering each chunk, ask yourself:
+
+1. **Did I extract EVERY sentence?** If source has 15 sentences, output should have 15 sentences worth of content
+2. **Did I change ANY wording?** Compare a few sentences back to source - exact match?
+3. **Did I skip ANY examples?** Count examples in source vs output
+4. **Did I add TODO for EVERY image?** Visual scan of source pages - all covered?
+5. **Did I extract ALL code completely?** Compare line-by-line with source
+6. **Did I include ALL derivation steps?** Every equation and explanation text?
+7. **Would a student using ONLY my extraction have access to ALL information in source?** This is the ultimate test
+
+If answer to ANY question is "no" or "maybe", GO BACK and extract what you missed.
+
+---
+
+## OUTPUT FORMAT
+
+Deliver complete .tex file(s) with:
+
+1. **Proper naming**: lectureXX.tex following convention
+2. **Complete content**: All source material extracted
+3. **Section markers**: EXTRACTION START/END for all chunks
+4. **Verification comments**: Content block counts and self-checks
+5. **Image summary**: Complete list at file end
+6. **Valid LaTeX**: Compiles without errors (except for commented images)
+
+---
+
+## EXAMPLE: CORRECT EXTRACTION
+
+**Source (from PDF):**
+```
+3.2 Binary Search Trees
+
+A binary search tree (BST) is a node-based binary tree data structure. Each node
+stores a key and has at most two children, referred to as the left child and right
+child. For any node, all keys in the left subtree are less than the node's key,
+and all keys in the right subtree are greater than the node's key.
+
+The BST property enables efficient searching. Starting at the root, we compare
+the target value with the current node's key. If equal, we found it. If less,
+search left subtree. If greater, search right subtree.
+
+Example: Insert 5, 3, 7, 2, 4, 6, 8 into an initially empty BST.
+
+[Diagram showing step-by-step insertion]
+
+Solution:
+- Insert 5 (becomes root)
+- Insert 3 (less than 5, goes left)
+- Insert 7 (greater than 5, goes right)
+- Insert 2 (less than 5, then less than 3, goes left of 3)
+- Insert 4 (less than 5, greater than 3, goes right of 3)
+- Insert 6 (greater than 5, less than 7, goes left of 7)
+- Insert 8 (greater than 5, greater than 7, goes right of 7)
+
+Final tree has height 2 (balanced).
+```
+
+**CORRECT Extraction:**
+```latex
+% ===== EXTRACTION START: DataStructures_Lecture03.pdf, Pages 12-13 =====
+
+\subsection{Binary Search Trees}
+
+\begin{definition}{Binary Search Tree}\\
+A binary search tree (BST) is a node-based binary tree data structure. Each node stores a key and has at most two children, referred to as the left child and right child. For any node, all keys in the left subtree are less than the node's key, and all keys in the right subtree are greater than the node's key.
+\end{definition}
+
+\begin{concept}{BST Search Efficiency}\\
+The BST property enables efficient searching. Starting at the root, we compare the target value with the current node's key. If equal, we found it. If less, search left subtree. If greater, search right subtree.
+\end{concept}
+
+\begin{example2}{BST Insertion Sequence}\\
+\textbf{Task:} Insert 5, 3, 7, 2, 4, 6, 8 into an initially empty BST.
+
+% TODO: Add image from DataStructures_Lecture03.pdf, Page 12
+% Description: Step-by-step diagram showing BST construction through insertions
+% Priority: CRITICAL
+% Suggested filename: lecture03_bst_insertion_steps.png
+\\
+% \includegraphics[width=\linewidth]{lecture03_bst_insertion_steps.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+
+\tcblower
+
+\textbf{Solution:}
+\begin{itemize}
+    \item Insert 5 (becomes root)
+    \item Insert 3 (less than 5, goes left)
+    \item Insert 7 (greater than 5, goes right)
+    \item Insert 2 (less than 5, then less than 3, goes left of 3)
+    \item Insert 4 (less than 5, greater than 3, goes right of 3)
+    \item Insert 6 (greater than 5, less than 7, goes left of 7)
+    \item Insert 8 (greater than 5, greater than 7, goes right of 7)
+\end{itemize}
+
+\textbf{Result:} Final tree has height 2 (balanced).
+\end{example2}
+
+% ===== EXTRACTION END: DataStructures_Lecture03.pdf, Pages 12-13 =====
+% Content blocks extracted:
+%   - 1 definition (BST)
+%   - 1 concept (search efficiency)
+%   - 1 example2 (insertion sequence)
+%   - 1 figure (insertion diagram - TODO)
+% Self-verification: [✓] Checked against source - all content extracted verbatim
+```
+
+**WRONG Extraction (DO NOT DO THIS):**
+```latex
+\subsection{Binary Search Trees}
+
+\begin{definition}{Binary Search Tree}\\
+A BST maintains ordering properties where left < parent < right.
+\end{definition}
+
+\begin{example2}{BST Operations}\\
+Insertion follows comparison rules to maintain BST property.
+\end{example2}
+
+% (Skipped search explanation and insertion example as "similar to material already covered")
+```
+
+**Why wrong?**
+- Paraphrased definition (not exact wording)
+- Skipped the search efficiency concept entirely
+- Summarized example instead of extracting complete solution
+- No image TODO comment
+- No verification markers
+
+---
+
+## FINAL REMINDERS
+
+### Your Role
+You are a **PERFECT PHOTOCOPIER**, not an editor, not an optimizer, not a summarizer.
+
+### Your Goal
+**100% COMPLETENESS**: Every word, every sentence, every example extracted.
+
+### Your Test
+If a student had ONLY your extraction (no access to original source), would they have ALL the information? If answer is not "absolutely yes", you skipped something.
+
+### Your Principle
+**When in doubt, EXTRACT IT.**
+
+If you find yourself thinking:
+- "I can skip this because..."
+- "I'll summarize this as..."
+- "This is redundant with..."
+- "The reader will already know..."
+
+**STOP. You are in extraction mode, not summarization mode.**
+
+Extract it anyway. Summarization happens in later phases (Prompt 2).
+
+### Remember
+**COMPLETENESS > BREVITY** in this phase.
+
+It's better to extract "too much" than to skip anything.
+
+---
+
+## SUPPORT FILES
+
+**Style reference**: misc_files/automatisation/reference_style_guide.txt
+**Math enhancement**: misc_files/automatisation/specialty_math.txt
+**Programming enhancement**: misc_files/automatisation/specialty_programming.txt
+
+Read these files BEFORE starting extraction to understand all formatting rules.
+
+---
+
+## READY TO EXTRACT?
+
+1. ✅ Read this entire prompt
+2. ✅ Read reference_style_guide.txt
+3. ✅ Understand: You are PHOTOCOPIER, not editor
+4. ✅ Understand: Extract EVERYTHING, change NOTHING
+5. ✅ Understand: Chunking + verification is MANDATORY
+6. ✅ Understand: Section markers are MANDATORY
+7. ✅ Understand: ALL images commented out
+
+If all checked, you're ready. Begin extraction with first 2-3 page chunk.
+
+**Remember**: Your extraction is the FOUNDATION for all later summarization work.
+Quality here = quality later. Skipping here = lost information forever.
+
+EXTRACT EVERYTHING. 📋✨

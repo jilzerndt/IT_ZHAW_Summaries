@@ -1,0 +1,1068 @@
+# SUMMARY FROM LATEX: Exam-Focused Optimization
+
+## OVERVIEW
+
+Transform complete LaTeX files from extraction phase into concise, exam-ready summaries with:
+- **Logical structure** (NOT lecture order)
+- **Comprehensive KRs** for all problem types
+- **2-3 examples per major topic**
+- **Optimized layout** with multi-column grouping
+- **30-50% length reduction** while maintaining exam completeness
+
+**Quality target**: Match the level of `4th_Semester/CT2/LateX/content/lecture_summary/*.tex`
+
+---
+
+## TWO-PHASE WORKFLOW
+
+### PHASE 1: STRUCTURE PLANNING (MANDATORY - USER APPROVAL REQUIRED)
+Analyze extracted content and propose reorganization
+
+### PHASE 2: SUMMARY CREATION (AFTER APPROVAL)
+Create exam-focused summary following approved plan
+
+⚠️ **You CANNOT skip Phase 1.** User must approve structure before you proceed to Phase 2.
+
+---
+
+# PHASE 1: STRUCTURE PLANNING
+
+## Input Analysis
+
+Before proposing structure, analyze:
+
+### 1. Content Inventory
+
+List what you have:
+- Major topics covered across all files
+- Count definitions, theorems, concepts per topic
+- Identify recurring problem types
+- Note image priorities (CRITICAL/IMPORTANT/SUPPLEMENTARY)
+- Identify KRs already present (if any)
+
+**Template**:
+```markdown
+## CONTENT INVENTORY
+
+### lecture01.tex (500 lines):
+- Topics: Introduction to Databases, Relational Model
+- Definitions: 8 (relation, tuple, attribute, key, ...)
+- Theorems: 2 (normal forms properties)
+- Examples: 4 (simple table examples)
+- Images: 6 (3 CRITICAL, 2 IMPORTANT, 1 SUPPLEMENTARY)
+- KRs: 0
+
+### lecture02.tex (650 lines):
+- Topics: SQL Basics, Queries
+- Definitions: 12 (SELECT, WHERE, JOIN types, ...)
+- Theorems: 1 (query equivalence)
+- Examples: 7 (SQL queries)
+- Code blocks: 10
+- Images: 8 (5 CRITICAL, 3 IMPORTANT)
+- KRs: 0
+
+[Continue for all files...]
+
+### Totals:
+- Files: 5
+- Total lines: ~2800
+- Definitions: 45
+- Theorems: 8
+- Examples: 28
+- Images: 35 (18 CRITICAL, 12 IMPORTANT, 5 SUPPLEMENTARY)
+- Code blocks: 15
+- Existing KRs: 0 (need to add!)
+```
+
+### 2. Exam Relevance Assessment
+
+**Required information from user**:
+- Which topics appear in old exams? (get list if available)
+- Which problem types are tested most frequently?
+- What are the learning objectives? (from syllabus)
+- Which content is prerequisite vs. directly tested?
+
+**If user provides old exams/exercises**, analyze:
+- Count problem types: calculation, proof, implementation, analysis, design, etc.
+- Identify topics that appear in >50% of exams (Priority 1)
+- Identify topics that appear occasionally (Priority 2)
+- Identify topics never tested (Priority 3 - candidates for removal)
+
+**Template**:
+```markdown
+## EXAM RELEVANCE ANALYSIS
+
+### Old Exam Topics (analyzed from 5 past exams):
+- **Normalization** (5/5 exams, always tested) - PRIORITY 1
+- **SQL Joins** (5/5 exams, 2-3 questions each) - PRIORITY 1
+- **Transactions** (4/5 exams, 1-2 questions) - PRIORITY 1
+- **Indexing** (2/5 exams, 1 question) - PRIORITY 2
+- **Query Optimization** (1/5 exams, mentioned) - PRIORITY 2
+- **Database History** (0/5 exams, never tested) - PRIORITY 3 (REMOVE)
+
+### Problem Types Tested:
+- Normalize table to 3NF (all 5 exams) - **NEED KR**
+- Write complex SQL query (all 5 exams) - **NEED KR**
+- Design E-R diagram (4/5 exams) - **NEED KR**
+- Identify functional dependencies (4/5 exams) - **NEED KR**
+- Explain transaction isolation levels (3/5 exams) - **NEED KR**
+- Create B-tree index (2/5 exams) - **NEED KR**
+
+### Learning Objectives:
+1. Understand relational model → Priority 1 (foundational)
+2. Write SQL queries → Priority 1 (tested heavily)
+3. Apply normalization → Priority 1 (tested heavily)
+4. Design databases → Priority 1 (E-R diagrams tested)
+5. Understand transactions → Priority 1 (tested frequently)
+6. Optimize queries → Priority 2 (tested occasionally)
+```
+
+### 3. Structure Proposal
+
+Propose logical organization (NOT lecture order):
+
+**Principles**:
+- Group related concepts together (even from different lectures)
+- Order: prerequisites → core concepts → applications → advanced
+- Most-tested topics prominently placed
+- Create intuitive thematic sections
+
+**Template**:
+```markdown
+## PROPOSED SUMMARY STRUCTURE
+
+### Current Organization (from extraction):
+- lecture01.tex: Introduction, History, Relational Model
+- lecture02.tex: SQL Basics, SELECT queries
+- lecture03.tex: SQL Joins, Subqueries
+- lecture04.tex: Normalization Theory
+- lecture05.tex: Transactions, ACID
+
+### Proposed Summary Organization:
+
+#### Chapter 1: Relational Model Foundations (20% of summary)
+**Sources**: lecture01.tex (Relational Model section only)
+**Topics**:
+- Relations, tuples, attributes
+- Keys (primary, foreign, candidate)
+- Relational algebra basics
+
+**Rationale**: Prerequisite knowledge for everything else. Tested indirectly.
+
+**Content decisions**:
+- KEEP: All key definitions (relation, tuple, key types) - 8 definitions
+- KEEP: Relational algebra operators - 1 theorem
+- KEEP: 2 examples (simple table, key identification)
+- REMOVE: Database history (lecture01) - never tested
+- REMOVE: Extended introduction (lecture01) - not exam-relevant
+- ADD: KR for identifying keys
+- Image decisions: Keep 2 CRITICAL (relation structure), Remove 1 SUPPLEMENTARY (timeline)
+
+#### Chapter 2: SQL Fundamentals (25% of summary)
+**Sources**: lecture02.tex + lecture03.tex (SQL sections)
+**Topics**:
+- SELECT, WHERE, ORDER BY
+- JOIN types (INNER, LEFT, RIGHT, FULL)
+- Subqueries and aggregation
+- GROUP BY, HAVING
+
+**Rationale**: Heavily tested (5/5 exams). Group all SQL together for coherence.
+
+**Content decisions**:
+- KEEP: All JOIN definitions - merge similar ones into comparison table
+- KEEP: 6 examples (2 easy JOIN, 2 medium JOIN, 1 hard nested query, 1 aggregation)
+- MERGE: Definitions of INNER/LEFT/RIGHT JOIN → single comparative definition
+- ADD: KR for writing complex queries (step-by-step approach)
+- ADD: KR for choosing correct JOIN type
+- ADD: Quick reference table for JOIN types
+- Image decisions: Keep 8 CRITICAL (all JOIN diagrams, query result examples)
+
+#### Chapter 3: Database Normalization (20% of summary)
+**Sources**: lecture04.tex (entire file)
+**Topics**:
+- Functional dependencies
+- Normal forms (1NF, 2NF, 3NF, BCNF)
+- Normalization process
+- Denormalization tradeoffs
+
+**Rationale**: Tested in ALL exams (5/5). Core skill students must master.
+
+**Content decisions**:
+- KEEP: All normal form definitions - consolidate into single progressive block
+- KEEP: 3 examples (1 easy: obvious 3NF, 1 medium: multiple dependencies, 1 hard: BCNF edge case)
+- MERGE: Definitions of 1NF/2NF/3NF → hierarchical structure showing progression
+- ADD: KR for normalizing to 3NF (most frequently tested)
+- ADD: KR for identifying functional dependencies
+- ADD: Quick reference table comparing normal forms
+- Image decisions: Keep all 5 CRITICAL (dependency diagrams essential)
+
+#### Chapter 4: Transactions & Concurrency (15% of summary)
+**Sources**: lecture05.tex (ACID and isolation sections)
+**Topics**:
+- ACID properties
+- Transaction states
+- Isolation levels
+- Concurrency problems
+
+**Rationale**: Tested frequently (4/5 exams). Important theoretical knowledge.
+
+**Content decisions**:
+- KEEP: ACID definitions, isolation level definitions
+- KEEP: 2 examples (isolation level comparison, concurrency problem)
+- REMOVE: Detailed implementation details - not tested at this level
+- ADD: KR for explaining isolation levels
+- ADD: Comparison table for ACID properties
+- Image decisions: Keep 3 CRITICAL (transaction state diagram, isolation level table)
+
+#### Chapter 5: Indexing & Performance (10% of summary - REDUCED)
+**Sources**: lecture06.tex (selected sections)
+**Topics**:
+- Index structures (B-tree basics)
+- When to use indexes
+
+**Rationale**: Tested occasionally (2/5 exams). Less critical than above topics.
+
+**Content decisions**:
+- KEEP: Basic B-tree definition
+- KEEP: 1 example (when to create index)
+- REMOVE: Detailed B-tree algorithms - too deep for exam level
+- REMOVE: Performance tuning details - not tested
+- ADD: KR for when to create index (if tested)
+- Image decisions: Keep 1 CRITICAL (B-tree structure), Remove 2 SUPPLEMENTARY
+
+#### Chapter 6: Database Design (10% of summary)
+**Sources**: lecture03.tex (E-R diagram section)
+**Topics**:
+- E-R diagrams
+- Entities, relationships, cardinality
+
+**Rationale**: Tested in 4/5 exams. Practical skill.
+
+**Content decisions**:
+- KEEP: E-R notation definitions
+- KEEP: 2 examples (simple E-R, complex cardinality)
+- ADD: KR for creating E-R diagram
+- Image decisions: Keep 4 CRITICAL (notation reference, example diagrams)
+
+### Summary Statistics:
+- **Reorganization**: From 5 lecture-ordered files → 6 thematic chapters
+- **Length reduction target**: From ~2800 lines → ~1100-1400 lines (40-50% reduction)
+- **Major changes**:
+  - Removed: Database history (lecture01, 200 lines) - never tested
+  - Removed: Extended intros (all lectures, ~300 lines total) - not exam-relevant
+  - Removed: Detailed algorithm implementations (lecture06, ~150 lines) - too deep
+  - Merged: Similar definitions across lectures (SQL, normalization)
+  - Reorganized: All SQL content grouped together (was in lecture02 + lecture03)
+
+### KR Inventory Needed:
+
+Based on old exam analysis, create KRs for:
+1. **How to Identify Primary/Candidate Keys** (tested: 3/5 exams) - Priority 1
+2. **How to Write Complex SQL Queries** (tested: 5/5 exams, multiple questions) - Priority 1
+3. **How to Choose Correct JOIN Type** (tested: 5/5 exams) - Priority 1
+4. **How to Identify Functional Dependencies** (tested: 4/5 exams) - Priority 1
+5. **How to Normalize to 3NF** (tested: 5/5 exams, always at least one question) - Priority 1
+6. **How to Create E-R Diagram** (tested: 4/5 exams) - Priority 1
+7. **How to Explain Isolation Levels** (tested: 3/5 exams) - Priority 2
+8. **When to Create Database Index** (tested: 2/5 exams) - Priority 2
+
+**Total**: 8 KRs to create
+
+### Image Priority Updates:
+
+**Images to KEEP** (18 → 15):
+- All 15 CRITICAL priority images (essential for understanding)
+- Remove: 0 IMPORTANT images (keep for learning support)
+- Remove: 5 SUPPLEMENTARY images (decorative/redundant)
+
+**Images to REMOVE** (20 total removed):
+- Database history timeline (lecture01) - topic removed
+- Redundant examples (lecture02, lecture03) - similar diagrams
+- Implementation details (lecture06) - topic reduced
+- Decorative graphics - all SUPPLEMENTARY removed
+
+### Final Image Count: 15 images (all CRITICAL or IMPORTANT)
+```
+
+### User Approval Checkpoint
+
+**STOP HERE and present your structure proposal to the user.**
+
+Say:
+```
+I've analyzed the extracted LaTeX files and propose the following structure
+for the exam-focused summary:
+
+[Present structure proposal above]
+
+Key changes:
+- Reorganized from lecture order to thematic grouping
+- Removed [X]% of content (history, verbose intros, rarely-tested topics)
+- Plan to add [Y] KRs for all tested problem types
+- Consolidated similar definitions
+- Updated image priorities
+
+**Total length reduction: ~[Z]%** (from [A] lines to [B-C] lines)
+
+**Please review and approve** (or suggest modifications) before I proceed to
+Phase 2 (summary creation).
+
+Would you like me to adjust any of these decisions?
+```
+
+**DO NOT PROCEED TO PHASE 2 UNTIL USER APPROVES.**
+
+User might request:
+- "Keep topic X that I marked for removal"
+- "Add KR for problem type Y"
+- "Merge chapters A and B"
+- "Split chapter C into two"
+
+Incorporate feedback and represent for approval if needed.
+
+---
+
+# PHASE 2: SUMMARY CREATION
+
+**(Only execute after Phase 1 approval)**
+
+## Content Reduction Strategy
+
+Follow approved structure plan. For each chapter:
+
+### KEEP (Essential Core - ~30-40% of original)
+
+**Definitions**:
+- Core concepts from learning objectives
+- Terms that appear in exam questions
+- Distinctions between similar concepts
+
+**Theorems/Rules**:
+- Frequently referenced results
+- Prerequisite knowledge for problem-solving
+- Rules applied in exam problems
+
+**Examples**:
+- 2-3 per major topic (vary difficulty)
+- Match exam problem formats
+- Cover different aspects of concept
+
+**Formulas**:
+- Used in calculations
+- Referenced in multiple places
+
+### MERGE (Consolidate Similar - ~10% of original)
+
+**Multiple definitions of related concepts** → Single comprehensive block
+Example: Instead of separate definitions for INNER JOIN, LEFT JOIN, RIGHT JOIN,
+create one comparative definition with table.
+
+**Scattered remarks about same topic** → Consolidated note
+Example: Warnings about NULL handling from lectures 2, 3, 4 → one remark block
+
+**Similar examples** → Keep most instructive, mention others briefly
+Example: 5 examples of simple SELECT queries → keep 2, note "similar patterns"
+
+### REMOVE (Not Exam-Critical - ~50-60% of original)
+
+**Historical background/motivation** - Unless specifically tested
+**Detailed derivations** - Keep result, omit proof unless proofs are tested
+**Redundant examples** - More than 3 examples of same type
+**Tangential remarks** - Not connected to learning objectives
+**Verbose explanations** - Make concise
+**Extended introductions** - Cut to essentials
+**"Nice to know" content** - Keep only "need to know"
+
+### ADD (Study Aids - new content)
+
+**KR blocks** - For every problem type (see KR Framework below)
+**Additional examples** - Where gaps exist after reduction
+**Comparison tables** - For similar concepts (e.g., JOIN types, normal forms)
+**Quick reference blocks** - Formula collections, command summaries
+
+### Target
+
+**30-50% of original extraction length**
+
+Example: 2800 lines → 1100-1400 lines
+
+---
+
+## KR Creation Framework
+
+**CRITICAL**: Every problem type students must solve needs a KR block.
+
+### KR Structure Template
+
+```latex
+\begin{KR}{How to [Task Name]}\\
+\textbf{Given:} [What information you start with]
+
+\textbf{Goal:} [What you're solving for / proving / calculating]
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item [Step 1 with specific action]: [formula or method] (reference Theorem X.Y if applicable)
+    \item [Step 2 with decision point]: If [condition], then [action A]; else [action B]
+    \item [Step 3 with calculation]: [Specific instruction with example]
+    \item [Step 4 with verification]: Check that [condition holds / sanity check]
+\end{enumerate}
+
+\textbf{Common mistakes:}
+\begin{itemize}
+    \item [Mistake 1]: [Description] → [How to avoid]
+    \item [Mistake 2]: [Description] → [How to avoid]
+\end{itemize}
+
+\textbf{When to use this approach:} [Recognition criteria - how to identify this problem type]
+\end{KR}
+```
+
+### KR Coverage Requirements
+
+- ✅ Every old exam problem type has corresponding KR
+- ✅ Every exercise type has corresponding KR
+- ✅ Every "how to" learning objective has corresponding KR
+- ✅ Every procedural skill tested has corresponding KR
+
+### KR Quality Standards
+
+**Written for exam conditions**:
+- Student solving problem under time pressure
+- All steps included (even "obvious" ones)
+- References to theorems/definitions/formulas by name
+- Decision points clearly stated
+- Common errors noted (from experience/solutions)
+
+**Completeness test**: Could student follow KR to solve any problem of this type?
+
+### KR Examples by Domain
+
+**Mathematics**:
+```latex
+\begin{KR}{How to Prove by Induction}\\
+\textbf{Given:} Statement $P(n)$ to prove for all $n \geq n_0$
+
+\textbf{Goal:} Show $P(n)$ is true for all $n \geq n_0$
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item \textbf{Base case}: Prove $P(n_0)$ is true directly
+    \item \textbf{Inductive hypothesis}: Assume $P(k)$ is true for arbitrary $k \geq n_0$
+    \item \textbf{Inductive step}: Prove $P(k+1)$ is true using assumption $P(k)$
+    \begin{itemize}
+        \item Start with $P(k+1)$ (left side)
+        \item Apply inductive hypothesis $P(k)$
+        \item Manipulate to show $P(k+1)$ holds
+    \end{itemize}
+    \item \textbf{Conclusion}: By mathematical induction, $P(n)$ true for all $n \geq n_0$
+\end{enumerate}
+
+\textbf{Common mistakes:}
+\begin{itemize}
+    \item Forgetting base case → Always prove $P(n_0)$ first
+    \item Assuming what you're trying to prove → Only assume $P(k)$, prove $P(k+1)$
+    \item Incomplete inductive step → Must explicitly show how $P(k)$ implies $P(k+1)$
+\end{itemize}
+
+\textbf{When to use:} Statement involves "for all natural numbers $n$" or similar.
+\end{KR}
+```
+
+**Databases**:
+```latex
+\begin{KR}{How to Normalize to 3NF}\\
+\textbf{Given:} Relation $R$ with attributes and functional dependencies (FDs)
+
+\textbf{Goal:} Decompose $R$ into relations in Third Normal Form (3NF)
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item \textbf{Ensure 1NF}: Check all attributes contain only atomic values
+    \begin{itemize}
+        \item If multi-valued attributes exist, create separate relation
+    \end{itemize}
+    \item \textbf{Ensure 2NF}: Remove partial dependencies
+    \begin{itemize}
+        \item Identify composite keys
+        \item Find non-key attributes dependent on only part of key
+        \item Create separate relation for each partial dependency
+    \end{itemize}
+    \item \textbf{Ensure 3NF}: Remove transitive dependencies
+    \begin{itemize}
+        \item Find non-key attributes that determine other non-key attributes
+        \item For each transitive dependency $A \to B \to C$, create relation $(A, B)$ and $(B, C)$
+    \end{itemize}
+    \item \textbf{Verify}: Check all FDs preserved and decomposition is lossless
+\end{enumerate}
+
+\textbf{Common mistakes:}
+\begin{itemize}
+    \item Forgetting to verify lossless join property → Always check can reconstruct original relation
+    \item Missing indirect transitive dependencies → Carefully trace all FD chains
+    \item Incorrect identification of partial dependencies → Review definition: non-key depends on part of composite key
+\end{itemize}
+
+\textbf{When to use:} Asked to "normalize relation to 3NF" or "eliminate redundancy".
+\end{KR}
+```
+
+**Programming**:
+```latex
+\begin{KR}{How to Implement Binary Search}\\
+\textbf{Given:} Sorted array $arr$ and target value $target$
+
+\textbf{Goal:} Return index of $target$ in $arr$, or -1 if not found
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item \textbf{Initialize}: Set $left = 0$, $right = arr.length - 1$
+    \item \textbf{Loop while} $left \leq right$:
+    \begin{itemize}
+        \item Calculate $mid = \lfloor (left + right) / 2 \rfloor$
+        \item If $arr[mid] == target$: return $mid$ (found)
+        \item If $arr[mid] < target$: set $left = mid + 1$ (search right half)
+        \item If $arr[mid] > target$: set $right = mid - 1$ (search left half)
+    \end{itemize}
+    \item \textbf{If loop exits}: return -1 (not found)
+\end{enumerate}
+
+\textbf{Common mistakes:}
+\begin{itemize}
+    \item Integer overflow in $mid$ calculation → Use $mid = left + (right - left) / 2$
+    \item Off-by-one errors → Ensure $left \leq right$ (not $<$) and $mid + 1 / mid - 1$ (not $mid$)
+    \item Forgetting array must be sorted → Binary search only works on sorted arrays
+\end{itemize}
+
+\textbf{When to use:} Searching sorted array, complexity must be $O(\log n)$.
+\end{KR}
+```
+
+---
+
+## Example Creation
+
+Add 2-3 examples per major topic after KRs.
+
+### Example Structure Template
+
+```latex
+\begin{example2}{[Problem Type] - [Difficulty: Easy/Medium/Hard]}\\
+\textbf{Task:} [Clear problem statement matching exam style]
+
+\textbf{Given:}
+\begin{itemize}
+    \item [All provided information]
+    \item [Initial conditions]
+    \item [Constraints]
+\end{itemize}
+
+[Any necessary context, data, or setup]
+
+\tcblower
+
+\textbf{Solution:}
+
+\textit{Strategy:} [Brief explanation of approach - which KR to use]
+
+\begin{enumerate}
+    \item [Step 1 with reasoning and intermediate result]
+    \item [Step 2 showing calculation/transformation]
+    \item [Step 3 explaining key decisions made]
+    \item [Step 4 reaching conclusion]
+\end{enumerate}
+
+\textbf{Final answer:} [Clearly stated result with units/format]
+
+\important{Key technique:} [Transferable skill or insight applicable to similar problems]
+\end{example2}
+```
+
+### Example Selection Criteria
+
+**Coverage**: Cover most common exam question formats
+**Difficulty spread**: 1 easy (direct application), 1 medium (multi-step), 1 hard (tricky edge case) per major topic
+**Exam alignment**: Match actual exam style (check old exams)
+**Concept illustration**: Each example shows different aspect of topic
+
+**Example distribution across chapter**:
+```
+Chapter 2 (SQL):
+- 1 easy JOIN example
+- 1 medium nested query example
+- 1 hard aggregation with HAVING example
+
+Chapter 3 (Normalization):
+- 1 easy 3NF example (obvious transitive dependency)
+- 1 medium example (multiple dependencies)
+- 1 hard BCNF edge case example
+```
+
+---
+
+## Structure Optimization
+
+### Logical Organization (NOT Lecture Order)
+
+Pattern:
+```latex
+\section{[Thematic Chapter Name]}
+
+% Group related short definitions with \mult{2}
+\mult{2}
+\begin{definition}{Concept A}\\
+[Concise definition]
+\end{definition}
+
+\begin{definition}{Concept B}\\
+[Concise definition]
+\end{definition}
+\multend
+
+% Show relationship
+\begin{theorem}{How A and B Relate}\\
+[Key relationship, comparison, or rule]
+\end{theorem}
+
+% Procedure for application
+\begin{KR}{When to Use A vs B}\\
+[Decision criteria with step-by-step procedure]
+\end{KR}
+
+% Concrete application
+\begin{example2}{Applying A and B - Medium}\\
+[Problem demonstrating both concepts]
+\tcblower
+[Solution showing decision-making process]
+\end{example2}
+```
+
+### Layout Principles
+
+**Multi-column grouping** (`\mult{2}...\multend`):
+- Use for short related blocks (definitions, concepts, theorems)
+- Typical: 2-4 blocks per group
+- Balances content across columns
+
+**Single-column content**:
+- Long KRs (>10 lines)
+- Complex examples
+- Detailed explanations
+- Wide tables or code
+
+**Column control**:
+- `\raggedcolumns` before `\columnbreak` to balance columns
+- Strategic `\pagebreak` between major sections
+- Reference: See CT2 main file for pattern
+
+### Section Hierarchy
+
+**Appropriate nesting** (max 3 levels):
+```
+\section{Main Topic}          % Chapter level
+  \subsection{Subtopic}        % Major concept
+    \subsubsection{Detail}     % Specific aspect
+```
+
+**Use `\paragraph{}`** for minor points instead of excessive `\subsubsection{}`
+
+**Merge subsections** if <3 content blocks in section
+
+**Avoid**:
+- Single subsection in section (just use paragraphs)
+- Deeply nested structure (>3 levels)
+- Redundant section titles
+
+---
+
+## Image Handling
+
+### Review ALL TODO comments from extraction
+
+**KEEP**:
+- CRITICAL priority images (18 → keep all 18)
+- IMPORTANT priority images if exam-relevant (12 → keep 10, remove 2 redundant)
+
+**REMOVE**:
+- SUPPLEMENTARY priority images (5 → remove all 5)
+- Images from removed topics
+- Redundant diagrams showing same concept
+
+### Update image TODO comments
+
+```latex
+% TODO: Add image from Lecture_03.pdf, Slide 15
+% Description: Normalization dependency diagram showing transitive dependency example
+% Priority: CRITICAL (concept appears in 5/7 old exams, diagram essential for understanding)
+% Suggested filename: 03_normalization_transitive_dependency.png
+\\
+% \includegraphics[width=\linewidth]{03_normalization_transitive_dependency.png}
+\\
+% WHEN YOU ADD IMAGE: Uncomment line above
+```
+
+**Priority update reasons**:
+- "appears in X/Y old exams"
+- "essential for understanding" / "helpful but not essential"
+- "frequently asked" / "rarely tested"
+
+**KEEP ALL `\includegraphics` LINES COMMENTED OUT!**
+
+### Updated image summary at file end
+
+```latex
+% ===== IMAGE SUMMARY (POST-SUMMARIZATION) =====
+% Images retained: 28 (reduced from 35 in extraction)
+% Breakdown: CRITICAL: 18, IMPORTANT: 10
+% Images removed: 7 (5 SUPPLEMENTARY + 2 redundant IMPORTANT)
+%
+% Extraction checklist (priority order):
+% [ ] [Source.pdf, Page X] - [description] (CRITICAL)
+% [ ] [Source.pdf, Page Y] - [description] (CRITICAL)
+% [ ] [Source.pdf, Page Z] - [description] (IMPORTANT)
+% =====================
+```
+
+---
+
+## Formatting Standards
+
+Follow ALL rules from `misc_files/automatisation/reference_style_guide.txt`.
+
+### Critical Rules
+
+- `\\` after environment titles (EXCEPT before itemize/enumerate)
+- Comment ALL `\includegraphics` with `%` prefix
+- `[language=X, style=base]` for all lstlisting
+- No ä/ö/ü in code blocks (use ae/oe/ue)
+- Escape special characters: \$, \&, \%, \_, \{, \}
+- Proper math notation: $inline$ and $$display$$
+
+### Math-Heavy Courses
+
+Apply `misc_files/automatisation/specialty_math.txt` enhancements:
+- Number sets: \N, \Z, \Q, \R, \C
+- Operators: \sin, \cos, \lim, \sum (upright, not italic)
+- Highlight boxes for formula collections
+- `align*` environment for step-by-step derivations
+- `\begin{iequation}...\end{iequation}` for important equations
+
+### Programming Courses
+
+Apply `misc_files/automatisation/specialty_programming.txt` enhancements:
+- Algorithm complexity in KRs and examples
+- Design pattern structure blocks
+- Data structure operation tables
+- Complete code examples in `examplecode{}` environment
+
+---
+
+## Quality Reference: CT2 Example
+
+Your output should match the quality of:
+**`4th_Semester/CT2/LateX/content/lecture_summary/*.tex`**
+
+### Key Patterns from CT2
+
+**File organization**:
+- Numbered files (01_, 02_, ...) for logical ordering
+- Each file is one major topic/chapter
+- ~200-400 lines per file (manageable size)
+
+**Layout**:
+- Heavy use of minipages for side-by-side content
+- Strategic `\mult{2}` grouping for related short blocks
+- Register details with bitfield explanations (for hardware topics)
+- Comprehensive image integration (262 images total)
+
+**Content mix**:
+- Theory (definitions, concepts, theorems)
+- Practice (code examples, procedures, KRs)
+- Hardware-specific (register addresses, configurations)
+
+**Environment usage**:
+- Extensive use of custom environments (definition, concept, code, theorem, KR)
+- Proper `\\` placement throughout
+- Well-structured examples with `\tcblower`
+
+**Multiple outputs**:
+- Full lecture summary (comprehensive)
+- Midterm summary (focused subset)
+- Coding guidelines (standalone reference)
+
+**Quality indicators**:
+- Dense but readable
+- Logical flow within each file
+- Cross-references between sections
+- Practical focus (not just theory)
+
+---
+
+## Validation Checklist
+
+Before delivery, verify:
+
+### Content Completeness
+- [ ] Every exam-tested topic has coverage
+- [ ] Every tested problem type has a KR
+- [ ] 2-3 examples per major topic (vary difficulty: easy, medium, hard)
+- [ ] All critical definitions included
+- [ ] No "memory gaps" that would cause exam struggles
+- [ ] Could student solve typical exam problems with only this summary?
+
+### Structure Quality
+- [ ] Logical organization (NOT lecture order as in extraction)
+- [ ] Clear progression: foundations → core → applications → advanced
+- [ ] Related concepts grouped together (even if from different lectures)
+- [ ] Appropriate section hierarchy (not over-nested, max 3 levels)
+- [ ] Chapter names are thematic and intuitive
+
+### KR Quality
+- [ ] All tested problem types have corresponding KRs
+- [ ] KRs have all steps (even "obvious" ones)
+- [ ] KRs reference theorems/definitions by name
+- [ ] KRs include common mistakes section
+- [ ] KRs include "when to use" recognition criteria
+- [ ] KRs are written for exam time pressure conditions
+
+### Example Quality
+- [ ] Examples match exam problem formats
+- [ ] Examples span difficulty levels (1 easy, 1 medium, 1 hard per topic)
+- [ ] Examples show complete solutions with reasoning
+- [ ] Examples note key techniques
+- [ ] Examples cover different aspects of concept
+
+### Formatting
+- [ ] All environments properly opened and closed
+- [ ] `\\` placement correct (after titles, exception for lists)
+- [ ] ALL images commented out with `%`
+- [ ] Math notation proper ($...$, $$...$$)
+- [ ] Multi-column grouping sensible (\mult{2} for short blocks)
+- [ ] lstlisting has [language=X, style=base]
+- [ ] No ä/ö/ü in code blocks
+
+### Length
+- [ ] 30-50% of original extraction length
+- [ ] Focused on exam-critical content
+- [ ] No redundancy or verbose explanations
+- [ ] Manageable for review (not overwhelming)
+
+---
+
+## Output Deliverables
+
+### 1. Summary File(s)
+
+Same naming as input (if extracted as lectureXX.tex, now becomes XX_topic_name.tex):
+
+**Example renaming**:
+- lecture01.tex + lecture02.tex (SQL sections) → 02_sql_fundamentals.tex
+- lecture04.tex (normalization) → 03_normalization.tex
+
+**OR** keep lecture naming if one-to-one mapping.
+
+### 2. Change Log
+
+Provide detailed summary of changes:
+
+```markdown
+## SUMMARY CREATION REPORT
+
+### Structure Transformation
+
+**From** (extraction):
+- 5 files following lecture order (lecture01.tex through lecture05.tex)
+- Total: 2800 lines
+
+**To** (summary):
+- 6 files with thematic organization:
+  01_relational_model.tex (280 lines)
+  02_sql_fundamentals.tex (350 lines)
+  03_normalization.tex (320 lines)
+  04_transactions.tex (210 lines)
+  05_indexing.tex (140 lines)
+  06_database_design.tex (140 lines)
+- Total: 1440 lines
+
+**Length reduction**: 49% (2800 → 1440 lines)
+
+### Major Changes
+
+**Reorganization**:
+- Grouped all SQL content together (was in lecture02 + lecture03)
+- Moved E-R diagrams to separate design chapter (was scattered in lecture03)
+- Reordered chapters by exam importance (normalization before transactions)
+
+**Content Removed** (~1360 lines):
+- Database history (lecture01, 200 lines) - never tested
+- Extended introductions (all lectures, ~300 lines) - not exam-relevant
+- Detailed implementation details (lecture06, ~250 lines) - too deep for exam
+- Redundant examples (trimmed from 28 to 18) - kept most instructive only
+- Verbose explanations (condensed throughout, ~400 lines saved)
+- Performance tuning details (lecture06, ~210 lines) - not tested
+
+**Content Merged**:
+- JOIN type definitions (separate in lecture03) → single comparative table
+- Normal form definitions (verbose in lecture04) → hierarchical progression
+- ACID properties (scattered in lecture05) → consolidated overview
+
+### Content Added
+
+**KRs created**: 8 total
+1. How to Identify Keys (added to Chapter 1)
+2. How to Write Complex SQL Queries (added to Chapter 2)
+3. How to Choose JOIN Type (added to Chapter 2)
+4. How to Identify Functional Dependencies (added to Chapter 3)
+5. How to Normalize to 3NF (added to Chapter 3)
+6. How to Create E-R Diagram (added to Chapter 6)
+7. How to Explain Isolation Levels (added to Chapter 4)
+8. When to Create Index (added to Chapter 5)
+
+**Examples added/refined**: 18 total (from 28 in extraction)
+- Distribution: 6 easy, 8 medium, 4 hard
+- Replaced generic examples with exam-style problems
+- Added difficulty labels to all examples
+
+**New content**:
+- Comparison table: JOIN types (Chapter 2)
+- Comparison table: Normal forms (Chapter 3)
+- Comparison table: ACID properties (Chapter 4)
+- Quick reference: SQL command syntax (Chapter 2)
+
+### Image Changes
+
+**Images retained**: 28 (from 35 in extraction)
+- CRITICAL: 18 (all kept)
+- IMPORTANT: 10 (from 12, removed 2 redundant)
+- SUPPLEMENTARY: 0 (all 5 removed)
+
+**Images removed**: 7 total
+- Database timeline (lecture01) - topic removed
+- 2 redundant JOIN diagrams (lecture03) - similar to others
+- 3 implementation detail diagrams (lecture06) - topic reduced
+- 1 decorative graphic (lecture01) - SUPPLEMENTARY priority
+
+**Priority updates**:
+- Updated 12 images with exam frequency information
+- Example: "appears in 5/7 old exams" added to normalization diagrams
+
+### Coverage Verification
+
+**Learning objectives**: ✅ All 6 covered
+**Old exam topics**: ✅ All Priority 1 topics covered (5/5 tested topics)
+**Exercise problem types**: ✅ All 8 types have KRs
+
+### Quality Metrics
+
+**Content blocks per chapter** (average): ~12
+**KRs per chapter**: 1-2 (total 8)
+**Examples per major topic**: 2-3 (total 18)
+**Images per chapter**: 3-6 (total 28)
+
+**Estimated compiled length**: ~25-30 pages (2-column landscape, 8pt font)
+**Estimated review time**: 4-6 hours for thorough study
+
+### Key Decisions Rationale
+
+**Why reorganized from lecture order?**
+- Exam tests topics in different order than taught
+- Grouping related concepts improves understanding
+- Students need quick access to frequently-tested material
+
+**Why removed database history?**
+- Never appeared in any of 5 past exams
+- Not in learning objectives
+- 200 lines = 7% of extraction = significant space savings
+
+**Why merged normal form definitions?**
+- Originally spread across 3 pages with repetitive explanations
+- Hierarchical presentation (1NF → 2NF → 3NF progression) clearer
+- Reduced from 600 lines to 200 lines without losing information
+
+**Why 8 KRs specifically?**
+- Mapped exactly to 8 problem types tested in exams
+- Every student skill that appears in old exams has a KR
+- Ensures comprehensive exam preparation
+```
+
+### 3. User Feedback Questions
+
+After delivery, ask user:
+
+```
+Summary complete! Please review:
+
+1. **Structure**: Does the thematic organization make sense? Should any chapters be merged/split?
+
+2. **KRs**: Are there any additional problem types you need KRs for?
+
+3. **Examples**: Do you want more/fewer examples on any topic?
+
+4. **Length**: Is 1440 lines (~25-30 pages compiled) manageable for review? Should I reduce further?
+
+5. **Images**: Are the 28 retained images the right ones? Any critical ones I marked SUPPLEMENTARY?
+
+6. **Missing content**: Did I remove anything you feel is exam-important?
+
+Please let me know any adjustments needed!
+```
+
+---
+
+## Final Reminders
+
+### This Phase is About OPTIMIZATION FOR EXAM SUCCESS
+
+**Not comprehensiveness**: Don't try to include everything
+**Not perfection**: Aim for practical exam preparation
+**Not preservation**: Be willing to cut non-essential content
+
+### Quality Metrics
+
+**Good summary**:
+- Every tested skill has a KR
+- Structure is logical and intuitive
+- Examples match exam difficulty
+- Length is manageable for review
+- Dense but not overwhelming
+
+**Great summary** (CT2 level):
+- All above PLUS:
+- Beautiful layout with strategic multi-column grouping
+- Comprehensive image integration
+- Multiple versions (full, midterm, reference)
+- Cross-references between related topics
+
+### Your Goal
+
+Create a summary that enables student to:
+1. **Learn** efficiently (logical organization)
+2. **Practice** effectively (KRs for all skills)
+3. **Review** quickly (concise, well-structured)
+4. **Succeed** on exam (complete coverage)
+
+**If student using ONLY your summary can ace the exam, you succeeded.**
+
+---
+
+## Support Files
+
+**Style reference**: misc_files/automatisation/reference_style_guide.txt
+**Math enhancement**: misc_files/automatisation/specialty_math.txt
+**Programming enhancement**: misc_files/automatisation/specialty_programming.txt
+**Quality target**: 4th_Semester/CT2/LateX/content/lecture_summary/*.tex
+
+---
+
+## Ready to Summarize?
+
+1. ✅ Read this entire prompt
+2. ✅ Have approved structure plan from Phase 1
+3. ✅ Understand: Optimize for exam success, not comprehensiveness
+4. ✅ Understand: Every problem type needs a KR
+5. ✅ Understand: 30-50% length reduction target
+6. ✅ Understand: CT2 is quality reference
+
+If all checked, begin Phase 2 following approved structure plan.
+
+**Remember**: Quality summary = exam success. Make it count! 📚✨
